@@ -292,16 +292,6 @@ public class PermutedRNG implements RandomnessSource, StatefulRandomness {
         }
     }
 
-
-    /**
-     * Sets the seed of this generator (which is also the current state).
-     *
-     * @param seed the seed to use for this PermutedRNG, as if it was constructed with this seed.
-     */
-    public void setSeed(final long seed) {
-        state = seed;
-    }
-
     /**
      * Sets the seed (also the current state) of this generator.
      *

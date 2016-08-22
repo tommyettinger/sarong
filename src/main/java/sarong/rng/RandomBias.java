@@ -33,6 +33,7 @@ import java.util.Map;
  * like a bug, and the visualization showed that it was correct behavior). Derrick Creamer noticed how strange the
  * exponential distribution would seem to most players, and that led to adding the simple triangular distribution.
  * Created by Tommy Ettinger on 3/20/2016.
+ * @author Tommy Ettinger
  */
 public class RandomBias implements Serializable {
     private LinkedHashMap<String, Double> biases;

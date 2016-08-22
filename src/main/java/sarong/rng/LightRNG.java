@@ -27,13 +27,17 @@ import sarong.util.StringKit;
  * why or what causes that (JIT or GC internals, possibly). XorRNG is slightly
  * slower at generating 64-bit random data, including long and double, but not by
  * a significant degree (a multiplier between 0.9 and 1.2 times). The only deciding
- * factor then is state size, where LightRNG is as small as possible for any JVM
- * object with even a single field: 16 bytes (on a 64-bit JVM; 8-byte objects with
- * 4 bytes or less of non-static members may be possible on 32-bit JVMs but I can't
- * find anything confirming that guess).
+ * factors then are period, where all other generators are the same as LightRNG or
+ * better (but the period doesn't matter for most short-running or non-parallel
+ * apps), and state size, where LightRNG is as small as possible for any JVM object
+ * with even a single field: 16 bytes (on a 64-bit JVM; 8-byte objects with 4 bytes
+ * or less of non-static members may be possible on 32-bit JVMs but I can't find
+ * anything confirming that guess).
  * <br>
  * So yes, this should be very fast, and with only a single long used per LightRNG,
- * it is about as memory-efficient as these generators get.
+ * it is about as memory-efficient as these generators get. It is approximately as
+ * fast as XoRoRNG on modern PC hardware, but LightRNG is likely faster on phones
+ * and older PCs.
  * <br>
  * Written in 2015 by Sebastiano Vigna (vigna@acm.org)
  *

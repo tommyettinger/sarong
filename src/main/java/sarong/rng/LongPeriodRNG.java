@@ -25,6 +25,7 @@ import sarong.util.StringKit;
  * periods themselves from a single seed. This uses the xorshift-1024* algorithm, and has competitive speed.
  * Created by Tommy Ettinger on 3/21/2016.
  * Ported from CC0-licensed C code by Sebastiano Vigna, at http://xorshift.di.unimi.it/xorshift1024star.c
+ * @author Tommy Ettinger
  */
 public class LongPeriodRNG implements RandomnessSource {
 

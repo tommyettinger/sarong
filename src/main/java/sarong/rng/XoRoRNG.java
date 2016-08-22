@@ -13,6 +13,15 @@ import sarong.util.StringKit;
  * A port of Blackman and Vigna's xoroshiro 128+ generator; should be very fast and produce high-quality output.
  * Testing shows it is within 5% the speed of LightRNG, sometimes faster and sometimes slower, and has a larger period.
  * It's called XoRo because it involves Xor as well as Rotate operations on the 128-bit pseudo-random state.
+ * <br>
+ * Machines without access to efficient bitwise rotation (such as all desktop JREs, and some JDKs, run with the
+ * {@code -client} flag or that default to the client VM, which includes practically all 32-bit Windows JREs) may
+ * benefit from using XorRNG over XoRoRNG. LightRNG should continue to be very fast, but has a significantly shorter
+ * period (the amount of random numbers it will go through before repeating), at {@code pow(2, 64)} as opposed to
+ * XorRNG and XoRoRNG's {@code pow(2, 128)}, but LightRNG also allows the current RNG state to be retrieved and altered
+ * with {@code getState()} and {@code setState()}. For most cases, you should decide between LightRNG and XoRoRNG based
+ * on your needs for period length and state manipulation (LightRNG is also used internally by all StatefulRNG objects).
+ * <br>
  * Original version at http://xoroshiro.di.unimi.it/xoroshiro128plus.c
  * Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
  *
@@ -153,7 +162,9 @@ public class XoRoRNG implements RandomnessSource {
 
     /**
      * Sets the seed of this generator. Passing this 0 will just set it to -1
-     * instead.
+     * instead. Not the same as the exact state-setting method implementations
+     * of StatefulRandomness have, {@code setState()}; this is used to generate
+     * 128 bits of state from a 64-bit (non-zero) seed.
      *
      * @param seed the number to use as the seed
      */

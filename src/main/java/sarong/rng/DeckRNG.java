@@ -3,7 +3,10 @@ package sarong.rng;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 /**
  * An RNG variant that has 16 possible grades of value it can produce and shuffles them like a deck of cards.
@@ -15,6 +18,7 @@ import java.util.*;
  * {@link #nextLong()}, and the bounded variants on each of those.
  * <p>
  * Created by Tommy Ettinger on 5/2/2015.
+ * @author Tommy Ettinger
  */
 public class DeckRNG extends StatefulRNG {
     private static final long serialVersionUID = 7828346657944720807L;
@@ -303,12 +307,6 @@ public class DeckRNG extends StatefulRNG {
         return ran;
     }
 
-    @Override
-    public <T> Iterable<T> getRandomStartIterable(List<T> list) {
-        return super.getRandomStartIterable(list);
-    }
-
-
     /**
      * Returns a value between min (inclusive) and max (exclusive).
      * <p/>
@@ -322,35 +320,6 @@ public class DeckRNG extends StatefulRNG {
     @Override
     public long between(long min, long max) {
         return nextLong(max - min) + min;
-    }
-
-    /*
-     * Shuffle an array using the Fisher-Yates algorithm.
-     *
-     * @param elements an array of T; will not be modified
-     * @return a shuffled copy of elements
-     */
-    @Override
-    public <T> T[] shuffle(T[] elements) {
-        return super.shuffle(elements);
-    }
-
-    /**
-     * Shuffle an array using the Fisher-Yates algorithm.
-     *
-     * @param elements an array of T; will not be modified
-     * @param dest     Where to put the shuffle. It MUST have the same length as {@code elements}
-     * @return {@code dest}
-     * @throws IllegalStateException If {@code dest.length != elements.length}
-     */
-    @Override
-    public <T> T[] shuffle(T[] elements, T[] dest) {
-        return super.shuffle(elements, dest);
-    }
-
-    @Override
-    public <T> ArrayList<T> shuffle(Collection<T> elements) {
-        return super.shuffle(elements);
     }
 
     @Override
@@ -392,52 +361,6 @@ public class DeckRNG extends StatefulRNG {
         System.arraycopy(deck, 0, next.deck, 0, deck.length);
         next.step = step;
         return next;
-    }
-
-    /**
-     * Gets a random portion of data (an array), assigns that portion to output (an array) so that it fills as much as
-     * it can, and then returns output. Will only use a given position in the given data at most once; does this by
-     * shuffling a copy of data and getting a section of it that matches the length of output.
-     * <p>
-     * Based on http://stackoverflow.com/a/21460179 , credit to Vincent van der Weele; modifications were made to avoid
-     * copying or creating a new generic array (a problem on GWT).
-     *
-     * @param data   an array of T; will not be modified.
-     * @param output an array of T that will be overwritten; should always be instantiated with the portion length
-     * @param <T>    can be any non-primitive type.
-     * @return an array of T that has length equal to output's length and may contain null elements if output is shorter
-     * than data
-     */
-    @Override
-    public <T> T[] randomPortion(T[] data, T[] output) {
-        return super.randomPortion(data, output);
-    }
-
-    /**
-     * Gets a random portion of a List and returns it as a new List. Will only use a given position in the given
-     * List at most once; does this by shuffling a copy of the List and getting a section of it.
-     *
-     * @param data  a List of T; will not be modified.
-     * @param count the non-negative number of elements to randomly take from data
-     * @return a List of T that has length equal to the smaller of count or data.length
-     */
-    @Override
-    public <T> List<T> randomPortion(List<T> data, int count) {
-        return super.randomPortion(data, count);
-    }
-
-    /**
-     * Gets a random subrange of the non-negative ints from start (inclusive) to end (exclusive), using count elements.
-     * May return an empty array if the parameters are invalid (end is less than/equal to start, or start is negative).
-     *
-     * @param start the start of the range of numbers to potentially use (inclusive)
-     * @param end   the end of the range of numbers to potentially use (exclusive)
-     * @param count the total number of elements to use; will be less if the range is smaller than count
-     * @return an int array that contains at most one of each number in the range
-     */
-    @Override
-    public int[] randomRange(int start, int end, int count) {
-        return super.randomRange(start, end, count);
     }
 
     /**

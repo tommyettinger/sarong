@@ -3,7 +3,13 @@ package sarong.rng;
 import sarong.util.CrossHash;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Random;
 
 /**
  * A wrapper class for working with random number generators in a more friendly
@@ -18,7 +24,6 @@ import java.util.*;
  */
 public class RNG implements Serializable {
 
-    protected static final double DOUBLE_UNIT = 1.0 / (1L << 53);
     protected static final float FLOAT_UNIT = 1.0f / (1 << 24);
     protected RandomnessSource random;
     protected double nextNextGaussian;
@@ -404,6 +409,48 @@ public class RNG implements Serializable {
     }
 
     /**
+     * Generates a random permutation of the range from 0 (inclusive) to length (exclusive).
+     * Useful for passing to OrderedMap or OrderedSet's reorder() methods.
+     * @param length the size of the ordering to produce
+     * @return a random ordering containing all ints from 0 to length (exclusive)
+     */
+    public int[] randomOrdering(int length)
+    {
+        if(length <= 0)
+            return new int[0];
+        int[] dest = new int[length];
+        for (int i = 0; i < length; i++)
+        {
+            int r = nextInt(i + 1);
+            if(r != i)
+                dest[i] = dest[r];
+            dest[r] = i;
+        }
+        return dest;
+    }
+
+    /**
+     * Generates a random permutation of the range from 0 (inclusive) to length (exclusive) and stores it in
+     * the dest parameter, avoiding allocations.
+     * Useful for passing to OrderedMap or OrderedSet's reorder() methods.
+     * @param length the size of the ordering to produce
+     * @param dest the destination array; will be modified
+     * @return dest, filled with a random ordering containing all ints from 0 to length (exclusive)
+     */
+    public int[] randomOrdering(int length, int[] dest)
+    {
+        if(dest == null || dest.length <= 0) return dest;
+        for (int i = 0; i < length && i < dest.length; i++)
+        {
+            int r = nextInt(i + 1);
+            if(r != i)
+                dest[i] = dest[r];
+            dest[r] = i;
+        }
+        return dest;
+    }
+
+    /**
      * Gets a random portion of data (an array), assigns that portion to output (an array) so that it fills as much as
      * it can, and then returns output. Will only use a given position in the given data at most once; does this by
      * generating random indices for data's elements, but only as much as needed, assigning the copied section to output
@@ -420,18 +467,16 @@ public class RNG implements Serializable {
      */
     public <T> T[] randomPortion(T[] data, T[] output) {
         int length = data.length;
-        int[] mapping = new int[length];
-        for (int i = 0; i < length; i++) {
+        int n = Math.min(length, output.length);
+        int[] mapping = new int[n];
+        for (int i = 0; i < n; i++) {
             mapping[i] = i;
         }
 
-        for (int i = 0; i < output.length && length > 0; i++) {
+        for (int i = 0; i < n; i++) {
             int r = nextInt(length);
-
             output[i] = data[mapping[r]];
-
-            mapping[r] = length - 1;
-            length--;
+            mapping[r] = mapping[--length];
         }
 
         return output;
@@ -509,10 +554,7 @@ public class RNG implements Serializable {
      * @return a value between 0 (inclusive) and 0.9999999999999999 (inclusive)
      */
     public double nextDouble() {
-        return (random.nextLong() & 0x1fffffffffffffL) * DOUBLE_UNIT;
-        // consider changing to this in a future version; it will break compatibility but should be fast/correct
-        //return Double.longBitsToDouble(0x3FFL << 52 | random.nextLong() >>> 12) - 1.0;
-
+        return Double.longBitsToDouble(0x3FFL << 52 | random.nextLong() >>> 12) - 1.0;
     }
 
     /**
@@ -578,12 +620,7 @@ public class RNG implements Serializable {
      */
     public int nextInt(final int bound) {
         if (bound <= 0) return 0;
-        int threshold = (0x7fffffff - bound + 1) % bound;
-        for (; ; ) {
-            int bits = random.next(31);
-            if (bits >= threshold)
-                return bits % bound;
-        }
+        return (int)((bound * (random.nextLong() & 0x7FFFFFFFL)) >> 31);
     }
 
     /**

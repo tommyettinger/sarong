@@ -1,5 +1,6 @@
 package sarong.util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -20,16 +21,84 @@ public class Compatibility {
      * @param d  the divisor
      * @return The remainder of {@code op / d}, as a double; can be negative
      */
-    /* smelC: because Math.IEEEremainder isn't GWT compatible */
     public static double IEEEremainder(double op, double d) {
         final double div = Math.round(op / d);
         return op - (div * d);
     }
 
     /**
+     * Stupidly simple convenience method that produces a range from 0 to end, not including end, as an int array.
+     * @param end the exclusive upper bound on the range
+     * @return the range of ints as an int array
+     */
+    public static int[] range(int end)
+    {
+        if(end <= 0)
+            return new int[0];
+        int[] r = new int[end];
+        for (int i = 0; i < end; i++) {
+            r[i] = i;
+        }
+        return r;
+    }
+
+    /**
+     * Stupidly simple convenience method that produces a range from start to end, not including end, as an int array.
+     * @param start the inclusive lower bound on the range
+     * @param end the exclusive upper bound on the range
+     * @return the range of ints as an int array
+     */
+    public static int[] range(int start, int end)
+    {
+        if(end - start <= 0)
+            return new int[0];
+        int[] r = new int[end - start];
+        for (int i = start; i < end; i++) {
+            r[i] = i;
+        }
+        return r;
+    }
+    /**
+     * Stupidly simple convenience method that produces a range from start to end, not including end, as an int array.
+     * @param start the inclusive lower bound on the range
+     * @param end the exclusive upper bound on the range
+     * @param step the distance between ints in the range (doesn't apply to indices in the returned array)
+     * @return the range of ints as an int array
+     */
+    public static int[] range(int start, int end, int step)
+    {
+        if(end - start <= 0 || step < 1)
+            return new int[0];
+        int[] r = new int[(end - start + step - 1) / step];
+        for (int i = start, j = 0; i < end; i += step) {
+            r[j++] = i;
+        }
+        return r;
+    }
+
+    /**
+     * Stupidly simple convenience method that produces a range from start to end, not including end, as an int array.
+     * @param basis the array to insert into; will be modified
+     * @param insertAt the first position to modify in basis
+     * @param start the inclusive lower bound on the range
+     * @param end the exclusive upper bound on the range
+     * @param step the distance between ints in the range (doesn't apply to indices of basis)
+     * @return the range of ints as an int array, equivalent to the new value of basis
+     */
+    public static int[] rangeInto(int[] basis, int insertAt, int start, int end, int step)
+    {
+        if(basis == null || end - start <= 0 || step < 1)
+            return basis;
+        int insertStop = (end - start + step - 1) / step + insertAt;
+        for (int i = start; i < end && insertAt < insertStop; i += step) {
+            basis[insertAt++] = i;
+        }
+        return basis;
+    }
+
+    /**
      * Gets the first item in an Iterable of T, or null if it is empty. Meant for collections like LinkedHashSet, which
-     * can promise a stable first element but don't provide a way to access it. Not exactly a GWT compatibility method,
-     * but more of a Java standard library stand-in.
+     * can promise a stable first element but don't provide a way to access it.
      *
      * @param collection an Iterable of T; if collection is null or empty this returns null
      * @param <T>        any object type
@@ -44,4 +113,53 @@ public class Compatibility {
         return null;
     }
 
+    public static <T> ArrayList<T> reorder (ArrayList<T> list, int... ordering) {
+        int ol;
+        if (ordering == null || (ol = Math.min(list.size(), ordering.length)) == 0)
+            return list;
+        ArrayList<T> alt = new ArrayList<T>(ol);
+        for (int i = 0; i < ol; i++) {
+            alt.add(list.get((ordering[i] % ol + ol) % ol));
+        }
+        return alt;
+    }
+
+    /**
+     * Given an ordering such as one produced by {@link sarong.rng.RNG#randomOrdering(int, int[])}, this finds
+     * its inverse, able to reverse the reordering and vice versa.
+     * @param ordering the ordering to find the inverse for
+     * @return the inverse of ordering
+     */
+    public static int[] invertOrdering(int[] ordering)
+    {
+        int ol = 0;
+        if(ordering == null || (ol = ordering.length) == 0) return ordering;
+        int[] next = new int[ol];
+        for (int i = 0; i < ol; i++) {
+            if(ordering[i] < 0 || ordering[i] >= ol) return next;
+            next[ordering[i]] = i;
+        }
+        return next;
+    }
+
+    /**
+     * Given an ordering such as one produced by {@link sarong.rng.RNG#randomOrdering(int, int[])}, this finds
+     * its inverse, able to reverse the reordering and vice versa. This overload doesn't allocate a new int
+     * array, and instead relies on having an int array of the same size as ordering passed to it as an
+     * additional argument.
+     * @param ordering the ordering to find the inverse for
+     * @param dest the int array to put the inverse reordering into; should have the same length as ordering
+     * @return the inverse of ordering; will have the same value as dest
+     */
+    public static int[] invertOrdering(int[] ordering, int[] dest)
+    {
+        int ol = 0;
+        if(ordering == null || dest == null || (ol = Math.min(ordering.length, dest.length)) == 0)
+            return ordering;
+        for (int i = 0; i < ol; i++) {
+            if(ordering[i] < 0 || ordering[i] >= ol) return dest;
+            dest[ordering[i]] = i;
+        }
+        return dest;
+    }
 }

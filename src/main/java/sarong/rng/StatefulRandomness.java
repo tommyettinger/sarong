@@ -3,6 +3,7 @@ package sarong.rng;
 /**
  * A simple interface for RandomnessSources that have the additional property of a state that can be re-set.
  * Created by Tommy Ettinger on 9/15/2015.
+ * @author Tommy Ettinger
  */
 public interface StatefulRandomness extends RandomnessSource {
     /**

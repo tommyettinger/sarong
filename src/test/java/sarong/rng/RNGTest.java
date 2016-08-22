@@ -51,7 +51,7 @@ public class RNGTest {
         RNG lr = new RNG(new LightRNG(0xDADA157)),
                 pr = new RNG(new PermutedRNG(0xDADA157)),
                 xr = new RNG(new XorRNG(0xDADA157)),
-                cr = new RNG(new ChaosRNG()),
+                cr = new RNG(new IsaacRNG()),
                 lpr = new RNG(new LongPeriodRNG(0xDADA157));
         DeckRNG dr = new DeckRNG(0xDADA157);
         Random lrr = lr.asRandom(),
@@ -114,7 +114,7 @@ public class RNGTest {
         pr = new RNG(new PermutedRNG(0xDADA157));
         xr = new RNG(new XorRNG(0xDADA157));
         dr = new DeckRNG(0xDADA157);
-        cr = new RNG(new ChaosRNG());
+        cr = new RNG(new IsaacRNG());
         lpr = new RNG(new LongPeriodRNG(0xDADA157));
         lrr = lr.asRandom();
         prr = pr.asRandom();
@@ -170,7 +170,7 @@ public class RNGTest {
         pr = new RNG(new PermutedRNG(0xDADA157));
         xr = new RNG(new XorRNG(0xDADA157));
         dr = new DeckRNG(0xDADA157);
-        cr = new RNG(new ChaosRNG());
+        cr = new RNG(new IsaacRNG());
         lpr = new RNG(new LongPeriodRNG(0xDADA157));
 
         lrr = lr.asRandom();

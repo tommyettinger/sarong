@@ -46,9 +46,10 @@ package sarong.rng;
  * its relatively low period may sometimes be a detriment.
  * <br>
  * More customizations may be added in the future to the ones available currently.
+ * @author Tommy Ettinger
  */
 public class EditRNG extends StatefulRNG {
-
+    protected static final double DOUBLE_UNIT = 1.0 / (1L << 53);
     /**
      * Used to tweak the generator toward high or low values.
      */

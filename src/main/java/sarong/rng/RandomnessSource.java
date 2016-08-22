@@ -4,10 +4,11 @@ import java.io.Serializable;
 
 /**
  * This interface defines the interactions required of a random number
- * generator. It is a replacement for Java's built-in Random because for
+ * generator. It is a replacement for Java's built-in Random because of
  * improved performance.
  *
  * @author Eben Howard - http://squidpony.com - howard@squidpony.com
+ * @author Tommy Ettinger
  */
 public interface RandomnessSource extends Serializable {
 
