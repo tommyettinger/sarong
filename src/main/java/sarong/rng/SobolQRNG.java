@@ -291,7 +291,7 @@ public class SobolQRNG implements RandomnessSource {
 
         for (int i = 0; i < dimension; i++) {
             x[i] ^= direction[i][c];
-            v[i] = (int) (x[i] & 0x7fffffff);
+            v[i] = (int) (x[i] >>> 20);
         }
         count++;
         return v;
@@ -377,6 +377,14 @@ public class SobolQRNG implements RandomnessSource {
         return (int) (nextIntVector()[0] & (1L << bits) - 1);
     }
 
+    public double nextDouble() {
+        return nextVector()[0];
+    }
+
+    public double nextDouble(double max) {
+        return nextVector(max)[0];
+    }
+
     /**
      * Using this method, any algorithm that needs to efficiently generate more
      * than 32 bits of random data can interface with this randomness source.
@@ -391,7 +399,7 @@ public class SobolQRNG implements RandomnessSource {
             long[] l = nextLongVector();
             return (l[0] << 32) ^ (l[1]);
         }
-        return (nextLongVector()[0] << 32) ^ (nextLongVector()[0]);
+        return ((long)(nextIntVector()[0]) << 32) ^ (nextIntVector()[0]);
     }
 
     /**
