@@ -2,23 +2,37 @@ package sarong.rng;
 
 /**
  * Like LightRNG, but shares a lot in common with CrossHash's hashing mechanism. The name comes from its
- * similarity to the nickname for that hash, Lightning, but also to how it acts like LightRNG except with a
- * thunder-like "echo" where the state affects the result in two places, in different ways.
+ * similarity to the nickname for that hash, Lightning, but also to how the current version acts like LightRNG,
+ * sort-of, but involves a thunder-like "echo" where the earlier results are used as additional state for the
+ * next result. Why should you consider it? It appears to be the fastest RandomnessSource we have available,
+ * nearly twice the speed of LightRNG, but statistical testing shows it has likely flaws and probable
+ * patterns, like the related category of fast RNGs used by java.util.Random (linear congruential generators).
+ * For RNG usage that isn't particularly demanding statistically, this may be a good choice, but if the numbers
+ * need to be fair, particularly for random shuffles, look elsewhere (LightRNG has good speed and implements
+ * the same interfaces, for example).
  * <br>
- * It appears to be the fastest RandomnessSource we have available, but there's no way to be certain of its
- * exact period or potential flaws until a more thorough test, like TestU01, can be run on it.
+ * The tool used for testing this RNG is PractRand, http://pracrand.sourceforge.net/ > The binaries it provides
+ * don't seem to work as intended on Windows, so I built from source, generated 32MB files of random 64-bit
+ * output with various generators as "Thunder.dat", "Light.dat" and so on, then ran the executables I had
+ * built with the MS compilers, with the command line {@code RNG_test.exe stdin64 < Thunder.dat} . For most of
+ * the other generators I tried, there were no or nearly-no statistical failures it could find, but there were
+ * a significant amount of failures with ThunderRNG (though many more in earlier versions).
+ * <br>
+ * This is also a StatefulRandomness as well as a RandomnessSource, so it can be given to StatefulRNG's
+ * constructor to allow the RNG to get and set the current state.
+ * <br>
  * Created by Tommy Ettinger on 8/23/2016.
  */
 public class ThunderRNG implements StatefulRandomness, RandomnessSource {
 
-    public long state; /* The state can be seeded with any value. */
-
+    /** The state can be seeded with any value. */
+    public long state;
     /** Creates a new generator seeded using Math.random. */
     public ThunderRNG() {
         this((long) Math.floor(Math.random() * Long.MAX_VALUE));
     }
 
-    public ThunderRNG(final long seed ) {
+    public ThunderRNG( final long seed ) {
         setState(seed);
     }
 
@@ -33,7 +47,38 @@ public class ThunderRNG implements StatefulRandomness, RandomnessSource {
      */
     @Override
     public long nextLong() {
-        return (state >>> 7) * (((state += 0x9E3779B97F4A7C15L) & -28L) + 0x632BE59BD9B4E019L) + 0xD0E89D2D311E289FL;
+
+        //0x632BE59BD9B4E019L    0xD0E89D2D311E289FL        0x3195F2CDECDA700CL
+        //return (((((0x632BE59BD9B4E019L + state) >>> 7)) * (state += 0x9E3779B97F4A7C15L)) >> 5) * 0xC6BC279692B5CC83L;
+        //final long z = state; return state ^ Long.rotateLeft((z + 0xC6BC279692B5CC83L) * (state += 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58));
+        //return (state = ((state >>> 2) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
+        //return ((state << 4L) + 0xC6BC279692B5CC83L) * ((state += 0x9E3779B97F4A7C15L) >>> 5) + 0x632BE59BD9B4E019L;
+        //return ((state += 0x9E3779B97F4A7C15L) >> 5) * 0xD0E89D2D311E289FL + 0x632BE59BD9B4E019L;
+        //return 0xC6BC279692B5CC83L * (state = ((state + 0xD0E89D2D311E289FL) >> 5) * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L;
+        //return ((((state += 0x9E3779B97F4A7C15L) >> 13) * 0xD0E89D2D311E289FL) >> 9) * 0xC6BC279692B5CC83L;
+        //return (state << 13L) + ((state += 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L >> 16L);
+        //return ((state += 0x9E3779B97F4A7C15L) >> (state & 28L)) * 0xC6BC279692B5CC83L;
+        //return ((state += 0x9E3779B97F4A7C15L) >> 13) ^ ((state *= 0xD0E89D2D311E289FL) >>> 9);
+        //return ((state += 0x9E3779B97F4A7C15L) >> (state >>> 60)) * 0xD0E89D2D311E289FL;
+        //return Long.rotateRight((state += 0x9E3779B97F4A7C15L), (int)(state >>> 58)) * 0xC6BC279692B5CC83L;
+
+        //return ((state << 4L) + 0xC6BC279692B5CC83L) * ((state += 0x9E3779B97F4A7C15L) >>> 5) + 0x632BE59BD9B4E019L;
+        //return 0xD0E89D2D311E289FL * ((state += 0x9E3779B97F4A7C15L) >> 18L); //very fast
+        //return ((state *= 0x9E3779B97F4A7C15L) * (++state >>> 7));
+        //return ((((state += 0x9E3779B97F4A7C15L) >> 13) * 0xD0E89D2D311E289FL) >> 9) * 0xC6BC279692B5CC83L;
+        //return ((state += 0x9E3779B97F4A7C15L) >> 16) * 0xD0E89D2D311E289FL;
+        //return state * ((state += 0x9E3779B97F4A7C15L) >> 5) * 0xD0E89D2D311E289FL;
+        //return ((state += 0x9E3779B97F4A7C15L) >> (state >>> 60L)) * 0xD0E89D2D311E289FL;
+        //return (state * 0xD0E89D2D311E289FL) ^ (state += 0x9E3779B97F4A7C15L);
+        //return ((state >> 5) * 0xC6BC279692B5CC83L) ^ (state += 0x9E3779B97F4A7C15L);
+        //return ((state += 0x9E3779B97F4A7C15L) >>> (state >>> 60L)) * 0x632BE59BD9B4E019L; //pretty good quality
+        //return (lag ^= 0xD0E89D2D311E289FL * ((state += 0x9E3779B97F4A7C15L) >> 18L));// * 0xC6BC279692B5CC83L;
+        //return (((lag += (state += 0x9E3779B97F4A7C15L)) >>> 36) | (lag << 44)) * 2862933555777941757L + 7046029254386353087L;
+        //return (lag += ((state += 0x9E3779B97F4A7C15L) ^ (lag >>> 7)) & 0xDF5DFFDADFE8FFFFL) * 2862933555777941757L + 7046029254386353087L;
+        //return (-state >> ((state += 0x9E3779B97F4A7C15L) & 31)) * 0xC6BC279692B5CC83L;
+        //return state + ((state += 0x9E3779B97F4A7C15L) >> 18) * 0xC6BC279692B5CC83L;
+        return (state ^ ((state += 0x9E3779B97F4A7C15L) >> 18)) * 0xC6BC279692B5CC83L;
+        //return state = state * 2862933555777941757L + 7046029254386353087L;
     }
 
     public int nextInt()
@@ -67,7 +112,8 @@ public class ThunderRNG implements StatefulRandomness, RandomnessSource {
      */
     @Override
     public void setState(long state) {
-        this.state = state;
+        this.state = state + 0x9E3779B97F4A7C15L;
+        //lag = 0xD0E89D2D311E289FL * (this.state >> 18L);
     }
 
     /**
@@ -80,5 +126,23 @@ public class ThunderRNG implements StatefulRandomness, RandomnessSource {
     @Override
     public RandomnessSource copy() {
         return new ThunderRNG(state);
+    }
+
+    public static void main(String[] args)
+    {
+        ThunderRNG t = new ThunderRNG(0);
+        for (int i = 0; i < 32; i++) {
+            System.out.println(t.nextInt() + " has " + t.state);
+        }
+        System.out.println();
+        t.setState(1);
+        for (int i = 0; i < 32; i++) {
+            System.out.println(t.nextInt() + " has " + t.state);
+        }
+        System.out.println();
+        t.setState(-1);
+        for (int i = 0; i < 32; i++) {
+            System.out.println(t.nextInt() + " has " + t.state);
+        }
     }
 }

@@ -50,6 +50,9 @@ public class RNGTest {
     public static void main(String[] args)
     {
         long seed = new LightRNG().nextLong();
+
+        System.out.println("SEED IS: " + seed);
+
         LightRNG light = new LightRNG(seed);
         PermutedRNG perm = new PermutedRNG(seed);
         XorRNG xor = new XorRNG(seed);
