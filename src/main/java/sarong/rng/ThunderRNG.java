@@ -112,7 +112,7 @@ public class ThunderRNG implements StatefulRandomness, RandomnessSource {
      */
     @Override
     public void setState(long state) {
-        this.state = state + 0x9E3779B97F4A7C15L;
+        this.state = state;
         //lag = 0xD0E89D2D311E289FL * (this.state >> 18L);
     }
 
