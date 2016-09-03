@@ -123,7 +123,7 @@ public class CrossHash {
         return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (z >>> 58));
     }
 
-    public static long hash64(String[] data) {
+    public static long hash64(CharSequence[] data) {
         if (data == null)
             return 0;
         long z = 0x632BE59BD9B4E019L, result = 1L;
@@ -143,7 +143,7 @@ public class CrossHash {
         return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (z >>> 58));
     }
 
-    public static long hash64(String[]... data) {
+    public static long hash64(CharSequence[]... data) {
         if (data == null)
             return 0;
         long z = 0x632BE59BD9B4E019L, result = 1L;
@@ -265,7 +265,7 @@ public class CrossHash {
         return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (z >>> 58))) ^ (result >>> 32));
     }
 
-    public static int hash(String[] data) {
+    public static int hash(CharSequence[] data) {
         if (data == null)
             return 0;
         long z = 0x632BE59BD9B4E019L, result = 1L;
@@ -285,7 +285,7 @@ public class CrossHash {
         return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (z >>> 58))) ^ (result >>> 32));
     }
 
-    public static int hash(String[]... data) {
+    public static int hash(CharSequence[]... data) {
         if (data == null)
             return 0;
         long z = 0x632BE59BD9B4E019L, result = 1L;
@@ -403,7 +403,7 @@ public class CrossHash {
         }
 
         public int hash(Object data) {
-            return (data instanceof String) ? CrossHash.hash((String) data) : data.hashCode();
+            return (data instanceof CharSequence) ? CrossHash.hash((CharSequence) data) : data.hashCode();
         }
     }
 
@@ -414,7 +414,7 @@ public class CrossHash {
         }
 
         public int hash(Object data) {
-            return (data instanceof String[]) ? CrossHash.hash((String[]) data) : data.hashCode();
+            return (data instanceof CharSequence[]) ? CrossHash.hash((CharSequence[]) data) : data.hashCode();
         }
     }
 
@@ -429,13 +429,19 @@ public class CrossHash {
         }
     }
     public static final IHasher defaultHasher = new DefaultHasher();
-
     /**
      * A whole cluster of Lightning-like hash functions that sacrifice a small degree of speed, but can be
      * constructed with a salt value that helps obscure what hashing function is actually being used.
      * <br>
      * The salt field is not serialized, so it is important that the same salt will be given by the
      * program when the same hash results are wanted for some inputs.
+     * <br>
+     * A group of 24 static, final, pre-initialized Storm members are present in this class, each with the
+     * name of a letter in the Greek alphabet (this uses the convention on Wikipedia,
+     * https://en.wikipedia.org/wiki/Greek_alphabet#Letters , where lambda is spelled with a 'b'). The whole
+     * group of 24 pre-initialized members are also present in a static array called {@code predefined}.
+     * These can be useful when, for example, you want to get multiple hashes of a single array or String
+     * as part of cuckoo hashing or similar techniques that need multiple hashes for the same inputs.
      */
     public static class Storm implements Serializable
     {
@@ -447,7 +453,12 @@ public class CrossHash {
         {
             this(0L);
         }
-        public Storm(long alteration)
+
+        public Storm(final CharSequence alteration)
+        {
+            this(CrossHash.hash64(alteration));
+        }
+        public Storm(final long alteration)
         {
             $alt = (alteration + 0x9E3779B97F4A7C15L);
             $alt = ($alt ^ ($alt >>> 30)) * 0xBF58476D1CE4E5B9L;
@@ -456,286 +467,296 @@ public class CrossHash {
             $alt += (191 - Long.bitCount($alt));
         }
 
-        public long hash64(boolean[] data) {
+        public static final Storm alpha = new Storm("alpha"), beta = new Storm("beta"), gamma = new Storm("gamma"),
+                delta = new Storm("delta"), epsilon = new Storm("epsilon"), zeta = new Storm("zeta"),
+                eta = new Storm("eta"), theta = new Storm("theta"), iota = new Storm("iota"),
+                kappa = new Storm("kappa"), lambda = new Storm("lambda"), mu = new Storm("mu"),
+                nu = new Storm("nu"), xi = new Storm("xi"), omicron = new Storm("omicron"), pi = new Storm("pi"),
+                rho = new Storm("rho"), sigma = new Storm("sigma"), tau = new Storm("tau"),
+                upsilon = new Storm("upsilon"), phi = new Storm("phi"), chi = new Storm("chi"), psi = new Storm("psi"),
+                omega = new Storm("omega");
+        public static final Storm[] predefined = new Storm[]{alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota,
+                kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega};
+        public long hash64(final boolean[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] ? 0x9E3779B97F4A7C94L : 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] ? 0x9E3779B97F4A7C94L : 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(byte[] data) {
+        public long hash64(final byte[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(short[] data) {
+        public long hash64(final short[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(char[] data) {
+        public long hash64(final char[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(int[] data) {
+        public long hash64(final int[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(long[] data) {
+        public long hash64(final long[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(float[] data) {
+        public long hash64(final float[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (Float.floatToIntBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (Float.floatToIntBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(double[] data) {
+        public long hash64(final double[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (Double.doubleToLongBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (Double.doubleToLongBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(char[] data, int start, int end) {
+        public long hash64(final char[] data, int start, int end) {
             if (data == null || start >= end)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = start; i < end && i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = start; i < end && i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(CharSequence data) {
+        public long hash64(final CharSequence data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length(); i++) {
-                result ^= (~(result * spice) * bacon + (z += (data.charAt(i) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length();
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data.charAt(i) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58));
         }
 
-        public long hash64(char[][] data) {
+        public long hash64(final char[][] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(String[] data) {
+        public long hash64(final CharSequence[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(Iterable<String> data) {
+        public long hash64(final Iterable<String> data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L;
             for (String datum : data) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(datum) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+                result ^= (z += (hash64(datum) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public long hash64(String[]... data) {
+        public long hash64(final CharSequence[]... data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon;
+            return result ^ Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58));
         }
 
-        public int hash(boolean[] data) {
+        public int hash(final boolean[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] ? 0x9E3779B97F4A7C94L : 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] ? 0x9E3779B97F4A7C94L : 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(byte[] data) {
+        public int hash(final byte[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(short[] data) {
+        public int hash(final short[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(char[] data) {
+        public int hash(final char[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(int[] data) {
+        public int hash(final int[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
 
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(long[] data) {
+        public int hash(final long[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(float[] data) {
+        public int hash(final float[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (Float.floatToIntBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (Float.floatToIntBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(double[] data) {
+        public int hash(final double[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (Double.doubleToLongBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (Double.doubleToLongBits(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(char[] data, int start, int end) {
+        public int hash(final char[] data, int start, int end) {
             if (data == null || start >= end)
                 return 0;
 
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = start; i < end && i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = start; i < end && i < len; i++) {
+                result ^= (z += (data[i] + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(CharSequence data) {
+        public int hash(final CharSequence data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length(); i++) {
-                result ^= (~(result * spice) * bacon + (z += (data.charAt(i) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length();
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (data.charAt(i) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(char[][] data) {
+        public int hash(final char[][] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(String[] data) {
+        public int hash(final CharSequence[] data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(Iterable<String> data) {
+        public int hash(final Iterable<String> data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L;
             for (String datum : data) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(datum) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+                result ^= (z += (hash64(datum) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
-        public int hash(String[]... data) {
+        public int hash(final CharSequence[]... data) {
             if (data == null)
                 return 0;
-            long bacon = $alt, z = Long.rotateLeft(0x9E3779B97F4A7C15L, (int)(bacon & 63)), result = 0xA5A5A5A5A5A5A5A5L, spice = bacon << 1;
-            for (int i = 0; i < data.length; i++) {
-                result ^= (~(result * spice) * bacon + (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL));
+            long z = 0x632BE59BD9B4E019L, chips = $alt, result = 1L, len = data.length;
+            for (int i = 0; i < len; i++) {
+                result ^= (z += (hash64(data[i]) + 0x9E3779B97F4A7C15L) * 0xD0E89D2D311E289FL) * 0xC6BC279692B5CC83L;
             }
-            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int)(z >>> 58)) + bacon) ^ (result >>> 32));
+            return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ chips ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
 
     }

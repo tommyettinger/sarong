@@ -76,6 +76,81 @@ public class RNGTest {
                 lprr = lpr.asRandom(),
                 xnrr = xnr.asRandom(),
                 trr = tr.asRandom();
+
+        long l = 0;
+        for(int i = 0; i < 99; i++)
+        {
+            l = light.nextLong();
+            /*System.out.println("l   : " + */ binaryString(l, 0);
+            l = perm.nextLong();
+            /*System.out.println("p   : " + */ binaryString(l, 1);
+            l = xor.nextLong();
+            /*System.out.println("x   : " + */ binaryString(l, 2);
+            l = lr.nextLong();
+            /*System.out.println("LR  : " + */ binaryString(l, 3);
+            l = pr.nextLong();
+            /*System.out.println("PR  : " + */ binaryString(l, 4);
+            l = xr.nextLong();
+            /*System.out.println("XR  : " + */ binaryString(l, 5);
+            l = dr.nextLong();
+            /*System.out.println("DR  : " + */ binaryString(l, 6);
+            l = ir.nextLong();
+            /*System.out.println("IR  : " + */ binaryString(l, 11);
+            l = lpr.nextLong();
+            /*System.out.println("LPR : " + */ binaryString(l, 13);
+            l = xnr.nextLong();
+            /*System.out.println("XNR : " + */ binaryString(l, 15);
+            l = xnrr.nextLong();
+            /*System.out.println("XNRR: " + */ binaryString(l, 16);
+            l = sbl.nextLong();
+            /*System.out.println("SBL : " + */ binaryString(l, 17);
+            l = thunder.nextLong();
+            /*System.out.println("T   : " + */ binaryString(l, 18);
+            l = tr.nextLong();
+            /*System.out.println("TR  : " + */ binaryString(l, 19);
+            l = trr.nextLong();
+            /*System.out.println("TRR : " + */ binaryString(l, 20);
+            //System.out.println();
+
+            /*l = lrr.nextLong();
+            System.out.println("LRR : " + binaryString(l, 6));
+            l = prr.nextLong();
+            System.out.println("PRR : " + binaryString(l, 7));
+            l = xrr.nextLong();
+            System.out.println("XRR : " + binaryString(l, 8));
+            */
+        }
+        for(int k = 0; k < 21; k++) {
+            for (int i = 63; i >= 0; i--) {
+                System.out.print(String.format("%02d ", lbits[k][i]));
+            }
+            System.out.println(kindNames[k]);
+        }
+
+        for(int k = 0; k < 21; k++) {
+            System.out.println(kindNames[k] + " : ");
+            System.out.println(lbitsTotal[k]);
+            System.out.println(counters[k]);
+        }
+
+
+        light = new LightRNG(seed);
+        perm = new PermutedRNG(seed);
+        xor = new XorRNG(seed);
+
+        lr = new RNG(new LightRNG(seed));
+        pr = new RNG(new PermutedRNG(seed));
+        xr = new RNG(new XorRNG(seed));
+        dr = new DeckRNG(seed);
+        ir = new RNG(new IsaacRNG());
+        lpr = new RNG(new LongPeriodRNG(seed));
+        lrr = lr.asRandom();
+        prr = pr.asRandom();
+        xrr = xr.asRandom();
+        thunder = new ThunderRNG(seed);
+        tr = new StatefulRNG(new ThunderRNG(seed));
+        trr = tr.asRandom();
+
         int c = 0;
         for(int i = 0; i < 99; i++)
         {
@@ -132,79 +207,6 @@ public class RNGTest {
 
         for(int k = 0; k < 21; k++) {
             System.out.println(ibitsTotal[k]);
-        }
-
-        light = new LightRNG(seed);
-        perm = new PermutedRNG(seed);
-        xor = new XorRNG(seed);
-
-        lr = new RNG(new LightRNG(seed));
-        pr = new RNG(new PermutedRNG(seed));
-        xr = new RNG(new XorRNG(seed));
-        dr = new DeckRNG(seed);
-        ir = new RNG(new IsaacRNG());
-        lpr = new RNG(new LongPeriodRNG(seed));
-        lrr = lr.asRandom();
-        prr = pr.asRandom();
-        xrr = xr.asRandom();
-        thunder = new ThunderRNG(seed);
-        tr = new StatefulRNG(new ThunderRNG(seed));
-        trr = tr.asRandom();
-
-        long l = 0;
-        for(int i = 0; i < 99; i++)
-        {
-            l = light.nextLong();
-            /*System.out.println("l   : " + */ binaryString(l, 0);
-            l = perm.nextLong();
-            /*System.out.println("p   : " + */ binaryString(l, 1);
-            l = xor.nextLong();
-            /*System.out.println("x   : " + */ binaryString(l, 2);
-            l = lr.nextLong();
-            /*System.out.println("LR  : " + */ binaryString(l, 3);
-            l = pr.nextLong();
-            /*System.out.println("PR  : " + */ binaryString(l, 4);
-            l = xr.nextLong();
-            /*System.out.println("XR  : " + */ binaryString(l, 5);
-            l = dr.nextLong();
-            /*System.out.println("DR  : " + */ binaryString(l, 6);
-            l = ir.nextLong();
-            /*System.out.println("IR  : " + */ binaryString(l, 11);
-            l = lpr.nextLong();
-            /*System.out.println("LPR : " + */ binaryString(l, 13);
-            l = xnr.nextLong();
-            /*System.out.println("XNR : " + */ binaryString(l, 15);
-            l = xnrr.nextLong();
-            /*System.out.println("XNRR: " + */ binaryString(l, 16);
-            l = sbl.nextLong();
-            /*System.out.println("SBL : " + */ binaryString(l, 17);
-            l = thunder.nextLong();
-            /*System.out.println("T   : " + */ binaryString(l, 18);
-            l = tr.nextLong();
-            /*System.out.println("TR  : " + */ binaryString(l, 19);
-            l = trr.nextLong();
-            /*System.out.println("TRR : " + */ binaryString(l, 20);
-            //System.out.println();
-
-            /*l = lrr.nextLong();
-            System.out.println("LRR : " + binaryString(l, 6));
-            l = prr.nextLong();
-            System.out.println("PRR : " + binaryString(l, 7));
-            l = xrr.nextLong();
-            System.out.println("XRR : " + binaryString(l, 8));
-            */
-        }
-        for(int k = 0; k < 21; k++) {
-            for (int i = 63; i >= 0; i--) {
-                System.out.print(String.format("%02d ", lbits[k][i]));
-            }
-            System.out.println(kindNames[k]);
-        }
-
-        for(int k = 0; k < 21; k++) {
-            System.out.println(kindNames[k] + " : ");
-            System.out.println(lbitsTotal[k]);
-            System.out.println(counters[k]);
         }
 
         light = new LightRNG(seed);
