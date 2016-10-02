@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 /**
  * A simple interface for RandomnessSources that have the additional property of a state that can be re-set.

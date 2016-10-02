@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 import sarong.util.CrossHash;
 import sarong.util.StringKit;

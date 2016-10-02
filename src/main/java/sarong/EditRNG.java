@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 /**
  * A subclass of StatefulRNG (and thus RNG) that allows customizing many parts of the random number generation.

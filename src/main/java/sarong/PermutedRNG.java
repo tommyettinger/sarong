@@ -22,7 +22,7 @@
  *
  *     http://www.pcg-random.org
  */
-package sarong.rng;
+package sarong;
 
 import sarong.util.StringKit;
 

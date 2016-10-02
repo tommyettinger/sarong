@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 import java.util.Arrays;
 

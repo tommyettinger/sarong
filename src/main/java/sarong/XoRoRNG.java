@@ -5,7 +5,7 @@ and related and neighboring rights to this software to the public domain
 worldwide. This software is distributed without any warranty.
 
 See <http://creativecommons.org/publicdomain/zero/1.0/>. */
-package sarong.rng;
+package sarong;
 
 import sarong.util.StringKit;
 

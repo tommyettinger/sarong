@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;

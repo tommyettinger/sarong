@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 import sarong.util.CrossHash;
 
@@ -496,8 +496,10 @@ public class RNG implements Serializable {
     }
 
     /**
-     * Gets a random subrange of the non-negative ints from start (inclusive) to end (exclusive), using count elements.
-     * May return an empty array if the parameters are invalid (end is less than/equal to start, or start is negative).
+     * Gets a random shuffle of the subrange of non-negative ints from start (inclusive) to end (exclusive), using count
+     * elements. May return an empty array if the parameters are invalid (end is less than/equal to start, or start is
+     * negative). Normally, start and end should have a difference that is larger than count, and the actual values
+     * returned by this will probably not be in consecutive order, but will never repeat the same value twice.
      *
      * @param start the start of the range of numbers to potentially use (inclusive)
      * @param end   the end of the range of numbers to potentially use (exclusive)

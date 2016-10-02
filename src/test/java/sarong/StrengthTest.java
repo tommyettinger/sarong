@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 /**
  * Created by Tommy Ettinger on 9/1/2016.

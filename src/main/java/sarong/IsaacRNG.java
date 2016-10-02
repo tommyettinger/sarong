@@ -10,7 +10,7 @@
  ------------------------------------------------------------------------------
  */
 
-package sarong.rng;
+package sarong;
 
 import sarong.util.CrossHash;
 

@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 
 import sarong.util.StringKit;
 
@@ -141,7 +141,6 @@ public class ThunderRNG implements RandomnessSource, Serializable {
         //return state ^ ((state += jumble) ^ (jumble += 0x9E3779B97F4A7C15L));
         //0xBC6EF372FEB7FC6AL -> 0xBC6EF375FEB7FDAL
 
-
         //return state ^ 0xC6BC279692B5CC83L * ((state += jumble & (jumble += 0xBC6EF372FEB7FC6AL)) >> 16);
 
         //Best Known
@@ -154,6 +153,7 @@ public class ThunderRNG implements RandomnessSource, Serializable {
         //return (state >> ((state += 0xC6BC279692B5CC83L) >>> 60)) * 0x9E3779B97F4A7C15L;
         //return (state += (state >>> 12) * 0xC6BC279692B5CC83L) * 0x9E3779B97F4A7C15L;
         //return (state += ((jumble += 0xD0E89D2D311E289FL) >> 28) * 0xC6BC279692B5CC83L) * 0x9E3779B97F4A7C15L;
+        //return (0x9E3779B97F4A7C15L * ((state += jumble * ((jumble += 0xAB79B96DCD7FE75EL) >> 20)) >> 12));
 
         //return state = state * 2862933555777941757L + 7046029254386353087L; // LCG for comparison
     }
@@ -239,7 +239,7 @@ public class ThunderRNG implements RandomnessSource, Serializable {
         return "ThunderRNG with state parts A=0x" + StringKit.hex(state) + "L, B=0x"  + StringKit.hex(jumble)+ 'L';
     }
 
-    /*
+
     public static void main(String[] args)
     {
         ThunderRNG t = new ThunderRNG(0xD0E89D2D311E289EL);
@@ -247,7 +247,7 @@ public class ThunderRNG implements RandomnessSource, Serializable {
             System.out.println(StringKit.bin(t.state) + " and " + StringKit.bin(t.jumble) + " produce " + StringKit.bin(t.nextLong()));
         }
     }
-    */
+
 
     /*
     public static void main(String[] args)

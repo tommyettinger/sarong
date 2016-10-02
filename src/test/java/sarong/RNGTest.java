@@ -1,4 +1,4 @@
-package sarong.rng;
+package sarong;
 import java.math.BigInteger;
 import java.util.Random;
 
