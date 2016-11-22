@@ -16,12 +16,11 @@ import sarong.util.CrossHash;
 
 /**
  * This is a port of the public domain Isaac64 (cryptographic) random number generator to Java.
- * It is a RandomnessSource here, so it should generally be used to make an RNG, which has more features.
- * IsaacRNG is slower than the non-cryptographic RNGs in Salp, but much faster than cryptographic RNGs
- * that need SecureRandom, and it's compatible with GWT and Android to boot!
+ * It is a RandomnessSource here, so it should generally be used to make an RNG, which has more
+ * features. IsaacRNG is slower than the non-cryptographic RNGs in Sarong, but much faster than
+ * cryptographic RNGs that need SecureRandom, plus it's compatible with GWT and Android!
  * Created by Tommy Ettinger on 8/1/2016.
  */
-
 public class IsaacRNG implements RandomnessSource {
     static final int SIZEL = 8;              /* log of size of results[] and mem[] */
     static final int SIZE = 256;               /* size of results[] and mem[] */

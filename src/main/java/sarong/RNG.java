@@ -35,17 +35,6 @@ public class RNG implements Serializable {
     /**
      * Default constructor; uses SplitMix64, which is of high quality, but low period (which rarely matters for games),
      * and has good speed, tiny state size, and excellent 64-bit number generation.
-     * <br>
-     * Compatibility note: previous versions of SquidLib used Mersenne Twister by default. Due to the incompatibility
-     * of the threads used by this Mersenne Twister implementation with GWT and HTML5 applications, the randomness
-     * algorithm has been changed to a faster, more compatible algorithm, though it does suffer from a much lower
-     * period. If you need drastically larger periods than 2^64, you can pass a LongPeriodRNG (or MersenneTwister on
-     * targets other than HTML) object to the constructor that takes a RandomnessSource. If you don't know what the
-     * period of a PRNG is, you probably don't need to worry about it; it's mainly relevant to heavily multi-threaded
-     * applications anyway. The addition of LongPeriodRNG on March 21, 2016 should help to take the part of a fast,
-     * large-period RNG, which MersenneTwister is unable to act as on GWT. The default may change again some time after
-     * May 1, 2016, now that we have XoRoRNG, which is approximately as fast as LightRNG and has a substantially better
-     * period (pow(2, 128) - 1).
      */
     public RNG() {
         this(new LightRNG());
@@ -61,7 +50,7 @@ public class RNG implements Serializable {
 
     /**
      * String-seeded constructor; uses a platform-independent hash of the String (it does not use String.hashCode) as a
-     * seed for LightRNG, which is of high quality, but low period (which rarely matters for games), and has good speed,
+     * seed for LightRNG, which has high quality, low period (which rarely matters for games), good speed,
      * tiny state size, and excellent 64-bit number generation.
      */
     public RNG(String seedString) {
@@ -72,7 +61,7 @@ public class RNG implements Serializable {
      * Uses the provided source of randomness for all calculations. This
      * constructor should be used if an alternate RandomnessSource other than LightRNG is desirable.
      *
-     * @param random the source of pseudo-randomness, such as a MersenneTwister or SobolQRNG object
+     * @param random the source of pseudo-randomness, such as an IsaacRNG or ThunderRNG object
      */
     public RNG(RandomnessSource random) {
         this.random = random;
