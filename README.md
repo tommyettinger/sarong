@@ -77,7 +77,7 @@ should only use Falcon if you either only use 64-bit results or only give 32-bit
 ## Installation
 This project has no run-time dependencies other than Java 6 or higher and should work on GWT. To add
 sarong as a dependency for Maven, Gradle, or some other JVM build tool, you can use
-[the info on Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.tommyettinger%7Csarong%7C0.4%7Cjar)
+[the info on Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.tommyettinger%7Csarong%7C0.4.1%7Cjar)
 or, for the easy cases of Maven and Gradle:
 
 Maven dependency, latest stable:
@@ -86,14 +86,14 @@ Maven dependency, latest stable:
 <dependency>
     <groupId>com.github.tommyettinger</groupId>
     <artifactId>sarong</artifactId>
-    <version>0.4</version>
+    <version>0.4.1</version>
 </dependency>
 ```
 
 Gradle dependency, latest stable:
 
 ```groovy
-compile 'com.github.tommyettinger:sarong:0.4'
+compile 'com.github.tommyettinger:sarong:0.4.1'
 ```
 
 I hope this can be useful!
