@@ -3,10 +3,7 @@ package sarong;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * An RNG variant that has 16 possible grades of value it can produce and shuffles them like a deck of cards.
@@ -415,5 +412,29 @@ public class DeckRNG extends StatefulRNG {
 
     public void setStep(int step) {
         this.step = step;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        DeckRNG deckRNG = (DeckRNG) o;
+
+        if (step != deckRNG.step) return false;
+        if (lastShuffledState != deckRNG.lastShuffledState) return false;
+        if (!Arrays.equals(baseDeck, deckRNG.baseDeck)) return false;
+        return Arrays.equals(deck, deckRNG.deck);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + step;
+        result = 31 * result + (int) (lastShuffledState ^ (lastShuffledState >>> 32));
+        result = 31 * result + CrossHash.hash(baseDeck);
+        result = 31 * result + CrossHash.hash(deck);
+        return result;
     }
 }

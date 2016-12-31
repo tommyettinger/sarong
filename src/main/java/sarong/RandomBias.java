@@ -641,4 +641,23 @@ public class RandomBias implements Serializable {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RandomBias that = (RandomBias) o;
+
+        if (distribution != that.distribution) return false;
+        if (!biases.equals(that.biases)) return false;
+        return rng.equals(that.rng);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = biases.hashCode();
+        result = 31 * result + rng.hashCode();
+        result = 31 * result + distribution;
+        return result;
+    }
 }

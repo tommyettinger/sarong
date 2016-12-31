@@ -76,4 +76,6 @@ public class StatefulRNG extends RNG {
     public String toString() {
         return "StatefulRNG{" + Long.toHexString(((StatefulRandomness) random).getState()) + "}";
     }
+
+
 }

@@ -16,6 +16,8 @@
  */
 package sarong;
 
+import sarong.util.CrossHash;
+
 import java.util.Arrays;
 
 /**
@@ -414,5 +416,27 @@ public class SobolQRNG implements RandomnessSource {
         SobolQRNG next = new SobolQRNG(dimension);
         next.count = count;
         return next;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SobolQRNG sobolQRNG = (SobolQRNG) o;
+
+        if (dimension != sobolQRNG.dimension) return false;
+        if (count != sobolQRNG.count) return false;
+        if (!Arrays.deepEquals(direction, sobolQRNG.direction)) return false;
+        return Arrays.equals(x, sobolQRNG.x);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dimension;
+        result = 31 * result + count;
+        result = 31 * result + CrossHash.hash(direction);
+        result = 31 * result + CrossHash.hash(x);
+        return result;
     }
 }

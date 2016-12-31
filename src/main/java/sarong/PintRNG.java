@@ -41,7 +41,7 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
         this((int)((Math.random() - 0.5) * 4.294967296E9));
     }
 
-    public PintRNG(final long seed ) {
+    public PintRNG( final long seed ) {
         setState(seed);
     }
 
@@ -60,17 +60,15 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
      * @return any int, all 32 bits are random
      */
     public int nextInt() {
-        //return stateA += (stateB ^= (stateB + 0x62E2AC0D + 0x85157AF5 * stateA));
-        //return stateB += ((stateB ^ (stateA += 0x62E2AC0D)) >>> 8) * 0x9E3779B9;
-
         // increment  = 2891336453;
         // multiplier = 747796405;
 
-        int p = state;
+//        int p = state;
+//        p ^= p >>> (4 + (p >>> 28));
+//        state = state * 0x2C9277B5 + 0xAC564B05;
+        int p = (state += 0x9E3779B9);
         p ^= p >>> (4 + (p >>> 28));
-        p *= 277803737;
-        state = state * 0x2C9277B5 + 0xAC564B05;
-        return p ^ (p >>> 22);
+        return ((p *= 277803737) >>> 22) ^ p;
     }
 
     /**
@@ -80,26 +78,11 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
      */
     @Override
     public long nextLong() {
-        int p = state;
+        int p = (state += 0x9E3779B9);
         p ^= p >>> (4 + (p >>> 28));
-        p *= 277803737;
-        state = state * 0x2C9277B5 + 0xAC564B05;
-        p ^= state ^ (p >>> 22);
-        p ^= p >>> (4 + (p >>> 28));
-        p *= 277803737;
-        return p ^ (p >>> 22);
-
-        //return 0x100000000L * nextInt() | nextInt();
-        /*
-        int p = stateA, q = stateB;
-        p ^= p >>> (4 + (p >>> 28));
-        p *= 277803737;
-        stateA = stateA * 0x2C9277B5 + 0xAC564B05;
+        int q = (state += 0x9E3779B9);
         q ^= q >>> (4 + (q >>> 28));
-        q *= 277803737;
-        stateB = stateB * 0x2C9277B5 + (p|1);
-        return 0x100000000L * (p ^ (p >>> 22)) | (q ^ (q >>> 22));
-        */
+        return (((p *= 277803737) >>> 22) ^ p) | ((((q *= 277803737) >>> 22) ^ q) & 0xffffffffL) << 32;
     }
 
     /**
@@ -115,7 +98,7 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
     }
 
     /**
-     * Exclusive on the upper bound.  The lower bound is 0. Uses a technique made known to me by Daniel Lemire.
+     * Exclusive on the upper bound.  The lower bound is 0.
      * <br>
      * Credit goes to Daniel Lemire, http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
      * @param bound the upper bound; should be positive
@@ -186,12 +169,16 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
 
 
     /**
-     * Sets the current state of this generator (an int) by XOR-ing the upper and lower halves of seed into one int.
+     * Sets the current state of this generator (an int) using only the least-significant 32 bits of seed (by casting
+     * a mask of those bits in seed to int, which helps ensure that a full 32 bits of state are possible). Giving
+     * int seeds should set the seed to an identical int; long seeds will lose any information in higher bits (including
+     * the sign, so 0xFFFFFFFF00000000L, which is a negative long, would be treated as 0 since only the 0x00000000 part
+     * at the end is actually used).
      * @param seed the seed to use for this PintRNG, as if it was constructed with this seed.
      */
     @Override
     public void setState( final long seed ) {
-        state = (int)(seed>>>32 ^ seed);
+        state = (int)(seed & 0xFFFFFFFFL);
     }
     /**
      * Gets the current state of this generator.
@@ -221,5 +208,29 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
     @Override
     public int hashCode() {
         return 0x632BE5AB * state;
+    }
+    /**
+     * Advances or rolls back the PintRNG's state without actually generating each number. Skip forward
+     * or backward a number of steps specified by advance, where a step is equal to one call to nextInt(),
+     * and returns the random number produced at that step (you can get the state with {@link #getState()}).
+     * @param advance Number of future generations to skip past. Can be negative to backtrack.
+     * @return the int that would be generated after generating advance random numbers.
+     */
+    public int skip(final int advance)
+    {
+        int p = (state += 0x9E3779B9 * advance);
+        p ^= p >>> (4 + (p >>> 28));
+        return ((p *= 277803737) >>> 22) ^ p;
+    }
+    public static int determine(int state)
+    {
+        state ^= state >>> (4 + (state >>> 28));
+        return ((state *= 277803737) >>> 22) ^ state;
+    }
+
+    public static int determineBounded(int state, final int bound)
+    {
+        state ^= state >>> (4 + (state >>> 28));
+        return (int)((bound * ((((state *= 277803737) >>> 22) ^ state) & 0x7FFFFFFFL)) >>> 31);
     }
 }

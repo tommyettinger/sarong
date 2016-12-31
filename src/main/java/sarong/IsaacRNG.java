@@ -14,6 +14,8 @@ package sarong;
 
 import sarong.util.CrossHash;
 
+import java.util.Arrays;
+
 /**
  * This is a port of the public domain Isaac64 (cryptographic) random number generator to Java.
  * It is a RandomnessSource here, so it should generally be used to make an RNG, which has more
@@ -263,5 +265,33 @@ public class IsaacRNG implements RandomnessSource {
     @Override
     public RandomnessSource copy() {
         return new IsaacRNG(results);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IsaacRNG isaacRNG = (IsaacRNG) o;
+
+        if (count != isaacRNG.count) return false;
+        if (a != isaacRNG.a) return false;
+        if (b != isaacRNG.b) return false;
+        if (c != isaacRNG.c) return false;
+        if (!Arrays.equals(results, isaacRNG.results)) return false;
+        return Arrays.equals(mem, isaacRNG.mem);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 *
+                (31 *
+                        (31 *
+                                (31 *
+                                        (31 * count + CrossHash.hash(results)
+                                        ) + CrossHash.hash(mem)
+                                ) + (int) (a ^ (a >>> 32))
+                        ) + (int) (b ^ (b >>> 32))
+                ) + (int) (c ^ (c >>> 32));
     }
 }

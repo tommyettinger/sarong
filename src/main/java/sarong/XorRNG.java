@@ -138,6 +138,24 @@ public class XorRNG implements RandomnessSource {
         return "XorRNG with state hash 0x" + StringKit.hexHash(state0, state1) + 'L';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        XorRNG xorRNG = (XorRNG) o;
+
+        if (state0 != xorRNG.state0) return false;
+        return state1 == xorRNG.state1;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (state0 ^ (state0 >>> 32));
+        result = 31 * result + (int) (state1 ^ (state1 >>> 32));
+        return result;
+    }
+
     /**
      * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
      * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to

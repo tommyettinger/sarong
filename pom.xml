@@ -6,7 +6,7 @@
 
     <groupId>com.github.tommyettinger</groupId>
     <artifactId>sarong</artifactId>
-    <version>0.4</version>
+    <version>0.4.1</version>
     <modules>
         <!--<module>sarong-benchmarks</module>-->
     </modules>

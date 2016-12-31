@@ -4,8 +4,8 @@ package sarong;
  * Created by Tommy Ettinger on 9/1/2016.
  */
 public class StrengthTest {
-    public static void main(String[] args)
-    {
+    //@Test
+    public void testThunder() {
         ThunderRNG random = new ThunderRNG(); //0xABC7890456123DEFL
         long partA = random.getStatePartA(), partB = random.getStatePartB();
         System.out.println(partA + "," + partB);
@@ -24,7 +24,7 @@ public class StrengthTest {
         //System.out.println("Out of 4,294,967,296 random numbers,");
         System.out.println("each bit changes this often relative to 0.5 probability...");
         for (int i = 0; i < 64; i++) {
-            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double)0x10000000);
+            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double) 0x10000000);
         }
 
         random = new ThunderRNG(++partA, partB);
@@ -43,7 +43,7 @@ public class StrengthTest {
         //System.out.println("Out of 4,294,967,296 random numbers,");
         System.out.println("each bit changes this often relative to 0.5 probability...");
         for (int i = 0; i < 64; i++) {
-            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double)0x10000000);
+            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double) 0x10000000);
         }
     }
 }

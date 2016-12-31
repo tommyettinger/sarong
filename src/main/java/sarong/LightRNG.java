@@ -128,12 +128,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
      */
     public int nextInt(final int bound) {
         if (bound <= 0) return 0;
-        int threshold = (0x7fffffff - bound + 1) % bound;
-        for (; ; ) {
-            int bits = (int) (nextLong() & 0x7fffffff);
-            if (bits >= threshold)
-                return bits % bound;
-        }
+        return (int)((bound * (nextLong() & 0x7FFFFFFFL)) >> 31);
     }
 
     /**
@@ -212,7 +207,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
      * @return a random true or false value.
      */
     public boolean nextBoolean() {
-        return (nextLong() & 1) != 0L;
+        return nextLong() < 0L;
     }
 
     /**
@@ -250,14 +245,18 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
     }
 
     /**
-     * Advances or rolls back the LightRNG's state without actually generating numbers. Skip forward
-     * or backward a number of steps specified by advance, where a step is equal to one call to nextInt().
+     * Advances or rolls back the LightRNG's state without actually generating each number. Skip forward
+     * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
+     * and returns the random number produced at that step (you can get the state with {@link #getState()}).
      *
-     * @param advance Number of future generations to skip past. Can be negative to backtrack.
-     * @return the state after skipping.
+     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most recent generated number
+     * @return the random long generated after skipping advance numbers
      */
     public long skip(long advance) {
-        return state += 0x9E3779B97F4A7C15L * advance;
+        long z = (state += 0x9E3779B97F4A7C15L * advance);
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return z ^ (z >>> 31);
     }
 
 
@@ -266,4 +265,34 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
         return "LightRNG with state 0x" + StringKit.hex(state) + 'L';
     }
 
+    public static long determine(long state)
+    {
+        state += 0x9E3779B97F4A7C15L;
+        state = (state ^ (state >>> 30)) * 0xBF58476D1CE4E5B9L;
+        state = (state ^ (state >>> 27)) * 0x94D049BB133111EBL;
+        return state ^ (state >>> 31);
+    }
+
+    public static int determineBounded(long state, final int bound)
+    {
+        state += 0x9E3779B97F4A7C15L;
+        state = (state ^ (state >>> 30)) * 0xBF58476D1CE4E5B9L;
+        state = (state ^ (state >>> 27)) * 0x94D049BB133111EBL;
+        return (int)((bound * ((state ^ (state >>> 31)) & 0x7FFFFFFFL)) >>> 31);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LightRNG lightRNG = (LightRNG) o;
+
+        return state == lightRNG.state;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (state ^ (state >>> 32));
+    }
 }

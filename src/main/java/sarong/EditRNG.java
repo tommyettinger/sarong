@@ -378,4 +378,27 @@ public class EditRNG extends StatefulRNG {
         next.rawLatest = rawLatest;
         return next;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        EditRNG editRNG = (EditRNG) o;
+
+        if (Double.compare(editRNG.expected, expected) != 0) return false;
+        return Double.compare(editRNG.centrality, centrality) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        long temp;
+        temp = Double.doubleToLongBits(expected);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(centrality);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
 }

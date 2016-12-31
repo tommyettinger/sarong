@@ -3,17 +3,24 @@ package sarong;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+import java.util.Arrays;
+
 /**
- * An RNG that has a drastically longer period than the other generators in SquidLib, other than MersenneTwister,
- * without sacrificing speed or HTML target compatibility. If you don't already know what the period of an RNG is, this
- * probably isn't needed for your purposes, or many purposes in games at all. It is primarily meant for applications
- * that need to generate massive amounts of random numbers, more than pow(2, 64) (18,446,744,073,709,551,616), without
- * repeating sequences of generated numbers. An RNG's period refers to the number of numbers it generates given a single
+ * An RNG that has a drastically longer period than the other generators in Sarong, other than IsaacRNG, without
+ * sacrificing speed or HTML target compatibility. If you don't already know what the period of an RNG is, this probably
+ * isn't needed for your purposes, or many purposes in games at all. It is primarily meant for applications that need to
+ * generate massive amounts of random numbers, more than pow(2, 64) (18,446,744,073,709,551,616), without repeating
+ * the sequence of generated numbers. An RNG's period refers to the number of numbers it generates given a single
  * seed before the sequence repeats from the beginning. The period of this class is pow(2, 1024) minus 1
  * (179,769,313,486,231,590,772,930,519,078,902,473,361,797,697,894,230,657,273,430,081,157,732,675,805,500,963,132,708,
  * 477,322,407,536,021,120,113,879,871,393,357,658,789,768,814,416,622,492,847,430,639,474,124,377,767,893,424,865,485,
  * 276,302,219,601,246,094,119,453,082,952,085,005,768,838,150,682,342,462,881,473,913,110,540,827,237,163,350,510,684,
- * 586,298,239,947,245,938,479,716,304,835,356,329,624,224,137,215).
+ * 586,298,239,947,245,938,479,716,304,835,356,329,624,224,137,215). While that number is preposterously large, there's
+ * always some application that seems to need more; if you really need more than that, look into CMWC generators, which
+ * can have even larger state and also even larger periods. There isn't one of those in Sarong currently, though there
+ * is a possibility of one being added in the future.
+ * <br>
  * This class may be particularly useful in conjunction with the shuffle method of RNG; the period of an RNG determines
  * how many possible "shuffles", a.k.a orderings or permutations, can be produced over all calls to a permuting method
  * like shuffle. A LightRNG-backed RNG with a period of pow(2, 64) will only be able to produce all possible "shuffles"
@@ -27,9 +34,9 @@ import sarong.util.StringKit;
  * Ported from CC0-licensed C code by Sebastiano Vigna, at http://xorshift.di.unimi.it/xorshift1024star.c
  * @author Tommy Ettinger
  */
-public class LongPeriodRNG implements RandomnessSource {
+public class LongPeriodRNG implements RandomnessSource, Serializable {
 
-    public long[] state = new long[16];
+    public final long[] state = new long[16];
     public int choice;
     private static final long serialVersionUID = 163524490381383244L;
     private static final long jumpTable[] = {0x84242f96eca9c41dL,
@@ -88,7 +95,7 @@ public class LongPeriodRNG implements RandomnessSource {
      * @param seed a 64-bit seed; can be any value.
      */
     public void reseed(long seed) {
-        state = init(seed);
+        init(seed);
         choice = (int) (seed & 15);
     }
 
@@ -117,37 +124,21 @@ public class LongPeriodRNG implements RandomnessSource {
      * @param seed a String seed; can be any value, but produces the best results if it at least 16 characters long
      */
     public void reseed(String seed) {
-        if (seed == null) {
-            state = new long[]{0x0101, 0x1212, 0x2323, 0x3434, 0x4545, 0x5656, 0x6767, 0x7878,
-                    0x8989, 0x9A9A, 0xABAB, 0xBCBC, 0xCDCD, 0xDEDE, 0xEFEF, 0xF0F0};
+        int len;
+        if (seed == null || (len = seed.length()) == 0) {
+            init(0x632BE59BD9B4E019L);
             choice = 0;
         } else {
-            int len = seed.length();
             if (len < 16) {
-                long h = CrossHash.hash64(seed);
-                state = init(h);
+                long h = CrossHash.Falcon.hash64(seed);
+                init(h);
                 choice = (int) (h & 15);
             } else {
                 char[] chars = seed.toCharArray();
-                state = new long[]
-                        {
-                                validate(CrossHash.hash64(chars)),
-                                validate(CrossHash.hash64(chars, len / 16, len)),
-                                validate(CrossHash.hash64(chars, 2 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 3 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 4 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 5 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 6 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 7 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 8 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 9 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 10 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 11 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 12 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 13 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 14 * len / 16, len)),
-                                validate(CrossHash.hash64(chars, 15 * len / 16, len)),
-                        };
+                state[0] = validate(CrossHash.Falcon.hash64(chars));
+                for (int i = 0; i < 16; i++) {
+                    state[i] = validate(CrossHash.Falcon.hash64(chars, i * len >> 4, len));
+                }
                 choice = (int) (state[0] & 15);
             }
         }
@@ -178,18 +169,19 @@ public class LongPeriodRNG implements RandomnessSource {
      * @param seed a long array seed; can have any number of elements, though 16 is ideal
      */
     public void reseed(long[] seed) {
-        if (seed == null || seed.length == 0) {
-            state = new long[]{0x0101, 0x1212, 0x2323, 0x3434, 0x4545, 0x5656, 0x6767, 0x7878,
-                    0x8989, 0x9A9A, 0xABAB, 0xBCBC, 0xCDCD, 0xDEDE, 0xEFEF, 0xF0F0};
+        int len;
+        if (seed == null || (len = seed.length) == 0) {
+            init(0x632BE59BD9B4E019L);
             choice = 0;
-        } else if (seed.length < 16) {
-            for (int i = 0, s = 0; i < 16; i++, s = (s + 1) % seed.length) {
+        } else if (len < 16) {
+            for (int i = 0, s = 0; i < 16; i++, s++) {
                 state[i] = seed[s];
                 if (state[i] == 0) state[i]++;
+                if(s == len) s = 0;
             }
             choice = (int) (state[0] & 15);
         } else {
-            for (int i = 0, s = 0; s < seed.length; s++, i = (i + 1) % 16) {
+            for (int i = 0, s = 0; s < len; s++, i = (i + 1) & 15) {
                 state[i] ^= seed[s];
                 if (state[i] == 0) state[i]++;
             }
@@ -202,16 +194,17 @@ public class LongPeriodRNG implements RandomnessSource {
         else return seed;
     }
 
-    private static long[] init(long seed) {
-        long[] state = new long[16];
+    private void init(long seed) {
+        long z;
+        seed ^= seed >>> (5 + (seed >>> 59));
+        seed = ((seed *= 0xAEF17502108EF2D9L) >>> 43) ^ seed;
         for (int i = 0; i < 16; i++) {
-            long z = (seed += 0x9E3779B97F4A7C15L);
+            z = (seed += 0x9E3779B97F4A7C15L);
             z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
             z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
             state[i] = z ^ (z >>> 31);
             if (state[i] == 0) state[i]++;
         }
-        return state;
     }
 
     public LongPeriodRNG(LongPeriodRNG other) {
@@ -279,7 +272,7 @@ public class LongPeriodRNG implements RandomnessSource {
     }
 
     /**
-     * Creates many LongPeriodRNG objects in an array, where each will generate a sequence of 2 to the 512 numbers that
+     * Creates many LongPeriodRNG objects in an array, where each will generate a sequence of pow(2, 512) numbers that
      * will not overlap with other sequences in the array. The number of items in the array is specified by count.
      *
      * @param count the number of LongPeriodRNG objects to generate in the array.
@@ -289,10 +282,12 @@ public class LongPeriodRNG implements RandomnessSource {
         if (count < 1) count = 1;
         LongPeriodRNG origin = new LongPeriodRNG();
         LongPeriodRNG[] values = new LongPeriodRNG[count];
-        for (int i = 0; i < count; i++) {
+        for (int i = count - 1; i > 0; i--) {
             values[i] = new LongPeriodRNG(origin);
             origin.jump();
         }
+        values[0] = origin;
+
         return values;
     }
 
@@ -312,10 +307,11 @@ public class LongPeriodRNG implements RandomnessSource {
         if (count < 1) count = 1;
         LongPeriodRNG origin = new LongPeriodRNG(seed);
         LongPeriodRNG[] values = new LongPeriodRNG[count];
-        for (int i = 0; i < count; i++) {
+        for (int i = count - 1; i > 0; i--) {
             values[i] = new LongPeriodRNG(origin);
             origin.jump();
         }
+        values[0] = origin;
         return values;
     }
 
@@ -335,10 +331,11 @@ public class LongPeriodRNG implements RandomnessSource {
         if (count < 1) count = 1;
         LongPeriodRNG origin = new LongPeriodRNG(seed);
         LongPeriodRNG[] values = new LongPeriodRNG[count];
-        for (int i = 0; i < count; i++) {
+        for (int i = count - 1; i > 0; i--) {
             values[i] = new LongPeriodRNG(origin);
             origin.jump();
         }
+        values[0] = origin;
         return values;
     }
 
@@ -358,10 +355,11 @@ public class LongPeriodRNG implements RandomnessSource {
         if (count < 1) count = 1;
         LongPeriodRNG origin = new LongPeriodRNG(seed);
         LongPeriodRNG[] values = new LongPeriodRNG[count];
-        for (int i = 0; i < count; i++) {
+        for (int i = count - 1; i > 0; i--) {
             values[i] = new LongPeriodRNG(origin);
             origin.jump();
         }
+        values[0] = origin;
         return values;
     }
 
@@ -369,5 +367,22 @@ public class LongPeriodRNG implements RandomnessSource {
     @Override
     public String toString() {
         return "LongPeriodRNG with state hash 0x" + StringKit.hexHash(state) + "L, choice 0x" + StringKit.hex(choice);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LongPeriodRNG that = (LongPeriodRNG) o;
+
+        if (choice != that.choice) return false;
+        return Arrays.equals(state, that.state);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return CrossHash.Storm.predefined[choice].hash(state);
     }
 }
