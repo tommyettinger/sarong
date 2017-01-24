@@ -393,10 +393,10 @@ public class EditRNG extends StatefulRNG {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = super.hashCode() * 31;
         long temp;
         temp = Double.doubleToLongBits(expected);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result += (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(centrality);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;

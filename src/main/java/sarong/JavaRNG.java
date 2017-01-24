@@ -75,9 +75,8 @@ public class JavaRNG implements RandomnessSource, Serializable
 
     @Override
     public String toString() {
-        return "Java.util.Random in JavaRNG";
+        return "JavaRNG wrapping java.util.Random with id " + System.identityHashCode(random);
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

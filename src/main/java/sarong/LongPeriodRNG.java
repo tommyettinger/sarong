@@ -130,14 +130,14 @@ public class LongPeriodRNG implements RandomnessSource, Serializable {
             choice = 0;
         } else {
             if (len < 16) {
-                long h = CrossHash.Falcon.hash64(seed);
+                long h = CrossHash.hash64(seed);
                 init(h);
                 choice = (int) (h & 15);
             } else {
                 char[] chars = seed.toCharArray();
-                state[0] = validate(CrossHash.Falcon.hash64(chars));
+                state[0] = validate(CrossHash.hash64(chars));
                 for (int i = 0; i < 16; i++) {
-                    state[i] = validate(CrossHash.Falcon.hash64(chars, i * len >> 4, len));
+                    state[i] = validate(CrossHash.hash64(chars, i * len >> 4, len));
                 }
                 choice = (int) (state[0] & 15);
             }

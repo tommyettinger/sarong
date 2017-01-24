@@ -60,24 +60,30 @@ You may also want to use the hashing functions this has in `sarong.util.CrossHas
 they are rather fast and work cross-platform, but they can't compare on desktop usage to dedicated
 hashing libraries like CityHash and XXHash. It's possible the speed will be competitive with some of
 those hashes, though. All three kinds this currently supplies are faster than the implementation of
-SipHash that once was here, and SipHash was removed because it was roughly 4x slower than Lightning,
-the default hash used here, with little noticeable quality change. CrossHash supplies three different
+SipHash that once was here, and SipHash was removed because it was roughly 7-8x slower than Wisp,
+the default hash used here, with little noticeable quality change. CrossHash supplies four different
 types of hash algorithm, each able to generate 64-bit and 32-bit hashes. The default is used with
-just `CrossHash.hash64()` or `CrossHash.hash()` and is nicknamed Lightning; it has rather high
-quality and good speed, and doesn't have any serious flaws in inputs found so far. Lightning doesn't
-have any ability to "salt" the hash, changing the generated values in an unpredictable way using an
-extra parameter at construction; `CrossHash.Storm` does, and so it offers essentially the best
-quality of any of the three. Storm is slightly slower than Lightning, but `CrossHash.Falcon` is
-faster than both. Falcon has a significant flaw if you generate 32-bit hashes using `long` or
-`double` arrays for input; half of the bits in each input are discarded, and this is especially bad
-for `double` arrays because much of the information is in the upper (discarded) half of bits. You
-should only use Falcon if you either only use 64-bit results or only give 32-bit types for input
-(including Object arrays, which are OK); otherwise use Lightning.
+just `CrossHash.hash64()` or `CrossHash.hash()` and is nicknamed Wisp; it is the fastest of the four
+hash types, has good quality, and may have particular benefits on GWT since the 32-bit hash() methods
+don't use the slow, emulated 64-bit math on GWT unless hashing long or double arrays. It also avoids
+certain other code that only performs well on certain Java runtime environments (Long.rotateLeft
+needs a somewhat-modern processor and a JRE run with the -server flag to be as fast as it can be, and
+Wisp avoids using this while Lightning and Storm do not). An alternative is Lightning, which has
+rather high quality and good speed, and doesn't have any serious flaws in inputs found so far.
+Lightning doesn't have any ability to "salt" the hash, changing the generated values in an
+unpredictable way using an extra parameter at construction; `CrossHash.Storm` does, and so it offers
+essentially the best quality of any of the three. Storm is slightly slower than Lightning, but
+`CrossHash.Falcon` is faster than both, though it is slower than the default Wisp. Falcon has a
+significant flaw if you generate 32-bit hashes using `long` or `double` arrays for input; half of
+the bits in each input are discarded, and this is especially bad for `double` arrays because much of
+the information is in the upper (discarded) half of bits. You should only use Falcon if you either
+only use 64-bit results or only give 32-bit types for input (including Object arrays, which are OK);
+otherwise use Wisp or Lightning.
 
 ## Installation
 This project has no run-time dependencies other than Java 6 or higher and should work on GWT. To add
 sarong as a dependency for Maven, Gradle, or some other JVM build tool, you can use
-[the info on Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.tommyettinger%7Csarong%7C0.4.1%7Cjar)
+[the info on Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.tommyettinger%7Csarong%7C0.5%7Cjar)
 or, for the easy cases of Maven and Gradle:
 
 Maven dependency, latest stable:
@@ -86,14 +92,14 @@ Maven dependency, latest stable:
 <dependency>
     <groupId>com.github.tommyettinger</groupId>
     <artifactId>sarong</artifactId>
-    <version>0.4.1</version>
+    <version>0.5</version>
 </dependency>
 ```
 
 Gradle dependency, latest stable:
 
 ```groovy
-compile 'com.github.tommyettinger:sarong:0.4.1'
+compile 'com.github.tommyettinger:sarong:0.5'
 ```
 
 I hope this can be useful!

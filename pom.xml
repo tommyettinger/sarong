@@ -6,7 +6,7 @@
 
     <groupId>com.github.tommyettinger</groupId>
     <artifactId>sarong</artifactId>
-    <version>0.4.1</version>
+    <version>0.5</version>
     <modules>
         <!--<module>sarong-benchmarks</module>-->
     </modules>
@@ -104,6 +104,37 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!--
+            To sign (only needed for Maven Central), add this argument to the mvn command line, just after mvn...
+            -DperformRelease=true
+            -->
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <build>
         <plugins>
@@ -115,20 +146,6 @@
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>${maven.gpg.version}</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>

@@ -294,4 +294,9 @@ public class IsaacRNG implements RandomnessSource {
                         ) + (int) (b ^ (b >>> 32))
                 ) + (int) (c ^ (c >>> 32));
     }
+    @Override
+    public String toString()
+    {
+        return "IsaacRNG with a hidden state (id is " + System.identityHashCode(this) + ')';
+    }
 }
