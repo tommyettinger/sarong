@@ -254,8 +254,84 @@ public class RNGBenchmark {
         iseed = 9000;
         doLightIntR();
     }
+    
+    
+    public long doDash()
+    {
+        DashRNG rng = new DashRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureDash() throws InterruptedException {
+        seed = 9000;
+        doDash();
+    }
+
+    public long doDashInt()
+    {
+        DashRNG rng = new DashRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureDashInt() throws InterruptedException {
+        iseed = 9000;
+        doDashInt();
+    }
+    public long doDashR()
+    {
+        RNG rng = new RNG(new DashRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureDashR() throws InterruptedException {
+        seed = 9000;
+        doDashR();
+    }
+
+    public long doDashIntR()
+    {
+        RNG rng = new RNG(new DashRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureDashIntR() throws InterruptedException {
+        iseed = 9000;
+        doDashIntR();
+    }
 
 
+    /*
+mvn clean install
+java -jar target/benchmarks.jar RNGBenchmark -wi 5 -i 5 -f 1
+     */
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(RNGBenchmark.class.getSimpleName())

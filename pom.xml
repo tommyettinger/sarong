@@ -57,7 +57,7 @@
         <maven.resources.version>2.7</maven.resources.version>
         <maven.source.version>2.4</maven.source.version>
         <maven.gpg.version>1.6</maven.gpg.version>
-        <jdk.version>1.6</jdk.version>
+        <jdk.version>1.7</jdk.version>
         <junit.version>4.11</junit.version>
     </properties>
 
@@ -145,6 +145,9 @@
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                    <excludes>
+                        <exclude>**/emu/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -214,6 +217,7 @@
                     </links>
                     <linksource>true</linksource>
                     <detectOfflineLinks>false</detectOfflineLinks>
+                    <excludePackageNames>*emu*</excludePackageNames>
                     <!--<additionalparam>-Xdoclint:none</additionalparam>-->
                 </configuration>
             </plugin>

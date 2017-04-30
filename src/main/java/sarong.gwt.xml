@@ -5,5 +5,7 @@
      <inherits name='sarong' />
   -->
 <module>
+	<inherits name="com.google.gwt.typedarrays.TypedArrays"/>
+	<super-source path="emu" />
 	<source path="sarong" />
 </module>

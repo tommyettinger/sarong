@@ -65,11 +65,17 @@ public class Dumper {
             seeds[i] = CrossHash.hash64(seeds);
         }
         RNG[] rs = new RNG[64];
+        /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new ThunderRNG(seeds[i], seeds[(i + 12) & 63]));
         }
         System.out.println(seeds[62]);
         blast("Thunder", rs);
+        */
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new DashRNG(seeds[i]));
+        }
+        blast("Dash", rs);
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));

@@ -545,7 +545,7 @@ public class RNG implements Serializable {
      * @return a value between 0 (inclusive) and 0.9999999999999999 (inclusive)
      */
     public double nextDouble() {
-        return Double.longBitsToDouble(0x3FF0000000000000L | random.nextLong() >>> 12) - 1.0;
+        return NumberTools.longBitsToDouble(0x3FF0000000000000L | random.nextLong() >>> 12) - 1.0;
     }
 
     /**
