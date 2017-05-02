@@ -40,6 +40,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class RNGBenchmark {
@@ -255,7 +256,6 @@ public class RNGBenchmark {
         doLightIntR();
     }
     
-    
     public long doDash()
     {
         DashRNG rng = new DashRNG(seed);
@@ -291,6 +291,7 @@ public class RNGBenchmark {
         iseed = 9000;
         doDashInt();
     }
+    
     public long doDashR()
     {
         RNG rng = new RNG(new DashRNG(seed));
@@ -325,6 +326,115 @@ public class RNGBenchmark {
     public void measureDashIntR() throws InterruptedException {
         iseed = 9000;
         doDashIntR();
+    }
+
+
+    public long doJDK()
+    {
+        Random rng = new Random(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    //@Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureJDK() throws InterruptedException {
+        seed = 9000;
+        doJDK();
+    }
+
+    public long doJDKInt()
+    {
+        Random rng = new Random(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    //@Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureJDKInt() throws InterruptedException {
+        iseed = 9000;
+        doJDKInt();
+    }
+    
+    public long doFlap()
+    {
+        FlapRNG rng = new FlapRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureFlap() throws InterruptedException {
+        seed = 9000;
+        doFlap();
+    }
+
+    public long doFlapInt()
+    {
+        FlapRNG rng = new FlapRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureFlapInt() throws InterruptedException {
+        iseed = 9000;
+        doFlapInt();
+    }
+
+    public long doFlapR()
+    {
+        RNG rng = new RNG(new FlapRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureFlapR() throws InterruptedException {
+        seed = 9000;
+        doFlapR();
+    }
+
+    public long doFlapIntR()
+    {
+        RNG rng = new RNG(new FlapRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureFlapIntR() throws InterruptedException {
+        iseed = 9000;
+        doFlapIntR();
     }
 
 

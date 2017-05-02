@@ -1,11 +1,17 @@
 package sarong;
 
 import sarong.util.CrossHash;
+import sarong.util.StringKit;
 
 import java.io.Serializable;
 
 /**
  * Similar to ThunderRNG (emphasizes speed over quality), but unlike ThunderRNG this is a StatefulRandomness.
+ * Being a StatefulRandomness means you can pass a DashRNG to the {@link StatefulRNG#StatefulRNG(RandomnessSource)}
+ * constructor and have expected results, and also that you can get and set the state on a DashRNG directly. If a
+ * DashRNG is stored in some variable that is then passed to {@link RNG#RNG(RandomnessSource)}, you can call
+ * {@link #setState(long)} on the DashRNG variable to set the state used by the RNG, which can be very useful.
+ * <br>
  * The {@link #nextLong()} method on this class can produce 64-bit data in somewhere between 3/4 and 2/3 the time needed
  * by LightRNG, and only slightly more than ThunderRNG. This class fails many more statistical tests than ThunderRNG or
  * especially LightRNG; this probably doesn't matter for games. If you need something closer to a cryptographic RNG, you
@@ -14,6 +20,7 @@ import java.io.Serializable;
  * is allowed), but the distribution is also likely to cover much less than the full range of all longs.
  * <br>
  * Created by Tommy Ettinger on 4/30/2017.
+ * @see FlapRNG FlapRNG is a variant on this class that uses primarily 32-bit math (good for use on GWT)
  */
 public class DashRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
@@ -59,8 +66,9 @@ public class DashRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next( final int bits ) {
-        return (int)( nextLong() & ( 1L << bits ) - 1 );
+        return (int)( nextLong() >>> (64 - bits) );
     }
+
 
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -109,6 +117,24 @@ public class DashRNG implements StatefulRandomness, Serializable {
     public static long determine(final long state)
     {
         return (state >> (state >>> 59)) * 0xC6BC279692B5CC83L;
+    }
+    @Override
+    public String toString() {
+        return "DashRNG with state 0x" + StringKit.hex(state);
+    }
 
+    @Override
+    public int hashCode() {
+        return 0x632BE5AB * (int)(state ^ state >>> 32);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DashRNG dashRNG = (DashRNG) o;
+
+        return state == dashRNG.state;
     }
 }
