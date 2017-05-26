@@ -73,9 +73,9 @@ public class Dumper {
         blast("Thunder", rs);
         */
         for (int i = 0; i < 64; i++) {
-            rs[i] = new RNG(new DashRNG(seeds[i]));
+            rs[i] = new RNG(new FlapRNG(seeds[i]));
         }
-        blast("Dash", rs);
+        blast("Flap", rs);
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));

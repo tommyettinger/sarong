@@ -30,6 +30,7 @@
  */
 
 package sarong;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -255,116 +256,7 @@ public class RNGBenchmark {
         iseed = 9000;
         doLightIntR();
     }
-    
-    public long doDash()
-    {
-        DashRNG rng = new DashRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
-            seed += rng.nextLong();
-        }
-        return seed;
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureDash() throws InterruptedException {
-        seed = 9000;
-        doDash();
-    }
-
-    public long doDashInt()
-    {
-        DashRNG rng = new DashRNG(iseed);
-
-        for (int i = 0; i < 1000000000; i++) {
-            iseed += rng.next(32);
-        }
-        return iseed;
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureDashInt() throws InterruptedException {
-        iseed = 9000;
-        doDashInt();
-    }
-    
-    public long doDashR()
-    {
-        RNG rng = new RNG(new DashRNG(seed));
-
-        for (int i = 0; i < 1000000000; i++) {
-            seed += rng.nextLong();
-        }
-        return seed;
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureDashR() throws InterruptedException {
-        seed = 9000;
-        doDashR();
-    }
-
-    public long doDashIntR()
-    {
-        RNG rng = new RNG(new DashRNG(iseed));
-
-        for (int i = 0; i < 1000000000; i++) {
-            iseed += rng.nextInt();
-        }
-        return iseed;
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureDashIntR() throws InterruptedException {
-        iseed = 9000;
-        doDashIntR();
-    }
-
-
-    public long doJDK()
-    {
-        Random rng = new Random(seed);
-
-        for (int i = 0; i < 1000000000; i++) {
-            seed += rng.nextLong();
-        }
-        return seed;
-    }
-
-    //@Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureJDK() throws InterruptedException {
-        seed = 9000;
-        doJDK();
-    }
-
-    public long doJDKInt()
-    {
-        Random rng = new Random(iseed);
-
-        for (int i = 0; i < 1000000000; i++) {
-            iseed += rng.nextInt();
-        }
-        return iseed;
-    }
-
-    //@Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureJDKInt() throws InterruptedException {
-        iseed = 9000;
-        doJDKInt();
-    }
-    
     public long doFlap()
     {
         FlapRNG rng = new FlapRNG(seed);
@@ -437,6 +329,120 @@ public class RNGBenchmark {
         doFlapIntR();
     }
 
+
+
+
+/*
+    public long doPlaceholder()
+    {
+        PlaceholderRNG rng = new PlaceholderRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measurePlaceholder() throws InterruptedException {
+        seed = 9000;
+        doPlaceholder();
+    }
+
+    public long doPlaceholderInt()
+    {
+        PlaceholderRNG rng = new PlaceholderRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measurePlaceholderInt() throws InterruptedException {
+        iseed = 9000;
+        doPlaceholderInt();
+    }
+
+    public long doPlaceholderR()
+    {
+        RNG rng = new RNG(new PlaceholderRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measurePlaceholderR() throws InterruptedException {
+        seed = 9000;
+        doPlaceholderR();
+    }
+
+    public long doPlaceholderIntR()
+    {
+        RNG rng = new RNG(new PlaceholderRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measurePlaceholderIntR() throws InterruptedException {
+        iseed = 9000;
+        doPlaceholderIntR();
+    }
+*/
+
+
+
+    public long doJDK()
+    {
+        Random rng = new Random(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    //@Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureJDK() throws InterruptedException {
+        seed = 9000;
+        doJDK();
+    }
+
+    public long doJDKInt()
+    {
+        Random rng = new Random(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    //@Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureJDKInt() throws InterruptedException {
+        iseed = 9000;
+        doJDKInt();
+    }
 
     /*
 mvn clean install

@@ -78,32 +78,7 @@ public class StrengthTest {
         }
     }
 
-    //@Test
-    public void testDash()//main(String[] args)
-    {
-        DashRNG random = new DashRNG(); //0xABC7890456123DEFL
-        long state = random.getState();
-        System.out.println(state);
-        long[] bits = new long[64];
-        long curr = random.nextLong(), t;
-        int bi;
-        for (long i = 0; i < 0x10000000L; i++) {
-            t = curr ^ (curr = random.nextLong());
-            //t = random.nextLong();
-            bi = 63;
-            for (long b = 0x8000000000000000L; b != 0; b >>>= 1, bi--) {
-                bits[bi] += (t & b) >>> bi;
-            }
-        }
-        System.out.println("Out of 0x10000000 random numbers,");
-        //System.out.println("Out of 4,294,967,296 random numbers,");
-        System.out.println("each bit changes this often relative to 0.5 probability...");
-        for (int i = 0; i < 64; i++) {
-            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double) 0x10000000);
-        }
-    }
-
-    //@Test
+    @Test
     public void testFlap()
     {
         FlapRNG random = new FlapRNG(); //0xABC7890456123DEFL
@@ -112,25 +87,42 @@ public class StrengthTest {
         long[] bits = new long[64];
         long curr = random.nextLong(), t;
         int bi;
-        for (long i = 0; i < 0x10000000L; i++) {
+        for (long i = 0; i < 0x1000000L; i++) {
+            /*t = curr ^ (curr = random.nextInt());
+            bi = 31;
+            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+            */
             t = curr ^ (curr = random.nextLong());
-            //t = random.nextLong();
             bi = 63;
             for (long b = 0x8000000000000000L; b != 0; b >>>= 1, bi--) {
                 bits[bi] += (t & b) >>> bi;
             }
         }
-        System.out.println("Out of 0x10000000 random numbers,");
+        System.out.println("Out of 0x1000000 random numbers,");
         //System.out.println("Out of 4,294,967,296 random numbers,");
         System.out.println("each bit changes this often relative to 0.5 probability...");
         for (int i = 0; i < 64; i++) {
-            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double) 0x10000000);
+            System.out.printf("%02d : % .24f\n", i, 0.5 - bits[i] / (double) 0x1000000);
         }
     }
 
     @Test
     public void dummyTest()
     {
-
+        FlapRNG r = new FlapRNG(1215);
+        int wrap = r.nextInt(), wrap2 = r.nextInt();
+        for (long m = 1; m <= 0x10000000000L; m++) {
+            if(wrap == r.nextInt())
+            {
+                System.out.println(m++);
+                if(wrap2 == r.nextInt())
+                {
+                    System.out.println(m + "!!!");
+                    break;
+                }
+            }
+        }
     }
 }
