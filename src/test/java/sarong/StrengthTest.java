@@ -83,7 +83,7 @@ public class StrengthTest {
     public void testLap()
     {
         LapRNG random = new LapRNG(); //0xABC7890456123DEFL
-        System.out.println(StringKit.hex(random.state0) + StringKit.hex(random.state1));
+        System.out.println(StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
         long[] bits = new long[64];
         long curr = random.nextLong(), t;
         int bi;
