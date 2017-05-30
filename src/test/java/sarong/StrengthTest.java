@@ -143,7 +143,7 @@ public class StrengthTest {
     public void testSlap()
     {
         SlapRNG random = new SlapRNG(); //0xABC7890456123DEFL
-        System.out.println(StringKit.hex(random.state0) + StringKit.hex(random.state1));
+        System.out.println(StringKit.hex(random.getState()));
         int[] bits = new int[32];
         int curr = random.nextInt(), t;
         int bi;
@@ -171,27 +171,55 @@ public class StrengthTest {
     @Test
     public void dummyTest()
     {
-        SlapRNG r = new SlapRNG();
-        System.out.println(r.getState());
-        System.out.println();
-        long wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
-        for (long m = 1; m <= 0x300000000L; m++) {
-            if(wrap == r.nextInt())
-            {
-                System.out.println(m++);
-                if(wrap2 == r.nextInt())
+        {
+            SlapRNG r = new SlapRNG(); //-1999262892926553691L
+            System.out.println(StringKit.hex(r.getState()));
+            System.out.println();
+            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
+            for (long m = 1; m <= 0x400000004L; m++) {
+                if(wrap == r.nextInt())
                 {
-                    System.out.println(m++);
-                    if(wrap3 == r.nextInt()) {
-                        System.out.println(m++);
-                        if (wrap4 == r.nextInt()) {
+                    System.out.println(StringKit.hex(m++));
+                    if(wrap2 == r.nextInt())
+                    {
+                        System.out.println(StringKit.hex(m++));
+                        if(wrap3 == r.nextInt()) {
+                            System.out.println(StringKit.hex(m++));
+                            if (wrap4 == r.nextInt()) {
 
-                            System.out.println(m + "!!!");
-                            break;
+                                System.out.println(StringKit.hex(m) + "!!!");
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
+        /*
+        {
+            LapRNG r = new LapRNG(); //-1999262892926553691L
+            System.out.println(StringKit.hex(r.getState0()) + StringKit.hex(r.getState1()));
+            System.out.println();
+            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
+            //long wrap = r.nextLong(), wrap2 = r.nextLong(), wrap3 = r.nextLong(), wrap4 = r.nextLong();
+            for (long m = 1; m <= 0x400000004L; m++) {
+                if(wrap == r.nextInt())
+                {
+                    System.out.println(m++);
+                    if(wrap2 == r.nextInt())
+                    {
+                        System.out.println(m++);
+                        if(wrap3 == r.nextInt()) {
+                            System.out.println(m++);
+                            if (wrap4 == r.nextInt()) {
+
+                                System.out.println(m + "!!!");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
     }
 }

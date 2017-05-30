@@ -10,9 +10,18 @@ import java.io.Serializable;
  * period than either, plus this implements StatefulRandomness. SlapRNG should have higher quality than FlapRNG based on
  * some rough metrics, but its period is known to be longer than FlapRNG's for most seeds, if not all. Precisely how
  * much longer isn't clear yet; this uses an irregular increment that depends on part of the current state, and it seems
- * likely that certain seeds have an effect on the length of the period. That said, the period should be at least 2 to
- * the 34 for most seeds. This generator is not nearly as fast as FlapRNG, but it is comparable to or faster than
- * PintRNG (while having a longer (at least 4x) period, mainly thanks to more bits of state).
+ * possible that certain rare seeds have an effect on the length of the period. That said, the period should be at least
+ * 2 to the 35 for most seeds, and is probably higher. This generator is not nearly as fast as FlapRNG, but it is
+ * comparable to or faster than PintRNG (while having a longer (at least 8x) period, mainly thanks to more bits of
+ * state). The mechanism by which this produces pseudo-randomness is somewhat unusual, and involves two state variables
+ * as ints, one of which is used both before and after that state part changes. This slows down the generation slightly
+ * due to a data dependency between the before and after states (the same problem most linear congruential generators
+ * face), but seems to significantly improve period. It should be noted that for cases where you only generate 32-bit
+ * ints, SlapRNG provides one of the best combinations of quality, period, compatibility, and speed that we have, with
+ * other generators beating it on some of those but not all of them. FlapRNG is faster by about 2x, but sacrifices
+ * quality and period. PintRNG has better quality, is about the same speed and has a lower period. Other generators give
+ * up efficient compatibility with GWT due to long math (which is slower and probably produces garbage on GWT), though
+ * many are faster on PCs (LapRNG and ThunderRNG, for instance).
  * <br>
  * Created by Tommy Ettinger on 5/29/2017.
  */
@@ -34,7 +43,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     }
     public SlapRNG(final long seed) {
         state0 = (int)(seed & 0xFFFFFFFFL);
-        state1 = (int)(seed >>> 52);
+        state1 = (int)(seed >>> 32);
     }
     public SlapRNG(final CharSequence seed)
     {
@@ -60,7 +69,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     @Override
     public void setState(final long state) {
         state0 = (int)(state & 0xFFFFFFFFL);
-        state1 = (int)(state >>> 52);
+        state1 = (int)(state >>> 32);
     }
 
     /**
@@ -74,6 +83,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     public final int next( final int bits ) {
         //return (state0 += (state1 ^ (state1 += 0xC6BC278D))) >>> (32 - bits);
         return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D) >>> (32 - bits);
+        //return (state += (alpha += (beta += -4283) >>> 12) * 0x632D978F + 0xC6BC278D) >>> (32 - bits);
+
         //return ((state1 += 0xC6BC278D * state0 + 0x632BE5AB) ^ (state0 += 0x85157AF5)) >>> (32 - bits);
         //return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> (32 - bits);
     }
@@ -85,6 +96,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt()
     {
+        //0x6C35 0x7A1B
+        //return (state += (alpha += (beta += -4283) >>> 12) * 0x632D978F);
         return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D);
         //return (state1 += (state0 += (state0 ^ state1) + 0xC6BC278D));
         //return (state1 += (state0 & (state0 += 0x85157AF5 ^ state1)) + 0xC6BC278D);
@@ -227,12 +240,13 @@ public class SlapRNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "FlapRNG with state0 0x" + StringKit.hex(state0) + ", state1 0x" + StringKit.hex(state1);
+        return "FlapRNG with state0 0x" + StringKit.hex(state0)
+                + ", state1 0x" + StringKit.hex(state1);
     }
 
     @Override
     public int hashCode() {
-        return 0x632BE5AB * state0 ^ state1;
+        return 0x632BE5AB * state0 ^ state1 * 0x9BA7;
     }
 
     @Override
@@ -240,9 +254,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SlapRNG flapRNG = (SlapRNG) o;
+        SlapRNG slapRNG = (SlapRNG) o;
 
-        if (state0 != flapRNG.state0) return false;
-        return state1 == flapRNG.state1;
+        return state0 == slapRNG.state0 && state1 == slapRNG.state1;
     }
 }

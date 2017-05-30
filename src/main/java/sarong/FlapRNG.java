@@ -21,7 +21,8 @@ import java.io.Serializable;
 public class FlapRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
     public FlapRNG(){
-        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000),
+                (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
     public FlapRNG(final int seed) {
         state0 = seed;
