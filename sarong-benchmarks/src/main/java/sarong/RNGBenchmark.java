@@ -342,7 +342,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureLap() throws InterruptedException {
+    public void measureLap() throws InterruptedException {
         seed = 9000;
         doLap();
     }
@@ -360,7 +360,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureLapInt() throws InterruptedException {
+    public void measureLapInt() throws InterruptedException {
         iseed = 9000;
         doLapInt();
     }
@@ -378,7 +378,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureLapR() throws InterruptedException {
+    public void measureLapR() throws InterruptedException {
         seed = 9000;
         doLapR();
     }
@@ -396,11 +396,82 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureLapIntR() throws InterruptedException {
+    public void measureLapIntR() throws InterruptedException {
         iseed = 9000;
         doLapIntR();
     }
 
+    public long doSlap()
+    {
+        SlapRNG rng = new SlapRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureSlap() throws InterruptedException {
+        seed = 9000;
+        doSlap();
+    }
+
+    public long doSlapInt()
+    {
+        SlapRNG rng = new SlapRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureSlapInt() throws InterruptedException {
+        iseed = 9000;
+        doSlapInt();
+    }
+
+    public long doSlapR()
+    {
+        RNG rng = new RNG(new SlapRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureSlapR() throws InterruptedException {
+        seed = 9000;
+        doSlapR();
+    }
+
+    public long doSlapIntR()
+    {
+        RNG rng = new RNG(new SlapRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureSlapIntR() throws InterruptedException {
+        iseed = 9000;
+        doSlapIntR();
+    }
 
 
 /*

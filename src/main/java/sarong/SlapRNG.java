@@ -6,38 +6,37 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * Like PintRNG (only uses 32-bit int math, good for GWT), but much faster at the expense of quality.
- * This generator is faster than ThunderRNG at generating ints, while also implementing StatefulRandomness. It is slower
- * but not especially slow at generating longs, and takes between 5% and 10% more time than LightRNG to generate longs
- * (it takes about 40% less time than LightRNG to generate ints). Quality is unclear, since this relies on some very
- * particular values for constants and shows various flaws visually when the constants are even slightly off. There are
- * probably better choices for constants out there that we may be able to find, but it doesn't seem easy.
- * It's likely that the period of FlapRNG is only 2 to the 33 (0 seed is allowed), which is much less than many common
- * generators ({@link java.util.Random} has a period of approximately 2 to the 42, for instance). This may be acceptable
- * if you don't expect to generate 8 billion numbers with one FlapRNG.
+ * Like PintRNG (uses int math primarily, making it good with GWT and 32-bit machines) and FlapRNG, but with a longer
+ * period than either, plus this implements StatefulRandomness. SlapRNG should have higher quality than FlapRNG based on
+ * some rough metrics, but its period is known to be longer than FlapRNG's for most seeds, if not all. Precisely how
+ * much longer isn't clear yet; this uses an irregular increment that depends on part of the current state, and it seems
+ * likely that certain seeds have an effect on the length of the period. That said, the period should be at least 2 to
+ * the 34 for most seeds. This generator is not nearly as fast as FlapRNG, but it is comparable to or faster than
+ * PintRNG (while having a longer (at least 4x) period, mainly thanks to more bits of state).
  * <br>
- * Created by Tommy Ettinger on 5/1/2017.
+ * Created by Tommy Ettinger on 5/29/2017.
  */
-public class FlapRNG implements StatefulRandomness, Serializable {
+public class SlapRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
-    public FlapRNG(){
-        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+    public SlapRNG(){
+        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000),
+                (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
-    public FlapRNG(final int seed) {
+    public SlapRNG(final int seed) {
         state0 = seed;
         state1 = seed ^ seed >>> (4 + (seed >>> 28));
         state1 *= 277803737;
         state1 ^= (state1 >>> 22);
     }
-    public FlapRNG(final int seed0, final int seed1) {
+    public SlapRNG(final int seed0, final int seed1) {
         state0 = seed0;
         state1 = seed1;
     }
-    public FlapRNG(final long seed) {
+    public SlapRNG(final long seed) {
         state0 = (int)(seed & 0xFFFFFFFFL);
-        state1 = (int)(seed >>> 32);
+        state1 = (int)(seed >>> 52);
     }
-    public FlapRNG(final CharSequence seed)
+    public SlapRNG(final CharSequence seed)
     {
         this(CrossHash.hash64(seed));
     }
@@ -61,7 +60,7 @@ public class FlapRNG implements StatefulRandomness, Serializable {
     @Override
     public void setState(final long state) {
         state0 = (int)(state & 0xFFFFFFFFL);
-        state1 = (int)(state >>> 32);
+        state1 = (int)(state >>> 52);
     }
 
     /**
@@ -73,7 +72,9 @@ public class FlapRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next( final int bits ) {
-        return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> (32 - bits);
+        //return (state0 += (state1 ^ (state1 += 0xC6BC278D))) >>> (32 - bits);
+        return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D) >>> (32 - bits);
+        //return ((state1 += 0xC6BC278D * state0 + 0x632BE5AB) ^ (state0 += 0x85157AF5)) >>> (32 - bits);
         //return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> (32 - bits);
     }
 
@@ -84,7 +85,11 @@ public class FlapRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt()
     {
-        return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
+        return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D);
+        //return (state1 += (state0 += (state0 ^ state1) + 0xC6BC278D));
+        //return (state1 += (state0 & (state0 += 0x85157AF5 ^ state1)) + 0xC6BC278D);
+        //return ((state1 += 0xC6BC278D * (state0 + 0x632BE5AB)) ^ (state0 += 0x85157AF5));
+
         //return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
         //return (state0 += 0x9E3779B9 + ((state1 += 0xC6BC278D) >> 28) * 0x632DB5AB);
         //return (state0 += (state1 += 0x9E3779B9) ^ 0x632BE5AB);
@@ -131,7 +136,9 @@ public class FlapRNG implements StatefulRandomness, Serializable {
         //0x9E3779B97F4A7C15L
         //final long r = (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
         //return r * 0xC6BC279692B5CC53L ^ r << 32;
-        final long r = (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
+        final long r = (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D);
+        //final long r = (state1 += (state0 += state1 >> 4) + 0xC6BC278D);
+        //final long r = ((state1 += 0xC6BC278D * state0 + 0x632BE5AB) ^ (state0 += 0x85157AF5));
         return 0xC6AC279692B5CC53L * r ^ r << 32;
         //final long r = (state0 += ((((state1 += 0xC6BC278D) >>> 24) + 0x9E3779A) >>> 4) * 0x632D978F);
         //return r * 0xC6AC279692B5CC53L ^ r << 32;
@@ -170,7 +177,7 @@ public class FlapRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public RandomnessSource copy() {
-        return new FlapRNG(state0, state1);
+        return new SlapRNG(state0, state1);
     }
 
     /**
@@ -233,7 +240,7 @@ public class FlapRNG implements StatefulRandomness, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FlapRNG flapRNG = (FlapRNG) o;
+        SlapRNG flapRNG = (SlapRNG) o;
 
         if (state0 != flapRNG.state0) return false;
         return state1 == flapRNG.state1;
