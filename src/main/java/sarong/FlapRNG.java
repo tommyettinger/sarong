@@ -176,47 +176,91 @@ public class FlapRNG implements StatefulRandomness, Serializable {
 
     /**
      * A simple "output stage" applied to state; this method does not update state on its own. If you expect to call
-     * this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. This is clearer with code: {@code FlapRNG.determine(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
-     * This method doesn't offer particularly good quality assurances, but should be very fast.
-     * @param state should be changed when you call this (see above), e.g. {@code state += 0x9E3779B9 ^ (state << 1)}
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
+     * should be very fast.
+     * @param state should be changed when you call this (see above), e.g. {@code state += 0x9E3779B9}
      * @return an altered version of state that should be very fast to compute but doesn't promise great quality
      */
     public static int determine(final int state)
     {
-        return (state >> 13) * 0xC6BC278D;
+        return (state + (((state + 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
+    }
+    /**
+     * A simple "output stage" applied to a two-part state like what FlapRNG uses normally; this method does not update
+     * state0 or state1 on its own. If you expect to call this method more than once, you should perform some change to
+     * state as part of the call; a simple way to do this is to call this method like
+     * {@code (state0 += FlapRNG.determine(state0, state1 += 0x9E3779B9))}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
+     * should be very fast.
+     * @param state0 should be changed when you call this (see above), e.g. by adding the result to state0
+     * @param state1 should be changed when you call this (see above), e.g. {@code state1 += 0x9E3779B9}
+     * @return an altered version of state0/state1 that should be very fast to compute but doesn't promise great quality
+     */
+    public static int determine(final int state0, final int state1)
+    {
+        return (state0 + (((state1 + 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
     }
     /**
      * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given state. If you expect to call
-     * this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. In code: {@code FlapRNG.randomFloat(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one.
      * @param state any int
      * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
      */
-    public static float randomFloat(int state)
+    public static float randomFloat(final int state)
     {
-        return NumberTools.intBitsToFloat((((state >> 13) * 0xC6BC278D) >>> 9) | 0x3f800000) - 1f;
+        return NumberTools.intBitsToFloat(((state + (((state + 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x3f800000) - 1f;
+    }
+    /**
+     * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given states. If you expect to
+     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
+     * this is to call this method like {@code FlapRNG.randomFloat(state0 += state1, state1 += 0x9E3779B9)}.
+     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
+     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
+     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
+     * @param state0 any int
+     * @param state1 any int
+     * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
+     */
+    public static float randomFloat(final int state0, final int state1)
+    {
+        return NumberTools.intBitsToFloat(((state0 + (((state1 + 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x3f800000) - 1f;
     }
 
     /**
-     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given state. If you expect to
-     * call this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. In code: {@code FlapRNG.randomFloat(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
+     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given state. If you expect to call
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one.
      * @param state any int
      * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
      */
-    public static float randomSignedFloat(int state)
+    public static float randomSignedFloat(final int state)
     {
-        return NumberTools.intBitsToFloat((((state >> 13) * 0xC6BC278D) >>> 9) | 0x40000000) - 3f;
+        return NumberTools.intBitsToFloat(((state + (((state + 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x40000000) - 3f;
+    }
+
+    /**
+     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given states. If you expect to
+     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
+     * this is to call this method like {@code FlapRNG.randomSignedFloat(state0 += state1, state1 += 0x9E3779B9)}.
+     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
+     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
+     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
+     * @param state0 any int
+     * @param state1 any int
+     * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
+     */
+    public static float randomSignedFloat(final int state0, final int state1)
+    {
+        return NumberTools.intBitsToFloat(((state0 + (((state1 + 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x40000000) - 3f;
     }
 
     @Override

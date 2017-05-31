@@ -11,17 +11,20 @@ import java.io.Serializable;
  * some rough metrics, but its period is known to be longer than FlapRNG's for most seeds, if not all. Precisely how
  * much longer isn't clear yet; this uses an irregular increment that depends on part of the current state, and it seems
  * possible that certain rare seeds have an effect on the length of the period. That said, the period should be at least
- * 2 to the 35 for most seeds, and is probably higher. This generator is not nearly as fast as FlapRNG, but it is
- * comparable to or faster than PintRNG (while having a longer (at least 8x) period, mainly thanks to more bits of
- * state). The mechanism by which this produces pseudo-randomness is somewhat unusual, and involves two state variables
- * as ints, one of which is used both before and after that state part changes. This slows down the generation slightly
- * due to a data dependency between the before and after states (the same problem most linear congruential generators
- * face), but seems to significantly improve period. It should be noted that for cases where you only generate 32-bit
- * ints, SlapRNG provides one of the best combinations of quality, period, compatibility, and speed that we have, with
- * other generators beating it on some of those but not all of them. FlapRNG is faster by about 2x, but sacrifices
- * quality and period. PintRNG has better quality, is about the same speed and has a lower period. Other generators give
- * up efficient compatibility with GWT due to long math (which is slower and probably produces garbage on GWT), though
- * many are faster on PCs (LapRNG and ThunderRNG, for instance).
+ * 2 to the 34 for most seeds, and is probably higher. This generator is not nearly as fast as FlapRNG, but it is
+ * comparable to (for ints) or faster than (for longs) PintRNG while having a longer (at least 8x) period, mainly thanks
+ * to more bits of state. The mechanism by which this produces pseudo-randomness is somewhat unusual, and involves two
+ * state variables as ints, one of which is used both before and after that state part changes. This slows down the
+ * generation slightly due to a data dependency between the before and after states (the same speed problem most linear
+ * congruential generators face when trying to reach ideal performance), but seems to significantly improve period. It
+ * should be noted that when targeting GWT and 32-bit machines, SlapRNG provides one of the best combinations of period,
+ * quality, compatibility, and speed that we have, with other generators beating it on some of those but not all of
+ * them. FlapRNG is faster by about 2x, but sacrifices quality and period. PintRNG has better quality, is about the same
+ * speed and has a lower period. Other generators give up efficient compatibility with GWT due to long math (which is
+ * slower and probably produces garbage on GWT), though many are faster on PCs (LapRNG and ThunderRNG, for instance).
+ * The {@link #nextLong()} method of this class is, unusually, not much slower than the {@link #nextInt()} method (about
+ * 10% slower or less), unlike the nextLong() methods on PintRNG and FlapRNG, which take about twice as much time to
+ * produce a long.
  * <br>
  * Created by Tommy Ettinger on 5/29/2017.
  */
@@ -33,7 +36,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     }
     public SlapRNG(final int seed) {
         state0 = seed;
-        state1 = seed ^ seed >>> (4 + (seed >>> 28));
+        state1 = ((seed ^ 0xD0E89D2D) >>> 19 | (seed ^ 0xD0E89D2D) << 13);
+        state1 ^= state1 >>> (4 + (state1 >>> 28));
         state1 *= 277803737;
         state1 ^= (state1 >>> 22);
     }
@@ -82,7 +86,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next( final int bits ) {
         //return (state0 += (state1 ^ (state1 += 0xC6BC278D))) >>> (32 - bits);
-        return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D) >>> (32 - bits);
+        return (state0 += ((state0 >>> 4) + (state1 += 0xCABC2C8D))) >>> (32 - bits);
         //return (state += (alpha += (beta += -4283) >>> 12) * 0x632D978F + 0xC6BC278D) >>> (32 - bits);
 
         //return ((state1 += 0xC6BC278D * state0 + 0x632BE5AB) ^ (state0 += 0x85157AF5)) >>> (32 - bits);
@@ -98,7 +102,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
     {
         //0x6C35 0x7A1B
         //return (state += (alpha += (beta += -4283) >>> 12) * 0x632D978F);
-        return (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D);
+        return (state0 += ((state0 >>> 4) + (state1 += 0xCABC2C8D)));
         //return (state1 += (state0 += (state0 ^ state1) + 0xC6BC278D));
         //return (state1 += (state0 & (state0 += 0x85157AF5 ^ state1)) + 0xC6BC278D);
         //return ((state1 += 0xC6BC278D * (state0 + 0x632BE5AB)) ^ (state0 += 0x85157AF5));
@@ -149,7 +153,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
         //0x9E3779B97F4A7C15L
         //final long r = (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
         //return r * 0xC6BC279692B5CC53L ^ r << 32;
-        final long r = (state1 ^= (state0 += state1 >>> 5) + 0xC6BC278D);
+        final long r = (state0 += ((state0 >>> 4) + (state1 += 0xCABC2C8D)));
         //final long r = (state1 += (state0 += state1 >> 4) + 0xC6BC278D);
         //final long r = ((state1 += 0xC6BC278D * state0 + 0x632BE5AB) ^ (state0 += 0x85157AF5));
         return 0xC6AC279692B5CC53L * r ^ r << 32;
@@ -195,58 +199,102 @@ public class SlapRNG implements StatefulRandomness, Serializable {
 
     /**
      * A simple "output stage" applied to state; this method does not update state on its own. If you expect to call
-     * this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. This is clearer with code: {@code FlapRNG.determine(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
-     * This method doesn't offer particularly good quality assurances, but should be very fast.
-     * @param state should be changed when you call this (see above), e.g. {@code state += 0x9E3779B9 ^ (state << 1)}
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
+     * should be very fast.
+     * @param state should be changed when you call this (see above), e.g. {@code state += 0x9E3779B9}
      * @return an altered version of state that should be very fast to compute but doesn't promise great quality
      */
     public static int determine(final int state)
     {
-        return (state >> 13) * 0xC6BC278D;
+        return (state + ((state >>> 4) + (state + 0xCABC2C8D)));
+    }
+    /**
+     * A simple "output stage" applied to a two-part state like what FlapRNG uses normally; this method does not update
+     * state0 or state1 on its own. If you expect to call this method more than once, you should perform some change to
+     * state as part of the call; a simple way to do this is to call this method like
+     * {@code (state0 += FlapRNG.determine(state0, state1 += 0x9E3779B9))}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
+     * should be very fast.
+     * @param state0 should be changed when you call this (see above), e.g. by adding the result to state0
+     * @param state1 should be changed when you call this (see above), e.g. {@code state1 += 0x9E3779B9}
+     * @return an altered version of state0/state1 that should be very fast to compute but doesn't promise great quality
+     */
+    public static int determine(final int state0, final int state1)
+    {
+        return (state0 + ((state0 >>> 4) + (state1 + 0xCABC2C8D)));
     }
     /**
      * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given state. If you expect to call
-     * this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. In code: {@code FlapRNG.randomFloat(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one.
      * @param state any int
      * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
      */
-    public static float randomFloat(int state)
+    public static float randomFloat(final int state)
     {
-        return NumberTools.intBitsToFloat((((state >> 13) * 0xC6BC278D) >>> 9) | 0x3f800000) - 1f;
+        return NumberTools.intBitsToFloat(((state + ((state >>> 4) + (state + 0xCABC2C8D))) >>> 9) | 0x3f800000) - 1f;
+    }
+    /**
+     * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given states. If you expect to
+     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
+     * this is to call this method like {@code FlapRNG.randomFloat(state0 += state1, state1 += 0x9E3779B9)}.
+     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
+     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
+     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
+     * @param state0 any int
+     * @param state1 any int
+     * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
+     */
+    public static float randomFloat(final int state0, final int state1)
+    {
+        return NumberTools.intBitsToFloat(((state0 + ((state0 >>> 4) + (state1 + 0xCABC2C8D))) >>> 9) | 0x3f800000) - 1f;
     }
 
     /**
-     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given state. If you expect to
-     * call this method more than once, you should perform some extra changes to state as part of the call. The way that
-     * seems to work rather well is to add a large constant, XORed with state left-shifted by 1, to state, and assign
-     * when you make the call. In code: {@code FlapRNG.randomFloat(state += 0x9E3779B9 ^ (state << 1))}.
-     * Here, the "large constant" should have at least two of the upper 5 bits set to be safe, and must be odd.
-     * The golden-ratio-derived constant 0x9E3779B9 should be fine, as would 0xF0000001.
+     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given state. If you expect to call
+     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
+     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
+     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
+     * can be any odd-number int, preferably a large one.
      * @param state any int
      * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
      */
-    public static float randomSignedFloat(int state)
+    public static float randomSignedFloat(final int state)
     {
-        return NumberTools.intBitsToFloat((((state >> 13) * 0xC6BC278D) >>> 9) | 0x40000000) - 3f;
+        return NumberTools.intBitsToFloat(((state + ((state >>> 4) + (state + 0xCABC2C8D))) >>> 9) | 0x40000000) - 3f;
+    }
+
+    /**
+     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given states. If you expect to
+     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
+     * this is to call this method like {@code FlapRNG.randomSignedFloat(state0 += state1, state1 += 0x9E3779B9)}.
+     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
+     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
+     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
+     * @param state0 any int
+     * @param state1 any int
+     * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
+     */
+    public static float randomSignedFloat(final int state0, final int state1)
+    {
+        return NumberTools.intBitsToFloat(((state0 + ((state0 >>> 4) + (state1 + 0xCABC2C8D))) >>> 9) | 0x40000000) - 3f;
     }
 
     @Override
     public String toString() {
-        return "FlapRNG with state0 0x" + StringKit.hex(state0)
+        return "SlapRNG with state0 0x" + StringKit.hex(state0)
                 + ", state1 0x" + StringKit.hex(state1);
     }
 
     @Override
     public int hashCode() {
-        return 0x632BE5AB * state0 ^ state1 * 0x9BA7;
+        return 0x632BE5AB * state0 ^ state1;
     }
 
     @Override

@@ -143,7 +143,7 @@ public class StrengthTest {
     public void testSlap()
     {
         SlapRNG random = new SlapRNG(); //0xABC7890456123DEFL
-        System.out.println(StringKit.hex(random.getState()));
+        System.out.println(random);
         int[] bits = new int[32];
         int curr = random.nextInt(), t;
         int bi;
@@ -173,10 +173,17 @@ public class StrengthTest {
     {
         {
             SlapRNG r = new SlapRNG(); //-1999262892926553691L
-            System.out.println(StringKit.hex(r.getState()));
+            System.out.println(r);
             System.out.println();
+            for (int i = 0; i < 256; i++) {
+                System.out.println(StringKit.hex(r.nextInt()));
+            }
+            System.out.println();
+            System.out.println(r);
+            System.out.println();
+
             int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
-            for (long m = 1; m <= 0x400000004L; m++) {
+            for (long m = 1; m <= 0x1000000004L; m++) {
                 if(wrap == r.nextInt())
                 {
                     System.out.println(StringKit.hex(m++));
