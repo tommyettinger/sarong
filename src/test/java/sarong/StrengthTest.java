@@ -178,29 +178,40 @@ public class StrengthTest {
             for (int i = 0; i < 256; i++) {
                 System.out.println(StringKit.hex(r.nextInt()));
             }
+            //r.setState(r.nextLong());
             System.out.println();
             System.out.println(r);
             System.out.println();
 
-            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
-            for (long m = 1; m <= 0x1000000004L; m++) {
-                if(wrap == r.nextInt())
-                {
-                    System.out.println(StringKit.hex(m++));
-                    if(wrap2 == r.nextInt())
-                    {
-                        System.out.println(StringKit.hex(m++));
-                        if(wrap3 == r.nextInt()) {
-                            System.out.println(StringKit.hex(m++));
-                            if (wrap4 == r.nextInt()) {
+            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
+            bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
 
-                                System.out.println(StringKit.hex(m) + "!!!");
-                                break;
+            for (long m = 1; m <= 0x400000004L; m++) {
+                if (bonus == (bonus = r.nextInt()))
+                {
+                    if(bonus == r.nextInt())
+                        System.out.println("BAD. " + StringKit.hex(m));
+                }
+                else {
+                    if (wrap == bonus) {
+                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = r.nextInt()));
+                        if (wrap2 == bonus2) {
+                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = r.nextInt()));
+                            if (wrap3 == bonus3) {
+                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = r.nextInt()));
+                                if (wrap4 == bonus4) {
+
+                                    System.out.println(StringKit.hex(m) + "!!!");
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
+            System.out.println("DONE! final r: " + r + "  with next 4 random values: "
+                    + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
         }
         /*
         {
