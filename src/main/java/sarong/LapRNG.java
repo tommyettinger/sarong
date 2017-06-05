@@ -11,7 +11,8 @@ import java.io.Serializable;
  * many more, at least 2 to the 64). As such, LapRNG is like FlapRNG but can generate for a longer period of time (more
  * laps) without repeating, and in some cases (mainly generating 64-bit values) at even higher speed. It is currently
  * the fastest RandomnessSource in this library at generating 64-bit longs, which is most of what {@link RNG} uses, and
- * is second-fastest at generating 32-bit ints, with FlapRNG just slightly faster at that.
+ * is second-fastest at generating 32-bit ints, with FlapRNG just slightly faster at that. While the period must be at
+ * least 2 to the 64, it is likely that it is actually 2 to the 65, and possibly higher (probably not by much more).
  * <br>
  * Created by Tommy Ettinger on 5/25/2017.
  */
@@ -103,7 +104,7 @@ public class LapRNG implements RandomnessSource, Serializable {
      */
     public final int nextInt()
     {
-        return (int) ((state1 += ((state0 += 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L) >>> 32);
+        return (int) (state1 += ((state0 += 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -120,7 +121,9 @@ public class LapRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final long nextLong() {
+        //return (state1 += state0 ^ (state0 += 0xD43779B97F4A7C13L) >> 24);
         return (state1 += ((state0 += 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L);
+
         //return (state0 += (((state1 += 0xC6BC279692B5C483L) >>> 59) + 124) * 0x632AE59B79B4E319L);
         //0x9E3779B97F4A7C15L
     }

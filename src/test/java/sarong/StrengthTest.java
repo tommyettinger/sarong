@@ -79,11 +79,11 @@ public class StrengthTest {
         }
     }
 
-    //@Test
+    @Test
     public void testLap()
     {
         LapRNG random = new LapRNG(); //0xABC7890456123DEFL
-        System.out.println(StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
+        System.out.println("LapRNG (testing nextLong): " + StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
         long[] bits = new long[64];
         long curr = random.nextLong(), t;
         int bi;
@@ -107,9 +107,37 @@ public class StrengthTest {
             System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
         }
     }
+    //@Test
+    public void testLapInt()
+    {
+        LapRNG random = new LapRNG(); //0xABC7890456123DEFL
+        System.out.println("LapRNG (testing nextInt): " + StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
+        int[] bits = new int[32];
+        int curr = random.nextInt(), t;
+        int bi;
+        for (int i = 0; i < 0x1000000; i++) {
+            /*t = curr ^ (curr = random.nextInt());
+            bi = 31;
+            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+            */
+            t = curr ^ (curr = random.nextInt());
+            bi = 31;
+            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+        }
+        System.out.println("LAP INT: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("each bit changes this often relative to 0.5 probability...");
+        for (int i = 0; i < 32; i++) {
+            System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
+        }
+    }
 
 
-    @Test
+    //@Test
     public void testFlap()
     {
         FlapRNG random = new FlapRNG(); //0xABC7890456123DEFL
@@ -148,12 +176,6 @@ public class StrengthTest {
         int curr = random.nextInt(), t;
         int bi;
         for (int i = 0; i < 0x1000000; i++) {
-            /*t = curr ^ (curr = random.nextInt());
-            bi = 31;
-            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
-                bits[bi] += (t & b) >>> bi;
-            }
-            */
             t = curr ^ (curr = random.nextInt());
             bi = 31;
             for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
@@ -167,27 +189,82 @@ public class StrengthTest {
             System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
         }
     }
+    @Test
+    public void testHorde()
+    {
+        HordeRNG random = new HordeRNG(); //0xABC7890456123DEFL
+        System.out.println("HordeRNG (testing nextLong): " +
+                StringKit.hex(random.state)
+                + " with " + StringKit.hex(random.choice));
+        long[] bits = new long[64];
+        long curr = random.nextLong(), t;
+        int bi;
+        for (long i = 0; i < 0x1000000L; i++) {
+            /*t = curr ^ (curr = random.nextInt());
+            bi = 31;
+            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+            */
+            t = curr ^ (curr = random.nextLong());
+            bi = 63;
+            for (long b = 0x8000000000000000L; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+        }
+        System.out.println("HORDE: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("each bit changes this often relative to 0.5 probability...");
+        for (int i = 0; i < 64; i++) {
+            System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
+        }
+    }
+
+    @Test
+    public void testHerd()
+    {
+        HerdRNG random = new HerdRNG(); //0xABC7890456123DEFL
+        System.out.println("HerdRNG (testing nextInt): " +
+                StringKit.hex(random.state)
+                + " with " + StringKit.hex(random.choice));
+        int[] bits = new int[32];
+        int curr = random.nextInt(), t;
+        int bi;
+        for (int i = 0; i < 0x1000000; i++) {
+            t = curr ^ (curr = random.nextInt());
+            bi = 31;
+            for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+        }
+        System.out.println("HERD: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("each bit changes this often relative to 0.5 probability...");
+        for (int i = 0; i < 32; i++) {
+            System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
+        }
+    }
 
     @Test
     public void dummyTest()
     {
-        {
+        /*{
             SlapRNG r = new SlapRNG(); //-1999262892926553691L
             System.out.println(r);
             System.out.println();
             for (int i = 0; i < 256; i++) {
                 System.out.println(StringKit.hex(r.nextInt()));
             }
-            //r.setState(r.nextLong());
+            r.setState(r.nextLong());
             System.out.println();
             System.out.println(r);
             System.out.println();
 
             int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
-            bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
             System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
 
-            for (long m = 1; m <= 0x400000004L; m++) {
+            for (long m = 1; m <= 0x100000104L; m++) {
                 if (bonus == (bonus = r.nextInt()))
                 {
                     if(bonus == r.nextInt())
@@ -212,32 +289,141 @@ public class StrengthTest {
             }
             System.out.println("DONE! final r: " + r + "  with next 4 random values: "
                     + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
-        }
-        /*
-        {
-            LapRNG r = new LapRNG(); //-1999262892926553691L
-            System.out.println(StringKit.hex(r.getState0()) + StringKit.hex(r.getState1()));
+        }*/
+        /*{
+            int state = 1234560;
+            System.out.println("STARTING LFSR AT: " + state);
             System.out.println();
-            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt();
-            //long wrap = r.nextLong(), wrap2 = r.nextLong(), wrap3 = r.nextLong(), wrap4 = r.nextLong();
-            for (long m = 1; m <= 0x400000004L; m++) {
-                if(wrap == r.nextInt())
-                {
-                    System.out.println(m++);
-                    if(wrap2 == r.nextInt())
-                    {
-                        System.out.println(m++);
-                        if(wrap3 == r.nextInt()) {
-                            System.out.println(m++);
-                            if (wrap4 == r.nextInt()) {
+            for (int i = 0; i < 256; i++) {
+                System.out.println(StringKit.hex(state = LFSR.determinePositiveInt(state)));
+            }
+            state = 1234560;
+            System.out.println();
+            System.out.println();
 
-                                System.out.println(m + "!!!");
-                                break;
+            int wrap = (state = LFSR.determinePositiveInt(state)),
+                    wrap2 = (state = LFSR.determinePositiveInt(state)),
+                    wrap3 = (state = LFSR.determinePositiveInt(state)),
+                    wrap4 = (state = LFSR.determinePositiveInt(state)),
+                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
+
+            for (long m = 1; m <= 0x100000104L; m++) {
+                if(state <= 0)
+                    System.out.println("NOT CORRECT! " + m);
+                if (bonus == (bonus = (state = LFSR.determinePositiveInt(state))))
+                {
+                    if(bonus == (state = LFSR.determinePositiveInt(state)))
+                        System.out.println("BAD. " + StringKit.hex(m));
+                }
+                else {
+                    if (wrap == bonus) {
+                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = (state = LFSR.determinePositiveInt(state))));
+                        if (wrap2 == bonus2) {
+                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = (state = LFSR.determinePositiveInt(state))));
+                            if (wrap3 == bonus3) {
+                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = (state = LFSR.determinePositiveInt(state))));
+                                if (wrap4 == bonus4) {
+
+                                    System.out.println(StringKit.hex(m) + "!!!");
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
+            System.out.println("DONE! final r: " + state + "  with next 4 random values: "
+                    + (state = LFSR.determinePositiveInt(state)) + "  "
+                    + (state = LFSR.determinePositiveInt(state)) + "  "
+                    + (state = LFSR.determinePositiveInt(state)) + "  "
+                    + (state = LFSR.determinePositiveInt(state)) + "  ");
         }*/
+        /*{
+            HordeRNG r = new HordeRNG(); //-1999262892926553691L
+            System.out.println();
+            System.out.println(StringKit.hex(r.state)
+                    + " with " + StringKit.hex(r.choice));
+            System.out.println();
+            for (int i = 0; i < 256; i++) {
+                System.out.println(StringKit.hex(r.nextInt()));
+            }
+            r.setState(r.nextLong());
+            System.out.println();
+            System.out.println(r);
+            System.out.println();
+            long wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
+                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
+            for (long m = 1; m <= 0x100000104L; m++) {
+                if (bonus == (bonus = r.nextInt()))
+                {
+                    if(bonus == r.nextInt())
+                        System.out.println("BAD. " + StringKit.hex(m));
+                }
+                else {
+                    if (wrap == bonus) {
+                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = r.nextInt()));
+                        if (wrap2 == bonus2) {
+                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = r.nextInt()));
+                            if (wrap3 == bonus3) {
+                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = r.nextInt()));
+                                if (wrap4 == bonus4) {
+
+                                    System.out.println(StringKit.hex(m) + "!!!");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("DONE! final r: " + r + "  with next 4 random values: "
+                    + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
+        }*/
+        {
+            HerdRNG r = new HerdRNG(); //-1999262892926553691L
+            System.out.println();
+            System.out.println(StringKit.hex(r.state)
+                    + " with " + StringKit.hex(r.choice));
+            System.out.println();
+            for (int i = 0; i < 256; i++) {
+                System.out.println(StringKit.hex(r.nextInt()));
+            }
+            r.setState(r.nextInt());
+            System.out.println();
+            System.out.println(r);
+            System.out.println();
+            long wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
+                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
+            for (long m = 1; m <= 0x100000104L; m++) {
+                if (bonus == (bonus = r.nextInt()))
+                {
+                    if(bonus == r.nextInt())
+                        System.out.println("BAD. " + StringKit.hex(m));
+                }
+                else {
+                    if (wrap == bonus) {
+                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = r.nextInt()));
+                        if (wrap2 == bonus2) {
+                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = r.nextInt()));
+                            if (wrap3 == bonus3) {
+                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = r.nextInt()));
+                                if (wrap4 == bonus4) {
+
+                                    System.out.println(StringKit.hex(m) + "!!!");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("DONE! final r: " + r + "  with next 4 random values: "
+                    + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
+
+        }
+
     }
 }

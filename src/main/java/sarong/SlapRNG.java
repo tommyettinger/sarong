@@ -83,8 +83,9 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next( final int bits ) {
+        //return (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29))) >>> (32 - bits);
+        return (state1 ^= (state0 += 0xC5BC0CED + 0xDE4D * (state1 >> 1))) >>> (32 - bits);
         //return (state0 += (state1 ^ (state1 += 0xC6BC278D))) >>> (32 - bits);
-        return (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29))) >>> (32 - bits);
     }
 
     /**
@@ -94,7 +95,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt()
     {
-        return (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29)));
+        //return (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29)));
+        return (state1 ^= (state0 += 0xC5BC0CED + 0xDE4D * (state1 >> 1)));
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -115,7 +117,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        final long r = (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29)));
+        //final long r = (state1 += (state1 << 8 ^ (state0 += 0xCABC2C8D) >>> (state1 >>> 29)));
+        final long r = (state1 ^= (state0 += 0xC5BC0CED + 0xDE4D * (state1 >> 1)));
         return 0xC6AC279692B5CC53L * r ^ r << 32;
 
         //(state1 += (state0 += state1 >>> 4) + 0xCABC2C8D)
