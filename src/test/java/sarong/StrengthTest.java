@@ -192,7 +192,7 @@ public class StrengthTest {
     @Test
     public void testHorde()
     {
-        HordeRNG random = new HordeRNG(); //0xABC7890456123DEFL
+        HordeRNG random = new HordeRNG(new long[16]); //0xABC7890456123DEFL
         System.out.println("HordeRNG (testing nextLong): " +
                 StringKit.hex(random.state)
                 + " with " + StringKit.hex(random.choice));
@@ -223,7 +223,7 @@ public class StrengthTest {
     @Test
     public void testHerd()
     {
-        HerdRNG random = new HerdRNG(); //0xABC7890456123DEFL
+        HerdRNG random = new HerdRNG(new int[16]); //0xABC7890456123DEFL
         System.out.println("HerdRNG (testing nextInt): " +
                 StringKit.hex(random.state)
                 + " with " + StringKit.hex(random.choice));
@@ -382,7 +382,7 @@ public class StrengthTest {
                     + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
         }*/
         {
-            HerdRNG r = new HerdRNG(); //-1999262892926553691L
+            HerdRNG r = new HerdRNG(new int[16]); //-1999262892926553691L
             System.out.println();
             System.out.println(StringKit.hex(r.state)
                     + " with " + StringKit.hex(r.choice));
@@ -390,7 +390,7 @@ public class StrengthTest {
             for (int i = 0; i < 256; i++) {
                 System.out.println(StringKit.hex(r.nextInt()));
             }
-            r.setState(r.nextInt());
+            r = new HerdRNG(new int[16]);
             System.out.println();
             System.out.println(r);
             System.out.println();
@@ -401,7 +401,7 @@ public class StrengthTest {
                 if (bonus == (bonus = r.nextInt()))
                 {
                     if(bonus == r.nextInt())
-                        System.out.println("BAD. " + StringKit.hex(m));
+                        System.out.println("BAD. Position " + StringKit.hex(m) + " and value " + bonus + ", r is " + r);
                 }
                 else {
                     if (wrap == bonus) {

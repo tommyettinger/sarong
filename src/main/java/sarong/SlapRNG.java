@@ -215,7 +215,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static int determine(final int state)
     {
-        return (state + (state << 8 ^ (state + 0xCABC2C8D) >>> (state >>> 29)));
+        //return (state + (state << 8 ^ (state + 0xCABC2C8D) >>> (state >>> 29)));
+        return (state ^ (state + (0xC5BC0CED + 0xDE4D * (state >> 1))));
     }
     /**
      * A simple "output stage" applied to a two-part state like what FlapRNG uses normally; this method does not update
@@ -231,7 +232,8 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static int determine(final int state0, final int state1)
     {
-        return (state1 + (state1 << 8 ^ (state0 + 0xCABC2C8D) >>> (state1 >>> 29)));
+        //return (state1 + (state1 << 8 ^ (state0 + 0xCABC2C8D) >>> (state1 >>> 29)));
+        return (state1 ^ (state0 + (0xC5BC0CED + 0xDE4D * (state1 >> 1))));
     }
     /**
      * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given state. If you expect to call
@@ -244,7 +246,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static float randomFloat(final int state)
     {
-        return NumberTools.intBitsToFloat(((state + (state << 8 ^ (state + 0xCABC2C8D) >>> (state >>> 29))) >>> 9) | 0x3f800000) - 1f;
+        return NumberTools.intBitsToFloat(((state ^ (state + (0xC5BC0CED + 0xDE4D * (state >> 1)))) >>> 9) | 0x3f800000) - 1f;
     }
     /**
      * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given states. If you expect to
@@ -259,7 +261,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static float randomFloat(final int state0, final int state1)
     {
-        return NumberTools.intBitsToFloat(((state1 + (state1 << 8 ^ (state0 + 0xCABC2C8D) >>> (state1 >>> 29))) >>> 9) | 0x3f800000) - 1f;
+        return NumberTools.intBitsToFloat(((state1 ^ (state0 + (0xC5BC0CED + 0xDE4D * (state1 >> 1)))) >>> 9) | 0x3f800000) - 1f;
     }
 
     /**
@@ -273,7 +275,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static float randomSignedFloat(final int state)
     {
-        return NumberTools.intBitsToFloat(((state + (state << 8 ^ (state + 0xCABC2C8D) >>> (state >>> 29))) >>> 9) | 0x40000000) - 3f;
+        return NumberTools.intBitsToFloat(((state ^ (state + (0xC5BC0CED + 0xDE4D * (state >> 1)))) >>> 9) | 0x40000000) - 3f;
     }
 
     /**
@@ -289,7 +291,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      */
     public static float randomSignedFloat(final int state0, final int state1)
     {
-        return NumberTools.intBitsToFloat(((state1 + (state1 << 8 ^ (state0 + 0xCABC2C8D) >>> (state1 >>> 29))) >>> 9) | 0x40000000) - 3f;
+        return NumberTools.intBitsToFloat(((state1 ^ (state0 + (0xC5BC0CED + 0xDE4D * (state1 >> 1)))) >>> 9) | 0x40000000) - 3f;
     }
     
     @Override
