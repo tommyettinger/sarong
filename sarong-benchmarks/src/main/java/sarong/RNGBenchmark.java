@@ -331,7 +331,7 @@ public class RNGBenchmark {
 
     public long doLap()
     {
-        LapRNG rng = new LapRNG(seed);
+        ZapRNG rng = new ZapRNG(seed);
 
         for (int i = 0; i < 1000000000; i++) {
             seed += rng.nextLong();
@@ -342,14 +342,14 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureLap() throws InterruptedException {
+    public void a__measureLap() throws InterruptedException {
         seed = 9000;
         doLap();
     }
 
     public long doLapInt()
     {
-        LapRNG rng = new LapRNG(iseed);
+        ZapRNG rng = new ZapRNG(iseed);
 
         for (int i = 0; i < 1000000000; i++) {
             iseed += rng.next(32);
@@ -360,14 +360,14 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureLapInt() throws InterruptedException {
+    public void a__measureLapInt() throws InterruptedException {
         iseed = 9000;
         doLapInt();
     }
 
     public long doLapR()
     {
-        RNG rng = new RNG(new LapRNG(seed));
+        RNG rng = new RNG(new ZapRNG(seed));
 
         for (int i = 0; i < 1000000000; i++) {
             seed += rng.nextLong();
@@ -378,14 +378,14 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureLapR() throws InterruptedException {
+    public void a__measureLapR() throws InterruptedException {
         seed = 9000;
         doLapR();
     }
 
     public long doLapIntR()
     {
-        RNG rng = new RNG(new LapRNG(iseed));
+        RNG rng = new RNG(new ZapRNG(iseed));
 
         for (int i = 0; i < 1000000000; i++) {
             iseed += rng.nextInt();
@@ -396,7 +396,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measureLapIntR() throws InterruptedException {
+    public void a__measureLapIntR() throws InterruptedException {
         iseed = 9000;
         doLapIntR();
     }

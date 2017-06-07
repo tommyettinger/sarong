@@ -15,12 +15,13 @@ public class Dumper {
     public static void blast(String filename, RNG[] r)
     {
         DataOutputStream dos = null;
+        RNG rng = r[62];
         try {
             dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
 
             for (int i = 0; i < 64; i++) {
                 for (int j = 0; j < 0x20000; j++) {
-                    dos.writeLong(r[62].nextLong());
+                    dos.writeLong(rng.nextLong());
                 }
             }
             dos.flush();
@@ -34,12 +35,13 @@ public class Dumper {
     public static void blastInt(String filename, RNG[] r)
     {
         DataOutputStream dos = null;
+        RNG rng = r[62];
         try {
             dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
 
             for (int i = 0; i < 64; i++) {
                 for (int j = 0; j < 0x40000; j++) {
-                    dos.writeInt(r[62].next(32));
+                    dos.writeInt(rng.next(32));
                 }
             }
             dos.flush();
@@ -73,10 +75,19 @@ public class Dumper {
         blast("Thunder", rs);
         */
         for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new ZapRNG(LightRNG.determine(seeds[i])));
+        }
+        blast("Lap", rs);
+        /*
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new HordeRNG(seeds[i]));
+        }
+        blast("Horde", rs);
+
+        for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new FlapRNG(seeds[i]));
         }
         blast("Flap", rs);
-        /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));
         }

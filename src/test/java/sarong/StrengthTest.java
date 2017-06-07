@@ -82,7 +82,7 @@ public class StrengthTest {
     @Test
     public void testLap()
     {
-        LapRNG random = new LapRNG(); //0xABC7890456123DEFL
+        ZapRNG random = new ZapRNG(); //0xABC7890456123DEFL
         System.out.println("LapRNG (testing nextLong): " + StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
         long[] bits = new long[64];
         long curr = random.nextLong(), t;
@@ -110,7 +110,7 @@ public class StrengthTest {
     //@Test
     public void testLapInt()
     {
-        LapRNG random = new LapRNG(); //0xABC7890456123DEFL
+        ZapRNG random = new ZapRNG(); //0xABC7890456123DEFL
         System.out.println("LapRNG (testing nextInt): " + StringKit.hex(random.getState0()) + StringKit.hex(random.getState1()));
         int[] bits = new int[32];
         int curr = random.nextInt(), t;
