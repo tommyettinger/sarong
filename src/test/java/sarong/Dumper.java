@@ -74,8 +74,15 @@ public class Dumper {
         System.out.println(seeds[62]);
         blast("Thunder", rs);
         */
+        /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new ZapRNG(LightRNG.determine(seeds[i])));
+        }
+        blast("Zap", rs);
+
+        */
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new LapRNG(LightRNG.determine(seeds[i])));
         }
         blast("Lap", rs);
         /*

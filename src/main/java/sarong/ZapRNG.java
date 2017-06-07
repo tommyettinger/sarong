@@ -9,11 +9,11 @@ import java.io.Serializable;
  * A variant on LapRNG that improves the quality at the expense of some speed. Running ZapRNG through PractRand, a tool
  * for evaluating the statistical quality of PRNGs, found far, far fewer statistical failures than LapRNG, and also had
  * them generally be less severe. The period is still relatively low, at (with a high degree of certainty) 2 to the 65,
- * but the speed is still fairly good; approximately the same as or slightly faster than ThunderRNG (generally within
- * 1% difference, and definitely within the margin of error), faster than LightRNG all around, slower than LapRNG for
- * all methods, and slower than FlapRNG on next() and nextInt() but not on nextLong(). Like LapRNG, there should be many
- * possible sequences of length (2 to the 65) this can produce, depending on the relationship between the two longs used
- * for state, determined at construction or when the seed is set.
+ * but the speed is still fairly good; slightly faster than ThunderRNG (an earlier version was within 1% difference, but
+ * recent changes sped up Zap by about 5-10%), faster than LightRNG all around, slower than LapRNG for all methods, and
+ * slower than FlapRNG on next() and nextInt() but not on nextLong(). Like LapRNG, there should be many possible
+ * sequences of length (2 to the 65) this can produce, depending on the relationship between the two longs used for
+ * state, determined at construction or when the seed is set.
  * <br>
  * Created by Tommy Ettinger on 6/7/2017.
  */
@@ -110,7 +110,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final int next( final int bits ) {
-        return (int) (((state0 | 0xC6BC279692B5CC83L) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24)) >>> (64 - bits));
+        return (int) (((state1 | 0xC6BC279692B5DBEFL) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24)) >>> (64 - bits));
     }
 
     /**
@@ -120,7 +120,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      */
     public final int nextInt()
     {
-        return (int) ((state0 | 0xC6BC279692B5CC83L) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24));
+        return (int) ((state1 | 0xC6BC279692B5DBEFL) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24));
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -137,7 +137,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
     @Override
     public final long nextLong() {
         //return (state1 += state0 ^ (state0 += 0xD43779B97F4A7C13L) >> 24);
-        return ((state0 | 0xC6BC279692B5CC83L) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24));
+        return ((state1 | 0xC6BC279692B5DBEFL) * (state1 += (state0 += 0x9E3779B97F4A7C15L) >>> 24));
 
         //return (state0 += (((state1 += 0xC6BC279692B5C483L) >>> 59) + 124) * 0x632AE59B79B4E319L);
         //0x9E3779B97F4A7C15L
@@ -209,7 +209,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      */
     public static long determine(final long state0, final long state1)
     {
-        return (state1 + ((state0 * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L);
+        return ((state1 | 0xC6BC279692B5DBEFL) * (state1 + (state0 + 0x9E3779B97F4A7C15L) >>> 24));
     }
     /**
      * @param state0 any long
@@ -218,7 +218,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      */
     public static double randomDouble(final long state0, final long state1)
     {
-        return NumberTools.longBitsToDouble(((state1 + ((state0 * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L)
+        return NumberTools.longBitsToDouble((((state1 | 0xC6BC279692B5DBEFL) * (state1 + (state0 + 0x9E3779B97F4A7C15L) >>> 24))
                 >>> 12) | 0x3ff00000) - 1f;
     }
 
@@ -228,7 +228,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      * @return a pseudo-random double from -1.0 (inclusive) to 1.0 (exclusive)
      */
     public static double randomSignedDouble(final long state0, final long state1) {
-        return NumberTools.longBitsToDouble(((state1 + ((state0 * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L)
+        return NumberTools.longBitsToDouble((((state1 | 0xC6BC279692B5DBEFL) * (state1 + (state0 + 0x9E3779B97F4A7C15L) >>> 24))
                 >>> 12) | 0x40000000) - 3.0;
     }
 
