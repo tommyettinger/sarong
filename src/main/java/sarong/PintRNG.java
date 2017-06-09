@@ -237,7 +237,6 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
         state ^= state >>> (4 + (state >>> 28));
         return ((state *= 277803737) >>> 22) ^ state;
     }
-
     /**
      * Like {@link #determine(int)}, gets a pseudo-random int that is a permutation of {@code state}, which is an int.
      * Unlike determine(), this static method performs an extra step to avoid correlation between similar inputs, such
@@ -251,7 +250,7 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
      */
     public static int disperse(int state)
     {
-        state = (state ^= 0xD0E89D2D) >>> 19 | state << 13;
+        state = ((state >>> 19 | state << 13) ^ 0x13A5BA1D);
         state ^= state >>> (4 + (state >>> 28));
         return ((state *= 277803737) >>> 22) ^ state;
     }
@@ -269,8 +268,9 @@ public class PintRNG implements RandomnessSource, StatefulRandomness, Serializab
     }
     public static int disperseBounded(int state, final int bound)
     {
-        state = (state ^= 0xD0E89D2D) >>> 19 | state << 13;
+        state = ((state >>> 19 | state << 13) ^ 0x13A5BA1D);
         state ^= state >>> (4 + (state >>> 28));
         return (int)((bound * ((((state *= 277803737) >>> 22) ^ state) & 0x7FFFFFFFL)) >>> 31);
     }
+
 }

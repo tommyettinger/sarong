@@ -88,18 +88,19 @@ public class LapRNG implements RandomnessSource, Serializable {
      * @param seed2 any int, will not be used verbatim
      */
     public LapRNG(final int seed0, final int seed1, final int seed2) {
-        state0 = (seed0 * 0xBFL + seed1 * seed2 << 24) ^ 0x8329C6EB9E6AD3E3L;
+        state0 = (seed0 * 0xBFL + seed1 * 0x1FL * seed2 << 24) ^ 0x8329C6EB9E6AD3E3L;
         state1 = (seed1 * 0x8329C6EB9E6AD3E3L ^ seed2 - 0xC6BC279692B5C483L) + seed0 * 0x9E3779B97F4A7C15L;
     }
 
     /**
-     * This constructor gets a 64-bit hash code from the given String or other CharSequence and gives it to the
-     * constructor that takes one long, {@link #LapRNG(long)}.
+     * This constructor gets three differently-calculated 32-bit hash codes from the given String or other
+     * CharSequence and gives them to the constructor that takes three ints, {@link #LapRNG(int, int, int)}. You can
+     * pass a null seed and this will still work.
      * @param seed any CharSequence, such as a String
      */
     public LapRNG(final CharSequence seed)
     {
-        this(CrossHash.hash64(seed));
+        this(CrossHash.Mist.alpha.hash(seed), CrossHash.Mist.beta.hash(seed), CrossHash.Mist.gamma.hash(seed));
     }
 
     private long state0, state1;
@@ -194,6 +195,15 @@ public class LapRNG implements RandomnessSource, Serializable {
     }
 
     /**
+     * @param state any long
+     * @return any long, from the full range
+     */
+    public static long determine(final long state)
+    {
+        return (state + ((state * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L);
+    }
+
+    /**
      * @param state0 any long
      * @param state1 any long
      * @return any long, from the full range
@@ -202,6 +212,27 @@ public class LapRNG implements RandomnessSource, Serializable {
     {
         return (state1 + ((state0 * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L);
     }
+
+    /**
+     * @param state any long
+     * @return any long, from the full range
+     */
+    public static int determineBounded(final long state, final int bound)
+    {
+        return (int)((bound * ((state + ((state * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L) & 0x7FFFFFFFL)) >> 31);
+    }
+
+    /**
+     * @param state0 any long
+     * @param state1 any long
+     * @return any long, from the full range
+     */
+    public static int determineBounded(final long state0, final long state1, final int bound)
+    {
+        return (int)((bound * ((state1 + ((state0 * 0x9E3779B97F4A7C15L) >> 24) * 0x632AE59B69B3C209L) & 0x7FFFFFFFL)) >> 31);
+
+    }
+
     /**
      * @param state0 any long
      * @param state1 any long

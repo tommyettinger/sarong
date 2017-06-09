@@ -628,7 +628,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void a__measureZap() throws InterruptedException {
+    public void aa_measureZap() throws InterruptedException {
         seed = 9000;
         doZap();
     }
@@ -646,7 +646,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void a__measureZapInt() throws InterruptedException {
+    public void aa_measureZapInt() throws InterruptedException {
         iseed = 9000;
         doZapInt();
     }
@@ -664,7 +664,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void a__measureZapR() throws InterruptedException {
+    public void aa_measureZapR() throws InterruptedException {
         seed = 9000;
         doZapR();
     }
@@ -682,7 +682,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void a__measureZapIntR() throws InterruptedException {
+    public void aa_measureZapIntR() throws InterruptedException {
         iseed = 9000;
         doZapIntR();
     }

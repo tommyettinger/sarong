@@ -331,14 +331,54 @@ public class VanDerCorputQRNG implements StatefulRandomness, RandomnessSource, S
      * Chooses one sequence from the van der Corput sequences with bases 2, 3, and 5, where 5 is used 1/8 of the time,
      * 3 is used 3/8 of the time, and 2 is used 1/2 of the time, and returns a double from the chosen sequence at the
      * specified {@code index}. The exact setup used for the choice this makes is potentially fragile, but in certain
-     * circumstances this does better than {@link sarong.SobolQRNG} at avoiding extremely close values (the kind that overlap
-     * on actual maps). Speed is not a concern here; this should be very much fast enough for the expected usage in
-     * map generation.
-     * @param index the index to use from one of the sequences
+     * circumstances this does better than {@link sarong.SobolQRNG} at avoiding extremely close values (the kind that
+     * overlap on unusually-shaped regions when this is used to sample them). Speed is not a concern here; this should
+     * be very much fast enough for the expected usage (getting a scattered group of points, not in real time).
+     * @param index the index to use from one of the sequences; will also be used to select sequence
      * @return a double from 0.0 (inclusive, but extremely rare) to 1.0 (exclusive); values will tend to spread apart
      */
     public static double determineMixed(int index)
     {
         return determine(lowPrimes[index & 7], index);
     }
+    /**
+     * Given any int (0 is allowed), this gets a somewhat-sub-random float from 0.0 (inclusive) to 1.0 (exclusive)
+     * using the same implementation as {@link NumberTools#randomFloat(int)} but with index alterations. Only "weak"
+     * because it lacks the stronger certainty of subsequent numbers being separated that the Van der Corput sequence
+     * has. Not actually sub-random, but manages to be distributed remarkably evenly, likely due to the statistical
+     * strength of the algorithm it uses (the same as {@link PintRNG}, derived from PCG-Random). Because PintRNG is
+     * pseudo-random and uses very different starting states on subsequent calls to its {@link PintRNG#next(int)}
+     * method, this method needs to perform some manipulation of index to keep a call that passes 2 for index different
+     * enough from a call that passes 3 (this should result in 0.4257662296295166 and 0.7359509468078613). You may want
+     * to perform a similar manipulation if you find yourself reseeding a PRNG with numerically-close seeds; this can be
+     * done for a value called index with {@code ((index >>> 19 | index << 13) ^ 0x13A5BA1D)}.
+     *
+     * <br>
+     * Not all int values for index will produce unique results, since this produces a float and there are less distinct
+     * floats between 0.0 and 1.0 than there are all ints (1/512 as many floats in that range as ints, specifically).
+     * It should take a while calling this method before you hit an actual collision.
+     * @param index any int
+     * @return a float from 0.0 (inclusive) to 1.0 (exclusive) that should not be closely correlated to index
+     */
+    public static float weakDetermine(final int index)
+    {
+        return NumberTools.randomFloat((index >>> 19 | index << 13) ^ 0x13A5BA1D);
+        //return NumberTools.longBitsToDouble(0x3ff0000000000000L | ((index<<1|1) * 0x9E3779B97F4A7C15L * ~index
+        //        - ((index ^ ~(index * 11L)) * 0x632BE59BD9B4E019L)) >>> 12) - 1.0;
+        //return NumberTools.setExponent(
+        //        (NumberTools.setExponent((index<<1|1) * 0.618033988749895, 0x3ff))
+        //                * (0x232BE5 * (~index)), 0x3ff) - 1.0;
+    }
+
+    /**
+     * Like {@link #weakDetermine(int)}, but returns a float between -1.0f and 1.0f, exclusive on both. Uses
+     * {@link NumberTools#randomSignedFloat(int)} internally but alters the index parameter so calls with nearby values
+     * for index are less likely to have nearby results.
+     * @param index any int
+     * @return a sub-random float between -1.0f and 1.0f (both exclusive, unlike some other methods)
+     */
+    public static float weakSignedDetermine(final int index) {
+        return NumberTools.randomSignedFloat((index >>> 19 | index << 13) ^ 0x13A5BA1D);
+    }
+
 }

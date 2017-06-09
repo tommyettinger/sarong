@@ -277,8 +277,8 @@ public class StrengthTest {
     @Test
     public void dummyTest()
     {
-        /*{
-            SlapRNG r = new SlapRNG(); //-1999262892926553691L
+        {
+            SlapRNG r = new SlapRNG(0L); //-1999262892926553691L
             System.out.println(r);
             System.out.println();
             for (int i = 0; i < 256; i++) {
@@ -318,7 +318,7 @@ public class StrengthTest {
             }
             System.out.println("DONE! final r: " + r + "  with next 4 random values: "
                     + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
-        }*/
+        }
         /*{
             int state = 1234560;
             System.out.println("STARTING LFSR AT: " + state);
@@ -410,7 +410,7 @@ public class StrengthTest {
             System.out.println("DONE! final r: " + r + "  with next 4 random values: "
                     + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
         }*/
-        {
+        /*{
             HerdRNG r = new HerdRNG(new int[16]); //-1999262892926553691L
             System.out.println();
             System.out.println(StringKit.hex(r.state)
@@ -452,7 +452,7 @@ public class StrengthTest {
             System.out.println("DONE! final r: " + r + "  with next 4 random values: "
                     + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
 
-        }
+        }*/
 
     }
 }

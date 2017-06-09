@@ -3,6 +3,7 @@ package sarong;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -19,7 +20,8 @@ import java.util.Arrays;
  * though this last possibility is very unlikely.
  * Created by Tommy Ettinger on 6/4/2017.
  */
-public class HordeRNG implements RandomnessSource {
+public class HordeRNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     public final long[] state = new long[16];
     public int choice = 0;
     public HordeRNG() {
