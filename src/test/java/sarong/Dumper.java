@@ -80,11 +80,21 @@ public class Dumper {
         }
         blast("Zap", rs);
 
-        */
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LapRNG(LightRNG.determine(seeds[i])));
         }
         blast("Lap", rs);
+        */
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new BirdRNG(LightRNG.determine(seeds[i])));
+        }
+        blastInt("Bird", rs);
+        /*
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new LightRNG(seeds[i]));
+        }
+        blastInt("Light", rs);
+
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new HordeRNG(seeds[i]));
@@ -95,10 +105,6 @@ public class Dumper {
             rs[i] = new RNG(new FlapRNG(seeds[i]));
         }
         blast("Flap", rs);
-        for (int i = 0; i < 64; i++) {
-            rs[i] = new RNG(new LightRNG(seeds[i]));
-        }
-        blast("Light", rs);
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new XoRoRNG(seeds[i]));
         }
