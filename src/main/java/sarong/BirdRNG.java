@@ -121,24 +121,37 @@ uint32_t splitmix32(uint32_t *x) {
             choice += (state[i] = (int)LightRNG.determine(seed + i));
         }
     }
-    //0xD03779D9
+
+    public void setState(final int[] seed)
+    {
+        int len;
+        if (seed == null || (len = seed.length) == 0) {
+            for (int i = 0; i < 32; i++) {
+                choice += (state[i] = splitMix32(0x632D978F + i * 0x9E3779B9));
+            }
+        } else if (len < 32) {
+            for (int i = 0, s = 0; i < 32; i++, s++) {
+                if(s == len) s = 0;
+                choice += (state[i] ^= splitMix32(seed[s] + i * 0x9E3779B9));
+            }
+        } else {
+            for (int i = 0, s = 0; s < len; s++, i = (i + 1) & 31) {
+                choice += (state[i] ^= seed[s]);
+            }
+        }
+    }
+
+    @Override
     public final long nextLong() {
         return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1)
                 * 0x632AE59B69B3C209L - choice;
-        // 0x632AE59B69B3C209L
     }
 
     public final int nextInt() {
-        //final int c = (choice += 0x9CBC278D);
         return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1);
-        //0xBE377BB97F4A7C17L
-        /*
-        return (int) ((state1 += (state0 += 0x632AE59B69B3C209L) * 0x9E3779B97F4A7C15L)
-                + (low = (low >>> 1 ^ (-(low & 1L) & 0x6000000000000000L))) // LFSR, 63-bit
-                ^ (high = high >>> 1 ^ (-(high & 1L) & 0xD800000000000000L))); // LFSR, 64-bit;
-        */
     }
 
+    @Override
     public final int next(final int bits) {
         return ((state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1) >>> (32 - bits)); //0x9E3779B9
     }

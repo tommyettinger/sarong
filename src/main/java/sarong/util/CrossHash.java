@@ -1989,6 +1989,7 @@ public class CrossHash {
             return (int) ((result ^= Long.rotateLeft((z * 0xC6BC279692B5CC83L ^ $alt ^ result * 0x9E3779B97F4A7C15L) + 0x632BE59BD9B4E019L, (int) (chips + z >>> 58))) ^ (result >>> 32));
         }
     }
+
     /**
      * A whole cluster of Wisp-like hash functions that sacrifice a small degree of speed, but can be built with up
      * to 128 bits of salt values that help to obscure what hashing function is actually being used. This class is
@@ -2002,19 +2003,20 @@ public class CrossHash {
      * The salt fields are not serialized, so it is important that the same salt will be given by the
      * program when the same hash results are wanted for some inputs.
      * <br>
-     * A group of 24 static, final, pre-initialized Mist members are present in this class, each with the
+     * A group of 48 static, final, pre-initialized Mist members are present in this class, 24 with the
      * name of a letter in the Greek alphabet (this uses the convention on Wikipedia,
-     * https://en.wikipedia.org/wiki/Greek_alphabet#Letters , where lambda is spelled with a 'b'). The whole
-     * group of 24 pre-initialized members are also present in a static array called {@code predefined}.
-     * These can be useful when, for example, you want to get multiple hashes of a single array or String
-     * as part of cuckoo hashing or similar techniques that need multiple hashes for the same inputs.
+     * https://en.wikipedia.org/wiki/Greek_alphabet#Letters , where lambda is spelled with a 'b') and 24 with the same
+     * name followed by an underscore, such as {@link #alpha_}. The whole group of 48 pre-initialized members are also
+     * present in a static array called {@code predefined}. These can be useful when, for example, you want to get
+     * multiple hashes of a single array or String as part of cuckoo hashing or similar techniques that need multiple
+     * hashes for the same inputs.
      */
     public static final class Mist implements Serializable {
         private static final long serialVersionUID = -1275284837479983271L;
 
-        private transient long $l1, $l2;
+        private transient final long $l1, $l2;
 
-        private transient int $i1, $i2;
+        private transient final int $i1, $i2;
 
         public Mist() {
             this(0x1234567876543210L, 0xEDCBA98789ABCDEFL);
@@ -2034,16 +2036,17 @@ public class CrossHash {
         @SuppressWarnings("NumericOverflow")
         public Mist(final long alteration) {
             $i1 = permute(alteration);
-            $l1 = alteration + $i1;
-            $l1 = ($l1 ^ ($l1 >>> 30)) * 0xBF58476D1CE4E5B9L;
-            $l1 = ($l1 ^ ($l1 >>> 27)) * 0x94D049BB133111EBL;
-            $l1 ^= $l1 >>> 31;
+            long l1, l2;
+            l1 = alteration + $i1;
+            l1 = (l1 ^ (l1 >>> 30)) * 0xBF58476D1CE4E5B9L;
+            l1 = (l1 ^ (l1 >>> 27)) * 0x94D049BB133111EBL;
+            $l1 = l1 ^ l1 >>> 31;
 
             $i2 = permute($l1 + 0x9E3779B97F4A7C15L);
-            $l2 = alteration + 6 * 0x9E3779B97F4A7C15L;
-            $l2 = ($l2 ^ ($l2 >>> 30)) * 0xBF58476D1CE4E5B9L;
-            $l2 = ($l2 ^ ($l2 >>> 27)) * 0x94D049BB133111EBL;
-            $l2 ^= $l2 >>> 31;
+            l2 = alteration + 6 * 0x9E3779B97F4A7C15L;
+            l2 = (l2 ^ (l2 >>> 30)) * 0xBF58476D1CE4E5B9L;
+            l2 = (l2 ^ (l2 >>> 27)) * 0x94D049BB133111EBL;
+            $l2 = l2 ^ l2 >>> 31;
         }
 
         @SuppressWarnings("NumericOverflow")
@@ -2055,27 +2058,27 @@ public class CrossHash {
         }
 
         /**
-         * Alters all of the salt values in a pseudo-random way based on the previous salt value.
-         * This will effectively make this Mist object a different, incompatible hashing functor.
+         * Makes a new Mist with all of the salt values altered based on the previous salt values.
+         * This will make a different, incompatible Mist object that will give different results than the original.
          * Meant for use in Cuckoo Hashing, which can need the hash function to be updated or changed.
          * An alternative is to select a different Mist object from {@link #predefined}, or to simply
          * construct a new Mist with a different parameter or set of parameters.
          */
         @SuppressWarnings("NumericOverflow")
-        public void randomize()
+        public Mist randomize()
         {
-            $i1 = permute($l2 + 3 * 0x9E3779B97F4A7C15L);
-            $l1 = $l2 + $i1;
-            $l1 = ($l1 ^ ($l1 >>> 30)) * 0xBF58476D1CE4E5B9L;
-            $l1 = ($l1 ^ ($l1 >>> 27)) * 0x94D049BB133111EBL;
-            $l1 ^= $l1 >>> 31;
+            long l1, l2;
+            l1 = $l2 + permute($l2 + 3 * 0x9E3779B97F4A7C15L);
+            l1 = (l1 ^ (l1 >>> 30)) * 0xBF58476D1CE4E5B9L;
+            l1 = (l1 ^ (l1 >>> 27)) * 0x94D049BB133111EBL;
+            l1 ^= l1 >>> 31;
 
-            $i2 = permute($l1 + 5 * 0x9E3779B97F4A7C15L);
-            $l2 = $l1 + 6 * 0x9E3779B97F4A7C15L;
-            $l2 = ($l2 ^ ($l2 >>> 30)) * 0xBF58476D1CE4E5B9L;
-            $l2 = ($l2 ^ ($l2 >>> 27)) * 0x94D049BB133111EBL;
-            $l2 ^= $l2 >>> 31;
+            l2 = permute(l1 + 5 * 0x9E3779B97F4A7C15L) + 6 * 0x9E3779B97F4A7C15L;
+            l2 = (l2 ^ (l2 >>> 30)) * 0xBF58476D1CE4E5B9L;
+            l2 = (l2 ^ (l2 >>> 27)) * 0x94D049BB133111EBL;
+            l2 ^= l2 >>> 31;
 
+            return new Mist(l1, l2);
         }
 
         public static final Mist alpha = new Mist("alpha"), beta = new Mist("beta"), gamma = new Mist("gamma"),
@@ -2493,7 +2496,5 @@ public class CrossHash {
             int a = 0x632BE5AB ^ 0x85157AF5 * data.hashCode(), result = 0x9E3779B9 + $i2 + (a ^ $i2 * a + $i1);
             return result * (a * $i1 | 1) ^ (result >>> 11 | result << 21);
         }
-
     }
-
 }
