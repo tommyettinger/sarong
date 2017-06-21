@@ -3,7 +3,6 @@ package sarong;
 import sarong.util.CrossHash;
 
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
@@ -26,8 +25,6 @@ public class Dumper {
             }
             dos.flush();
             dos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -46,25 +43,44 @@ public class Dumper {
             }
             dos.flush();
             dos.close();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    public static void blastIntSpecial(String filename, BirdRNG rng)
+    {
+        DataOutputStream dos;
+        try {
+            dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
+
+            for (int i = 0; i < 64; i++) {
+                for (int j = 0; j < 0x40000; j++) {
+                    dos.writeInt(rng.nextInt());
+                }
+            }
+            dos.flush();
+            dos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     public static long[] seeds = new long[64];
+    public static int[] iSeeds = new int[64];
     public static void main(String[] args)
     {
-        seeds[0] = 0;
-        seeds[1] = 3;
-        seeds[2] = -1;
-        seeds[3] = 31;
-        seeds[4] = -31;
-        seeds[5] = 1;
+        seeds[0] = (iSeeds[0] = 0);
+        seeds[1] = (iSeeds[1] = 3);
+        seeds[2] = (iSeeds[2] = -1);
+        seeds[3] = (iSeeds[3] = 31);
+        seeds[4] = (iSeeds[4] = -31);
+        seeds[5] = (iSeeds[5] = 1);
         seeds[6] = Long.MAX_VALUE;
+        iSeeds[6] = Integer.MAX_VALUE;
         seeds[7] = Long.MIN_VALUE;
+        iSeeds[7] = Integer.MIN_VALUE;
         for (int i = 8; i < 64; i++) {
             seeds[i] = CrossHash.hash64(seeds);
+            iSeeds[i] = CrossHash.hash(seeds);
         }
         RNG[] rs = new RNG[64];
         /*
@@ -84,18 +100,21 @@ public class Dumper {
             rs[i] = new RNG(new LapRNG(LightRNG.determine(seeds[i])));
         }
         blast("Lap", rs);
+        for (int i = 0; i < 64; i++) {
+            rs[i] = new RNG(new BeardRNG(LightRNG.determine(seeds[i])));
+        }
+        blast("Beard", rs);
         */
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new BirdRNG(LightRNG.determine(seeds[i])));
         }
-        blastInt("Bird", rs);
+        blastIntSpecial("Bird", new BirdRNG(iSeeds));
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));
         }
         blastInt("Light", rs);
 
-        /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new HordeRNG(seeds[i]));
         }

@@ -135,25 +135,46 @@ uint32_t splitmix32(uint32_t *x) {
                 choice += (state[i] ^= splitMix32(seed[s] + i * 0x9E3779B9));
             }
         } else {
+            if(len == 32)
+            {
+                for (int i = 0; i < 32; i++) {
+                    state[i] = 0;
+                }
+                choice = 0;
+            }
             for (int i = 0, s = 0; s < len; s++, i = (i + 1) & 31) {
                 choice += (state[i] ^= seed[s]);
             }
         }
     }
 
+    final int calibrate(final int inc) {
+        return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += inc) >>> 1);
+    }
+
+    final int calibrate(final int inc, final int chooser) {
+        return (state[(choice += chooser) & 31] += (state[choice >>> 28] += choice | inc) >>> 1);
+    }
+    //usually uses 0xCBBC475B as choice increment
+    // using 0x9C7B7B99 as inc gets 2 errors on one folding mode.
     @Override
     public final long nextLong() {
         return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1)
+               // (state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
                 * 0x632AE59B69B3C209L - choice;
     }
 
     public final int nextInt() {
         return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1);
+        //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1);
     }
 
     @Override
-    public final int next(final int bits) {
-        return ((state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1) >>> (32 - bits)); //0x9E3779B9
+    public final int next(final int bits) { //0x8BDAE947
+        return (
+                (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += 0x9C7B7B99) >>> 1)
+                //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
+                >>> (32 - bits)); //0x9E3779B9
     }
 
     /**

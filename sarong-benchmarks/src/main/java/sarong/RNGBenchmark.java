@@ -682,6 +682,78 @@ public class RNGBenchmark {
         doBirdIntR();
     }
 
+    public long doBeard()
+    {
+        BeardRNG rng = new BeardRNG((int)seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureBeard() throws InterruptedException {
+        seed = 9000;
+        doBeard();
+    }
+
+    public long doBeardInt()
+    {
+        BeardRNG rng = new BeardRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureBeardInt() throws InterruptedException {
+        iseed = 9000;
+        doBeardInt();
+    }
+
+    public long doBeardR()
+    {
+        RNG rng = new RNG(new BeardRNG((int)seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureBeardR() throws InterruptedException {
+        seed = 9000;
+        doBeardR();
+    }
+
+    public long doBeardIntR()
+    {
+        RNG rng = new RNG(new BeardRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void aa_measureBeardIntR() throws InterruptedException {
+        iseed = 9000;
+        doBeardIntR();
+    }
+
 
 
 /*
