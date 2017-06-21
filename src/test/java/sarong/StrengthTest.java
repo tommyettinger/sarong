@@ -536,6 +536,16 @@ public class StrengthTest {
 
         0x941CCBAD with choice 0x8A532AEF and worst bit  0.001739501953125000000000
         0x9FA5A83D with choice 0xF1F643F3 and worst bit  0.001861572265625000000000
+
+        TRY OVER, 64 ints
+        0x89BF5693 with choice 0x979DA1A1 and worst bit  0.002075195312500000000000
+        0x92B121D1 with choice 0x8C188ACD and worst bit  0.002029418945312500000000
+        0x92FAF5C3 with choice 0xB7B99889 and worst bit  0.001907348632812500000000
+        0x8EAB85D5 with choice 0x86EF12FB and worst bit  0.001907348632812500000000
+        0x8B196EF9 with choice 0x96D9801D and worst bit  0.001892089843750000000000
+        0x869F76D7 with choice 0x99EAE66B and worst bit  0.001876831054687500000000
+        0x8E4609A9 with choice 0xA1743AFB and worst bit  0.001861572265625000000000
+
         */
         {
             int[] bits = new int[32];
@@ -560,10 +570,11 @@ public class StrengthTest {
             System.out.printf("and the worst bit's value is % .24f\n", diff);
 
         }
+        /*
         PintRNG pr = new PintRNG();
         int state = BirdRNG.splitMix32(pr.nextInt());
         BIG:
-        for (int n = 0; n < 0x2000; n++)
+        for (int n = 0; n < 0x8000; n++)
         {
             random.setState(empty);
             int[] bits = new int[32];
@@ -598,6 +609,7 @@ public class StrengthTest {
             ent = incs.pollFirstEntry();
             System.out.printf("%03d: 0x%08X with choice 0x%08X and worst bit % .24f\n", i, ent.getValue() >>> 32, ent.getValue() & 0xFFFFFFFFL,  ent.getKey());
         }
+        */
     }
 
 

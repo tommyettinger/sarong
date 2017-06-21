@@ -56,10 +56,11 @@ public class BeardRNG implements RandomnessSource, Serializable {
     }
 
     /**
-     * Uses the given String or other CharSequence as the basis for the 16 ints this uses as state, assigning choice to
+     * Uses the given String or other CharSequence as the basis for the 64 longs this uses as state, assigning choice to
      * be the sum of the rest of state.
-     * Internally, this gets a 32-bit hash for seed with 16 different variations on the {@link CrossHash.Mist} hashing
-     * algorithm, and uses one for each int in state. This tolerates null and empty-String values for seed.
+     * Internally, this gets a 64-bit hash for seed with 48 different variations on the {@link CrossHash.Mist} hashing
+     * algorithm and 16 variations on the {@link CrossHash.Storm} algorithm, and uses one for each long in state. This
+     * tolerates null and empty-String values for seed.
      * @param seed a String or other CharSequence; may be null
      */
     public BeardRNG(final CharSequence seed)
@@ -68,7 +69,7 @@ public class BeardRNG implements RandomnessSource, Serializable {
             choice += (state[i] = CrossHash.Mist.predefined[i].hash64(seed));
         }
         for (int i = 48; i < 64; i++) {
-            choice += (CrossHash.Storm.predefined[i & 15].hash64(seed));
+            choice += (state[i] = CrossHash.Storm.predefined[i & 15].hash64(seed));
         }
     }
 
@@ -101,13 +102,15 @@ public class BeardRNG implements RandomnessSource, Serializable {
         } else {
             if(len == 64)
             {
-                for (int i = 0; i < 64; i++) {
-                    state[i] = 0L;
-                }
                 choice = 0;
+                for (int i = 0; i < 64; i++) {
+                    choice += (state[i] = seed[i]);
+                }
             }
-            for (int i = 0, s = 0; s < len; s++, i = (i + 1) & 63) {
-                choice += (state[i] ^= seed[s]);
+            else {
+                for (int i = 0, s = 0; s < len; s++, i = (i + 1) & 63) {
+                    choice += (state[i] ^= seed[s]);
+                }
             }
         }
     }
