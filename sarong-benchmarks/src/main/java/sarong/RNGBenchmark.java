@@ -623,7 +623,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureBird() throws InterruptedException {
+    public void a__measureBird() throws InterruptedException {
         seed = 9000;
         doBird();
     }
@@ -641,7 +641,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureBirdInt() throws InterruptedException {
+    public void a__measureBirdInt() throws InterruptedException {
         iseed = 9000;
         doBirdInt();
     }
@@ -659,7 +659,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureBirdR() throws InterruptedException {
+    public void a__measureBirdR() throws InterruptedException {
         seed = 9000;
         doBirdR();
     }
@@ -677,7 +677,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureBirdIntR() throws InterruptedException {
+    public void a__measureBirdIntR() throws InterruptedException {
         iseed = 9000;
         doBirdIntR();
     }

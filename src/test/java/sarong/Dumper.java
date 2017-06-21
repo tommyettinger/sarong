@@ -79,8 +79,8 @@ public class Dumper {
         seeds[7] = Long.MIN_VALUE;
         iSeeds[7] = Integer.MIN_VALUE;
         for (int i = 8; i < 64; i++) {
-            seeds[i] = CrossHash.hash64(seeds);
-            iSeeds[i] = CrossHash.hash(seeds);
+            seeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash64(seeds);
+            iSeeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash(seeds);
         }
         RNG[] rs = new RNG[64];
         /*
@@ -108,7 +108,7 @@ public class Dumper {
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new BirdRNG(LightRNG.determine(seeds[i])));
         }
-        blastIntSpecial("Bird", new BirdRNG(iSeeds));
+        blastIntSpecial("Bird2", new BirdRNG(iSeeds));
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));

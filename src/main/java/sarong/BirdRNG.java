@@ -11,24 +11,24 @@ import java.util.Arrays;
  * 2048 bits of state (2080 if you include a necessary counter). While BirdRNG does not have a fast lookahead or
  * lookbehind and isn't especially fast, those are its most significant flaws. While it is slower than FlapRNG and
  * HerdRNG, it should be faster than PintRNG, which is also its closest competitor on quality. While it is similar to
- * LongPeriodRNG in that it has 1056 bits of state, BirdRNG is much faster on int generation and (strangely) competitive
- * on long generation as well. BirdRNG currently passes the PractRand suite of RNG quality testing with no failures
- * given 64MB of random ints, though it has some non-failure anomalies on PractRand's 32-bit "folding mode". It may be
- * able to pass DIEHARDER, but that wouldn't be much of a surprise because BirdRNG has so much state, and that tends to
- * make passing that test suite easier.
+ * LongPeriodRNG in that it has a lot of state, BirdRNG is faster on int generation and not drastically worse on long
+ * generation (despite not using long values for state). BirdRNG currently passes the PractRand suite of RNG quality
+ * testing with no failures given 64MB of random ints, and generally no more than a few minor anomalies depending on the
+ * seeds used. It may be able to pass DIEHARDER, but that wouldn't be much of a surprise because BirdRNG has so much
+ * state, and that tends to make passing that test suite easier.
  * <br>
  * There are a lot of quirks in each generator, but it should be mentioned that BirdRNG has an unorthodox state update
  * pattern that may result in a lower period but also ensures its high quality. There are 64 ints of main state stored
  * in an array, as well as 1 int for a counter that is incremented by a very large int with each number generated.
  * The bottom 6 bits of the counter determine the primary part of the state array being updated, which can be any of the
- * 64 ints. The actual value used during the update, which is a simple add-and-assign, is determined by the upper 5 bits
- * of counter, which means only 32 of the ints in the main state can be used for this step. The int chosen by the upper
- * bits is incremented by a large value (this is assigned to it as well), then the result unsigned-right-shifted by 1
- * (which reduces the issues of low period on the least significant bit), and this is added to the int of main state
- * chosen by the lower bits. Confused yet? I know I was making this... Even slight tweaks to any part of this generator
- * can completely change the quality. It is unclear if this actually has a lower period than 2 to the 2048, since
- * testing more than 2 to the 128 generated numbers empirically would take an incredible amount of time, as well as
- * requiring an impossible amount of storage space, so the proof would need to be algorithmic. Anyone want to try?
+ * 64 ints. The actual value used during the update is chosen from state using an index from the upper 5 bits of
+ * counter, which means only 32 of the ints in the main state can be used for this step. A large constant is added to
+ * the selected int from state, and this is unsigned-right-shifted by 1. The current counter value is also added into
+ * the update value after the shift. Unlike in other versions of BirdRNG and its relative{@link BeardRNG}, only one
+ * element of state is changed with each generated int. Even slight tweaks to any part of this generator can completely
+ * change the quality. It is unclear if this actually has a lower period than 2 to the 2048, since testing more than 2
+ * to the 128 generated numbers empirically would take an incredible amount of time, as well as requiring an impossible
+ * amount of storage space, so the proof would need to be algorithmic. Anyone want to try?
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */
@@ -157,26 +157,28 @@ uint32_t splitmix32(uint32_t *x) {
     }
 
     final int calibrate(final int inc, final int chooser) {
-        return (state[(choice += chooser) & 63] += (state[choice >>> 27] += inc) >>> 1);
+        return (state[(choice += chooser) & 63] += (state[choice >>> 27] + inc >>> 1) + choice);
     }
     //usually uses 0xCBBC475B as choice increment
     // using 0x9C7B7B99 as inc gets 2 errors on one folding mode.
     @Override
     public final long nextLong() {
-        return (state[(choice += 0x99EAE66B) & 63] += (state[choice >>> 27] += 0x869F76D7) >>> 1)
+        final int c = (choice + 0xB9A2842F), d = (choice += 0x7345085E);
+        final int[] s = state;
+        return (long) (s[c & 63] += (s[c >>> 27] + 0x9296FE47 >>> 1) + c) << 32 ^
+                (s[d & 63] += (s[d >>> 27] + 0x9296FE47 >>> 1) + d);
                // (state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
-                * 0x632AE59B69B3C209L - choice;
     }
-
     public final int nextInt() {
-        return (state[(choice += 0x99EAE66B) & 63] += (state[choice >>> 27] += 0x869F76D7) >>> 1);
+        final int c = (choice += 0xB9A2842F);
+        return (state[c & 63] += (state[c >>> 27] + 0x9296FE47 >>> 1) + c);
         //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1);
     }
-
     @Override
-    public final int next(final int bits) { //0x8BDAE947
+    public final int next(final int bits) {
+        final int c = (choice += 0xB9A2842F);
         return (
-                (state[(choice += 0x99EAE66B) & 63] += (state[choice >>> 27] += 0x869F76D7) >>> 1)
+                (state[c & 63] += (state[c >>> 27] + 0x9296FE47 >>> 1) + c)
                 //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
                 >>> (32 - bits)); //0x9E3779B9
     }
