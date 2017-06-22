@@ -163,22 +163,20 @@ uint32_t splitmix32(uint32_t *x) {
     // using 0x9C7B7B99 as inc gets 2 errors on one folding mode.
     @Override
     public final long nextLong() {
-        final int c = (choice + 0xB9A2842F), d = (choice += 0x7345085E);
-        final int[] s = state;
-        return (long) (s[c & 63] += (s[c >>> 27] + 0x9296FE47 >>> 1) + c) << 32 ^
-                (s[d & 63] += (s[d >>> 27] + 0x9296FE47 >>> 1) + d);
+        return (long)nextInt() << 32 ^ nextInt();
+        //final int c = (choice + 0xB9A2842F), d = (choice += 0x7345085E);
+        //return (long) (state[c & 63] += (state[c >>> 27] + 0x9296FE47 + d >>> 1)) << 32 ^
+        //        (state[d & 63] + (state[d >>> 27] + 0x9296FE47 + c >>> 1));
                // (state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
     }
     public final int nextInt() {
-        final int c = (choice += 0xB9A2842F);
-        return (state[c & 63] += (state[c >>> 27] + 0x9296FE47 >>> 1) + c);
+        return (state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F));
         //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1);
     }
     @Override
     public final int next(final int bits) {
-        final int c = (choice += 0xB9A2842F);
         return (
-                (state[c & 63] += (state[c >>> 27] + 0x9296FE47 >>> 1) + c)
+                nextInt()//(state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F))
                 //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
                 >>> (32 - bits)); //0x9E3779B9
     }
