@@ -10,8 +10,9 @@
  ------------------------------------------------------------------------------
  */
 
-package sarong;
+package sarong.alt;
 
+import sarong.RandomnessSource;
 import sarong.util.CrossHash;
 
 import java.util.Arrays;
@@ -19,11 +20,14 @@ import java.util.Arrays;
 /**
  * This is a port of the public domain Isaac64 (cryptographic) random number generator to Java.
  * It is a RandomnessSource here, so it should generally be used to make an RNG, which has more
- * features. IsaacRNG is slower than the non-cryptographic RNGs in Sarong, but much faster than
+ * features. IsaacAltRNG is slower than the non-cryptographic RNGs in Sarong, but much faster than
  * cryptographic RNGs that need SecureRandom, plus it's compatible with GWT and Android!
  * Created by Tommy Ettinger on 8/1/2016.
  */
-public class IsaacRNG implements RandomnessSource {
+public class IsaacAltRNG implements RandomnessSource {
+    static final int SIZEL = 8;              /* log of size of results[] and mem[] */
+    static final int SIZE = 256;               /* size of results[] and mem[] */
+    static final int MASK = 255<<2;            /* for pseudorandom lookup */
     private int count;                           /* count through the results in results[] */
     private long results[];                                /* the results given to the user */
     private long mem[];                                   /* the internal state */
@@ -33,27 +37,27 @@ public class IsaacRNG implements RandomnessSource {
 
 
     /**
-     * Constructs an IsaacRNG with no seed; this will produce one sequence of numbers as if the seed were 0
+     * Constructs an IsaacAltRNG with no seed; this will produce one sequence of numbers as if the seed were 0
      * (which it essentially is, though passing 0 to the constructor that takes a long will produce a different
      * sequence) instead of what the other RandomnessSources do (initialize with a low-quality random number
      * from Math.random()).
      */
-    public IsaacRNG() {
-        mem = new long[256];
-        results = new long[256];
+    public IsaacAltRNG() {
+        mem = new long[SIZE];
+        results = new long[SIZE];
         init(false);
     }
 
 
     /**
-     * Constructs an IsaacRNG with the given seed, which should be a rather large array of long values.
+     * Constructs an IsaacAltRNG with the given seed, which should be a rather large array of long values.
      * You should try to make seed a long[256], but smaller arrays will be tolerated without error.
      * Arrays larger than 256 items will only have the first 256 used.
      * @param seed an array of longs to use as a seed; ideally it should be 256 individual longs
      */
-    public IsaacRNG(long seed[]) {
-        mem = new long[256];
-        results = new long[256];
+    public IsaacAltRNG(long seed[]) {
+        mem = new long[SIZE];
+        results = new long[SIZE];
         if(seed == null)
             init(false);
         else {
@@ -63,12 +67,12 @@ public class IsaacRNG implements RandomnessSource {
     }
 
     /**
-     * Constructs an IsaacRNG with its state filled by the value of seed, run through the LightRNG algorithm.
+     * Constructs an IsaacAltRNG with its state filled by the value of seed, run through the LightRNG algorithm.
      * @param seed any long; will have equal influence on all bits of state
      */
-    public IsaacRNG(long seed) {
-        mem = new long[256];
-        results = new long[256];
+    public IsaacAltRNG(long seed) {
+        mem = new long[SIZE];
+        results = new long[SIZE];
         long z;
         for (int i = 0; i < 256; i++) {
             z = ( seed += 0x9E3779B97F4A7C15L );
@@ -80,12 +84,12 @@ public class IsaacRNG implements RandomnessSource {
     }
 
     /**
-     * Constructs an IsaacRNG with its state filled by repeated hashing of seed.
+     * Constructs an IsaacAltRNG with its state filled by repeated hashing of seed.
      * @param seed a String that should be exceptionally long to get the best results.
      */
-    public IsaacRNG(String seed) {
-        mem = new long[256];
-        results = new long[256];
+    public IsaacAltRNG(String seed) {
+        mem = new long[SIZE];
+        results = new long[SIZE];
         if(seed == null)
             init(false);
         else {
@@ -101,7 +105,7 @@ public class IsaacRNG implements RandomnessSource {
         }
     }
 
-    private IsaacRNG(IsaacRNG other)
+    private IsaacAltRNG(IsaacAltRNG other)
     {
         this(other.results);
     }
@@ -117,52 +121,60 @@ public class IsaacRNG implements RandomnessSource {
         b += ++c;
         for (i=0, j=128; i<128;) {
             x = mem[i];
-            a = ~(a ^ a << 21) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a<<21;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a >>> 5) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a>>>5;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a << 12) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a<<12;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a >>> 33) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a>>>33;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
         }
 
         for (j=0; j<128;) {
             x = mem[i];
-            a = ~(a ^ a << 21) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a<<21;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a >>> 5) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a>>>5;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a << 12) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a<<12;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
 
             x = mem[i];
-            a = (a ^ a >>> 33) + mem[j++];
-            mem[i] = y = mem[(int)(x >> 3 & 255)] + a + b;
-            results[i++] = b = mem[(int)(y >> 11 & 255)] + x;
+            a ^= a>>>33;
+            a += mem[j++];
+            mem[i] = y = mem[(int)(x&MASK)>>3] + a + b;
+            results[i++] = b = mem[(int)((y>>8)&MASK)>>3] + x;
         }
     }
 
 
     /**
-     * Initializes this IsaacRNG; typically used from the constructor but can be called externally.
+     * Initializes this IsaacAltRNG; typically used from the constructor but can be called externally.
      * @param flag if true, use data from seed; if false, initializes this to unseeded random state
      */
     public final void init(boolean flag) {
@@ -240,32 +252,16 @@ public class IsaacRNG implements RandomnessSource {
     }
 
     /**
-     * Generates and returns a block of 256 pseudo-random long values.
-     * @return a freshly-allocated array of 256 pseudo-random longs, with all bits possible
+     * Generates and returns a block of 255 pseudo-random long values.
+     * @return an array of 255 pseudo-random longs, with all bits possible
      */
     public final long[] nextBlock()
     {
         regen();
-        final long[] block = new long[256];
-        System.arraycopy(results, 0, block, 0, 256);
+        final long[] block = new long[SIZE-1];
+        System.arraycopy(results, 1, block, 0, SIZE-1);
         count = 0;
         return block;
-    }
-
-    /**
-     * Generates enough pseudo-random long values to fill {@code data} and assigns them to it.
-     */
-    public final void fillBlock(final long[] data)
-    {
-        int len, i;
-        if(data == null || (len = data.length) == 0) return;
-        for (i = 0; len > 256; i += 256, len -= 256) {
-            regen();
-            System.arraycopy(results, 0, data, i, 256);
-        }
-        regen();
-        System.arraycopy(results, 0, data, i, len);
-        count = len & 255;
     }
 
     @Override
@@ -282,7 +278,7 @@ public class IsaacRNG implements RandomnessSource {
      */
     @Override
     public final RandomnessSource copy() {
-        return new IsaacRNG(results);
+        return new IsaacAltRNG(results);
     }
 
     @Override
@@ -290,14 +286,14 @@ public class IsaacRNG implements RandomnessSource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IsaacRNG isaacRNG = (IsaacRNG) o;
+        IsaacAltRNG isaacAltRNG = (IsaacAltRNG) o;
 
-        if (count != isaacRNG.count) return false;
-        if (a != isaacRNG.a) return false;
-        if (b != isaacRNG.b) return false;
-        if (c != isaacRNG.c) return false;
-        if (!Arrays.equals(results, isaacRNG.results)) return false;
-        return Arrays.equals(mem, isaacRNG.mem);
+        if (count != isaacAltRNG.count) return false;
+        if (a != isaacAltRNG.a) return false;
+        if (b != isaacAltRNG.b) return false;
+        if (c != isaacAltRNG.c) return false;
+        if (!Arrays.equals(results, isaacAltRNG.results)) return false;
+        return Arrays.equals(mem, isaacAltRNG.mem);
     }
 
     @Override
@@ -315,6 +311,6 @@ public class IsaacRNG implements RandomnessSource {
     @Override
     public String toString()
     {
-        return "IsaacRNG with a hidden state (id is " + System.identityHashCode(this) + ')';
+        return "IsaacAltRNG with a hidden state (id is " + System.identityHashCode(this) + ')';
     }
 }

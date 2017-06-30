@@ -50,14 +50,25 @@ uint32_t splitmix32(uint32_t *x) {
 
     /**
      * Call this with {@code splitMix32(z += 0x9E3779B9)}, where z is an int to use as state.
-     * @param z must be changed with each call; {@code splitMix32(z += 0x9E3779B9)} is recommended
+     * 0x9E3779B9 can be changed for any odd int if the same number is used across calls.
+     * @param z int, must be changed with each call; {@code splitMix32(z += 0x9E3779B9)} is recommended
      * @return a pseudo-random int
      */
-    public static int splitMix32(int z)
-    {
+    public static int splitMix32(int z) {
         z = (z ^ (z >>> 16)) * 0x85EBCA6B;
         z = (z ^ (z >>> 13)) * 0xC2B2AE35;
         return z ^ (z >>> 16);
+    }
+    /**
+     * Call this with {@code splitMix32(z += 0x9E3779B97F4A7C15L)}, where z is a long to use as state.
+     * 0x9E3779B97F4A7C15L can be changed for any odd long if the same number is used across calls.
+     * @param z long, must be changed with each call; {@code splitMix32(z += 0x9E3779B97F4A7C15L)} is recommended
+     * @return a pseudo-random long
+     */
+    public static long splitMix64(long z) {
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return z ^ (z >>> 31);
     }
 
     private static final long serialVersionUID = 1L;
@@ -152,18 +163,14 @@ uint32_t splitmix32(uint32_t *x) {
         }
     }
 
-    final int calibrate(final int inc) {
-        return (state[(choice += 0xCBBC475B) & 31] += (state[choice >>> 28] += inc) >>> 1);
+    final int calibrate(final int inc, final int chooser) {
+        return (state[choice & 63] += (state[choice >>> 27] + inc >>> 1) + (choice += chooser));
     }
 
-    final int calibrate(final int inc, final int chooser) {
-        return (state[(choice += chooser) & 63] += (state[choice >>> 27] + inc >>> 1) + choice);
-    }
-    //usually uses 0xCBBC475B as choice increment
-    // using 0x9C7B7B99 as inc gets 2 errors on one folding mode.
     @Override
     public final long nextLong() {
-        return (long)nextInt() << 32 ^ nextInt();
+        return (long)(state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F)) << 32 ^
+                (state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F));
         //final int c = (choice + 0xB9A2842F), d = (choice += 0x7345085E);
         //return (long) (state[c & 63] += (state[c >>> 27] + 0x9296FE47 + d >>> 1)) << 32 ^
         //        (state[d & 63] + (state[d >>> 27] + 0x9296FE47 + c >>> 1));
@@ -171,14 +178,11 @@ uint32_t splitmix32(uint32_t *x) {
     }
     public final int nextInt() {
         return (state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F));
-        //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1);
     }
     @Override
     public final int next(final int bits) {
-        return (
-                nextInt()//(state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F))
-                //(state[(choice += 0x8A532AEF) & 31] += (state[choice >>> 28] += choice | 0x941CCBAD) >>> 1)
-                >>> (32 - bits)); //0x9E3779B9
+        return (state[choice & 63] += (state[choice >>> 27] + 0x9296FE47 >>> 1) + (choice += 0xB9A2842F))
+                >>> (32 - bits);
     }
 
     /**

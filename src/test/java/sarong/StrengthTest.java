@@ -199,7 +199,7 @@ public class StrengthTest {
     }
 
 
-    @Test
+    //@Test
     public void testSlap()
     {
         SlapRNG random = new SlapRNG(); //0xABC7890456123DEFL
@@ -221,7 +221,7 @@ public class StrengthTest {
             System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.03) ? "!!!" : "");
         }
     }
-    @Test
+    //@Test
     public void testHorde()
     {
         HordeRNG random = new HordeRNG(new long[16]); //0xABC7890456123DEFL
@@ -246,7 +246,7 @@ public class StrengthTest {
         }
     }
 
-    @Test
+    //@Test
     public void testHerd()
     {
         HerdRNG random = new HerdRNG(new int[16]); //0xABC7890456123DEFL
