@@ -29,10 +29,9 @@ public class Dumper {
             e.printStackTrace();
         }
     }
-    public static void blastInt(String filename, RNG[] r)
+    public static void blastInt(String filename, RandomnessSource rng)
     {
         DataOutputStream dos = null;
-        RNG rng = r[62];
         try {
             dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
 
@@ -47,7 +46,7 @@ public class Dumper {
             e.printStackTrace();
         }
     }
-    public static void blastIntSpecial(String filename, BirdRNG rng)
+    public static void blastIntSpecial(String filename, BardRNG rng)
     {
         DataOutputStream dos;
         try {
@@ -68,16 +67,21 @@ public class Dumper {
     public static int[] iSeeds = new int[64];
     public static void main(String[] args)
     {
-        seeds[0] = (iSeeds[0] = 0);
-        seeds[1] = (iSeeds[1] = 3);
-        seeds[2] = (iSeeds[2] = -1);
-        seeds[3] = (iSeeds[3] = 31);
-        seeds[4] = (iSeeds[4] = -31);
-        seeds[5] = (iSeeds[5] = 1);
-        seeds[6] = Long.MAX_VALUE;
-        iSeeds[6] = Integer.MAX_VALUE;
-        seeds[7] = Long.MIN_VALUE;
-        iSeeds[7] = Integer.MIN_VALUE;
+        RNG rng = new RNG();
+        for (int i = 0; i < 8; i++) {
+            iSeeds[i] = rng.nextInt();
+            seeds[i] = rng.nextLong();
+        }
+//        seeds[0] = (iSeeds[0] = 0);
+//        seeds[1] = (iSeeds[1] = 3);
+//        seeds[2] = (iSeeds[2] = -1);
+//        seeds[3] = (iSeeds[3] = 31);
+//        seeds[4] = (iSeeds[4] = -31);
+//        seeds[5] = (iSeeds[5] = 1);
+//        seeds[6] = Long.MAX_VALUE;
+//        iSeeds[6] = Integer.MAX_VALUE;
+//        seeds[7] = Long.MIN_VALUE;
+//        iSeeds[7] = Integer.MIN_VALUE;
         for (int i = 8; i < 64; i++) {
             seeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash64(seeds);
             iSeeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash(seeds);
@@ -104,11 +108,13 @@ public class Dumper {
             rs[i] = new RNG(new BeardRNG(LightRNG.determine(seeds[i])));
         }
         blast("Beard", rs);
-        */
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new BirdRNG(LightRNG.determine(seeds[i])));
         }
-        blastIntSpecial("Bird2", new BirdRNG(iSeeds));
+        */
+        //blastInt("Bird", new BirdRNG(iSeeds));
+
+        blastInt("Bard", new BardRNG(iSeeds));
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));

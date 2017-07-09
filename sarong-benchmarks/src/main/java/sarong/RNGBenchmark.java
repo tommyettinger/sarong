@@ -480,7 +480,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureHorde() throws InterruptedException {
+    public void measureHorde() throws InterruptedException {
         seed = 9000;
         doHorde();
     }
@@ -498,7 +498,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureHordeInt() throws InterruptedException {
+    public void measureHordeInt() throws InterruptedException {
         iseed = 9000;
         doHordeInt();
     }
@@ -516,7 +516,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureHordeR() throws InterruptedException {
+    public void measureHordeR() throws InterruptedException {
         seed = 9000;
         doHordeR();
     }
@@ -534,7 +534,7 @@ public class RNGBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void aa_measureHordeIntR() throws InterruptedException {
+    public void measureHordeIntR() throws InterruptedException {
         iseed = 9000;
         doHordeIntR();
     }
@@ -753,6 +753,77 @@ public class RNGBenchmark {
     public void a__measureBirdIntR() throws InterruptedException {
         iseed = 9000;
         doBirdIntR();
+    }
+    public long doBard()
+    {
+        BardRNG rng = new BardRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void a__measureBard() throws InterruptedException {
+        seed = 9000;
+        doBard();
+    }
+
+    public long doBardInt()
+    {
+        BardRNG rng = new BardRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void a__measureBardInt() throws InterruptedException {
+        iseed = 9000;
+        doBardInt();
+    }
+
+    public long doBardR()
+    {
+        RNG rng = new RNG(new BardRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void a__measureBardR() throws InterruptedException {
+        seed = 9000;
+        doBardR();
+    }
+
+    public long doBardIntR()
+    {
+        RNG rng = new RNG(new BardRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void a__measureBardIntR() throws InterruptedException {
+        iseed = 9000;
+        doBardIntR();
     }
 
 /*

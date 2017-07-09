@@ -633,8 +633,82 @@ public class StrengthTest {
 
     }
 
+    //@Test
+    public void adjustBard() {
+        int[] empty = new int[32];
+        BardRNG random = new BardRNG(empty);
+        TreeMap<Double, Long> incs = new TreeMap<>();
+        BardRNG bardRNG = new BardRNG(empty);
+        {
+            int[] bits = new int[32];
+            int curr = bardRNG.nextInt(), t;
+            int bi;
+            double diff = 0.0;
+            for (int i = 0; i < 0x1000000; i++) {
+                t = curr ^ (curr = bardRNG.nextInt());
+                bi = 31;
+                for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                    bits[bi] += (t & b) >>> bi;
+                }
 
+            }
+            System.out.println("BIRD: Out of 0x1000000 random numbers,");
+            //System.out.println("Out of 4,294,967,296 random numbers,");
+            System.out.println("each bit changes this often relative to 0.5 probability...");
+            for (int i = 0; i < 32; i++) {
+                System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) > 0.01) ? "!!!" : "");
+                diff = Math.max(diff, Math.abs(0.5 - bits[i] / (double)0x1000000));
+            }
+            System.out.printf("and the worst bit's value is % .24f\n", diff);
 
+        }
+
+        PintRNG pr = new PintRNG();
+        int state = BirdRNG.splitMix32(pr.nextInt());
+        int[] bits = new int[32];
+        //0x9296FE47 with choice 0xB9A2842F
+        for (int n = 0; n < 0x200; n+= 2) {
+            int l = BirdRNG.splitMix32(state += 0x9E3779B9) >>> 2 | 0x80000001,
+                    curr, t, ch = pr.nextInt() >>> 2 | 0x80000001;
+            BIG:
+            for (int p = 0; p < 0x20; p++) {
+
+                random.setState(empty);
+                for (int i = 0; i < 32; i++) {
+                    bits[i] = 0;
+                }
+                while (Integer.bitCount(l) <= 12)
+                    l = BirdRNG.splitMix32(state += 0x9E3779B9) >>> 2 | 0x80000001;
+                while (Integer.bitCount(ch) <= 10)
+                    ch = pr.nextInt() >>> 2 | 0x80000001;
+                curr = random.calibrate(l, ch);
+                int bi;
+                for (int i = 0; i < 0x10000; i++) {
+                    t = curr ^ (curr = random.calibrate(l, ch));
+                    bi = 31;
+                    for (int b = 0x80000000; b != 0; b >>>= 1, bi--) {
+                        bits[bi] += (t & b) >>> bi;
+                    }
+                }
+
+                double diff = 0.0;
+                for (int i = 0; i < 32; i++) {
+                    if (bits[i] == 0x8000)
+                        continue BIG;
+                    diff = Math.max(diff, Math.abs(0.5 - bits[i] / (double) 0x10000));
+                }
+                incs.put(diff, (long) l << 32 | (ch & 0xFFFFFFFFL));
+                if (diff <= 0.0016)
+                    break;
+            }
+        }
+        Map.Entry<Double, Long> ent;
+        for (int i = 0; i < 16 && !incs.isEmpty(); i++) {
+            ent = incs.pollFirstEntry();
+            System.out.printf("%03d: 0x%08X with choice 0x%08X and worst bit % .24f\n", i, ent.getValue() >>> 32, ent.getValue() & 0xFFFFFFFFL,  ent.getKey());
+        }
+
+    }
 
     //@Test
     public void dummyTest()
