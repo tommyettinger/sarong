@@ -162,7 +162,7 @@ uint32_t splitmix32(uint32_t *x) {
     public final long nextLong() {
         final int c2 = (choice += 0x7345085E), c = c2 - 0xB9A2842F;
         return (long)(state[c * 0x85157AF5 >>> 25] += (c >>> (c >>> 28)) * 0x632BE5AB) << 32 ^
-                (state[c * 0x85157AF5 >>> 25] += (c2 >>> (c2 >>> 28)) * 0x632BE5AB);
+                (state[c2 * 0x85157AF5 >>> 25] += (c2 >>> (c2 >>> 28)) * 0x632BE5AB);
     }
     public final int nextInt() {
         final int c = (choice += 0xB9A2842F);
@@ -184,9 +184,9 @@ uint32_t splitmix32(uint32_t *x) {
      */
     @Override
     public RandomnessSource copy() {
-        BardRNG hr = new BardRNG(state);
-        hr.choice = choice;
-        return hr;
+        BardRNG br = new BardRNG(state);
+        br.choice = choice;
+        return br;
     }
 
     @Override

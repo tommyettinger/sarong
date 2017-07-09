@@ -194,9 +194,9 @@ uint32_t splitmix32(uint32_t *x) {
      */
     @Override
     public RandomnessSource copy() {
-        BirdRNG hr = new BirdRNG(state);
-        hr.choice = choice;
-        return hr;
+        BirdRNG br = new BirdRNG(state);
+        br.choice = choice;
+        return br;
     }
 
     @Override
