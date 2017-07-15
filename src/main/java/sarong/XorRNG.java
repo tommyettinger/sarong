@@ -42,7 +42,8 @@ public class XorRNG implements RandomnessSource {
      * Creates a new generator seeded using Math.random.
      */
     public XorRNG() {
-        this((long) (Math.random() * Long.MAX_VALUE));
+        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
+                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
     }
 
     public XorRNG(final long seed) {

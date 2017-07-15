@@ -11,6 +11,8 @@ package sarong;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * This is a SplittableRandom-style generator, meant to have a tiny state
  * that permits storing many different generators with low overhead.
@@ -44,7 +46,7 @@ import sarong.util.StringKit;
  * @author Sebastiano Vigna
  * @author Tommy Ettinger
  */
-public class LightRNG implements RandomnessSource, StatefulRandomness {
+public class LightRNG implements RandomnessSource, StatefulRandomness, Serializable {
     /**
      * 2 raised to the 53, - 1.
      */
@@ -60,7 +62,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
     /**
      * 2 raised to the -24.
      */
-    private static final double NORM_24 = 1. / (1L << 24);
+    private static final float NORM_24 = 1f / (1 << 24);
 
     private static final long serialVersionUID = -374415589203474497L;
 
@@ -70,7 +72,8 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
      * Creates a new generator seeded using Math.random.
      */
     public LightRNG() {
-        this((long) Math.floor(Math.random() * Long.MAX_VALUE));
+        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
+                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
     }
 
     public LightRNG(final long seed) {
@@ -197,7 +200,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public float nextFloat() {
-        return (float) ((nextLong() & FLOAT_MASK) * NORM_24);
+        return ((nextLong() & FLOAT_MASK) * NORM_24);
     }
 
     /**

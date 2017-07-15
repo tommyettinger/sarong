@@ -29,7 +29,8 @@ public class DeckRNG extends StatefulRNG {
      * Constructs a DeckRNG with a pseudo-random seed from Math.random().
      */
     public DeckRNG() {
-        this((long) (Math.random() * ((1L << 50) - 1)));
+        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
+                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
     }
 
     /**

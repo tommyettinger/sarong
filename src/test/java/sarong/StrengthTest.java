@@ -3,6 +3,7 @@ package sarong;
 import org.junit.Test;
 import sarong.util.StringKit;
 
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -710,51 +711,186 @@ public class StrengthTest {
 
     }
 
-    //@Test
+    @Test
+    public void numberTest()
+    {
+        int run = 0, total = 0;
+        long grand = 0;
+        for (; ;) {
+            total += (total ^ (run += 0xC6BC278D));
+            if(total == 0 && run == 0)
+                break;
+            else
+                grand++;
+        }
+        System.out.printf("%08X in %X with run %08X", total, grand, run);
+    }
+    private static class Tracker
+    {
+        public int total = 0;
+        public int alpha = 0, beta = 0x9E3779B9;//, gamma = 0, delta = 0;
+        //public int inc = 0x9E3779B9, inc2 = 0x632BE5AB;
+        public int next()
+        {
+            int z = (alpha += (alpha == 0) ? (beta += 0x632BE5AC) : beta);
+            z = (z ^ (z >>> 16)) * 0x85EBCA6B;
+            z = (z ^ (z >>> 13)) * 0xC2B2AE35;
+            total += (z ^= (z >>> 16));
+            return z;
+        }
+    }
+    //0x85157AF5 0x632BE5AB 0x9296FE97  0x108EF2D9   all prime
+
+    private static BigInteger lcm(long[] values, int span)
+    {
+        BigInteger result = BigInteger.valueOf(values[0]), tmp;
+        for (int i = 1; i < span; i++) {
+            tmp = BigInteger.valueOf(values[i]);
+            result = tmp.divide(result.gcd(tmp)).multiply(result);
+        }
+        return result;
+    }
+
+    @Test
+    public void testBuckets()
+    {
+        long[] buckets = new long[4];
+        int ctr = 0;
+        for (long i = 0; i < 0x100000000L; i++) {
+            buckets[(ctr * 0x85157AF5 | (ctr += 0x9296FE97)) >>> 30]++;
+        }
+        for (int i = 0; i < buckets.length; i++) {
+            System.out.printf("Bucket %03d has 0x%09X hits\n", i, buckets[i]);
+        }
+        String big = lcm(buckets, buckets.length).toString(16);
+        System.out.println("Highest LCM is " + big.length() + " hex digits long:\n" + big);
+        System.out.println("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
+                + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
+                + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
+                + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF");
+    }
+
+    @Test
     public void dummyTest()
     {
         {
-            BirdRNG r = new BirdRNG(0); //-1999262892926553691L
-            System.out.println(r);
-            System.out.println();
-            for (int i = 0; i < 256; i++) {
-                System.out.println(StringKit.hex(r.nextInt()));
+            Tracker track = new Tracker();
+            //System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
+//            int tetra = 0, tetra2 = 0;
+//            //for (byte inc : new byte[]{3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79,
+//            //        83, 89, 97, 101, 103, 107, 109, 113, 127, -107, -89, -83, -59, -29, -23, -17, -5}) {
+//            for(byte inc = -127; inc < 127; inc+=2) {
+//                //for (byte inc2 = -127; inc2 < 127; inc2+=2) {
+//                    //for (byte inc : new byte[]{-128, 100, 23, 43}){
+//                    track.inc = inc;
+//                    //track.inc2 = inc2;
+//                    track.total = 0;
+//                    track.alpha = 0;
+//                    track.beta = 0;
+//                    track.gamma = 0;
+//                    track.delta = 0;
+//                    for (long i = 0; i < 0x10000L; i++) {
+//                        track.next();
+//                    }
+//                System.out.println("Increment " + inc + " has total " + track.total);
+//                    tetra = (track.next() & 0xFF) << 24 | (track.next() & 0xFF) << 16 | (track.next() & 0xFF) << 8 | (track.next() & 0xFF);
+//                    //System.out.printf("Searching for %08X\n", tetra);
+//                    tetra2 = tetra;
+//                    for (long i = 0L; i < 0x10000L; i++) {
+//                        if ((tetra2 = (tetra2 << 8) | (track.next() & 0xFF)) == tetra) {
+//                            System.out.println("Increment " + inc /* + ", " + inc2 */ + " has period " + i + ", total is "
+//                                    + (track.total - (byte) (tetra >>> 24) - (byte) (tetra >>> 16 & 0xFF)
+//                                    - (byte) (tetra >>> 8 & 0xFF) - (byte) (tetra & 0xFF)));
+//                            break;
+//                        }
+//                    }
+//                //}
+//            }
+            for (long i = 0; i < 0x100000000L; i++) {
+                track.next();
             }
-            r.setState(r.nextLong());
-            System.out.println();
-            System.out.println(r);
-            System.out.println();
-
-            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
-                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
-            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
-
-            for (long m = 1; m <= 0x100000104L; m++) {
-                if (bonus == (bonus = r.nextInt()))
+            int wrap = track.next(), wrap2 = track.next(),
+                    wrap3 = track.next(), wrap4 = track.next(),
+                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0, loops = 0;
+            System.out.printf("Looking for 0x%08X, 0x%08X, 0x%08X, 0x%08X\n", wrap, wrap2, wrap3, wrap4);
+            track.total = 0;
+            for (long m = 0; m < 0x2000000000L; m++) {
+                if (bonus == (bonus = track.next()))
                 {
-                    if(bonus == r.nextInt())
+                    if(bonus == track.next())
                         System.out.println("BAD. " + StringKit.hex(m));
                 }
                 else {
                     if (wrap == bonus) {
-                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = r.nextInt()));
+                        System.out.println(StringKit.hex(m++) + ": STRIKE 1, " + bonus2 + ", " + (bonus2 = track.next()));
+//                        m++;
+//                        bonus2 = track.next();
                         if (wrap2 == bonus2) {
-                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = r.nextInt()));
+                            System.out.println(StringKit.hex(m++) + ": STRIKE 2, "  + bonus3 + ", " + (bonus3 = track.next()));
+//                            m++;
+//                            bonus3 = track.next();
                             if (wrap3 == bonus3) {
-                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = r.nextInt()));
+                                System.out.println(StringKit.hex(m++) + ": STRIKE 3, " + bonus4 + ", " +  (bonus4 = track.next()));
                                 if (wrap4 == bonus4) {
 
-                                    System.out.println(StringKit.hex(m) + "!!!");
-                                    break;
+                                    System.out.println(StringKit.hex(m) + "!!! " + StringKit.hex(track.total));
+                                    ++loops;
                                 }
                             }
                         }
                     }
                 }
             }
-            System.out.println("DONE! final r: " + r + "  with next 4 random values: "
-                    + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
+
+
+
+            System.out.println("DONE! total: " + StringKit.hex(track.total) + " in " + loops + " loops with next 4 random values: "
+                    + track.next() + "  " + track.next() + "  "
+                    + track.next() + "  " + track.next());
         }
+
+//        {
+//            BirdRNG r = new BirdRNG(0); //-1999262892926553691L
+//            System.out.println(r);
+//            System.out.println();
+//            for (int i = 0; i < 256; i++) {
+//                System.out.println(StringKit.hex(r.nextInt()));
+//            }
+//            r.setState(r.nextLong());
+//            System.out.println();
+//            System.out.println(r);
+//            System.out.println();
+//
+//            int wrap = r.nextInt(), wrap2 = r.nextInt(), wrap3 = r.nextInt(), wrap4 = r.nextInt(),
+//                    bonus = 0, bonus2 = 0, bonus3 = 0, bonus4 = 0;
+//            System.out.println(wrap + "  " + wrap2 + "  " + wrap3 + "  " + wrap4 + "  ");
+//
+//            for (long m = 1; m <= 0x100000104L; m++) {
+//                if (bonus == (bonus = r.nextInt()))
+//                {
+//                    if(bonus == r.nextInt())
+//                        System.out.println("BAD. " + StringKit.hex(m));
+//                }
+//                else {
+//                    if (wrap == bonus) {
+//                        System.out.println(StringKit.hex(m++) + ": " + bonus2 + ", " + (bonus2 = r.nextInt()));
+//                        if (wrap2 == bonus2) {
+//                            System.out.println(StringKit.hex(m++) + ": "  + bonus3 + ", " + (bonus3 = r.nextInt()));
+//                            if (wrap3 == bonus3) {
+//                                System.out.println(StringKit.hex(m++) + ": " + bonus4 + ", " +  (bonus4 = r.nextInt()));
+//                                if (wrap4 == bonus4) {
+//
+//                                    System.out.println(StringKit.hex(m) + "!!!");
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            System.out.println("DONE! final r: " + r + "  with next 4 random values: "
+//                    + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  " + r.nextInt() + "  ");
+//        }
         /*{
             int state = 1234560;
             System.out.println("STARTING LFSR AT: " + state);

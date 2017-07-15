@@ -113,8 +113,8 @@ public class Dumper {
         }
         */
         //blastInt("Bird", new BirdRNG(iSeeds));
-
-        blastInt("Bard", new BardRNG(iSeeds));
+        blastInt("Light32", new Light32RNG(iSeeds[62], iSeeds[63]));
+        //blastInt("Bard", new BardRNG(iSeeds));
         /*
         for (int i = 0; i < 64; i++) {
             rs[i] = new RNG(new LightRNG(seeds[i]));
