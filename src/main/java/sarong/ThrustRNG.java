@@ -7,6 +7,8 @@ import sarong.util.StringKit;
  * allows all longs as states (including 0), and also implements StatefulRandomness. LightRNG does those same things,
  * but ThrustRNG is slightly slower than LightRNG. You may want ThrustRNG when you need to use its different algorithm
  * to seed another RNG or do something else where reusing an algorithm would be troublesome.
+ * <br>
+ * Thanks to Ashiren, for advice on this in #libgdx on Freenode, and to Donald Knuth for finding the constants used.
  * Created by Tommy Ettinger on 8/3/2017.
  */
 public class ThrustRNG implements StatefulRandomness {
@@ -56,8 +58,13 @@ public class ThrustRNG implements StatefulRandomness {
      */
     @Override
     public final int next(int bits) {
-        return (int)(((state = state * 0x8329C6EB9E6AD3E3L + 0x632BE59BD9B4E019L) + (state >> 28)) >>> (64 - bits));
-        //return (int)((state += ((state * state) >>> 28) * 0x8329C6EB9E6AD3E3L + 0x632BE59BD9B4E019L) >>> (64 - bits));
+        //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
+        return (int)(
+                (state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
+                //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
+                //((state += 0x2545F4914F6CDD1DL) ^ (state >>> 30 & state >> 27) * 0xBF58476D1CE4E5B9L)
+                //(state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL
+                        >>> (64 - bits));
     }
 
     /**
@@ -70,7 +77,12 @@ public class ThrustRNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
-        return ((state = state * 0x8329C6EB9E6AD3E3L + 0x632BE59BD9B4E019L) + (state >> 28));
+        return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
+        //return (state = state * 0x59A2B8F555F5828FL % 0x7FFFFFFFFFFFFFE7L) ^ state << 2;
+        //return (state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL);
+        //return (state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        //return (state * 0x5851F42D4C957F2DL) + ((state += 0x14057B7EF767814FL) >> 28);
+        //return (((state += 0x14057B7EF767814FL) >>> 28) * 0x5851F42D4C957F2DL + (state >>> 1));
     }
 
     /**
