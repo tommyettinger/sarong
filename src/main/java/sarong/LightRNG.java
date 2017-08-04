@@ -85,7 +85,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
     }
 
     @Override
-    public int next(int bits) {
+    public final int next(int bits) {
         return (int) (nextLong() & (1L << bits) - 1);
     }
 
@@ -95,7 +95,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @return any long, all 64 bits are random
      */
     @Override
-    public long nextLong() {
+    public final long nextLong() {
         long z = (state += 0x9E3779B97F4A7C15L);
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
@@ -119,7 +119,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      *
      * @return any int, all 32 bits are random
      */
-    public int nextInt() {
+    public final int nextInt() {
         return (int) nextLong();
     }
 
@@ -129,7 +129,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param bound the upper bound; should be positive
      * @return a random int less than n and at least equal to 0
      */
-    public int nextInt(final int bound) {
+    public final int nextInt(final int bound) {
         if (bound <= 0) return 0;
         return (int)((bound * (nextLong() & 0x7FFFFFFFL)) >> 31);
     }
@@ -152,7 +152,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param bound the upper bound; should be positive
      * @return a random long less than n
      */
-    public long nextLong(final long bound) {
+    public final long nextLong(final long bound) {
         if (bound <= 0) return 0;
         long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
         for (; ; ) {
@@ -169,7 +169,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param upper the upper bound, exclusive, should be positive, must be greater than lower
      * @return a random long at least equal to lower and less than upper
      */
-    public long nextLong(final long lower, final long upper) {
+    public final long nextLong(final long lower, final long upper) {
         if (upper - lower <= 0) throw new IllegalArgumentException("Upper bound must be greater than lower bound");
         return lower + nextLong(upper - lower);
     }
@@ -179,7 +179,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      *
      * @return a random double at least equal to 0.0 and less than 1.0
      */
-    public double nextDouble() {
+    public final double nextDouble() {
         return (nextLong() & DOUBLE_MASK) * NORM_53;
     }
 
@@ -190,7 +190,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param outer the exclusive outer bound, can be negative
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
-    public double nextDouble(final double outer) {
+    public final double nextDouble(final double outer) {
         return nextDouble() * outer;
     }
 
@@ -199,7 +199,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      *
      * @return a random float at least equal to 0.0 and less than 1.0
      */
-    public float nextFloat() {
+    public final float nextFloat() {
         return ((nextLong() & FLOAT_MASK) * NORM_24);
     }
 
@@ -209,7 +209,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      *
      * @return a random true or false value.
      */
-    public boolean nextBoolean() {
+    public final boolean nextBoolean() {
         return nextLong() < 0L;
     }
 
@@ -219,7 +219,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      *
      * @param bytes a byte array that will have its contents overwritten with random bytes.
      */
-    public void nextBytes(final byte[] bytes) {
+    public final void nextBytes(final byte[] bytes) {
         int i = bytes.length, n = 0;
         while (i != 0) {
             n = Math.min(i, 8);
@@ -233,7 +233,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param seed the seed to use for this LightRNG, as if it was constructed with this seed.
      */
     @Override
-    public void setState(final long seed) {
+    public final void setState(final long seed) {
         state = seed;
     }
 
@@ -243,7 +243,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @return the current seed of this LightRNG, changed once per call to nextLong()
      */
     @Override
-    public long getState() {
+    public final long getState() {
         return state;
     }
 
@@ -255,7 +255,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
      * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most recent generated number
      * @return the random long generated after skipping advance numbers
      */
-    public long skip(long advance) {
+    public final long skip(long advance) {
         long z = (state += 0x9E3779B97F4A7C15L * advance);
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;

@@ -1,5 +1,7 @@
 package sarong;
 
+import sarong.util.StringKit;
+
 import java.io.Serializable;
 
 /**
@@ -161,6 +163,29 @@ public class Light32RNG implements StatefulRandomness, RandomnessSource, Seriali
         state = stateA;
         inc = stateB | 1;
     }
+
+    @Override
+    public String toString() {
+        return "Light32RNG with stateA 0x" + StringKit.hex(state) + " and stateB 0x" + StringKit.hex(inc);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Light32RNG that = (Light32RNG) o;
+
+        return state == that.state && inc == that.inc;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = state;
+        result = 31 * result + inc;
+        return result;
+    }
+
     /**
      * Gets a pseudo-random int from the given state as an int; the state should change with each call.
      * This can be done easily with {@code determine(++state)} or {@code determine(state += 12345)}, where 12345

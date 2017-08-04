@@ -791,7 +791,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLight32() throws InterruptedException {
+    public void measureLight32() throws InterruptedException {
         seed = 9000;
         doLight32();
     }
@@ -808,7 +808,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLight32Int() throws InterruptedException {
+    public void measureLight32Int() throws InterruptedException {
         iseed = 9000;
         doLight32Int();
     }
@@ -825,7 +825,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLight32R() throws InterruptedException {
+    public void measureLight32R() throws InterruptedException {
         seed = 9000;
         doLight32R();
     }
@@ -842,9 +842,77 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLight32IntR() throws InterruptedException {
+    public void measureLight32IntR() throws InterruptedException {
         iseed = 9000;
         doLight32IntR();
+    }
+
+    public long doThrust()
+    {
+        ThrustRNG rng = new ThrustRNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureThrust() throws InterruptedException {
+        seed = 9000;
+        doThrust();
+    }
+
+    public long doThrustInt()
+    {
+        ThrustRNG rng = new ThrustRNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureThrustInt() throws InterruptedException {
+        iseed = 9000;
+        doThrustInt();
+    }
+
+    public long doThrustR()
+    {
+        RNG rng = new RNG(new ThrustRNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureThrustR() throws InterruptedException {
+        seed = 9000;
+        doThrustR();
+    }
+
+    public long doThrustIntR()
+    {
+        RNG rng = new RNG(new ThrustRNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureThrustIntR() throws InterruptedException {
+        iseed = 9000;
+        doThrustIntR();
     }
 
 /*

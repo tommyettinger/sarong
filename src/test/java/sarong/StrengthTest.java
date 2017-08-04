@@ -318,6 +318,29 @@ public class StrengthTest {
         }
     }
 
+    @Test
+    public void testThrust()
+    {
+        ThrustRNG random = new ThrustRNG(0xABC7890456123DEFL);
+        System.out.println("ThrustRNG (testing nextLong): " + random.toString());
+        long[] bits = new long[64];
+        long curr = random.nextLong(), t;
+        int bi;
+        for (long i = 0; i < 0x1000000L; i++) {
+            t = curr ^ (curr = random.nextLong());
+            bi = 63;
+            for (long b = 0x8000000000000000L; b != 0; b >>>= 1, bi--) {
+                bits[bi] += (t & b) >>> bi;
+            }
+        }
+        System.out.println("THRUST: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("each bit changes this often relative to 0.5 probability...");
+        for (int i = 0; i < 64; i++) {
+            System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) >= 0.01) ? "!!!" : "");
+        }
+    }
+
     //@Test
     public void adjustBeard() {
         long[] empty = new long[64];
@@ -711,7 +734,7 @@ public class StrengthTest {
 
     }
 
-    @Test
+    //@Test
     public void numberTest()
     {
         int run = 0, total = 0;
@@ -751,7 +774,7 @@ public class StrengthTest {
         return result;
     }
 
-    @Test
+    //@Test
     public void testBuckets()
     {
         long[] buckets = new long[4];
