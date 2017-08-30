@@ -12,7 +12,17 @@ import sarong.util.StringKit;
  * because it is based on the same concept LightRNG uses, where it increments its state by an odd number and uses a very
  * different permutation of the state as its returned random result. It only repeats a cycle of numbers after the state
  * has wrapped around the modulus for long addition enough times to come back to the original starting state, which
- * should take exactly 2 to the 64 generated numbers.
+ * should take exactly 2 to the 64 generated numbers. The main weakness ThrustRNG has compared to LightRNG is that it is
+ * sensitive to the increment used to change the state, so ThrustRNG uses a fixed size for the changes it makes to the
+ * state (adding {@code 0x9E3779B97F4A7C15L} if going forward with the normal RandomnessSource methods, or adding or
+ * subtracting a multiple of that if using {@link #skip(long)} to go forwards or backwards by some amount of steps).
+ * Because the SplitMix64 algorithm that LightRNG uses goes through more steps to randomize the state, it can use any
+ * odd increment, but this also makes it somewhat slower, and LightRNG doesn't use other increments anyway (but, Java 8
+ * provides the random number generator SplittableRandom, which uses SplitMix64 and does use different increments).
+ * <br>
+ * The speed of this generator is fairly good, and it is the fastest generator to pass PractRand with no anomalies, and
+ * remains faster than all generators without failures in PractRand. LapRNG, FlapRNG, and ThunderRNG are faster but all
+ * have significant amounts of PractRand testing failures, indicating flaws in quality.
  * <br>
  * Thanks to Ashiren, for advice on this in #libgdx on Freenode, and to Donald Knuth for finding the constants used.
  * Created by Tommy Ettinger on 8/3/2017.
@@ -66,8 +76,8 @@ public class ThrustRNG implements StatefulRandomness {
     public final int next(int bits) {
         //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
         long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return (int)(z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL) >>> (32 - bits);
+        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL + 0x632BE59BD9B4E019L;
+        return (int)(z ^ (z >>> 28) * 0x27BB2EE687B0B0FDL) >>> (32 - bits);
                 //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
 
                 //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
@@ -86,8 +96,8 @@ public class ThrustRNG implements StatefulRandomness {
     @Override
     public final long nextLong() {
         long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL;
+        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL + 0x632BE59BD9B4E019L;
+        return z ^ (z >>> 28) * 0x27BB2EE687B0B0FDL;
         //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
 
         //return (state = state * 0x59A2B8F555F5828FL % 0x7FFFFFFFFFFFFFE7L) ^ state << 2;
@@ -107,8 +117,8 @@ public class ThrustRNG implements StatefulRandomness {
      */
     public final long skip(long advance) {
         long z = (state += 0x9E3779B97F4A7C15L * advance);
-        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL;
+        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL + 0x632BE59BD9B4E019L;
+        return z ^ (z >>> 28) * 0x27BB2EE687B0B0FDL;
     }
 
 
@@ -146,34 +156,18 @@ public class ThrustRNG implements StatefulRandomness {
     /**
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code randomize(++state)}, where
-     * the increment for state should be odd but otherwise doesn't really matter (it's multiplied by a very large
-     * constant, 0x9E3779B97F4A7C15L, to try to ensure the results are generally of high quality). Calling
-     * {@code determine(++state)} and {@code randomize(state += 0x9E3779B97F4A7C15L)} are equivalent; this method is the
-     * standard variety included in many RandomnessSource implementations.
+     * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
+     * {@code 0x9E3779B97F4A7C15L} within this method, so using a small increment won't be much different from using a
+     * very large one, as long as it is odd.
      * @param state a variable that should be different every time you want a different random result;
-     *              consider using something like {@code randomize(++state)}, or adding any odd number with {@code +=}
+     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
+     *              generate numbers in reverse order
      * @return a pseudo-random permutation of state
      */
     public static long determine(long state)
     {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL;
-    }
-
-    /**
-     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
-     * number. This is expected to be called with some changing variable, e.g. {@code randomize(state += 12345L)}, where
-     * typically state is incremented by any odd number (using an even number will halve the period's length or worse).
-     * Calling {@code determine(++state)} and {@code randomize(state += 0x9E3779B97F4A7C15L)} are equivalent; this
-     * method exists so alternate increments can be used instead of just 0x9E3779B97F4A7C15L.
-     * @param state a variable that should be different every time you want a different random result;
-     *              consider using something like {@code randomize(state += 12345L)}, with any odd number for 12345L
-     * @return a pseudo-random permutation of state
-     */
-    public static long randomize(long state)
-    {
-        state = (state ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL;
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 30) * 0x5851F42D4C957F2DL + 0x632BE59BD9B4E019L;
+        return state ^ (state >>> 28) * 0x27BB2EE687B0B0FDL;
     }
 
     /**
@@ -183,14 +177,15 @@ public class ThrustRNG implements StatefulRandomness {
      * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
      * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
      * @param state a variable that should be different every time you want a different random result;
-     *              consider using something like {@code randomize(++state)}, or adding any odd number with {@code +=}
+     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
+     *              generate numbers in reverse order
      * @param bound the outer exclusive bound for the int this produces; can be negative or positive
      * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
      */
     public static int determineBounded(long state, final int bound)
     {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        return (int)((bound * ((state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL) & 0x7FFFFFFFL)) >> 31);
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 30) * 0x5851F42D4C957F2DL + 0x632BE59BD9B4E019L;
+        return (int)((bound * ((state ^ (state >>> 28) * 0x27BB2EE687B0B0FDL) & 0x7FFFFFFFL)) >> 31);
     }
 
 }

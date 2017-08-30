@@ -41,6 +41,62 @@ import org.openjdk.jmh.runner.options.TimeValue;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Results:
+ * Benchmark                           Mode  Cnt     Score     Error  Units
+ * RNGBenchmark.a__measureThrust       avgt    5  1131.805 ±  12.320  ms/op
+ * RNGBenchmark.a__measureThrustInt    avgt    5  1216.479 ±  11.241  ms/op
+ * RNGBenchmark.a__measureThrustIntR   avgt    5  1391.226 ±  12.886  ms/op
+ * RNGBenchmark.a__measureThrustR      avgt    5  1216.642 ±  11.867  ms/op
+ * RNGBenchmark.aa_measureBeard        avgt    5  1397.082 ±  10.088  ms/op
+ * RNGBenchmark.aa_measureBeardInt     avgt    5  1491.380 ±  13.591  ms/op
+ * RNGBenchmark.aa_measureBeardIntR    avgt    5  2111.136 ±  23.276  ms/op
+ * RNGBenchmark.aa_measureBeardR       avgt    5  1932.245 ±  24.188  ms/op
+ * RNGBenchmark.aa_measureHerd         avgt    5  1827.514 ±   4.833  ms/op
+ * RNGBenchmark.aa_measureHerdInt      avgt    5  1313.211 ±   4.702  ms/op
+ * RNGBenchmark.aa_measureHerdIntR     avgt    5  1763.570 ±   7.817  ms/op
+ * RNGBenchmark.aa_measureHerdR        avgt    5  2371.093 ±  15.626  ms/op
+ * RNGBenchmark.measureBard            avgt    5  3171.348 ±  12.367  ms/op
+ * RNGBenchmark.measureBardInt         avgt    5  1707.016 ±   7.395  ms/op
+ * RNGBenchmark.measureBardIntR        avgt    5  1967.688 ±   9.738  ms/op
+ * RNGBenchmark.measureBardR           avgt    5  3128.905 ±  31.023  ms/op
+ * RNGBenchmark.measureBird            avgt    5  3390.618 ±  53.830  ms/op
+ * RNGBenchmark.measureBirdInt         avgt    5  1478.199 ±  16.278  ms/op
+ * RNGBenchmark.measureBirdIntR        avgt    5  2278.648 ±  20.423  ms/op
+ * RNGBenchmark.measureBirdR           avgt    5  4798.228 ±  28.583  ms/op
+ * RNGBenchmark.measureFlap            avgt    5  1396.436 ±  27.774  ms/op
+ * RNGBenchmark.measureFlapInt         avgt    5   847.606 ±  41.703  ms/op
+ * RNGBenchmark.measureFlapIntR        avgt    5   861.466 ±   6.423  ms/op
+ * RNGBenchmark.measureFlapR           avgt    5  1414.728 ±  12.184  ms/op
+ * RNGBenchmark.measureHorde           avgt    5  1320.661 ±   5.766  ms/op
+ * RNGBenchmark.measureHordeInt        avgt    5  1457.654 ±  10.749  ms/op
+ * RNGBenchmark.measureHordeIntR       avgt    5  1982.037 ± 257.399  ms/op
+ * RNGBenchmark.measureHordeR          avgt    5  2135.787 ± 100.537  ms/op
+ * RNGBenchmark.measureLap             avgt    5   610.649 ±   4.141  ms/op
+ * RNGBenchmark.measureLapInt          avgt    5   872.487 ±  20.719  ms/op
+ * RNGBenchmark.measureLapIntR         avgt    5   958.474 ±   3.734  ms/op
+ * RNGBenchmark.measureLapR            avgt    5   698.221 ±   4.486  ms/op
+ * RNGBenchmark.measureLight           avgt    5  1385.913 ±   8.300  ms/op
+ * RNGBenchmark.measureLight32         avgt    5  3225.607 ±  22.691  ms/op
+ * RNGBenchmark.measureLight32Int      avgt    5  1583.562 ±  14.601  ms/op
+ * RNGBenchmark.measureLight32IntR     avgt    5  1713.205 ±  13.471  ms/op
+ * RNGBenchmark.measureLight32R        avgt    5  3337.331 ±  18.807  ms/op
+ * RNGBenchmark.measureLightInt        avgt    5  1391.640 ±   9.243  ms/op
+ * RNGBenchmark.measureLightIntR       avgt    5  1560.652 ±  19.582  ms/op
+ * RNGBenchmark.measureLightR          avgt    5  1387.966 ±   8.571  ms/op
+ * RNGBenchmark.measureLongPeriod      avgt    5  2100.508 ±  16.138  ms/op
+ * RNGBenchmark.measureLongPeriodInt   avgt    5  2119.153 ±   5.913  ms/op
+ * RNGBenchmark.measureLongPeriodIntR  avgt    5  2101.944 ±  10.242  ms/op
+ * RNGBenchmark.measureLongPeriodR     avgt    5  2102.563 ±  19.739  ms/op
+ * RNGBenchmark.measureThunder         avgt    5   960.652 ±   9.994  ms/op
+ * RNGBenchmark.measureThunderInt      avgt    5  1131.314 ±   7.729  ms/op
+ * RNGBenchmark.measureThunderIntR     avgt    5  1214.030 ±  17.255  ms/op
+ * RNGBenchmark.measureThunderR        avgt    5  1045.408 ±  10.720  ms/op
+ * RNGBenchmark.measureXoRo            avgt    5  1422.306 ±   5.445  ms/op
+ * RNGBenchmark.measureXoRoInt         avgt    5  1534.223 ±  10.123  ms/op
+ * RNGBenchmark.measureXoRoIntR        avgt    5  1656.485 ±  71.371  ms/op
+ * RNGBenchmark.measureXoRoR           avgt    5  1485.865 ±   2.754  ms/op
+ */
 public class RNGBenchmark {
 
     private static long seed = 9000;
