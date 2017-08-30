@@ -3,10 +3,16 @@ package sarong;
 import sarong.util.StringKit;
 
 /**
- * An odd tweak on a linear congruential generator that passes PractRand with no failures (just one "unusual" test),
- * allows all longs as states (including 0), and also implements StatefulRandomness. LightRNG does those same things,
- * but ThrustRNG is slightly slower than LightRNG. You may want ThrustRNG when you need to use its different algorithm
- * to seed another RNG or do something else where reusing an algorithm would be troublesome.
+ * A hybrid of the type of algorithm LightRNG uses with some of the specific steps of a linear congruential generator.
+ * This RandomnessSource has no failures or even anomalies when tested with PractRand (even LightRNG has anomalies),
+ * allows all longs as states (including 0), implements StatefulRandomness, and is measurably faster than LightRNG at
+ * generating both ints and longs. This is very similar in capabilities to LightRNG because the algorithm is similar,
+ * with both able to skip forward and backward about as quickly as they can generate numbers normally. ThrustRNG should
+ * be a good general-purpose substitute for or complement to LightRNG. The period for a ThrustRNG should be 2 to the 64,
+ * because it is based on the same concept LightRNG uses, where it increments its state by an odd number and uses a very
+ * different permutation of the state as its returned random result. It only repeats a cycle of numbers after the state
+ * has wrapped around the modulus for long addition enough times to come back to the original starting state, which
+ * should take exactly 2 to the 64 generated numbers.
  * <br>
  * Thanks to Ashiren, for advice on this in #libgdx on Freenode, and to Donald Knuth for finding the constants used.
  * Created by Tommy Ettinger on 8/3/2017.
@@ -42,7 +48,7 @@ public class ThrustRNG implements StatefulRandomness {
     /**
      * Set the current internal state of this StatefulRandomness with a long.
      *
-     * @param state a 64-bit long. You should avoid passing 0, even though some implementations can handle that.
+     * @param state a 64-bit long. You may want to avoid passing 0 for compatibility, though this implementation can handle that.
      */
     @Override
     public void setState(long state) {
@@ -59,12 +65,14 @@ public class ThrustRNG implements StatefulRandomness {
     @Override
     public final int next(int bits) {
         //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
-        return (int)(
-                (state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return (int)(z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL) >>> (32 - bits);
+                //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
+
                 //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
                 //((state += 0x2545F4914F6CDD1DL) ^ (state >>> 30 & state >> 27) * 0xBF58476D1CE4E5B9L)
                 //(state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL
-                        >>> (64 - bits));
     }
 
     /**
@@ -77,13 +85,32 @@ public class ThrustRNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
-        return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL;
+        //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
+
         //return (state = state * 0x59A2B8F555F5828FL % 0x7FFFFFFFFFFFFFE7L) ^ state << 2;
         //return (state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL);
         //return (state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
         //return (state * 0x5851F42D4C957F2DL) + ((state += 0x14057B7EF767814FL) >> 28);
         //return (((state += 0x14057B7EF767814FL) >>> 28) * 0x5851F42D4C957F2DL + (state >>> 1));
     }
+
+    /**
+     * Advances or rolls back the ThrustRNG's state without actually generating each number. Skips forward
+     * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
+     * and returns the random number produced at that step (you can get the state with {@link #getState()}).
+     *
+     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
+     * @return the random long generated after skipping forward or backwards by {@code advance} numbers
+     */
+    public final long skip(long advance) {
+        long z = (state += 0x9E3779B97F4A7C15L * advance);
+        z = (z ^ z >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return z ^ (z >>> 30) * 0x27BB2EE687B0B0FDL;
+    }
+
 
     /**
      * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
@@ -114,6 +141,56 @@ public class ThrustRNG implements StatefulRandomness {
     @Override
     public int hashCode() {
         return (int) (state ^ (state >>> 32));
+    }
+
+    /**
+     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
+     * number. This is expected to be called with some changing variable, e.g. {@code randomize(++state)}, where
+     * the increment for state should be odd but otherwise doesn't really matter (it's multiplied by a very large
+     * constant, 0x9E3779B97F4A7C15L, to try to ensure the results are generally of high quality). Calling
+     * {@code determine(++state)} and {@code randomize(state += 0x9E3779B97F4A7C15L)} are equivalent; this method is the
+     * standard variety included in many RandomnessSource implementations.
+     * @param state a variable that should be different every time you want a different random result;
+     *              consider using something like {@code randomize(++state)}, or adding any odd number with {@code +=}
+     * @return a pseudo-random permutation of state
+     */
+    public static long determine(long state)
+    {
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL;
+    }
+
+    /**
+     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
+     * number. This is expected to be called with some changing variable, e.g. {@code randomize(state += 12345L)}, where
+     * typically state is incremented by any odd number (using an even number will halve the period's length or worse).
+     * Calling {@code determine(++state)} and {@code randomize(state += 0x9E3779B97F4A7C15L)} are equivalent; this
+     * method exists so alternate increments can be used instead of just 0x9E3779B97F4A7C15L.
+     * @param state a variable that should be different every time you want a different random result;
+     *              consider using something like {@code randomize(state += 12345L)}, with any odd number for 12345L
+     * @return a pseudo-random permutation of state
+     */
+    public static long randomize(long state)
+    {
+        state = (state ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL;
+    }
+
+    /**
+     * Given a state that should usually change each time this is called, and a bound that limits the result to some
+     * (typically fairly small) int, produces a pseudo-random int between 0 and bound (exclusive). The bound can be
+     * negative, which will cause this to produce 0 or a negative int; otherwise this produces 0 or a positive int.
+     * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
+     * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
+     * @param state a variable that should be different every time you want a different random result;
+     *              consider using something like {@code randomize(++state)}, or adding any odd number with {@code +=}
+     * @param bound the outer exclusive bound for the int this produces; can be negative or positive
+     * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
+     */
+    public static int determineBounded(long state, final int bound)
+    {
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 28) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
+        return (int)((bound * ((state ^ (state >>> 30) * 0x27BB2EE687B0B0FDL) & 0x7FFFFFFFL)) >> 31);
     }
 
 }

@@ -248,12 +248,12 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
     }
 
     /**
-     * Advances or rolls back the LightRNG's state without actually generating each number. Skip forward
+     * Advances or rolls back the LightRNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
      * and returns the random number produced at that step (you can get the state with {@link #getState()}).
      *
-     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most recent generated number
-     * @return the random long generated after skipping advance numbers
+     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
+     * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final long skip(long advance) {
         long z = (state += 0x9E3779B97F4A7C15L * advance);
@@ -287,7 +287,7 @@ public class LightRNG implements RandomnessSource, StatefulRandomness, Serializa
     {
         state = (((state *= 0x9E3779B97F4A7C15L) >>> 30) ^ state) * 0xBF58476D1CE4E5B9L;
         state = (state ^ (state >>> 27)) * 0x94D049BB133111EBL;
-        return (int)((bound * ((state ^ (state >>> 31)) & 0x7FFFFFFFL)) >>> 31);
+        return (int)((bound * ((state ^ (state >>> 31)) & 0x7FFFFFFFL)) >> 31);
     }
 
     @Override
