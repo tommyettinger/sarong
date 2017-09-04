@@ -85,8 +85,8 @@ public class Dumper {
             seeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash64(seeds);
             iSeeds[i] = CrossHash.Mist.predefined[(i & 15) + 2].hash(seeds);
         }
+        System.out.println("Seed used (long): " + seeds[62]);
         /*
-        System.out.println(seeds[62]);
         blast("Thunder", new ThunderRNG(seeds[62]));
         blast("Zap", new ZapRNG(seeds[62]));
         blast("Lap", new LapRNG(seeds[62]));
