@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
+ * High-quality, high-period, very slow compared to other generators. Probably going to change.
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */
@@ -135,20 +136,20 @@ uint32_t splitmix32(uint32_t *x) {
 
     @Override
     public final long nextLong() {
-        int x = (choice + 0x7F4A7C15), y = (choice += 0xFE94F82A),
-                q = (state[x >>> 28] += (x ^ x >>> 14) * 0x2C9277B5),
-                r = (state[y >>> 28] += (y ^ y >>> 14) * 0x2C9277B5);
+        final int x = (choice + 0x7F4A7C15), y = (choice += 0xFE94F82A),
+                q = (state[(x >>> 1) * 89 >>> 28] += state[x & 15] + x) * 0x2C9277B5,
+                r = (state[(y >>> 1) * 89 >>> 28] += state[y & 15] + y) * 0x2C9277B5;
         return (long) (q ^ q >>> 13) << 32 ^ (r ^ r >>> 13);
     }
     public final int nextInt() {
-        int z = (choice += 0x7F4A7C15),
-                s = (state[z >>> 28] += (z ^ z >>> 14) * 0x2C9277B5);
+        final int z = (choice += 0x7F4A7C15),
+                s = (state[(z >>> 1) * 89 >>> 28] += state[z & 15] + z) * 0x2C9277B5;
         return (s ^ s >>> 13);
     }
     @Override
     public final int next(final int bits) {
-        int z = (choice += 0x7F4A7C15),
-                s = (state[z >>> 28] += (z ^ z >>> 14) * 0x2C9277B5);
+        final int z = (choice += 0x7F4A7C15),
+                s = (state[(z >>> 1) * 89 >>> 28] += state[z & 15] ^ z) * 0x2C9277B5;
         return (s ^ s >>> 13) >>> (32 - bits);
     }
 

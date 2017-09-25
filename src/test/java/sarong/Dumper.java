@@ -98,8 +98,8 @@ public class Dumper {
         //blastInt("Bard", new BardRNG(iSeeds));
         //blast("Thrust", new ThrustRNG(seeds[62]));
         //blastInt("Thrust32", new Thrust32RNG(iSeeds[62]));
-        blastInt("Lunge32", new Lunge32RNG(iSeeds[62]));
-        //blastInt("Jet", new JetRNG(iSeeds[62]));
+        //blastInt("Lunge32", new Lunge32RNG(iSeeds[62]));
+        blastInt("Jet", new JetRNG(iSeeds[62]));
         /*
         blastInt("Light", new LightRNG(seeds[62]));
 

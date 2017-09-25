@@ -774,19 +774,137 @@ public class StrengthTest {
         return result;
     }
 
-    //@Test
+    @Test
     public void testBuckets()
     {
-        long[] buckets = new long[4];
-        int ctr = 0;
-        for (long i = 0; i < 0x100000000L; i++) {
-            buckets[(ctr * 0x85157AF5 | (ctr += 0x9296FE97)) >>> 30]++;
+        final int[] primeStuff = {
+                43, 5,
+                47, 5,
+                53, 5,
+                59, 5,
+                61, 5,
+                67, 6,
+                71, 6,
+                73, 6,
+                79, 6,
+                83, 6,
+                89, 6,
+                97, 6,
+                101, 6,
+                103, 6,
+                107, 6,
+                109, 6,
+                113, 6,
+                127, 6,
+                131, 7,
+                137, 7,
+                139, 7,
+                149, 7,
+                151, 7,
+                157, 7,
+                163, 7,
+                167, 7,
+                173, 7,
+                179, 7,
+                181, 7,
+                191, 7,
+                193, 7,
+                197, 7,
+                199, 7,
+                211, 7,
+                223, 7,
+                227, 7,
+                229, 7,
+                233, 7,
+                239, 7,
+                241, 7,
+                251, 7,
+                257, 8,
+                263, 8,
+                269, 8,
+                271, 8,
+                277, 8,
+                281, 8,
+                283, 8,
+                293, 8,
+                307, 8,
+                311, 8,
+                313, 8,
+                317, 8,
+                331, 8,
+                337, 8,
+                347, 8,
+                349, 8,
+                353, 8,
+                359, 8,
+                367, 8,
+                373, 8,
+                379, 8,
+                383, 8,
+                389, 8,
+                397, 8,
+                401, 8,
+                409, 8,
+                419, 8,
+                421, 8,
+                431, 8,
+                433, 8,
+                439, 8,
+                443, 8,
+                449, 8,
+                457, 8,
+                461, 8,
+                463, 8,
+                467, 8,
+                479, 8,
+                487, 8,
+                491, 8,
+                499, 8,
+                503, 8,
+                509, 8,
+                521, 9,
+                523, 9,
+                541, 9,
+        };
+        long[] buckets = new long[16];
+        int ctr, optimalPrime = 43;
+        BigInteger l, best = BigInteger.ZERO;
+        for (int s = 0; s < 83; s++) {
+            int p = primeStuff[s << 1];
+            buckets[0] = 0L;
+            buckets[1] = 0L;
+            buckets[2] = 0L;
+            buckets[3] = 0L;
+            buckets[4] = 0L;
+            buckets[5] = 0L;
+            buckets[6] = 0L;
+            buckets[7] = 0L;
+            buckets[8] = 0L;
+            buckets[9] = 0L;
+            buckets[10] = 0L;
+            buckets[11] = 0L;
+            buckets[12] = 0L;
+            buckets[13] = 0L;
+            buckets[14] = 0L;
+            buckets[15] = 0L;
+            ctr = 0;
+            for (long i = 0; i < 0x100000000L; i++) {
+                buckets[(++ctr >>> 1) * p >>> 28]++;
+            }
+            best = best.max(l = lcm(buckets, buckets.length));
+            if (best.equals(l)) {
+                optimalPrime = p;
+                System.out.printf("%d: %s (%d bits)\n", p, best.toString(16), best.bitLength());
+                for (int i = 0; i < buckets.length; i++) {
+                    System.out.printf("Bucket %03d has 0x%09X hits\n", i, buckets[i]);
+                }
+
+            }
         }
-        for (int i = 0; i < buckets.length; i++) {
-            System.out.printf("Bucket %03d has 0x%09X hits\n", i, buckets[i]);
-        }
-        String big = lcm(buckets, buckets.length).toString(16);
-        System.out.println("Highest LCM is " + big.length() + " hex digits long:\n" + big);
+        String big = best.toString(16);
+        int bits = best.bitLength();
+        System.out.println("Optimal prime is " + optimalPrime);
+        System.out.println("Highest LCM is " + bits + " bits long, " + big.length() + " hex digits long:\n" + big);
         System.out.println("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
                 + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
                 + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"

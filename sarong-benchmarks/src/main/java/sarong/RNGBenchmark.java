@@ -1045,9 +1045,9 @@ public class RNGBenchmark {
         doThrust32IntR();
     }
 
-    public long doLunge32()
+    public long doJet()
     {
-        Lunge32RNG rng = new Lunge32RNG(seed);
+        JetRNG rng = new JetRNG(seed);
 
         for (int i = 0; i < 1000000000; i++) {
             seed += rng.nextLong();
@@ -1057,14 +1057,14 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLunge32() throws InterruptedException {
+    public void a__measureJet() throws InterruptedException {
         seed = 9000;
-        doLunge32();
+        doJet();
     }
 
-    public long doLunge32Int()
+    public long doJetInt()
     {
-        Lunge32RNG rng = new Lunge32RNG(iseed);
+        JetRNG rng = new JetRNG(iseed);
 
         for (int i = 0; i < 1000000000; i++) {
             iseed += rng.next(32);
@@ -1074,14 +1074,14 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLunge32Int() throws InterruptedException {
+    public void a__measureJetInt() throws InterruptedException {
         iseed = 9000;
-        doLunge32Int();
+        doJetInt();
     }
 
-    public long doLunge32R()
+    public long doJetR()
     {
-        RNG rng = new RNG(new Lunge32RNG(seed));
+        RNG rng = new RNG(new JetRNG(seed));
 
         for (int i = 0; i < 1000000000; i++) {
             seed += rng.nextLong();
@@ -1091,14 +1091,14 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLunge32R() throws InterruptedException {
+    public void a__measureJetR() throws InterruptedException {
         seed = 9000;
-        doLunge32R();
+        doJetR();
     }
 
-    public long doLunge32IntR()
+    public long doJetIntR()
     {
-        RNG rng = new RNG(new Lunge32RNG(iseed));
+        RNG rng = new RNG(new JetRNG(iseed));
 
         for (int i = 0; i < 1000000000; i++) {
             iseed += rng.nextInt();
@@ -1108,9 +1108,9 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
-    public void a__measureLunge32IntR() throws InterruptedException {
+    public void a__measureJetIntR() throws InterruptedException {
         iseed = 9000;
-        doLunge32IntR();
+        doJetIntR();
     }
 
 
