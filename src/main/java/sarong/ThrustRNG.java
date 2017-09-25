@@ -164,12 +164,12 @@ public class ThrustRNG implements StatefulRandomness {
 
     /**
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
-     * number. This is expected to be called with some changing variable, e.g. {@code randomize(++state)}, where
+     * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
      * {@code 0x9E3779B97F4A7C15L} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd.
      * @param state a variable that should be different every time you want a different random result;
-     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
+     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random permutation of state
      */

@@ -1045,6 +1045,75 @@ public class RNGBenchmark {
         doThrust32IntR();
     }
 
+    public long doLunge32()
+    {
+        Lunge32RNG rng = new Lunge32RNG(seed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureLunge32() throws InterruptedException {
+        seed = 9000;
+        doLunge32();
+    }
+
+    public long doLunge32Int()
+    {
+        Lunge32RNG rng = new Lunge32RNG(iseed);
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureLunge32Int() throws InterruptedException {
+        iseed = 9000;
+        doLunge32Int();
+    }
+
+    public long doLunge32R()
+    {
+        RNG rng = new RNG(new Lunge32RNG(seed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureLunge32R() throws InterruptedException {
+        seed = 9000;
+        doLunge32R();
+    }
+
+    public long doLunge32IntR()
+    {
+        RNG rng = new RNG(new Lunge32RNG(iseed));
+
+        for (int i = 0; i < 1000000000; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measureLunge32IntR() throws InterruptedException {
+        iseed = 9000;
+        doLunge32IntR();
+    }
+
+
 
     
     /*
