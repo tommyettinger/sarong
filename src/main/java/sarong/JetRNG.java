@@ -136,21 +136,29 @@ uint32_t splitmix32(uint32_t *x) {
 
     @Override
     public final long nextLong() {
-        final int x = (choice + 0x7F4A7C15), y = (choice += 0xFE94F82A),
-                q = (state[(x >>> 1) * 89 >>> 28] += state[x & 15] + x) * 0x2C9277B5,
-                r = (state[(y >>> 1) * 89 >>> 28] += state[y & 15] + y) * 0x2C9277B5;
-        return (long) (q ^ q >>> 13) << 32 ^ (r ^ r >>> 13);
+        //final int x = (choice + 0x7F4A7C15), y = (choice += 0xFE94F82A);
+//        x = (state[x >>> 28] += (x ^ x >>> 14)) * 0x2C9277B5;
+//        y = (state[y >>> 28] += (y ^ y >>> 14)) * 0x2C9277B5;
+//        return (long) (state[x >>> 28] += ((state[x & 15] += x) >>> 14) * 0x2C9277B5) << 32
+//                ^ (state[y >>> 28] += ((state[y & 15] += y) >>> 14) * 0x2C9277B5);
+//        return (long)((state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5) << 32
+//                ^ ((state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5);
+        return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F35649500000000L ^
+                ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495;
     }
     public final int nextInt() {
-        final int z = (choice += 0x7F4A7C15),
-                s = (state[(z >>> 1) * 89 >>> 28] += state[z & 15] + z) * 0x2C9277B5;
-        return (s ^ s >>> 13);
+//        final int z = (choice += 0x7F4A7C15),
+//                s = (state[z >>> 28] += (z ^ z >>> 14)) * 0x2C9277B5; //[(z >>> 1) * 89 >>> 28]
+//        return (s ^ s >>> 13);
+//        final int z = (choice += 0x7F4A7C15);
+//        return (state[z >>> 28] += ((state[z & 15] += z) >>> 14) * 0x2C9277B5);
+        //return (state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5;
+        return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495;
     }
     @Override
     public final int next(final int bits) {
-        final int z = (choice += 0x7F4A7C15),
-                s = (state[(z >>> 1) * 89 >>> 28] += state[z & 15] ^ z) * 0x2C9277B5;
-        return (s ^ s >>> 13) >>> (32 - bits);
+//        return (state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5 >>> (32 - bits); // 0x5F356495
+        return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495 >>> (32 - bits); // 0x5F356495
     }
 
     /**
