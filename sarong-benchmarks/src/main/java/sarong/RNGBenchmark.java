@@ -106,7 +106,7 @@ public class RNGBenchmark {
     {
         ThunderRNG rng = new ThunderRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -123,7 +123,7 @@ public class RNGBenchmark {
     {
         ThunderRNG rng = new ThunderRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -139,7 +139,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ThunderRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -156,7 +156,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ThunderRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -172,7 +172,7 @@ public class RNGBenchmark {
     public long doXoRo()
     {
         XoRoRNG rng = new XoRoRNG(seed);
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -188,7 +188,7 @@ public class RNGBenchmark {
     public long doXoRoInt()
     {
         XoRoRNG rng = new XoRoRNG(iseed);
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -203,7 +203,7 @@ public class RNGBenchmark {
     public long doXoRoR()
     {
         RNG rng = new RNG(new XoRoRNG(seed));
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -219,7 +219,7 @@ public class RNGBenchmark {
     public long doXoRoIntR()
     {
         RNG rng = new RNG(new XoRoRNG(iseed));
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -233,7 +233,7 @@ public class RNGBenchmark {
     public long doLongPeriod()
     {
         LongPeriodRNG rng = new LongPeriodRNG(seed);
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -249,7 +249,7 @@ public class RNGBenchmark {
     public long doLongPeriodInt()
     {
         LongPeriodRNG rng = new LongPeriodRNG(iseed);
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -264,7 +264,7 @@ public class RNGBenchmark {
     public long doLongPeriodR()
     {
         RNG rng = new RNG(new LongPeriodRNG(seed));
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -280,7 +280,7 @@ public class RNGBenchmark {
     public long doLongPeriodIntR()
     {
         RNG rng = new RNG(new LongPeriodRNG(iseed));
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -296,7 +296,7 @@ public class RNGBenchmark {
     {
         LightRNG rng = new LightRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -313,7 +313,7 @@ public class RNGBenchmark {
     {
         LightRNG rng = new LightRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -329,7 +329,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new LightRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -346,7 +346,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new LightRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -363,7 +363,7 @@ public class RNGBenchmark {
     {
         FlapRNG rng = new FlapRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -380,7 +380,7 @@ public class RNGBenchmark {
     {
         FlapRNG rng = new FlapRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -397,7 +397,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new FlapRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -414,7 +414,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new FlapRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -431,7 +431,7 @@ public class RNGBenchmark {
     {
         LapRNG rng = new LapRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -448,7 +448,7 @@ public class RNGBenchmark {
     {
         LapRNG rng = new LapRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -465,7 +465,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new LapRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -482,7 +482,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new LapRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -500,7 +500,7 @@ public class RNGBenchmark {
     {
         HordeRNG rng = new HordeRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -517,7 +517,7 @@ public class RNGBenchmark {
     {
         HordeRNG rng = new HordeRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -534,7 +534,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new HordeRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -551,7 +551,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new HordeRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -567,7 +567,7 @@ public class RNGBenchmark {
     {
         HerdRNG rng = new HerdRNG((int)seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -584,7 +584,7 @@ public class RNGBenchmark {
     {
         HerdRNG rng = new HerdRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -601,7 +601,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new HerdRNG((int)seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -618,7 +618,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new HerdRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -635,7 +635,7 @@ public class RNGBenchmark {
     {
         BeardRNG rng = new BeardRNG((int)seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -652,7 +652,7 @@ public class RNGBenchmark {
     {
         BeardRNG rng = new BeardRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -669,7 +669,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BeardRNG((int)seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -686,7 +686,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BeardRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -704,7 +704,7 @@ public class RNGBenchmark {
     {
         BirdRNG rng = new BirdRNG((int)seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -721,7 +721,7 @@ public class RNGBenchmark {
     {
         BirdRNG rng = new BirdRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -738,7 +738,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BirdRNG((int)seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -755,7 +755,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BirdRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -771,7 +771,7 @@ public class RNGBenchmark {
     {
         BardRNG rng = new BardRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -788,7 +788,7 @@ public class RNGBenchmark {
     {
         BardRNG rng = new BardRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -805,7 +805,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BardRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -822,7 +822,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new BardRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -839,7 +839,7 @@ public class RNGBenchmark {
     {
         Light32RNG rng = new Light32RNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -856,7 +856,7 @@ public class RNGBenchmark {
     {
         Light32RNG rng = new Light32RNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -873,7 +873,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new Light32RNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -890,7 +890,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new Light32RNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -907,7 +907,7 @@ public class RNGBenchmark {
     {
         ThrustRNG rng = new ThrustRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -924,7 +924,7 @@ public class RNGBenchmark {
     {
         ThrustRNG rng = new ThrustRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -941,7 +941,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ThrustRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -958,7 +958,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ThrustRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -981,7 +981,7 @@ public class RNGBenchmark {
     {
         Thrust32RNG rng = new Thrust32RNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -998,7 +998,7 @@ public class RNGBenchmark {
     {
         Thrust32RNG rng = new Thrust32RNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -1015,7 +1015,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new Thrust32RNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1032,7 +1032,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new Thrust32RNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -1049,7 +1049,7 @@ public class RNGBenchmark {
     {
         JetRNG rng = new JetRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1066,7 +1066,7 @@ public class RNGBenchmark {
     {
         JetRNG rng = new JetRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -1083,7 +1083,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new JetRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1100,7 +1100,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new JetRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -1121,7 +1121,7 @@ public class RNGBenchmark {
     {
         ZapRNG rng = new ZapRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1137,7 +1137,7 @@ public class RNGBenchmark {
     {
         ZapRNG rng = new ZapRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -1154,7 +1154,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ZapRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1171,7 +1171,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new ZapRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -1191,7 +1191,7 @@ public class RNGBenchmark {
     {
         SlapRNG rng = new SlapRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1208,7 +1208,7 @@ public class RNGBenchmark {
     {
         SlapRNG rng = new SlapRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -1225,7 +1225,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new SlapRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1242,7 +1242,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new SlapRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -1269,7 +1269,7 @@ public class RNGBenchmark {
     {
         PlaceholderRNG rng = new PlaceholderRNG(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1286,7 +1286,7 @@ public class RNGBenchmark {
     {
         PlaceholderRNG rng = new PlaceholderRNG(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.next(32);
         }
         return iseed;
@@ -1303,7 +1303,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new PlaceholderRNG(seed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1320,7 +1320,7 @@ public class RNGBenchmark {
     {
         RNG rng = new RNG(new PlaceholderRNG(iseed));
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
@@ -1340,7 +1340,7 @@ public class RNGBenchmark {
     {
         Random rng = new Random(seed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             seed += rng.nextLong();
         }
         return seed;
@@ -1357,7 +1357,7 @@ public class RNGBenchmark {
     {
         Random rng = new Random(iseed);
 
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000007; i++) {
             iseed += rng.nextInt();
         }
         return iseed;
