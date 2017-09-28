@@ -145,8 +145,8 @@ uint32_t splitmix32(uint32_t *x) {
 //                ^ ((state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5);
         //  return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F35649500000000L ^
         //          ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495;
-        return (long)(state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 12) * 0x2C9277B5) << 32 ^
-                (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 12) * 0x5F356495);
+        return (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 13) + 0x5F356495) * 0x2C9277B500000000L ^
+                (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 13) + 0x5F356495) * 0x2C9277B5;
     }
     public final int nextInt() {
 //        final int z = (choice += 0x7F4A7C15),
@@ -157,7 +157,7 @@ uint32_t splitmix32(uint32_t *x) {
         //return (state[(choice += 0x7F4A7C15) >>> 28] += (state[choice & 15] += choice) >>> 13) * 0x2C9277B5;
         //return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495;
         //  return (state[choice >>> 28] += ((state[choice & 15] *= (choice += 0x7F4A7C15)) >>> 14)) * 0x2C9277B5;
-        return (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 12) * 0x5F356495);
+        return (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 13) + 0x5F356495) * 0x2C9277B5;
     }
     @Override
     public final int next(final int bits) {
@@ -166,7 +166,7 @@ uint32_t splitmix32(uint32_t *x) {
         //return ((state[c >>> 28] += (c ^ c >>> 14) * 0x2C9277B5) >>> 13) * ((choice += 0x7F4A7C15)|1) >>> (32 - bits);
         //return ((state[choice >>> 28] += (choice ^ choice >>> 14) * 0x2C9277B5) >>> 13 ^ (choice += 0x7F4A7C15)) * 0x5F356495 >>> (32 - bits);
         //  return (state[choice >>> 28] += ((state[choice & 15] += (choice += 0x7F4A7C15)) >>> 14)) * 0x2C9277B5 >>> (32 - bits);
-        return (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 12) * 0x5F356495) >>> (32 - bits);
+        return (state[(choice += 0x9CBC276D) & 15] += (state[choice >>> 28] >>> 13) + 0x5F356495) * 0x2C9277B5 >>> (32 - bits);
     }
 
     /**
