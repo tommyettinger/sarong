@@ -1113,6 +1113,73 @@ public class RNGBenchmark {
         doJetIntR();
     }
 
+    public long doRule90()
+    {
+        Rule90RNG rng = new Rule90RNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measure90() throws InterruptedException {
+        seed = 9000;
+        doRule90();
+    }
+
+    public long doRule90Int()
+    {
+        Rule90RNG rng = new Rule90RNG(iseed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measure90Int() throws InterruptedException {
+        iseed = 9000;
+        doRule90Int();
+    }
+
+    public long doRule90R()
+    {
+        RNG rng = new RNG(new Rule90RNG(seed));
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measure90R() throws InterruptedException {
+        seed = 9000;
+        doRule90R();
+    }
+
+    public long doRule90IntR()
+    {
+        RNG rng = new RNG(new Rule90RNG(iseed));
+
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5) @Measurement(iterations = 5) @Fork(1)
+    public void a__measure90IntR() throws InterruptedException {
+        iseed = 9000;
+        doRule90IntR();
+    }
 
 
     

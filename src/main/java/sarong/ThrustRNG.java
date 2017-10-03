@@ -186,8 +186,8 @@ public class ThrustRNG implements StatefulRandomness {
      * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
      * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
      * @param state a variable that should be different every time you want a different random result;
-     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
-     *              generate numbers in reverse order
+     *              using {@code determineBounded(++state, bound)} is recommended to go forwards or
+     *              {@code determineBounded(--state, bound)} to generate numbers in reverse order
      * @param bound the outer exclusive bound for the int this produces; can be negative or positive
      * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
      */

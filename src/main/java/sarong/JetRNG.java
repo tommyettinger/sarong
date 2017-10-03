@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * High-quality, high-period, very slow compared to other generators. Probably going to change.
+ * High-quality, high-period, faster than several other high-period generators, and uses int math.
+ * Effectively an improved-quality version of HerdRNG, with comparable speed.
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */

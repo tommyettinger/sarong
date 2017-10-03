@@ -144,12 +144,12 @@ public class Lunge32RNG implements StatefulRandomness {
 
     /**
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
-     * number. This is expected to be called with some changing variable, e.g. {@code randomize(++state)}, where
+     * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x9E3779B9} within this method, so using a small increment won't be much different from using a
+     * {@code 0x7F4A7C15} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd.
      * @param state a variable that should be different every time you want a different random result;
-     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
+     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random permutation of state
      */
@@ -166,8 +166,8 @@ public class Lunge32RNG implements StatefulRandomness {
      * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
      * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
      * @param state a variable that should be different every time you want a different random result;
-     *              using {@code randomize(++state)} is recommended to go forwards or {@code randomize(--state)} to
-     *              generate numbers in reverse order
+     *              using {@code determineBounded(++state, bound)} is recommended to go forwards or
+     *              {@code determineBounded(--state, bound)} to generate numbers in reverse order
      * @param bound the outer exclusive bound for the int this produces; can be negative or positive
      * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
      */
