@@ -75,9 +75,9 @@ public class Rule90RNG implements StatefulRandomness {
     public final long nextLong() {
         //final long z = (state += 36277L);
         //return (z ^ ((z >>> 1 ^ z << 1) + 0x14057B7EF767814FL >>> 24) * 0x5851F42D4C957F2DL);
-        return state += determine(state * (1000000L | 277L));
+        //return state += determine(state * (1000000L | 277L));
         //use this next one as a known good version:
-        //return (state ^ ((state = (state >>> 1 ^ state << 1) + 0x27BB2EE687B0B0FDL) >>> 24) * 0x5851F42D4C957F2DL);
+        return (state ^ ((state = (state >>> 1 ^ state << 1) + 0x27BB2EE687B0B0FDL) >>> 24) * 0x5851F42D4C957F2DL);
         //final long z = (state + 0x9E3779B97F4A7C15L);
         //return (state ^= (0x27BB2EE687B0B0FDL ^ z >>> 14) + (z ^ z >>> 24) * 0x5851F42D4C957F2DL);
         // 0x27BB2EE687B0B0FDL L'Ecuyer

@@ -50,6 +50,7 @@ public class Lunge32RNG implements StatefulRandomness {
 
     public final int nextInt()
     {
+//        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
         int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13);
@@ -63,6 +64,8 @@ public class Lunge32RNG implements StatefulRandomness {
      */
     @Override
     public final int next(int bits) {
+//        return (state += state ^ ((state >>> (state & 7) + 7) + 0x2C9277B5) * 0x5F356495) >>> (32 - bits);
+        //return (state ^ (state += ((state >>> 13) + 0x5F356495) * 0x2C9277B5)) >>> (32 - bits);
         int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13) >>> (32 - bits);
@@ -78,6 +81,8 @@ public class Lunge32RNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
+//        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B500000000L ^
+//                (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
         int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
         //0x5F356495
         x = (x ^ x >>> 14) * (0x2C9277B5 + (x * 0x632BE5A6));
