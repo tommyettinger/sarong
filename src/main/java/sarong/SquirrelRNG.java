@@ -7,9 +7,9 @@ import java.io.Serializable;
 
 /**
  * An int-math version of the Middle Square Weyl Sequence RNG, this has high quality (passes PractRand with no anomalies
- * or failures), has a period of at least {@code pow(2, 32)} (but probably a fair amount more than that), and unknown
- * speed at this time (probably not great, definitely not for {@link #nextLong()}). Based on
- * <a href="https://arxiv.org/pdf/1704.00358.pdf">this paper (PDF)</a> and its corresponding
+ * or failures), has a period of at least {@code pow(2, 32)} (but probably a fair amount more than that), and poor speed
+ * (especially for {@link #nextLong()}). This generator takes more than twice as long as {@link Lunge32RNG} to do
+ * equivalent work. Based on <a href="https://arxiv.org/pdf/1704.00358.pdf">this paper (PDF)</a> and its corresponding
  * <a href="https://en.wikipedia.org/wiki/Middle-square_method">Wikipedia article</a>, though those versions use 64-bit
  * state variables (two of them) and only use 32 bits of one state variable as output, where this uses two 32-bit state
  * variables and uses one of them in full as its output, incorporating the other as part of a multiplier. Credit for the
@@ -81,14 +81,9 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-//        final int z = (state0 += (state1 + ((state1 += 0x9E3779B9) >>> 14)) * 0x2C9277B5) * 0x5F356495;
-//        return (z ^ z >>> 13) * 0x01C8E815 >>> (32 - bits);
         state0 *= state0;
         state0 += (state1 += 0xC6BC278D);
         return (state0 = (state0 >> 13) * (state1 | 65537)) >>> (32 - bits);
-
-//        return (state0 += (((state1 += 0xC6BC278D) * 0x01C8E815 + 0x632D978F >>> 16) + 60) * 0x2C9277B5) >>> (32 - bits);
-        //return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> (32 - bits);
     }
 
     /**
@@ -98,33 +93,9 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
      * @return a pseudo-random 32-bit int
      */
     public final int nextInt() {
-//        return (state0 += ((state1 += 0xC6BC278D) * 0x01C8E815 + 0x632D978F) * 0x2C9277B5);
-//        final int z = (state0 += (((state1 += 0x9E3779B9) * 0x01C8E815 + 0x632D978F) >>> 13) * 0x2C9277B5);
-//        return (z ^ z >>> 14) * 0x5F356495;
         state0 *= state0;
         state0 += (state1 += 0xC6BC278D);
         return (state0 = (state0 >> 13) * (state1 | 65537));
-        //return (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
-        //return (state0 += 0x9E3779B9 + ((state1 += 0xC6BC278D) >> 28) * 0x632DB5AB);
-        //return (state0 += (state1 += 0x9E3779B9) ^ 0x632BE5AB);
-        //return (state0 += (0x632BE5AB ^ (state1 += 0x9E3779B9)) >> 1) * 0xC6BC278D;
-        /*
-        final int s0 = state0;
-        int s1 = state1;
-        final int result = s0 + s1;
-        s1 ^= s0 + 0x9E3779B9;
-        state0 = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 7); // a, b
-        state1 = (s1 << 18 | s1 >>> 14); // c
-        return result;
-        */
-        //0x632BE5AB
-        //final int z = (state += 0x9E3779B9);
-        //return (z >> (z & 15)) * 0xC6BC278D;
-        //final int z = (state + 0x9E3779B9);
-        //return state += ((state + 0x9E3779B9) >> 5) * 0xC6BC278D;
-        //final int z = (state += 0x9E3779B9), r = (z & 15);
-        //return (z >> r) * 0xC6BC278D;
-        //return state += (state >> 5) * 0xC6BC279692B5CC83L + 0x9E3779B97F4A7C15L;
 
     }
 
@@ -147,47 +118,12 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-//        final int x = (state0 += (((state1 += 0x9E3779B9) * 0x01C8E815 + 0x632D978F) >>> 13) * 0x2C9277B5),
-//                y = (state0 += (((state1 += 0x9E3779B9) * 0x01C8E815 + 0x632D978F) >>> 13) * 0x2C9277B5);
-//        return (x ^ x >>> 14) * 0x5F35649500000000L ^ (y ^ y >>> 14) * 0x5F356495L;
         state0 *= state0;
         state0 += (state1 += 0xC6BC278D);
         final long z = (long) (state0 = (state0 >> 13) * (state1 | 65537)) << 32;
         state0 *= state0;
         state0 += (state1 += 0xC6BC278D);
         return z ^ (state0 = (state0 >> 13) * (state1 | 65537));
-
-        //0x9E3779B97F4A7C15L
-        //final long r = (state0 += (((state1 += 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
-        //return r * 0xC6BC279692B5CC53L ^ r << 32;
-//        return (long) (state0 += (((state1 += 0xC6BC278D) * 0x01C8E815 + 0x632D978F >>> 16) + 60) * 0x2C9277B5) << 32
-//                ^ (state0 += (((state1 += 0xC6BC278D) * 0x01C8E815 + 0x632D978F >>> 16) + 60) * 0x2C9277B5);
-        //final long r = (state0 += ((((state1 += 0xC6BC278D) >>> 24) + 0x9E3779A) >>> 4) * 0x632D978F);
-        //return r * 0xC6AC279692B5CC53L ^ r << 32;
-        //final long r = (state0 += ((state1 += 0xC6BC278D) >> 28) * 0x632DB5AB) * 0x9E3779B97F4A7C15L;
-        //return r * 0x85157AF5L ^ r << 32;
-
-        // return ((state += 0x9E3779B97F4A7C15L ^ state << 1) >> 16) * 0xC6BC279692B5CC83L;
-
-        /*
-        final int s0 = state0;
-        final int s1 = state1;
-        return (s0 + s1) ^ (((state0 = s0 + 0x632BE5AB ^ (state1 = s1 + 0x9E3779B9)) >> 13) * 0xC6BC279692B5CC83L) << 32;
-        *//*
-        final int s0 = state0;
-        int s1 = state1;
-        final long result = s0 * 0xD0E89D2D311E289FL + s1 * 0xC6BC279692B5CC83L;
-        s1 ^= s0 + 0x9E3779B9;
-        state0 = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 7); // a, b
-        state1 = (s1 << 18 | s1 >>> 14); // c
-        return result;
-        */
-        /*
-        int z = state + 0x9E3779B9;
-        state += (z >> (z >>> 28)) * 0xC6BC279692B5CC83L;
-        z = (state + 0x9E3779B9);
-        return (state) ^ (long)(state += ((z >> (z >>> 28)) * 0xC6BC279692B5CC83L)) << 32;
-        */
     }
 
     /**
@@ -203,135 +139,67 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
     }
 
     /**
-     * A simple "output stage" applied to state; this method does not update state on its own. If you expect to call
-     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
-     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
-     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
-     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
-     * should be very fast.
+     * A simple "output stage" applied to two ints of state; this method does not update the states on its own. If you
+     * expect to call this method more than once, you should perform some change to state as part of the call; the best
+     * way to do this is to call this method like {@code state0 = SquirrelRNG.determine(state0, state1 += 0xC6BC278D)}.
      *
-     * @param state should be changed when you call this (see above), e.g. {@code state += 0x9E3779B9}
-     * @return an altered version of state that should be very fast to compute but doesn't promise great quality
+     * @param state0 should be changed to be the result: {@code state0 = determine(state0, state1 += 0xC6BC278D)}
+     * @param state1 should be changed when you call this with {@code state1 += 0xC6BC278D}
+     * @return a pseudo-random int that should be assigned back to state0 if this should be called again
      */
-    public static int determine(final int state) {
-        return (state + (((state * 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
+    public static int determine(int state0, final int state1) {
+        state0 *= state0;
+        state0 += state1;
+        return (state0 >> 13) * (state1 | 65537);
+    }
+    /**
+     * A static version of {@link #nextInt()} that updates a two-or-more-element int array for state. If you call this
+     * more than once, simply passing in the same array for state will work fine; state's contents will change with each
+     * call, and the result is also stored in the first element of the array for later reuse. You cannot pass null for
+     * state, nor any array with a length of less than two; this method does not check for performance reasons.
+     *
+     * @param state a 2-or-more-element int array that will have its first two elements changed
+     * @return a pseudo-random int that will equal the first element in state
+     */
+    public static int determine(int[] state) {
+        state[0] *= state[0];
+        state[0] += (state[1] += 0xC6BC278D);
+        return (state[0] = (state[0] >> 13) * (state[1] | 65537));
     }
 
     /**
-     * A simple "output stage" applied to a two-part state like what FlapRNG uses normally; this method does not update
-     * state0 or state1 on its own. If you expect to call this method more than once, you should perform some change to
-     * state0 and state1 as part of the call; a simple way to do this is to call this method like
-     * {@code (state0 += FlapRNG.determine(state0, state1 += 0x9E3779B9))}. The int 0x9E3779B9 is derived from
-     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
-     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
-     * should be very fast.
+     * A static random float generator that returns a float between 0.0 (inclusive) and 1.0 (exclusive), and updates a
+     * two-or-more-element int array for state. If you call this more than once, simply passing in the same array for
+     * state will work fine; state's contents will change with each call. You cannot pass null for state, nor any array
+     * with a length of less than two; this method does not check for performance reasons.
      *
-     * @param state0 should be changed when you call this (see above), e.g. by adding the result to state0
-     * @param state1 should be changed when you call this (see above), e.g. {@code state1 += 0x9E3779B9}
-     * @return an altered version of state0/state1 that should be very fast to compute but doesn't promise great quality
+     * @param state a 2-or-more-element int array that will have its first two elements changed
+     * @return a pseudo-random float between 0.0 (inclusive) and 1.0 (exclusive)
      */
-    public static int determine(final int state0, final int state1) {
-        return (state0 + (((state1 * 0xC6BC278D) >>> 28) + 60) * 0x632D978F);
+    public static float randomFloat(int[] state) {
+        state[0] *= state[0];
+        state[0] += (state[1] += 0xC6BC278D);
+        return ((state[0] = (state[0] >> 13) * (state[1] | 65537)) & 0xFFFFFF) * 0x1p-24f;
     }
 
     /**
-     * Like {@link #determine(int)}, but limits its results to between 0 (inclusive) and bound (exclusive). You can give
-     * a negative value for bound, which will produce a negative result or 0. If you expect to call this method more
-     * than once, you should perform some change to state as part of the call; a simple way to do this is to call this
-     * method like {@code FlapRNG.determineBounded(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from the golden
-     * ratio, and shows up often as an optimal part of hashes and random number generators, but the constant can be any
-     * odd-number int, preferably a large one.
-     * @param state should usually be changed when you call this (see above), e.g. {@code state += 0x9E3779B9}
-     * @param bound the exclusive outer bound; may be negative
-     * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
-     */
-    public static int determineBounded(int state, final int bound)
-    {
-        return (int)((bound * ((state + (((state * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) & 0x7FFFFFFFL)) >> 31);
-    }
-
-    /**
-     * Like {@link #determine(int, int)}, but limits its results to between 0 (inclusive) and bound (exclusive). You can
-     * give a negative value for bound, which will produce a negative result or 0. this method does not update state0 or
-     * state1 on its own. If you expect to call this method more than once, you should perform some change to
-     * state0 and state1 as part of the call; a simple way to do this is to call this method like
-     * {@code FlapRNG.determineBounded(state0 += 0x9E3779B9, state1 += state0 >> 1)}. The int 0x9E3779B9 is derived from
-     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but this constant
-     * can be any odd-number int, preferably a large one. This method doesn't offer very good quality assurances, but
-     * should be very fast.
+     * A static random float generator that returns a float between -1.0 (inclusive) and 1.0 (exclusive), and updates a
+     * two-or-more-element int array for state. If you call this more than once, simply passing in the same array for
+     * state will work fine; state's contents will change with each call. You cannot pass null for state, nor any array
+     * with a length of less than two; this method does not check for performance reasons.
      *
-     * @param state0 should be changed when you call this (see above), e.g. {@code state0 += 0x9E3779B9}
-     * @param state1 should be changed when you call this (see above), e.g. by adding some portion of state0 to state1
-     * @param bound the exclusive outer bound; may be negative
-     * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
-     */
-    public static int determineBounded(final int state0, final int state1, final int bound)
-    {
-        return (int)((bound * ((state0 + (((state1 * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) & 0x7FFFFFFFL)) >> 31);
-    }
-    /**
-     * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given state. If you expect to call
-     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
-     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
-     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
-     * can be any odd-number int, preferably a large one.
-     *
-     * @param state any int
-     * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
-     */
-    public static float randomFloat(final int state) {
-        return NumberTools.intBitsToFloat(((state + (((state * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x3f800000) - 1f;
-    }
-
-    /**
-     * Gets a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given states. If you expect to
-     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
-     * this is to call this method like {@code FlapRNG.randomFloat(state0 += state1, state1 += 0x9E3779B9)}.
-     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
-     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
-     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
-     *
-     * @param state0 any int
-     * @param state1 any int
-     * @return a pseudo-random float from -0f (inclusive) to 1f (exclusive)
-     */
-    public static float randomFloat(final int state0, final int state1) {
-        return NumberTools.intBitsToFloat(((state0 + (((state1 * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x3f800000) - 1f;
-    }
-
-    /**
-     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given state. If you expect to call
-     * this method more than once, you should perform some change to state as part of the call; a simple way to do this
-     * is to call this method like {@code FlapRNG.determine(state += 0x9E3779B9)}. The int 0x9E3779B9 is derived from
-     * the golden ratio, and shows up often as an optimal part of hashes and random number generators, but the constant
-     * can be any odd-number int, preferably a large one.
-     *
-     * @param state any int
+     * @param state a 2-or-more-element int array that will have its first two elements changed
      * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
      */
-    public static float randomSignedFloat(final int state) {
-        return NumberTools.intBitsToFloat(((state + (((state * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x40000000) - 3f;
-    }
-
-    /**
-     * Gets a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given states. If you expect to
-     * call this method more than once, you should perform some change to state as part of the call; a simple way to do
-     * this is to call this method like {@code FlapRNG.randomSignedFloat(state0 += state1, state1 += 0x9E3779B9)}.
-     * The int 0x9E3779B9 is derived from the golden ratio, and shows up often as an optimal part of hashes and random
-     * number generators, the constant can be any odd-number int, preferably a large one. Here, state0 is incremented by
-     * the before-value of state1, which gives a good distribution of inputs on repeated calls.
-     *
-     * @param state0 any int
-     * @param state1 any int
-     * @return a pseudo-random float from -1f (inclusive) to 1f (exclusive)
-     */
-    public static float randomSignedFloat(final int state0, final int state1) {
-        return NumberTools.intBitsToFloat(((state0 + (((state1 * 0xC6BC278D) >>> 28) + 60) * 0x632D978F) >>> 9) | 0x40000000) - 3f;
+    public static float randomSignedFloat(int[] state) {
+        state[0] *= state[0];
+        state[0] += (state[1] += 0xC6BC278D);
+        return ((state[0] = (state[0] >> 13) * (state[1] | 65537)) >> 7) * 0x1p-24f;
     }
 
     @Override
     public String toString() {
-        return "FlapRNG with state0 0x" + StringKit.hex(state0) + ", state1 0x" + StringKit.hex(state1);
+        return "SquirrelRNG with state0 0x" + StringKit.hex(state0) + ", state1 0x" + StringKit.hex(state1);
     }
 
     @Override
@@ -344,9 +212,9 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SquirrelRNG flapRNG = (SquirrelRNG) o;
+        SquirrelRNG squirrelRNG = (SquirrelRNG) o;
 
-        if (state0 != flapRNG.state0) return false;
-        return state1 == flapRNG.state1;
+        if (state0 != squirrelRNG.state0) return false;
+        return state1 == squirrelRNG.state1;
     }
 }

@@ -989,7 +989,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measureThrust32() throws InterruptedException {
+    public void a___measureThrust32() throws InterruptedException {
         seed = 9000;
         doThrust32();
     }
@@ -1006,7 +1006,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measureThrust32Int() throws InterruptedException {
+    public void a___measureThrust32Int() throws InterruptedException {
         iseed = 9000;
         doThrust32Int();
     }
@@ -1023,7 +1023,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measureThrust32R() throws InterruptedException {
+    public void a___measureThrust32R() throws InterruptedException {
         seed = 9000;
         doThrust32R();
     }
@@ -1040,7 +1040,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measureThrust32IntR() throws InterruptedException {
+    public void a___measureThrust32IntR() throws InterruptedException {
         iseed = 9000;
         doThrust32IntR();
     }
@@ -1112,6 +1112,7 @@ public class RNGBenchmark {
         iseed = 9000;
         doJetIntR();
     }
+
     public long doLunge32()
     {
         Lunge32RNG rng = new Lunge32RNG(iseed);
@@ -1124,7 +1125,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureLunge32() throws InterruptedException {
+    public void a___measureLunge32() throws InterruptedException {
         seed = 9000;
         doLunge32();
     }
@@ -1141,7 +1142,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureLunge32Int() throws InterruptedException {
+    public void a___measureLunge32Int() throws InterruptedException {
         iseed = 9000;
         doLunge32Int();
     }
@@ -1158,7 +1159,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureLunge32R() throws InterruptedException {
+    public void a___measureLunge32R() throws InterruptedException {
         seed = 9000;
         doLunge32R();
     }
@@ -1175,10 +1176,79 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureLunge32IntR() throws InterruptedException {
+    public void a___measureLunge32IntR() throws InterruptedException {
         iseed = 9000;
         doLunge32IntR();
     }
+
+//    public long doSquirrel()
+//    {
+//        SquirrelRNG rng = new SquirrelRNG(iseed);
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            seed += rng.nextLong();
+//        }
+//        return seed;
+//    }
+//
+//    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+//    public void a__measureSquirrel() throws InterruptedException {
+//        seed = 9000;
+//        doSquirrel();
+//    }
+//
+//    public long doSquirrelInt()
+//    {
+//        SquirrelRNG rng = new SquirrelRNG(iseed);
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            iseed += rng.next(32);
+//        }
+//        return iseed;
+//    }
+//
+//    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+//    public void a__measureSquirrelInt() throws InterruptedException {
+//        iseed = 9000;
+//        doSquirrelInt();
+//    }
+//
+//    public long doSquirrelR()
+//    {
+//        RNG rng = new RNG(new SquirrelRNG(iseed));
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            seed += rng.nextLong();
+//        }
+//        return seed;
+//    }
+//
+//    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+//    public void a__measureSquirrelR() throws InterruptedException {
+//        seed = 9000;
+//        doSquirrelR();
+//    }
+//
+//    public long doSquirrelIntR()
+//    {
+//        RNG rng = new RNG(new SquirrelRNG(iseed));
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            iseed += rng.nextInt();
+//        }
+//        return iseed;
+//    }
+//
+//    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+//    public void a__measureSquirrelIntR() throws InterruptedException {
+//        iseed = 9000;
+//        doSquirrelIntR();
+//    }
+
 
 //    public long doRule90()
 //    {
