@@ -54,6 +54,9 @@ public class Lunge32RNG implements StatefulRandomness {
         int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13);
+//        int z = (state += 0x7F4A7C15);
+//        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
+//        return (z ^ z >>> 13);
     }
     /**
      * Using this method, any algorithm that might use the built-in Java Random
@@ -69,6 +72,9 @@ public class Lunge32RNG implements StatefulRandomness {
         int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13) >>> (32 - bits);
+//        int z = (state += 0x7F4A7C15);
+//        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
+//        return (z ^ z >>> 13) >>> (32 - bits);
     }
 
     /**
@@ -83,12 +89,15 @@ public class Lunge32RNG implements StatefulRandomness {
     public final long nextLong() {
 //        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B500000000L ^
 //                (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
+//        int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
+//        x = (x ^ x >>> 14) * (x ^ x + 0x2C9277B5);
+//        y = (y ^ y >>> 14) * (y ^ y + 0x2C9277B5);
+//        return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
+
         int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
         //0x5F356495
         x = (x ^ x >>> 14) * (0x2C9277B5 + (x * 0x632BE5A6));
         y = (y ^ y >>> 14) * (0x2C9277B5 + (y * 0x632BE5A6));
-//        x = (x ^ x >>> 14) * (0x41C64E6D + (x & 0x7FFE));
-//        y = (y ^ y >>> 14) * (0x41C64E6D + (y & 0x7FFE));
         return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
         // * 0x27BB2EE687B0B0FDL;
         //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
@@ -109,9 +118,11 @@ public class Lunge32RNG implements StatefulRandomness {
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final int skip(int advance) {
+//        int z = (state += 0x7F4A7C15 * advance);
+//        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
+//        return (z ^ z >>> 13);
         int z = (state += 0x7F4A7C15 * advance);
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
-//        z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
         return (z ^ z >>> 13);
     }
 

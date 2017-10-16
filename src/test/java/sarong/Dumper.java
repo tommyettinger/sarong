@@ -17,10 +17,8 @@ public class Dumper {
         try {
             dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
 
-            for (int i = 0; i < 64; i++) {
-                for (int j = 0; j < 0x20000; j++) {
-                    dos.writeLong(rng.nextLong());
-                }
+            for (int j = 0; j < 0x2000000; j++) {
+                dos.writeLong(rng.nextLong());
             }
             dos.flush();
             dos.close();
@@ -28,6 +26,64 @@ public class Dumper {
             e.printStackTrace();
         }
     }
+
+    public static void scatterBlast(String prefix)
+    {
+        DataOutputStream dos;
+        try {
+            dos = new DataOutputStream(new FileOutputStream("target/" + prefix + "_27_27_2545F4914F6CDD1D.dat", false));
+            long state = -1109006589012544900L, z;
+            for (long j = 0L; j < 0x2000000L; j++, state += 0x9E3779B97F4A7C15L) {
+                z = (state ^ state >>> 27) * 0x2545F4914F6CDD1DL;
+                dos.writeLong(z ^ z >>> 27);
+            }
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            dos = new DataOutputStream(new FileOutputStream("target/" + prefix + "_27_28_2545F4914F6CDD1D.dat", false));
+            long state = -1109006589012544900L, z;
+            for (long j = 0L; j < 0x2000000L; j++, state += 0x9E3779B97F4A7C15L) {
+                z = (state ^ state >>> 27) * 0x2545F4914F6CDD1DL;
+                dos.writeLong(z ^ z >>> 28);
+            }
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            dos = new DataOutputStream(new FileOutputStream("target/" + prefix + "_28_27_2545F4914F6CDD1D.dat", false));
+            long state = -1109006589012544900L, z;
+            for (long j = 0L; j < 0x2000000L; j++, state += 0x9E3779B97F4A7C15L) {
+                z = (state ^ state >>> 28) * 0x2545F4914F6CDD1DL;
+                dos.writeLong(z ^ z >>> 27);
+            }
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            dos = new DataOutputStream(new FileOutputStream("target/" + prefix + "_28_28_2545F4914F6CDD1D.dat", false));
+            long state = -1109006589012544900L, z;
+            for (long j = 0L; j < 0x2000000L; j++, state += 0x9E3779B97F4A7C15L) {
+                z = (state ^ state >>> 28) * 0x2545F4914F6CDD1DL;
+                dos.writeLong(z ^ z >>> 28);
+            }
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
     public static void blastInt(String filename, RandomnessSource rng)
     {
         DataOutputStream dos = null;
@@ -99,10 +155,11 @@ public class Dumper {
         //blast("Thrust", new ThrustRNG(seeds[62]));
         //blastInt("Thrust32", new Thrust32RNG(iSeeds[62]));
         //blastInt("Squirrel", new SquirrelRNG(iSeeds[62]));
-        blastInt("Lunge32", new Lunge32RNG(iSeeds[62]));
+        //blastInt("Lunge32", new Lunge32RNG(iSeeds[62]));
         //blastInt("Herd", new HerdRNG(iSeeds[62]));
         //blastInt("Jet", new JetRNG(iSeeds[62]));
-        //blast("Thrust", new ThrustRNG(seeds[62]));
+        blast("Thrust", new ThrustRNG(seeds[62]));
+        //scatterBlast("Thrust");
         //blast("Rule90", new Rule90RNG(seeds[62]));
         /*
         blastInt("Light", new LightRNG(seeds[62]));

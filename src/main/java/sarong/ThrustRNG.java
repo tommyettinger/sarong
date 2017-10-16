@@ -23,13 +23,17 @@ import sarong.util.StringKit;
  * The speed of this generator is fairly good, and it is the fastest generator to pass PractRand with no anomalies, and
  * remains faster than all generators without failures in PractRand. LapRNG, FlapRNG (when FlapRNG produces ints), and
  * (narrowly) ThunderRNG are faster, but all have significant amounts of PractRand testing failures, indicating flaws in
- * quality. The performance of this RandomnessSource has been surprisingly reasonable to improve beyond the baseline of
+ * quality. Notably, it now passes TestU01's intensive BigCrush suite without failures (for at least one seed, anyway).
+ * The performance of this RandomnessSource has been surprisingly reasonable to improve beyond the baseline of
  * SplitMix64; where LightRNG takes 1.385 seconds to generate a billion pseudo-random long values, this takes just under
  * a second (0.958 seconds, to be exact) to generate the same quantity. This speed will vary depending on hardware, and
  * was benchmarked using JMH on a relatively-recent laptop (with a i7-6700HQ processor and DDR4 RAM, using a Zulu build
  * of OpenJDK 8); you can expect better performance on most desktops or dedicated "gaming PCs," or potentially much
  * slower speeds on Android or especially GWT (still, while GWT's emulation of the long data type is not fast, this
- * generator should yield the same results on GWT as on desktop or Android if the seed given is the same).
+ * generator should yield the same results on GWT as on desktop or Android if the seed given is the same). A C port of
+ * Thrust is available <a href="https://gist.github.com/tommyettinger/e6d3e8816da79b45bfe582384c2fe14a">here</a>; it is
+ * the fastest generator I can run on this Windows machine (using MinGW64) that still does well on quality (it is
+ * slightly faster than the C version of Xoroshiro128+, which is a very fast generator).
  * <br>
  * Thanks to Ashiren, for advice on this in #libgdx on Freenode, and to Pierre L'Ecuyer and Donald Knuth for finding the
  * constants used (originally for linear congruential generators).
@@ -84,7 +88,7 @@ public class ThrustRNG implements StatefulRandomness {
     public final int next(int bits) {
         //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
         long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL;
+        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
         return (int)(z ^ z >>> 28) >>> (32 - bits);
                 //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
 
@@ -104,9 +108,14 @@ public class ThrustRNG implements StatefulRandomness {
     @Override
     public final long nextLong() {
         long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL;// + 0x632BE59BD9B4E019L;
+        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
         return z ^ z >>> 28;
-        // * 0x27BB2EE687B0B0FDL;
+        // the first multiplier that worked fairly well was 0x5851F42D4C957F2DL ; its source is unclear so I'm trying
+        // other numbers with better evidence for their strength
+        // the multiplier 0x6A5D39EAE116586DL did not work very well (L'Ecuyer, best found MCG constant for modulus
+        // 2 to the 64 when generating 16 bits, but this left 16 bits of each long lower-quality)
+        // the multiplier 0x2545F4914F6CDD1DL is also from L'Ecuyer and seems much better
+        // * 0x27BB2EE687B0B0FDL; // ???
         //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
 
         //return (state = state * 0x59A2B8F555F5828FL % 0x7FFFFFFFFFFFFFE7L) ^ state << 2;
@@ -126,7 +135,7 @@ public class ThrustRNG implements StatefulRandomness {
      */
     public final long skip(long advance) {
         long z = (state += 0x9E3779B97F4A7C15L * advance);
-        z = (z ^ z >>> 30) * 0x5851F42D4C957F2DL;
+        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
         return z ^ z >>> 28;
     }
 
@@ -175,7 +184,7 @@ public class ThrustRNG implements StatefulRandomness {
      */
     public static long determine(long state)
     {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 30) * 0x5851F42D4C957F2DL;
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
         return state ^ state >>> 28;
     }
 
@@ -193,7 +202,7 @@ public class ThrustRNG implements StatefulRandomness {
      */
     public static int determineBounded(long state, final int bound)
     {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 30) * 0x5851F42D4C957F2DL;
+        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
         return (int)((bound * ((state ^ state >>> 28) & 0x7FFFFFFFL)) >> 31);
     }
 
