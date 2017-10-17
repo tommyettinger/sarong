@@ -52,8 +52,9 @@ public class Lunge32RNG implements StatefulRandomness {
     {
 //        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
         int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
-        return (z ^ z >>> 13);
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495;
 //        int z = (state += 0x7F4A7C15);
 //        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
 //        return (z ^ z >>> 13);
@@ -70,8 +71,9 @@ public class Lunge32RNG implements StatefulRandomness {
 //        return (state += state ^ ((state >>> (state & 7) + 7) + 0x2C9277B5) * 0x5F356495) >>> (32 - bits);
         //return (state ^ (state += ((state >>> 13) + 0x5F356495) * 0x2C9277B5)) >>> (32 - bits);
         int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
-        return (z ^ z >>> 13) >>> (32 - bits);
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495 >>> (32 - bits);
 //        int z = (state += 0x7F4A7C15);
 //        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
 //        return (z ^ z >>> 13) >>> (32 - bits);
@@ -95,10 +97,20 @@ public class Lunge32RNG implements StatefulRandomness {
 //        return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
 
         int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
+        x ^= x >>> 8 + (x >>> 29);
+        y ^= y >>> 8 + (y >>> 29);
+        x *= 0x2C9277B5 + (x * 0x5924EF6A);
+        y *= 0x2C9277B5 + (y * 0x5924EF6A);
+        return (x ^ x >>> 15) * 0x5F35649500000000L ^ ((y ^ y >>> 15) * 0x5F356495 & 0xFFFFFFFFL);
+        //return (x ^ x >>> 15) * 0x5F35649500000000L + 0x34ED9DE500000000L ^ ((y ^ y >>> 15) * 0x5F356495 + 0x34ED9DE5 & 0xFFFFFFFFL);
+
+
+/*
         //0x5F356495
         x = (x ^ x >>> 14) * (0x2C9277B5 + (x * 0x632BE5A6));
         y = (y ^ y >>> 14) * (0x2C9277B5 + (y * 0x632BE5A6));
         return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
+        */
         // * 0x27BB2EE687B0B0FDL;
         //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
 
@@ -122,8 +134,14 @@ public class Lunge32RNG implements StatefulRandomness {
 //        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
 //        return (z ^ z >>> 13);
         int z = (state += 0x7F4A7C15 * advance);
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495;
+
+        /*
         z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13);
+        */
     }
 
 
@@ -171,8 +189,15 @@ public class Lunge32RNG implements StatefulRandomness {
      */
     public static int determine(int state)
     {
+        /*
         state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x2C9277B5 + (state * 0x632BE5A6));
         return state ^ state >>> 13;
+        */
+        state *= 0x7F4A7C15;
+        state ^= state >>> 8 + (state >>> 29);
+        state *= 0x2C9277B5 + (state * 0x5924EF6A);
+        return (state ^ state >>> 15) * 0x5F356495;
+
     }
 
     /**
@@ -189,8 +214,15 @@ public class Lunge32RNG implements StatefulRandomness {
      */
     public static int determineBounded(int state, final int bound)
     {
+        /*
         state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x2C9277B5 + (state * 0x632BE5A6));
         return (int)((bound * ((state ^ state >>> 13) & 0x7FFFFFFFL)) >> 31);
+        */
+        state *= 0x7F4A7C15;
+        state ^= state >>> 8 + (state >>> 29);
+        state *= 0x2C9277B5 + (state * 0x5924EF6A);
+        return (int)((bound * (((state ^ state >>> 15) * 0x5F356495) & 0x7FFFFFFFL)) >> 31);
+
     }
 
 }

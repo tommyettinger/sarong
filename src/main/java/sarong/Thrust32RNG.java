@@ -23,20 +23,32 @@ import sarong.util.StringKit;
  * Created by Tommy Ettinger on 8/3/2017.
  */
 public class Thrust32RNG implements StatefulRandomness {
-    /**
-     * Can be any int value.
-     */
-    public int state;
+    /** Can be any int value. */
+    public int state,
+    /** Can be any int value. */
+    state2;
 
     /**
      * Creates a new generator seeded using Math.random.
      */
     public Thrust32RNG() {
-        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000),
+                (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
 
     public Thrust32RNG(final int seed) {
         state = seed;
+        state2 = determine(seed);
+    }
+
+    public Thrust32RNG(final long seed) {
+        state = (int)(seed & 0xFFFFFFFFL);
+        state2 = (int)(seed >>> 32);
+    }
+
+    public Thrust32RNG(final int seed, final int seed2) {
+        state = seed;
+        state2 = seed2;
     }
 
     /**
@@ -56,14 +68,21 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     @Override
     public void setState(long state) {
-        this.state = (int) state;
+        this.state = (int)(state & 0xFFFFFFFFL);
+        state2 = (int)(state >>> 32);
+
     }
 
     public final int nextInt()
     {
         int z = (state += 0x7F4A7C15);
+        z = (z ^ z >>> 14) * 0x5F356495;
+        return (state2 += (z ^ z >>> 14) * (state2 << 2 | 5));
+        /*
+        int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
         return (z ^ z >>> 13);
+        */
     }
     /**
      * Using this method, any algorithm that might use the built-in Java Random
@@ -75,8 +94,13 @@ public class Thrust32RNG implements StatefulRandomness {
     @Override
     public final int next(int bits) {
         int z = (state += 0x7F4A7C15);
+        z = (z ^ z >>> 14) * 0x5F356495;
+        return (state2 += (z ^ z >>> 14) * (state2 << 2 | 5)) >>> (32 - bits);
+        /*
+        int z = (state += 0x7F4A7C15);
         z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
         return (z ^ z >>> 13) >>> (32 - bits);
+        */
     }
 
     /**
@@ -90,9 +114,16 @@ public class Thrust32RNG implements StatefulRandomness {
     @Override
     public final long nextLong() {
         int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
+        x = (x ^ x >>> 14) * 0x5F356495;
+        y = (y ^ y >>> 14) * 0x5F356495;
+        return (long)(state2 += (x ^ x >>> 14) * (state2 << 2 | 5)) << 32 ^ (state2 += (y ^ y >>> 14) * (state2 << 2 | 5));
+
+        /*
+        int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
         x = (x ^ x >>> 14) * (0x41C64E6D + (x & 0x7FFE));
         y = (y ^ y >>> 14) * (0x41C64E6D + (y & 0x7FFE));
         return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
+        */
         // * 0x27BB2EE687B0B0FDL;
         //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
 
