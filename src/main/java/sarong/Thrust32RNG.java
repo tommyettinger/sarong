@@ -18,37 +18,30 @@ import sarong.util.StringKit;
  * very low period, 2 to the 32 (4,294,967,296), which is poor compared to ThrustRNG's period of 2 to the 64
  * (18,446,744,073,709,551,616) and much worse than XoRoRNG's 2 to the 128 - 1
  * (340,282,366,920,938,463,463,374,607,431,768,211,455). It is also slow to generate long values, since it uses 32-bit
- * math to generate random numbers.
+ * math to generate random numbers. It is not nearly as fast as ThrustRNG on 64-bit hardware, either, since various
+ * extra steps need to be performed to ensure quality here.
  * <br>
  * Created by Tommy Ettinger on 8/3/2017.
  */
 public class Thrust32RNG implements StatefulRandomness {
-    /** Can be any int value. */
-    public int state,
-    /** Can be any int value. */
-    state2;
+    /**
+     * Can be any int value.
+     */
+    public int state;
 
     /**
      * Creates a new generator seeded using Math.random.
      */
     public Thrust32RNG() {
-        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000),
-                (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
 
     public Thrust32RNG(final int seed) {
         state = seed;
-        state2 = determine(seed);
     }
 
     public Thrust32RNG(final long seed) {
-        state = (int)(seed & 0xFFFFFFFFL);
-        state2 = (int)(seed >>> 32);
-    }
-
-    public Thrust32RNG(final int seed, final int seed2) {
-        state = seed;
-        state2 = seed2;
+        state = (int) (seed ^ seed >>> 32);
     }
 
     /**
@@ -68,21 +61,19 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     @Override
     public void setState(long state) {
-        this.state = (int)(state & 0xFFFFFFFFL);
-        state2 = (int)(state >>> 32);
-
+        this.state = (int) state;
     }
 
     public final int nextInt()
     {
+//        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
         int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * 0x5F356495;
-        return (state2 += (z ^ z >>> 14) * (state2 << 2 | 5));
-        /*
-        int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
-        return (z ^ z >>> 13);
-        */
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495;
+//        int z = (state += 0x7F4A7C15);
+//        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
+//        return (z ^ z >>> 13);
     }
     /**
      * Using this method, any algorithm that might use the built-in Java Random
@@ -93,14 +84,15 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     @Override
     public final int next(int bits) {
+//        return (state += state ^ ((state >>> (state & 7) + 7) + 0x2C9277B5) * 0x5F356495) >>> (32 - bits);
+        //return (state ^ (state += ((state >>> 13) + 0x5F356495) * 0x2C9277B5)) >>> (32 - bits);
         int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * 0x5F356495;
-        return (state2 += (z ^ z >>> 14) * (state2 << 2 | 5)) >>> (32 - bits);
-        /*
-        int z = (state += 0x7F4A7C15);
-        z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
-        return (z ^ z >>> 13) >>> (32 - bits);
-        */
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495 >>> (32 - bits);
+//        int z = (state += 0x7F4A7C15);
+//        z = (z ^ z >>> 14) * (z ^ z + 0x2C9277B5);
+//        return (z ^ z >>> 13) >>> (32 - bits);
     }
 
     /**
@@ -113,15 +105,26 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
-        int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
-        x = (x ^ x >>> 14) * 0x5F356495;
-        y = (y ^ y >>> 14) * 0x5F356495;
-        return (long)(state2 += (x ^ x >>> 14) * (state2 << 2 | 5)) << 32 ^ (state2 += (y ^ y >>> 14) * (state2 << 2 | 5));
+//        return (state += (state >> 13) + 0x5F356495) * 0x2C9277B500000000L ^
+//                (state += (state >> 13) + 0x5F356495) * 0x2C9277B5;
+//        int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
+//        x = (x ^ x >>> 14) * (x ^ x + 0x2C9277B5);
+//        y = (y ^ y >>> 14) * (y ^ y + 0x2C9277B5);
+//        return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
 
-        /*
         int x = state + 0x7F4A7C15, y = (state += 0xFE94F82A);
-        x = (x ^ x >>> 14) * (0x41C64E6D + (x & 0x7FFE));
-        y = (y ^ y >>> 14) * (0x41C64E6D + (y & 0x7FFE));
+        x ^= x >>> 8 + (x >>> 29);
+        y ^= y >>> 8 + (y >>> 29);
+        x *= 0x2C9277B5 + (x * 0x5924EF6A);
+        y *= 0x2C9277B5 + (y * 0x5924EF6A);
+        return (x ^ x >>> 15) * 0x5F35649500000000L ^ ((y ^ y >>> 15) * 0x5F356495 & 0xFFFFFFFFL);
+        //return (x ^ x >>> 15) * 0x5F35649500000000L + 0x34ED9DE500000000L ^ ((y ^ y >>> 15) * 0x5F356495 + 0x34ED9DE5 & 0xFFFFFFFFL);
+
+
+/*
+        //0x5F356495
+        x = (x ^ x >>> 14) * (0x2C9277B5 + (x * 0x632BE5A6));
+        y = (y ^ y >>> 14) * (0x2C9277B5 + (y * 0x632BE5A6));
         return (long) (x ^ x >>> 13) << 32 ^ (y ^ y >>> 13);
         */
         // * 0x27BB2EE687B0B0FDL;
@@ -135,17 +138,26 @@ public class Thrust32RNG implements StatefulRandomness {
     }
 
     /**
-     * Advances or rolls back the ThrustRNG's state without actually generating each number. Skips forward
-     * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
+     * Advances or rolls back the Thrust32RNG's state without actually generating each number. Skips forward
+     * or backward a number of steps specified by advance, where a step is equal to one call to nextInt(),
      * and returns the random number produced at that step (you can get the state with {@link #getState()}).
      *
      * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final int skip(int advance) {
+//        int z = (state += 0x7F4A7C15 * advance);
+//        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
+//        return (z ^ z >>> 13);
         int z = (state += 0x7F4A7C15 * advance);
-        z = (z ^ z >>> 14) * (0x41C64E6D + (z & 0x7FFE));
+        z ^= z >>> 8 + (z >>> 29);
+        z *= 0x2C9277B5 + (z * 0x5924EF6A);
+        return (z ^ z >>> 15) * 0x5F356495;
+
+        /*
+        z = (z ^ z >>> 14) * (0x2C9277B5 + (z * 0x632BE5A6));
         return (z ^ z >>> 13);
+        */
     }
 
 
@@ -170,9 +182,9 @@ public class Thrust32RNG implements StatefulRandomness {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Thrust32RNG thrustRNG = (Thrust32RNG) o;
+        Thrust32RNG thrust32RNG = (Thrust32RNG) o;
 
-        return state == thrustRNG.state;
+        return state == thrust32RNG.state;
     }
 
     @Override
@@ -184,7 +196,7 @@ public class Thrust32RNG implements StatefulRandomness {
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x9E3779B9} within this method, so using a small increment won't be much different from using a
+     * {@code 0x7F4A7C15} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
@@ -193,8 +205,15 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     public static int determine(int state)
     {
-        state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x41C64E6D + (state & 0x7FFE));
+        /*
+        state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x2C9277B5 + (state * 0x632BE5A6));
         return state ^ state >>> 13;
+        */
+        state *= 0x7F4A7C15;
+        state ^= state >>> 8 + (state >>> 29);
+        state *= 0x2C9277B5 + (state * 0x5924EF6A);
+        return (state ^ state >>> 15) * 0x5F356495;
+
     }
 
     /**
@@ -211,8 +230,15 @@ public class Thrust32RNG implements StatefulRandomness {
      */
     public static int determineBounded(int state, final int bound)
     {
-        state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x41C64E6D + (state & 0x7FFE));
+        /*
+        state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x2C9277B5 + (state * 0x632BE5A6));
         return (int)((bound * ((state ^ state >>> 13) & 0x7FFFFFFFL)) >> 31);
+        */
+        state *= 0x7F4A7C15;
+        state ^= state >>> 8 + (state >>> 29);
+        state *= 0x2C9277B5 + (state * 0x5924EF6A);
+        return (int)((bound * (((state ^ state >>> 15) * 0x5F356495) & 0x7FFFFFFFL)) >> 31);
+
     }
 
 }
