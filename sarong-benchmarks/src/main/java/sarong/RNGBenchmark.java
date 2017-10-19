@@ -915,7 +915,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureThrust() throws InterruptedException {
+    public void a____measureThrust() throws InterruptedException {
         seed = 9000;
         doThrust();
     }
@@ -932,7 +932,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureThrustInt() throws InterruptedException {
+    public void a____measureThrustInt() throws InterruptedException {
         iseed = 9000;
         doThrustInt();
     }
@@ -949,7 +949,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureThrustR() throws InterruptedException {
+    public void a____measureThrustR() throws InterruptedException {
         seed = 9000;
         doThrustR();
     }
@@ -966,7 +966,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a__measureThrustIntR() throws InterruptedException {
+    public void a____measureThrustIntR() throws InterruptedException {
         iseed = 9000;
         doThrustIntR();
     }
