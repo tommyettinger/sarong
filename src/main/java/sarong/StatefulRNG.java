@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.CrossHash;
 
+import java.io.Serializable;
+
 /**
  * A slight variant on RNG that always uses a stateful RandomessSource and so can have its state
  * set or retrieved using setState() or getState().
@@ -9,7 +11,7 @@ import sarong.util.CrossHash;
  *
  * @author Tommy Ettinger
  */
-public class StatefulRNG extends RNG {
+public class StatefulRNG extends RNG implements Serializable {
 
     private static final long serialVersionUID = -2456306898212937163L;
 

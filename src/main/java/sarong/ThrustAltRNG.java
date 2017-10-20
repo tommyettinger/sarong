@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * A variant on {@link ThrustRNG} that gives up a small amount of speed to attain better quality. ThrustRNG can pass
  * BigCrush, which is a difficult statistical quality test that is part of TestU01, but fails a different statistical
@@ -14,7 +16,8 @@ import sarong.util.StringKit;
  * <br>
  * Created by Tommy Ettinger on 10/18/2017.
  */
-public final class ThrustAltRNG implements StatefulRandomness {
+public final class ThrustAltRNG implements StatefulRandomness, Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * Can be any odd long value (least significant bit must be 1; set that bit with {@code state |= 1L}).
      */

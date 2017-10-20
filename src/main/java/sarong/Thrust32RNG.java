@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * A variant on ThrustRNG that uses only 32-bit math and has good quality, but has a very short period (2 to the 32).
  * This RandomnessSource has no failures or when tested with PractRand (it has anomalies on par with LightRNG), allows
@@ -23,7 +25,8 @@ import sarong.util.StringKit;
  * <br>
  * Created by Tommy Ettinger on 8/3/2017.
  */
-public final class Thrust32RNG implements StatefulRandomness {
+public final class Thrust32RNG implements StatefulRandomness, Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * Can be any int value.
      */

@@ -1,5 +1,7 @@
 package sarong;
 
+import java.io.Serializable;
+
 /**
  * A subclass of StatefulRNG (and thus RNG) that allows customizing many parts of the random number generation.
  * This is meant to be a more comprehensible version of the functionality present in RandomBias, and also for it to be
@@ -48,7 +50,7 @@ package sarong;
  * More customizations may be added in the future to the ones available currently.
  * @author Tommy Ettinger
  */
-public class EditRNG extends StatefulRNG {
+public class EditRNG extends StatefulRNG implements Serializable {
     protected static final double DOUBLE_UNIT = 1.0 / (1L << 53);
     /**
      * Used to tweak the generator toward high or low values.

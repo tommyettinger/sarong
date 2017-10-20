@@ -3,6 +3,7 @@ package sarong;
 import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -17,7 +18,7 @@ import java.util.*;
  * Created by Tommy Ettinger on 5/2/2015.
  * @author Tommy Ettinger
  */
-public class DeckRNG extends StatefulRNG {
+public class DeckRNG extends StatefulRNG implements Serializable{
     private static final long serialVersionUID = 7828346657944720807L;
     private int step;
     private long lastShuffledState;

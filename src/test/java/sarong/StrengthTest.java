@@ -774,7 +774,7 @@ public class StrengthTest {
         return result;
     }
 
-    @Test
+    //@Test
     public void testBuckets()
     {
         final int[] primeStuff = {
@@ -911,7 +911,7 @@ public class StrengthTest {
                 + "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF");
     }
 
-    @Test
+    //@Test
     public void dummyTest()
     {
         {

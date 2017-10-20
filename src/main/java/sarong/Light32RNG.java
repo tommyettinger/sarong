@@ -16,7 +16,7 @@ import java.io.Serializable;
  * 32-bit int generation. Quality is good here, and this passes PractRand without failures on 64 MB of random values.
  * Created by Tommy Ettinger on 7/15/2017.
  */
-public final class Light32RNG implements StatefulRandomness, RandomnessSource, Serializable {
+public final class Light32RNG implements StatefulRandomness, Serializable {
     private int state, inc;
     private static final long serialVersionUID = -374415589203474497L;
 

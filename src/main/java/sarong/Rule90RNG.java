@@ -2,12 +2,15 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * Experimental StatefulRandomness relating to the elementary cellular automaton called "Rule 90."
  * <br>
  * Created by Tommy Ettinger on 10/1/2017.
  */
-public class Rule90RNG implements StatefulRandomness {
+public class Rule90RNG implements StatefulRandomness, Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * Can be any long value.
      */

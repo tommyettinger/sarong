@@ -105,28 +105,29 @@ public final class LongPeriodRNG implements RandomnessSource, Serializable {
     /**
      * Builds a LongPeriodRNG and initializes this class' 1024 bits of state with the given seed, using a different
      * strategy depending on the seed. If seed is null, this uses the same state as any other null seed. If seed is a
-     * String with length 15 or less, this generates a 64-bit hash of the seed and uses it in the same way the constructor
-     * that takes a long creates 1024 bits of state from a 64-bit seed. If seed is a String with length 16 or more, this
-     * splits the string up and generates 16 hashes from progressively smaller substrings of seed. The highest quality
-     * states will result from passing this a very long String.
+     * String (or other CharSequence) with length 15 or less, this generates a 64-bit hash of the seed and uses it in
+     * the same way the constructor that takes a long creates 1024 bits of state from a 64-bit seed. If seed is a String
+     * with length 16 or more, this splits the string up and generates 16 hashes from progressively smaller substrings
+     * of seed. The highest quality states will result from passing this a very long String (a StringBuilder would also
+     * be a good choice).
      *
-     * @param seed a String seed; can be any value, but produces the best results if it at least 16 characters long
+     * @param seed a String (or other CharSequence) seed; can be any value, but produces the best results if it at least 16 characters long
      */
-    public LongPeriodRNG(String seed) {
+    public LongPeriodRNG(CharSequence seed) {
         reseed(seed);
     }
 
     /**
      * Reinitializes this class' 1024 bits of state with the given seed, using a different strategy depending on the seed.
-     * If seed is null, this uses the same state as any other null seed. If seed is a String with length 15 or less, this
-     * generates a 64-bit hash of the seed and uses it in the same way the constructor that takes a long creates 1024 bits
-     * of state from a 64-bit seed. If seed is a String with length 16 or more, this splits the string up and generates 16
-     * hashes from progressively smaller substrings of seed. The highest quality states will result from passing this a
-     * very long String.
+     * If seed is null, this uses the same state as any other null seed. If seed is a String (or other CharSequence)
+     * with length 15 or less, this generates a 64-bit hash of the seed and uses it in the same way the constructor that
+     * takes a long creates 1024 bits of state from a 64-bit seed. If seed is a String with length 16 or more, this
+     * splits the string up and generates 16 hashes from progressively smaller substrings of seed. The highest quality
+     * states will result from passing this a very long String (a StringBuilder would also be a good choice).
      *
-     * @param seed a String seed; can be any value, but produces the best results if it at least 16 characters long
+     * @param seed a String (or other CharSequence) seed; can be any value, but produces the best results if it at least 16 characters long
      */
-    public void reseed(String seed) {
+    public void reseed(CharSequence seed) {
         int len;
         if (seed == null || (len = seed.length()) == 0) {
             init(0x632BE59BD9B4E019L);
@@ -137,10 +138,9 @@ public final class LongPeriodRNG implements RandomnessSource, Serializable {
                 init(h);
                 choice = (int) (h & 15);
             } else {
-                char[] chars = seed.toCharArray();
-                state[0] = validate(CrossHash.hash64(chars));
+                state[0] = validate(CrossHash.hash64(seed));
                 for (int i = 0; i < 16; i++) {
-                    state[i] = validate(CrossHash.hash64(chars, i * len >> 4, len));
+                    state[i] = validate(CrossHash.hash64(seed, i * len >> 4, len));
                 }
                 choice = (int) (state[0] & 15);
             }

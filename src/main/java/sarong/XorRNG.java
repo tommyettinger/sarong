@@ -10,6 +10,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * A port of Sebastiano Vigna's XorShift 128+ generator. Should be very fast and produce high-quality output.
  * <br>
@@ -27,7 +29,7 @@ import sarong.util.StringKit;
  * @author Sebastiano Vigna
  * @author Tommy Ettinger
  */
-public class XorRNG implements RandomnessSource {
+public class XorRNG implements RandomnessSource, Serializable {
 
     private static final long DOUBLE_MASK = (1L << 53) - 1;
     private static final double NORM_53 = 1. / (1L << 53);

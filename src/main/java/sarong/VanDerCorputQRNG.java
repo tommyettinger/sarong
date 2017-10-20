@@ -83,7 +83,7 @@ import java.io.Serializable;
  * <br>
  * Created by Tommy Ettinger on 11/18/2016.
  */
-public class VanDerCorputQRNG implements StatefulRandomness, RandomnessSource, Serializable {
+public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 5;
     public long state;
     public final int base;

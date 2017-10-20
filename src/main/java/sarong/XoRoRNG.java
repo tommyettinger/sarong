@@ -9,6 +9,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * A port of Blackman and Vigna's xoroshiro 128+ generator; should be very fast and produce high-quality output.
  * Testing shows it is within 5% the speed of LightRNG, sometimes faster and sometimes slower, and has a larger period.
@@ -30,7 +32,7 @@ import sarong.util.StringKit;
  * @author David Blackman
  * @author Tommy Ettinger
  */
-public final class XoRoRNG implements RandomnessSource {
+public final class XoRoRNG implements RandomnessSource, Serializable {
 
     private static final long DOUBLE_MASK = (1L << 53) - 1;
     private static final double NORM_53 = 1. / (1L << 53);

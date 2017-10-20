@@ -18,6 +18,7 @@ package sarong;
 
 import sarong.util.CrossHash;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -46,8 +47,7 @@ import java.util.Arrays;
  *
  * Created by Tommy Ettinger on 5/2/2015 based off Apache Commons Math 4.
  */
-public class SobolQRNG implements RandomnessSource {
-
+public class SobolQRNG implements RandomnessSource, Serializable {
 	/** The number of bits to use. */
     private static final int BITS = 52;
 

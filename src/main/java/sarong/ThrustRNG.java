@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * A hybrid of the type of algorithm LightRNG uses with some of the specific steps of a linear congruential generator.
  * This RandomnessSource has no failures or even anomalies when tested with PractRand (even LightRNG has anomalies),
@@ -44,7 +46,8 @@ import sarong.util.StringKit;
  * constants used (originally for linear congruential generators).
  * Created by Tommy Ettinger on 8/3/2017.
  */
-public final class ThrustRNG implements StatefulRandomness {
+public final class ThrustRNG implements StatefulRandomness, Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * Can be any long value.
      */

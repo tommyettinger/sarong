@@ -2,12 +2,15 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * Work-in-progress.
  * <br>
  * Created by Tommy Ettinger on 9/24/2017.
  */
-public class Lunge32RNG implements StatefulRandomness {
+public class Lunge32RNG implements StatefulRandomness, Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * Can be any int value.
      */
