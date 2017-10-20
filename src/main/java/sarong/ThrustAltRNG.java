@@ -18,7 +18,7 @@ public final class ThrustAltRNG implements StatefulRandomness {
     /**
      * Can be any odd long value (least significant bit must be 1; set that bit with {@code state |= 1L}).
      */
-    public long state;
+    private long state;
 
     /**
      * Creates a new generator seeded using Math.random.
@@ -43,9 +43,10 @@ public final class ThrustAltRNG implements StatefulRandomness {
     }
 
     /**
-     * Set the current internal state of this StatefulRandomness with a long.
+     * Set the current internal state of this StatefulRandomness with a long. Only uses the most significant 63 bits of
+     * state, and sets the least significant bit to 1, always.
      *
-     * @param state a 64-bit long. You may want to avoid passing 0 for compatibility, though this implementation can handle that.
+     * @param state a 64-bit long; the least significant bit will always be set to 1 (making it an odd number)
      */
     @Override
     public void setState(long state) {
@@ -61,9 +62,9 @@ public final class ThrustAltRNG implements StatefulRandomness {
      */
     @Override
     public final int next(final int bits) {
-        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE1165866L));
+        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE116586AL));
         final long s = state;
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL);
         return (int)(z ^ (z >> 28)) >> (32 - bits);
     }
 /*
@@ -96,9 +97,9 @@ public final class ThrustAltRNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
-        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE1165866L));
+        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE116586AL));
         final long s = state;
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL);
         return z ^ (z >> 28);
     }
     /*
@@ -154,13 +155,13 @@ public final class ThrustAltRNG implements StatefulRandomness {
     }
     public final long nextLong4() {
         final long s = state;
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL);
         return z ^ (z >> 28);
     }
     public final int next4(final int bits) {
         final long s = state;
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL);
         return (int)(z ^ (z >> 28)) >> (32 - bits);
     }
     */
@@ -173,8 +174,8 @@ public final class ThrustAltRNG implements StatefulRandomness {
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final long skip(long advance) {
-        final long s = state + 0x6A5D39EAE1165866L * (advance - 1L);
-        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L * advance);
+        final long s = state + 0x6A5D39EAE116586AL * (advance - 1L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE116586AL * advance);
         return z ^ (z >> 28);
     }
 
@@ -214,8 +215,9 @@ public final class ThrustAltRNG implements StatefulRandomness {
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x9E3779B97F4A7C15L} within this method, so using a small increment won't be much different from using a
-     * very large one, as long as it is odd.
+     * {@code 0x6A5D39EAE116586BL} within this method, so using a small increment won't be much different from using a
+     * very large one, as long as it is odd. Notably, this allows both even and odd numbers for state, which the
+     * normal parts of the generator do not, and the period is 2 to the 64.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
@@ -223,8 +225,27 @@ public final class ThrustAltRNG implements StatefulRandomness {
      */
     public static long determine(long state)
     {
-        final long s = state * 0x6A5D39EAE1165866L;
-        final long z = (s ^ s >> 26) * (s + 0x6A5D39EAE1165866L | 1L);
+        final long z = ((state *= 0x6A5D39EAE116586BL) | 0x6A5D39EAE1165865L) * (state ^ state >> 26);
+        return z ^ (z >> 28);
+    }
+
+    /**
+     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
+     * number. This is expected to be called with a changing variable using a specific pattern, namely
+     * {@code determine(state += 0x6A5D39EAE116586BL)}, but other odd-number increments may work (they may work better,
+     * actually). You can add the given number to go forwards or subtract it to go backwards in the sequence. Notably,
+     * this allows both even and odd numbers for state, which the normal parts of the generator do not, and the period
+     * is 2 to the 64. This method may rarely be preferable over {@link #determine(long)} if your code controls how
+     * state is updated, and can make sure it updates by the given amount or a similar value; this version saves a small
+     * amount of time by not needing to multiply the local state.
+     * @param state a variable that should be different every time you want a different random result;
+     *              using {@code determine(state += 0x6A5D39EAE116586BL)} is recommended to go forwards or
+     *              {@code determine(state -= 0x6A5D39EAE116586BL)} to generate numbers in reverse order
+     * @return a pseudo-random permutation of state
+     */
+    public static long determineBare(long state)
+    {
+        final long z = (state | 0x6A5D39EAE1165865L) * (state ^ state >> 26);
         return z ^ (z >> 28);
     }
 
@@ -234,6 +255,8 @@ public final class ThrustAltRNG implements StatefulRandomness {
      * negative, which will cause this to produce 0 or a negative int; otherwise this produces 0 or a positive int.
      * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
      * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
+     * Notably, this allows both even and odd numbers for state, which the normal parts of the generator do not, but the
+     * period is still 2 to the 63 (or less, depending on bound).
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determineBounded(++state, bound)} is recommended to go forwards or
      *              {@code determineBounded(--state, bound)} to generate numbers in reverse order
@@ -242,8 +265,7 @@ public final class ThrustAltRNG implements StatefulRandomness {
      */
     public static int determineBounded(long state, final int bound)
     {
-        final long s = state * 0x6A5D39EAE1165866L;
-        final long z = (s ^ s >> 26) * (s + 0x6A5D39EAE1165866L | 1L);
+        final long z = ((state *= 0x6A5D39EAE116586BL) | 0x6A5D39EAE1165865L) * (state ^ state >> 26);
         return (int)((bound * ((z ^ (z >> 28)) & 0x7FFFFFFFL)) >> 31);
     }
 
