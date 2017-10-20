@@ -21,7 +21,7 @@ import java.io.Serializable;
  * Based on work by Melissa E. O'Neill for PCG-Random, though no code is actually shared with PCG-Random.
  * Created by Tommy Ettinger on 11/15/2016.
  */
-public class PintRNG implements RandomnessSource, StatefulRandomness, Serializable {
+public final class PintRNG implements RandomnessSource, StatefulRandomness, Serializable {
 
     /** 2 raised to the 53, - 1. */
     private static final long DOUBLE_MASK = ( 1L << 53 ) - 1;

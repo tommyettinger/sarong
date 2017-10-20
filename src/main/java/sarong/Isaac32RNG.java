@@ -13,7 +13,7 @@ import java.util.Arrays;
  * {@link #fillBlock(int[])}. If you don't need GWT support, then {@link IsaacRNG} will have better properties.
  * Created by Tommy Ettinger on 8/1/2016.
  */
-public class Isaac32RNG implements RandomnessSource {
+public final class Isaac32RNG implements RandomnessSource {
     private int count;                           /* count through the results in results[] */
     private int results[];                                /* the results given to the user */
     private int mem[];                                   /* the internal state */

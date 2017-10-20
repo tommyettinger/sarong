@@ -3,16 +3,20 @@ package sarong;
 import sarong.util.StringKit;
 
 /**
- * A variant on {@link ThrustRNG} that gives up some speed to attain better quality. ThrustRNG can pass BigCrush, which
- * is a difficult statistical quality test that is part of TestU01, but fails a different statistical quality test,
- * PractRand, when more data is requested than had been used to test Thrust originally (it tends to fail at 32 GB of
- * data, almost always on a test called "Gap-16" that isn't part of BigCrush). This generator passes PractRand and
- * should pass BigCrush, though that hasn't yet been checked for certain.
+ * A variant on {@link ThrustRNG} that gives up a small amount of speed to attain better quality. ThrustRNG can pass
+ * BigCrush, which is a difficult statistical quality test that is part of TestU01, but fails a different statistical
+ * quality test, PractRand, when more data is requested than had been used to test Thrust originally (it tends to fail
+ * at 32 GB of data, almost always on a test called "Gap-16" that isn't part of BigCrush). This generator passes
+ * PractRand and should pass BigCrush, though that hasn't yet been checked for certain. Unlike ThrustRNG, this requires
+ * its state variable to be an odd number, which reduces its period to 2 to the 63 (instead of 2 to the 64).
+ * Interestingly, the C version of this generator is faster than ThrustRNG's version and has better quality as well. It
+ * may be possible to adjust some qualities of this generator to get more of the optimizations used by C compilers.
+ * <br>
  * Created by Tommy Ettinger on 10/18/2017.
  */
-public class ThrustAltRNG implements StatefulRandomness {
+public final class ThrustAltRNG implements StatefulRandomness {
     /**
-     * Can be any long value.
+     * Can be any odd long value (least significant bit must be 1; set that bit with {@code state |= 1L}).
      */
     public long state;
 
@@ -25,7 +29,7 @@ public class ThrustAltRNG implements StatefulRandomness {
     }
 
     public ThrustAltRNG(final long seed) {
-        state = seed;
+        state = seed | 1L;
     }
 
     /**
@@ -45,7 +49,7 @@ public class ThrustAltRNG implements StatefulRandomness {
      */
     @Override
     public void setState(long state) {
-        this.state = state;
+        this.state = state | 1L;
     }
 
     /**
@@ -56,6 +60,13 @@ public class ThrustAltRNG implements StatefulRandomness {
      * @return the integer containing the appropriate number of bits
      */
     @Override
+    public final int next(final int bits) {
+        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE1165866L));
+        final long s = state;
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        return (int)(z ^ (z >> 28)) >> (32 - bits);
+    }
+/*
     public final int next(int bits) {
         //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
 
@@ -63,18 +74,18 @@ public class ThrustAltRNG implements StatefulRandomness {
         final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
         return (int)((s | 0x5851F42D4C957F2DL) * (z >> 28) + z) >>> (32 - bits);
         //return (int)(((z >> 28) ^ z) * ((state += 0x9E3779B97F4A7C15L) | 1L)) >>> (32 - bits);
-        /*
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return (int)(z ^ z >>> 28) >>> (32 - bits);
-        */
+
+        //long z = (state += 0x9E3779B97F4A7C15L);
+        //z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+        //return (int)(z ^ z >>> 28) >>> (32 - bits);
+
         //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
 
         //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
         //((state += 0x2545F4914F6CDD1DL) ^ (state >>> 30 & state >> 27) * 0xBF58476D1CE4E5B9L)
         //(state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL
     }
-
+    */
     /**
      * Using this method, any algorithm that needs to efficiently generate more
      * than 32 bits of random data can interface with this randomness source.
@@ -85,17 +96,26 @@ public class ThrustAltRNG implements StatefulRandomness {
      */
     @Override
     public final long nextLong() {
+        //final long z = (state ^ state >> 26) * ((state += 0x6A5D39EAE1165866L));
+        final long s = state;
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        return z ^ (z >> 28);
+    }
+    /*
+    public final long nextLong() {
 
         final long s = (state += 0xC6BC279692B5CC83L);
         final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
         return (s | 0x5851F42D4C957F2DL) * (z >> 28) + z;
+        //final long z = (s ^ s >> 26) * (s | 1L);
+        //return z ^ ((z >> 28) + (state += 0xC6BC279692B5CC83L));
+
         //final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
         //return ((z >> 28) ^ z) * (s | 1L);
-        /*
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return z ^ z >>> 28;
-        */
+        //long z = (state += 0x9E3779B97F4A7C15L);
+        //z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+        //return z ^ z >>> 28;
+
         // the first multiplier that worked fairly well was 0x5851F42D4C957F2DL ; its source is unclear so I'm trying
         // other numbers with better evidence for their strength
         // the multiplier 0x6A5D39EAE116586DL did not work very well (L'Ecuyer, best found MCG constant for modulus
@@ -110,7 +130,40 @@ public class ThrustAltRNG implements StatefulRandomness {
         //return (state * 0x5851F42D4C957F2DL) + ((state += 0x14057B7EF767814FL) >> 28);
         //return (((state += 0x14057B7EF767814FL) >>> 28) * 0x5851F42D4C957F2DL + (state >>> 1));
     }
-
+    */
+    /*
+    public final long nextLong2() {
+        final long s = (state += 0xC6BC279692B5CC83L);
+        final long z = (s ^ s >> 26) * (s | 1L);
+        return z ^ ((z >> 28) + s);
+    }
+    public final int next2(final int bits) {
+        final long s = (state += 0xC6BC279692B5CC83L);
+        final long z = (s ^ s >> 26) * (s | 1L);
+        return (int)(z ^ ((z >> 28) + s)) >> (32 - bits);
+    }
+    public final long nextLong3() {
+        final long s = (state += 0xC6BC279692B5CC83L);
+        final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
+        return (s | 0x5851F42D4C957F2DL) * (z >> 28) + z;
+    }
+    public final int next3(final int bits) {
+        final long s = (state += 0xC6BC279692B5CC83L);
+        final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
+        return (int)((s | 0x5851F42D4C957F2DL) * (z >> 28) + z) >> (32 - bits);
+    }
+    public final long nextLong4() {
+        final long s = state;
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        return z ^ (z >> 28);
+    }
+    public final int next4(final int bits) {
+        final long s = state;
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L);
+        return (int)(z ^ (z >> 28)) >> (32 - bits);
+    }
+    */
     /**
      * Advances or rolls back the ThrustRNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
@@ -120,9 +173,9 @@ public class ThrustAltRNG implements StatefulRandomness {
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final long skip(long advance) {
-        final long s = (state += 0xC6BC279692B5CC83L * advance);
-        final long z = (s ^ (s >> 26)) * 0x2545F4914F6CDD1DL;
-        return (s | 0x5851F42D4C957F2DL) * (z >> 28) + z;
+        final long s = state + 0x6A5D39EAE1165866L * (advance - 1L);
+        final long z = (s ^ s >> 26) * (state += 0x6A5D39EAE1165866L * advance);
+        return z ^ (z >> 28);
     }
 
 
@@ -154,7 +207,7 @@ public class ThrustAltRNG implements StatefulRandomness {
 
     @Override
     public int hashCode() {
-        return (int) (state ^ (state >>> 32));
+        return (int) (state >>> 1 ^ (state >>> 32));
     }
 
     /**
@@ -170,8 +223,9 @@ public class ThrustAltRNG implements StatefulRandomness {
      */
     public static long determine(long state)
     {
-        final long z = (((state *= 0xC6BC279692B5CC83L) >> 26) ^ state) * 0x2545F4914F6CDD1DL;
-        return (state | 0x5851F42D4C957F2DL) * (z >> 28) + z;
+        final long s = state * 0x6A5D39EAE1165866L;
+        final long z = (s ^ s >> 26) * (s + 0x6A5D39EAE1165866L | 1L);
+        return z ^ (z >> 28);
     }
 
     /**
@@ -188,8 +242,9 @@ public class ThrustAltRNG implements StatefulRandomness {
      */
     public static int determineBounded(long state, final int bound)
     {
-        final long z = (((state *= 0xC6BC279692B5CC83L) >> 26) ^ state) * 0x2545F4914F6CDD1DL;
-        return (int)((bound * (((state | 0x5851F42D4C957F2DL) * (z >> 28) + z) & 0x7FFFFFFFL)) >> 31);
+        final long s = state * 0x6A5D39EAE1165866L;
+        final long z = (s ^ s >> 26) * (s + 0x6A5D39EAE1165866L | 1L);
+        return (int)((bound * ((z ^ (z >> 28)) & 0x7FFFFFFFL)) >> 31);
     }
 
 }

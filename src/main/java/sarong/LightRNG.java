@@ -46,7 +46,7 @@ import java.io.Serializable;
  * @author Sebastiano Vigna
  * @author Tommy Ettinger
  */
-public class LightRNG implements RandomnessSource, StatefulRandomness, Serializable {
+public final class LightRNG implements RandomnessSource, StatefulRandomness, Serializable {
     /**
      * 2 raised to the 53, - 1.
      */

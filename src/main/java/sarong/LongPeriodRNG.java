@@ -19,7 +19,10 @@ import java.util.Arrays;
  * 586,298,239,947,245,938,479,716,304,835,356,329,624,224,137,215). While that number is preposterously large, there's
  * always some application that seems to need more; if you really need more than that, look into CMWC generators, which
  * can have even larger state and also even larger periods. There isn't one of those in Sarong currently, though there
- * is a possibility of one being added in the future.
+ * is a possibility of one being added in the future. There is a 64-bit Mersenne Twister in MT64RNG, which has an even
+ * larger period than this one, but it might not have optimal quality for some applications (notably, the game Dungeon
+ * Crawl Stone Soup used Mersenne Twister and found that some players in a competition could predict impending random
+ * events, despite the generator seeming bulletproof).
  * <br>
  * This class may be particularly useful in conjunction with the shuffle method of RNG; the period of an RNG determines
  * how many possible "shuffles", a.k.a orderings or permutations, can be produced over all calls to a permuting method
@@ -29,12 +32,17 @@ import java.util.Arrays;
  * to 170 elements can have all possible orderings produced by shuffle(), though it will take near-impossibly-many calls.
  * This class has 128 bytes of state plus more in overhead (compare to the 16-byte-with-overhead LightRNG), but due to
  * its massive period and createMany() static method, you can create a large number of subsequences with rather long
- * periods themselves from a single seed. This uses the xorshift-1024* algorithm, and has competitive speed.
+ * periods themselves from a single seed. This uses the xorshift-1024*phi algorithm, and has competitive speed.
+ * <br>
+ * This generator was updated to the "phi" variant of XorShift1024* instead of the "M_8" variant when the phi variant
+ * became recommended over the version this originally used. The multiplier, and thus the sequence of numbers this
+ * generates for a given seed, changed on October 19, 2017.
+ * <br>
  * Created by Tommy Ettinger on 3/21/2016.
  * Ported from CC0-licensed C code by Sebastiano Vigna, at http://xorshift.di.unimi.it/xorshift1024star.c
  * @author Tommy Ettinger
  */
-public class LongPeriodRNG implements RandomnessSource, Serializable {
+public final class LongPeriodRNG implements RandomnessSource, Serializable {
 
     public final long[] state = new long[16];
     public int choice;
@@ -66,22 +74,20 @@ public class LongPeriodRNG implements RandomnessSource, Serializable {
     }
 
     public void reseed() {
-        LightRNG lr = new LightRNG(
-                (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                        ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
-        long ts = lr.nextLong();
-        if (ts == 0)
-            ts = 1;
+
+        long ts = LightRNG.determine((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
+                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
         choice = (int) (ts & 15);
-        state[0] = ts;
+        state[0] = ~(ts >>> 1);
         for (int i = 1; i < 16; i++) {
             //Chosen by trial and error to unevenly reseed 4 times, where i is 2, 5, 10, or 13
             if ((6 & (i * 1281783497376652987L)) == 6)
-                lr.state ^= (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
+                ts ^= (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
                                 ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L);
-            state[i - 1] ^= (state[i] = lr.nextLong());
-            if (state[i - 1] == 0) state[i - 1] = 1;
+            state[i - 1] ^= (state[i] = LightRNG.determine(++ts));
         }
+        if (state[0] == 0L) state[0] = -17;
+
     }
 
     /**
@@ -211,7 +217,10 @@ public class LongPeriodRNG implements RandomnessSource, Serializable {
 
     @Override
     public int next(int bits) {
-        return (int) (nextLong() & (1L << bits) - 1);
+        final long s0 = state[choice];
+        long s1 = state[choice = (choice + 1) & 15];
+        s1 ^= s1 << 31;
+        return (int) ((state[choice] = s1 ^ s0 ^ (s1 >>> 11) ^ (s0 >>> 30)) * 0x9E3779B97F4A7C13L >>> (64 - bits));
     }
 
     /**
@@ -221,12 +230,14 @@ public class LongPeriodRNG implements RandomnessSource, Serializable {
      *
      * @return any long, all 64 bits are random
      */
+    // Previously used multiplier 1181783497276652981L ; this is the "phi" variant instead of "M_8"
+    // See http://xoroshiro.di.unimi.it/xorshift1024star.c for details
     @Override
     public long nextLong() {
         final long s0 = state[choice];
         long s1 = state[choice = (choice + 1) & 15];
         s1 ^= s1 << 31;
-        return (state[choice] = s1 ^ s0 ^ (s1 >>> 11) ^ (s0 >>> 30)) * 1181783497276652981L;
+        return (state[choice] = s1 ^ s0 ^ (s1 >>> 11) ^ (s0 >>> 30)) * 0x9E3779B97F4A7C13L;
     }
 
     /**
@@ -379,6 +390,6 @@ public class LongPeriodRNG implements RandomnessSource, Serializable {
 
     @Override
     public int hashCode() {
-        return CrossHash.Storm.predefined[choice].hash(state);
+        return CrossHash.Mist.predefined[choice].hash(state);
     }
 }

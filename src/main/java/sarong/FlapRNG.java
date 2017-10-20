@@ -18,7 +18,7 @@ import java.io.Serializable;
  * <br>
  * Created by Tommy Ettinger on 5/1/2017.
  */
-public class FlapRNG implements StatefulRandomness, Serializable {
+public final class FlapRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
 
     public FlapRNG() {

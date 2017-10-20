@@ -23,7 +23,7 @@ import java.util.Arrays;
  * cryptographic RNGs that need SecureRandom, plus it's compatible with GWT and Android!
  * Created by Tommy Ettinger on 8/1/2016.
  */
-public class IsaacRNG implements RandomnessSource {
+public final class IsaacRNG implements RandomnessSource {
     private int count;                           /* count through the results in results[] */
     private long results[];                                /* the results given to the user */
     private long mem[];                                   /* the internal state */

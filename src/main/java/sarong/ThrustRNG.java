@@ -44,7 +44,7 @@ import sarong.util.StringKit;
  * constants used (originally for linear congruential generators).
  * Created by Tommy Ettinger on 8/3/2017.
  */
-public class ThrustRNG implements StatefulRandomness {
+public final class ThrustRNG implements StatefulRandomness {
     /**
      * Can be any long value.
      */

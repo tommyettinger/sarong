@@ -87,7 +87,7 @@ import java.util.Arrays;
  * @author Tommy Ettinger
  * @version 1.1 -- 07-Oct-2017
  */
-public class MT64RNG implements Serializable, RandomnessSource {
+public final class MT64RNG implements Serializable, RandomnessSource {
 
     private static final long serialVersionUID = -8219700664442619525L;
 

@@ -30,7 +30,7 @@ import sarong.util.StringKit;
  * @author David Blackman
  * @author Tommy Ettinger
  */
-public class XoRoRNG implements RandomnessSource {
+public final class XoRoRNG implements RandomnessSource {
 
     private static final long DOUBLE_MASK = (1L << 53) - 1;
     private static final double NORM_53 = 1. / (1L << 53);

@@ -12,7 +12,7 @@ import java.util.Arrays;
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */
-public class JetRNG implements RandomnessSource, Serializable {
+public final class JetRNG implements RandomnessSource, Serializable {
     /*
 // Thanks umireon! This is CC0 licensed code in this comment block.
 // https://github.com/umireon/my-random-stuff/blob/master/xorshift/splitmix32.c

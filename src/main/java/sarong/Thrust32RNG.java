@@ -23,7 +23,7 @@ import sarong.util.StringKit;
  * <br>
  * Created by Tommy Ettinger on 8/3/2017.
  */
-public class Thrust32RNG implements StatefulRandomness {
+public final class Thrust32RNG implements StatefulRandomness {
     /**
      * Can be any int value.
      */

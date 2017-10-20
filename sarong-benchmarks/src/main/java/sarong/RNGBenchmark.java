@@ -971,10 +971,144 @@ public class RNGBenchmark {
         doThrustIntR();
     }
 
+    /*
+
+    public long doThrust3()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong3();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureThrust3() throws InterruptedException {
+        seed = 9000;
+        doThrust3();
+    }
+
+    public long doThrust3Int()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(iseed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next3(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureThrust3Int() throws InterruptedException {
+        iseed = 9000;
+        doThrust3Int();
+    }
+
+    public long doThrust2()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong2();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureThrust2() throws InterruptedException {
+        seed = 9000;
+        doThrust2();
+    }
+
+    public long doThrust2Int()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(iseed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next2(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureThrust2Int() throws InterruptedException {
+        iseed = 9000;
+        doThrust2Int();
+    }
+    public long doThrust4()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(seed|1L);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong4();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureAltThrust4() throws InterruptedException {
+        seed = 9000;
+        doThrust4();
+    }
+
+    public long doThrust4Int()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(iseed|1L);
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next4(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureAltThrust4Int() throws InterruptedException {
+        iseed = 9000;
+        doThrust4Int();
+    }
+*/
 
 
 
 
+    public long doAltThrust1()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(seed | 1L);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureAltThrust1() throws InterruptedException {
+        seed = 9000;
+        doAltThrust1();
+    }
+
+    public long doAltThrust1Int()
+    {
+        ThrustAltRNG rng = new ThrustAltRNG(iseed | 1L);
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a____measureAltThrust1Int() throws InterruptedException {
+        iseed = 9000;
+        doAltThrust1Int();
+    }
 
 
     public long doThrust32()
