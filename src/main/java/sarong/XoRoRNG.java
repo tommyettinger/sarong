@@ -47,8 +47,8 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
      * Creates a new generator seeded using Math.random.
      */
     public XoRoRNG() {
-        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
+        this((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
     public XoRoRNG(final long seed) {
@@ -56,20 +56,25 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
     }
 
     @Override
-    public int next(int bits) {
-        return (int) (nextLong() & (1L << bits) - 1);
-    }
+    public final int next(int bits) {
 
-    @Override
-    public long nextLong() {
         final long s0 = state0;
         long s1 = state1;
         final long result = s0 + s1;
-
         s1 ^= s0;
         state0 = Long.rotateLeft(s0, 55) ^ s1 ^ (s1 << 14); // a, b
         state1 = Long.rotateLeft(s1, 36); // c
+        return (int) (result >>> (64 - bits));
+    }
 
+    @Override
+    public final long nextLong() {
+        final long s0 = state0;
+        long s1 = state1;
+        final long result = s0 + s1;
+        s1 ^= s0;
+        state0 = Long.rotateLeft(s0, 55) ^ s1 ^ (s1 << 14); // a, b
+        state1 = Long.rotateLeft(s1, 36); // c
         return result;
     }
 
@@ -95,7 +100,7 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
      * @return any int, all 32 bits are random
      */
     public int nextInt() {
-        return (int) nextLong();
+        return (int) (nextLong() >>> 32);
     }
 
     /**

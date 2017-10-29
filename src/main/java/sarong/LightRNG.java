@@ -72,8 +72,8 @@ public final class LightRNG implements StatefulRandomness, Serializable {
      * Creates a new generator seeded using Math.random.
      */
     public LightRNG() {
-        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
+        this((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
     public LightRNG(final long seed) {
@@ -85,9 +85,13 @@ public final class LightRNG implements StatefulRandomness, Serializable {
     }
 
     @Override
-    public final int next(int bits) {
-        return (int) (nextLong() & (1L << bits) - 1);
-    }
+    public final int next(int bits)
+    {
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return (int) ((z ^ (z >>> 31)) & (1L << bits) - 1);
+   }
 
     /**
      * Can return any long, positive or negative, of any size permissible in a 64-bit signed integer.

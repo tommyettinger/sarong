@@ -28,7 +28,7 @@ import java.io.Serializable;
  * ints), and (narrowly) ThunderRNG are faster, but all have significant amounts of PractRand testing failures and
  * wouldn't possibly pass BigCrush, indicating flaws in quality. You may want {@link ThrustAltRNG}, which is slower
  * (on par with SplitMix64, called LightRNG here), but has much better quality on large amounts of test data (it can
- * pass PractRand with a terabyte or more of random data).
+ * pass PractRand with a terabyte or more of random data, and beats LightRNG on gjrand's tests with 100GB of data).
  * <br>
  * The performance of this RandomnessSource has been surprisingly reasonable to improve beyond the baseline of
  * SplitMix64; where LightRNG takes 1.385 seconds to generate a billion pseudo-random long values, this takes just under
@@ -57,8 +57,8 @@ public final class ThrustRNG implements StatefulRandomness, Serializable {
      * Creates a new generator seeded using Math.random.
      */
     public ThrustRNG() {
-        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
+        this((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
     public ThrustRNG(final long seed) {

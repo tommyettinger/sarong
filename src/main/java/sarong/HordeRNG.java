@@ -25,8 +25,8 @@ public class HordeRNG implements RandomnessSource, Serializable {
     public final long[] state = new long[16];
     public int choice = 0;
     public HordeRNG() {
-        this((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                        ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
+        this((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                        ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
     public HordeRNG(final long seed) {

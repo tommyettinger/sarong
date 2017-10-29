@@ -75,15 +75,15 @@ public final class LongPeriodRNG implements RandomnessSource, Serializable {
 
     public void reseed() {
 
-        long ts = LightRNG.determine((long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L));
+        long ts = LightRNG.determine((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
         choice = (int) (ts & 15);
         state[0] = ~(ts >>> 1);
         for (int i = 1; i < 16; i++) {
             //Chosen by trial and error to unevenly reseed 4 times, where i is 2, 5, 10, or 13
             if ((6 & (i * 1281783497376652987L)) == 6)
-                ts ^= (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000L)
-                                ^ (long) ((Math.random() * 2.0 - 1.0) * 0x8000000000000000L);
+                ts ^= (long) ((Math.random() - 0.5) * 0x10000000000000L)
+                                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L);
             state[i - 1] ^= (state[i] = LightRNG.determine(++ts));
         }
         if (state[0] == 0L) state[0] = -17;
