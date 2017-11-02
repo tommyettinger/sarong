@@ -1274,7 +1274,6 @@ public class RNGBenchmark {
         doJab63IntR();
     }
 
-
     public long doThrust32()
     {
         Thrust32RNG rng = new Thrust32RNG(iseed);
