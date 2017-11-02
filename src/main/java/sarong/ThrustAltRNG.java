@@ -81,38 +81,10 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        //final long z = (state ^ state >>> 26) * ((state += 0x6A5D39EAE116586AL));
-        /*
-        final long s = state;
-        final long z = (s >>> 26) * (s ^ (state += 0x6A5D39EAE116586BL));
-        */
-        //final long z = (0x2C9277B5 ^ (state >>> 24)) * (0x5F356495 | (state += 0x5851F42D4C957F2DL));
-        //long z = (state += 0x9E3779B97F4A7C15L);
-        //z ^= (z ^ z >>> 25) * 0x6A5D39EAE116586DL;
         long z = state;
         z ^= (((state += 0xA99635D5B8597AE5L) ^ z >>> 23) * 0xAD5DE9A61A9C3D95L);
         return (int)(z ^ (z >>> 29)) >>> (32 - bits);
     }
-/*
-    public final int next(int bits) {
-        //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
-
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ (s >>> 26)) * 0x2545F4914F6CDD1DL;
-        return (int)((s | 0x5851F42D4C957F2DL) * (z >>> 28) + z) >>> (32 - bits);
-        //return (int)(((z >>> 28) ^ z) * ((state += 0x9E3779B97F4A7C15L) | 1L)) >>> (32 - bits);
-
-        //long z = (state += 0x9E3779B97F4A7C15L);
-        //z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        //return (int)(z ^ z >>> 28) >>> (32 - bits);
-
-        //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
-
-        //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
-        //((state += 0x2545F4914F6CDD1DL) ^ (state >>> 30 & state >> 27) * 0xBF58476D1CE4E5B9L)
-        //(state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL
-    }
-    */
     /**
      * Using this method, any algorithm that needs to efficiently generate more
      * than 32 bits of random data can interface with this randomness source.
@@ -123,80 +95,11 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        //final long z = (state ^ state >>> 26) * ((state += 0x6A5D39EAE116586AL));
-
         long z = state;
         z ^= (((state += 0xA99635D5B8597AE5L) ^ z >>> 23) * 0xAD5DE9A61A9C3D95L);
         return z ^ (z >>> 29);
-        //z ^= (z ^ z >>> 25) * 0x6A5D39EAE116586DL;
+    }
 
-        //final long z = (0x2C9277B5 ^ (state >>> 24)) * (0x5F356495 | (state += 0x5851F42D4C957F2DL));
-        //return z ^ (z >>> 28);
-
-    }
-    /*
-    public final long nextLong() {
-
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ (s >>> 26)) * 0x2545F4914F6CDD1DL;
-        return (s | 0x5851F42D4C957F2DL) * (z >>> 28) + z;
-        //final long z = (s ^ s >>> 26) * (s | 1L);
-        //return z ^ ((z >>> 28) + (state += 0xC6BC279692B5CC83L));
-
-        //final long z = (s ^ (s >>> 26)) * 0x2545F4914F6CDD1DL;
-        //return ((z >>> 28) ^ z) * (s | 1L);
-        //long z = (state += 0x9E3779B97F4A7C15L);
-        //z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        //return z ^ z >>> 28;
-
-        // the first multiplier that worked fairly well was 0x5851F42D4C957F2DL ; its source is unclear so I'm trying
-        // other numbers with better evidence for their strength
-        // the multiplier 0x6A5D39EAE116586DL did not work very well (L'Ecuyer, best found MCG constant for modulus
-        // 2 to the 64 when generating 16 bits, but this left 16 bits of each long lower-quality)
-        // the multiplier 0x2545F4914F6CDD1DL is also from L'Ecuyer and seems much better
-        // * 0x27BB2EE687B0B0FDL; // ???
-        //return ((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28));
-
-        //return (state = state * 0x59A2B8F555F5828FL % 0x7FFFFFFFFFFFFFE7L) ^ state << 2;
-        //return (state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL);
-        //return (state ^ (state += 0x2545F4914F6CDD1DL)) * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
-        //return (state * 0x5851F42D4C957F2DL) + ((state += 0x14057B7EF767814FL) >>> 28);
-        //return (((state += 0x14057B7EF767814FL) >>> 28) * 0x5851F42D4C957F2DL + (state >>> 1));
-    }
-    */
-    /*
-    public final long nextLong2() {
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ s >>> 26) * (s | 1L);
-        return z ^ ((z >>> 28) + s);
-    }
-    public final int next2(final int bits) {
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ s >>> 26) * (s | 1L);
-        return (int)(z ^ ((z >>> 28) + s)) >>> (32 - bits);
-    }
-    public final long nextLong3() {
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ (s >>> 26)) * 0x2545F4914F6CDD1DL;
-        return (s | 0x5851F42D4C957F2DL) * (z >>> 28) + z;
-    }
-    public final int next3(final int bits) {
-        final long s = (state += 0xC6BC279692B5CC83L);
-        final long z = (s ^ (s >>> 26)) * 0x2545F4914F6CDD1DL;
-        return (int)((s | 0x5851F42D4C957F2DL) * (z >>> 28) + z) >>> (32 - bits);
-    }
-    public final long nextLong4() {
-        final long s = state;
-        final long z = (s ^ s >>> 26) * (state += 0x6A5D39EAE116586AL);
-        return z ^ (z >>> 28);
-    }
-    public final int next4(final int bits) {
-        final long s = state;
-        final long z = (s ^ s >>> 26) * (state += 0x6A5D39EAE116586AL);
-        final long z = (s ^ s >>> 26) * (state += 0x6A5D39EAE116586AL);
-        return (int)(z ^ (z >>> 28)) >>> (32 - bits);
-    }
-    */
     /**
      * Advances or rolls back the ThrustAltRNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
@@ -247,7 +150,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x5851F42D4C957F2DL} within this method, so using a small increment won't be much different from using a
+     * {@code 0xA99635D5B8597AE5L} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd. The period is 2 to the 64.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
@@ -259,7 +162,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
         return z ^ (z >>> 29);
     }
     //for quick one-line pastes of how the algo can be used with "randomize(++state)"
-    //public static long randomize(long state) { final long z = (0x2C9277B5 ^ ((state *= 0x5851F42D4C957F2DL) >>> 24)) * (0x5F356495 | (state + 0x5851F42D4C957F2DL)); return z ^ (z >>> 28); }
+    //public static long randomize(long state) { final long z = (state *= 0xA99635D5B8597AE5L) ^ (((state + 0xA99635D5B8597AE5L) ^ state >>> 23) * 0xAD5DE9A61A9C3D95L); return z ^ (z >>> 29); }
 
     /**
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
@@ -276,7 +179,6 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      */
     public static long determineBare(long state)
     {
-        //final long z = (0x2C9277B5 ^ (state >>> 24)) * (0x5F356495 | (state + 0x5851F42D4C957F2DL));
         final long z = state ^ (((state + 0xA99635D5B8597AE5L) ^ state >>> 23) * 0xAD5DE9A61A9C3D95L);
         return z ^ (z >>> 29);
     }
@@ -300,5 +202,4 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
         final long z = (state *= 0xA99635D5B8597AE5L) ^ (((state + 0xA99635D5B8597AE5L) ^ state >>> 23) * 0xAD5DE9A61A9C3D95L);
         return (int)((bound * ((z ^ (z >>> 29)) & 0xFFFFFFFFL)) >> 32);
     }
-
 }

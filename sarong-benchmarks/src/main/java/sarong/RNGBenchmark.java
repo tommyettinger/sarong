@@ -1208,6 +1208,72 @@ public class RNGBenchmark {
         doAltThrustIntR();
     }
 
+    public long doJab63()
+    {
+        Jab63RNG rng = new Jab63RNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a______measureJab63() throws InterruptedException {
+        seed = 9000;
+        doJab63();
+    }
+
+    public long doJab63Int()
+    {
+        Jab63RNG rng = new Jab63RNG(iseed);
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.next(32);
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a______measureJab63Int() throws InterruptedException {
+        iseed = 9000;
+        doJab63Int();
+    }
+    public long doJab63R()
+    {
+        RNG rng = new RNG(new Jab63RNG(seed));
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a______measureJab63R() throws InterruptedException {
+        seed = 9000;
+        doJab63R();
+    }
+
+    public long doJab63IntR()
+    {
+        RNG rng = new RNG(new Jab63RNG(iseed));
+
+        for (int i = 0; i < 1000000007; i++) {
+            iseed += rng.nextInt();
+        }
+        return iseed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public void a______measureJab63IntR() throws InterruptedException {
+        iseed = 9000;
+        doJab63IntR();
+    }
+
 
     public long doThrust32()
     {
