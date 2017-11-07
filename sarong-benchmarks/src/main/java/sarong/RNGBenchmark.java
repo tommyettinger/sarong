@@ -180,7 +180,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a____measureXoRo() throws InterruptedException {
+    public void a____measureXoRo() {
         seed = 9000;
         doXoRo();
     }
@@ -195,7 +195,7 @@ public class RNGBenchmark {
     }
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a____measureXoRoInt() throws InterruptedException {
+    public void a____measureXoRoInt() {
         iseed = 9000;
         doXoRoInt();
     }
@@ -211,7 +211,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a____measureXoRoR() throws InterruptedException {
+    public void a____measureXoRoR() {
         seed = 9000;
         doXoRoR();
     }
@@ -226,7 +226,7 @@ public class RNGBenchmark {
     }
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a____measureXoRoIntR() throws InterruptedException {
+    public void a____measureXoRoIntR() {
         iseed = 9000;
         doXoRoIntR();
     }
@@ -306,7 +306,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLongPeriod() throws InterruptedException {
+    public void measureLongPeriod() {
         seed = 9000;
         doLongPeriod();
     }
@@ -321,7 +321,7 @@ public class RNGBenchmark {
     }
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLongPeriodInt() throws InterruptedException {
+    public void measureLongPeriodInt() {
         iseed = 9000;
         doLongPeriodInt();
     }
@@ -337,7 +337,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLongPeriodR() throws InterruptedException {
+    public void measureLongPeriodR() {
         seed = 9000;
         doLongPeriodR();
     }
@@ -352,7 +352,7 @@ public class RNGBenchmark {
     }
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLongPeriodIntR() throws InterruptedException {
+    public void measureLongPeriodIntR() {
         iseed = 9000;
         doLongPeriodIntR();
     }
@@ -369,7 +369,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLight() throws InterruptedException {
+    public void measureLight() {
         seed = 9000;
         doLight();
     }
@@ -386,7 +386,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLightInt() throws InterruptedException {
+    public void measureLightInt() {
         iseed = 9000;
         doLightInt();
     }
@@ -402,7 +402,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLightR() throws InterruptedException {
+    public void measureLightR() {
         seed = 9000;
         doLightR();
     }
@@ -419,7 +419,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLightIntR() throws InterruptedException {
+    public void measureLightIntR() {
         iseed = 9000;
         doLightIntR();
     }
@@ -980,7 +980,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrust() throws InterruptedException {
+    public void a_______measureThrust() {
         seed = 9000;
         doThrust();
     }
@@ -997,7 +997,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrustInt() throws InterruptedException {
+    public void a_______measureThrustInt() {
         iseed = 9000;
         doThrustInt();
     }
@@ -1014,7 +1014,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrustR() throws InterruptedException {
+    public void a_______measureThrustR() {
         seed = 9000;
         doThrustR();
     }
@@ -1031,7 +1031,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrustIntR() throws InterruptedException {
+    public void a_______measureThrustIntR() {
         iseed = 9000;
         doThrustIntR();
     }
@@ -1050,7 +1050,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrust3() throws InterruptedException {
+    public void a_______measureThrust3() throws InterruptedException {
         seed = 9000;
         doThrust3();
     }
@@ -1067,7 +1067,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrust3Int() throws InterruptedException {
+    public void a_______measureThrust3Int() throws InterruptedException {
         iseed = 9000;
         doThrust3Int();
     }
@@ -1084,7 +1084,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrust2() throws InterruptedException {
+    public void a_______measureThrust2() throws InterruptedException {
         seed = 9000;
         doThrust2();
     }
@@ -1101,7 +1101,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureThrust2Int() throws InterruptedException {
+    public void a_______measureThrust2Int() throws InterruptedException {
         iseed = 9000;
         doThrust2Int();
     }
@@ -1154,7 +1154,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureAltThrust() throws InterruptedException {
+    public void a______measureAltThrust() {
         seed = 9000;
         doAltThrust();
     }
@@ -1170,7 +1170,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureAltThrustInt() throws InterruptedException {
+    public void a______measureAltThrustInt() {
         iseed = 9000;
         doAltThrustInt();
     }
@@ -1186,7 +1186,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureAltThrustR() throws InterruptedException {
+    public void a______measureAltThrustR() {
         seed = 9000;
         doAltThrustR();
     }
@@ -1203,7 +1203,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureAltThrustIntR() throws InterruptedException {
+    public void a______measureAltThrustIntR() {
         iseed = 9000;
         doAltThrustIntR();
     }
@@ -1220,7 +1220,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureJab63() throws InterruptedException {
+    public void a_______measureJab63() {
         seed = 9000;
         doJab63();
     }
@@ -1236,7 +1236,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureJab63Int() throws InterruptedException {
+    public void a_______measureJab63Int() {
         iseed = 9000;
         doJab63Int();
     }
@@ -1252,7 +1252,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureJab63R() throws InterruptedException {
+    public void a_______measureJab63R() {
         seed = 9000;
         doJab63R();
     }
@@ -1269,7 +1269,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void a______measureJab63IntR() throws InterruptedException {
+    public void a_______measureJab63IntR() {
         iseed = 9000;
         doJab63IntR();
     }
@@ -1286,7 +1286,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureThrust32() throws InterruptedException {
+    public void measureThrust32() {
         seed = 9000;
         doThrust32();
     }
@@ -1303,7 +1303,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureThrust32Int() throws InterruptedException {
+    public void measureThrust32Int() {
         iseed = 9000;
         doThrust32Int();
     }
@@ -1320,7 +1320,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureThrust32R() throws InterruptedException {
+    public void measureThrust32R() {
         seed = 9000;
         doThrust32R();
     }
@@ -1337,7 +1337,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureThrust32IntR() throws InterruptedException {
+    public void measureThrust32IntR() {
         iseed = 9000;
         doThrust32IntR();
     }
@@ -1354,7 +1354,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJet() throws InterruptedException {
+    public void measureJet() {
         seed = 9000;
         doJet();
     }
@@ -1371,7 +1371,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJetInt() throws InterruptedException {
+    public void measureJetInt() {
         iseed = 9000;
         doJetInt();
     }
@@ -1388,7 +1388,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJetR() throws InterruptedException {
+    public void measureJetR() {
         seed = 9000;
         doJetR();
     }
@@ -1405,7 +1405,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJetIntR() throws InterruptedException {
+    public void measureJetIntR() {
         iseed = 9000;
         doJetIntR();
     }
@@ -1422,7 +1422,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLunge32() throws InterruptedException {
+    public void measureLunge32() {
         seed = 9000;
         doLunge32();
     }
@@ -1439,7 +1439,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLunge32Int() throws InterruptedException {
+    public void measureLunge32Int() {
         iseed = 9000;
         doLunge32Int();
     }
@@ -1456,7 +1456,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLunge32R() throws InterruptedException {
+    public void measureLunge32R() {
         seed = 9000;
         doLunge32R();
     }
@@ -1473,10 +1473,55 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureLunge32IntR() throws InterruptedException {
+    public void measureLunge32IntR() {
         iseed = 9000;
         doLunge32IntR();
     }
+
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
+    public void a________measureDetermine() {
+        seed = 9000;
+        long state = 9000L;
+        for (int i = 0; i < 1000000007; i++) {
+            seed += ThrustAltRNG.determine(++state);
+        }
+    }
+    /*
+    // Performs rather poorly, surprisingly. JIT needs method calls rather than inlined code, it looks like.
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
+    public void a________measureDetermineBare() {
+        seed = 9000;
+        long running = seed, state = 9000L;
+        for (int i = 0; i < 1000000007; i++) {
+            seed += ((state = ((running += 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22));
+        }
+    }
+    */
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
+    public void a________measureRandomize() {
+        float total = 0;
+        for (long i = 0; i < 0x280000000L; i++) {
+            total += ThrustAltRNG.determineFloat(i);
+        }
+        System.out.println(total);
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
+    public void a________measureRandomness() {
+        seed = 9000;
+        ThrustAltRNG rng = new ThrustAltRNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+    }
+
 
 //    public long doSquirrel()
 //    {
@@ -1849,7 +1894,7 @@ public class RNGBenchmark {
 
     //@Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJDK() throws InterruptedException {
+    public void measureJDK() {
         seed = 9000;
         doJDK();
     }
@@ -1866,7 +1911,7 @@ public class RNGBenchmark {
 
     //@Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void measureJDKInt() throws InterruptedException {
+    public void measureJDKInt() {
         iseed = 9000;
         doJDKInt();
     }

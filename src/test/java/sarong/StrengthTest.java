@@ -319,6 +319,13 @@ public class StrengthTest {
     }
 
     @Test
+    public void testThrustAlt() {
+        for (long i = -20L; i <= 20L; i++) {
+            System.out.println(i + ": " + ThrustAltRNG.determineFloat(i) + ", " + ThrustAltRNG.determineDouble(i));
+        }
+    }
+
+    @Test
     public void testThrust()
     {
         ThrustRNG random = new ThrustRNG(0xABC7890456123DEFL);

@@ -24,7 +24,20 @@ import java.util.Random;
  */
 public class RNG implements Serializable {
 
-    protected static final float FLOAT_UNIT = 1.0f / (1 << 24);
+    /**
+     * A very small multiplier used to reduce random numbers to from the {@code [0.0,9007199254740991.0)} range to the
+     * {@code [0.0,1.0)} range. Equivalent to {@code 1.0 / (1 << 53)}, if that number makes more sense to you, but the
+     * source uses the hexadecimal double literal {@code 0x1p-53}. The hex literals are a nice "hidden feature" of Java
+     * 5 onward, and allow exact declaration of floating-point numbers without precision loss from decimal conversion.
+     */
+    protected static final double DOUBLE_UNIT = 0x1p-53; // more people should know about hex double literals!
+    /**
+     * A very small multiplier used to reduce random numbers to from the {@code [0.0,16777216.0)} range to the
+     * {@code [0.0,1.0)} range. Equivalent to {@code 1.0f / (1 << 24)}, if that number makes more sense to you, but the
+     * source uses the hexadecimal double literal {@code 0x1p-24f}. The hex literals are a nice "hidden feature" of Java
+     * 5 onward, and allow exact declaration of floating-point numbers without precision loss from decimal conversion.
+     */
+    protected static final float FLOAT_UNIT = 0x1p-24f;
     protected RandomnessSource random;
     protected double nextNextGaussian;
     protected boolean haveNextNextGaussian = false;
@@ -545,7 +558,9 @@ public class RNG implements Serializable {
      * @return a value between 0 (inclusive) and 0.9999999999999999 (inclusive)
      */
     public double nextDouble() {
-        return NumberTools.longBitsToDouble(0x3FF0000000000000L | random.nextLong() >>> 12) - 1.0;
+        return (random.nextLong() & 0x1fffffffffffffL) * 0x1p-53;
+        //this is here for a record of another possibility; it can't generate quite a lot of possible values though
+        //return Double.longBitsToDouble(0x3FF0000000000000L | random.nextLong() >>> 12) - 1.0;
     }
 
     /**
@@ -564,7 +579,7 @@ public class RNG implements Serializable {
      * @return a value between 0 (inclusive) and 0.99999994 (inclusive)
      */
     public float nextFloat() {
-        return next(24) * FLOAT_UNIT;
+        return next(24) * 0x1p-24f;
     }
 
     //Not currently used; may be useful in other techniques

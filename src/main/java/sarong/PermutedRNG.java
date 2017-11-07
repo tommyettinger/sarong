@@ -102,9 +102,9 @@ public final class PermutedRNG implements RandomnessSource, StatefulRandomness, 
         // increment  = 1442695040888963407L;
         // multiplier = 6364136223846793005L;
 
+        //state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
         long p = (state += 0x9E3779B97F4A7C15L);
         p ^= p >>> (5 + (p >>> 59));
-        //state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL;
         return ((p *= 0xAEF17502108EF2D9L) >>> 43) ^ p;
     }
 
