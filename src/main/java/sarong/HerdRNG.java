@@ -127,7 +127,7 @@ public class HerdRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public HerdRNG copy() {
         HerdRNG hr = new HerdRNG(state);
         hr.choice = choice;
         return hr;

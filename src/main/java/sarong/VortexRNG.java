@@ -133,7 +133,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public VortexRNG copy() {
         return new VortexRNG(state, stream);
     }
     @Override

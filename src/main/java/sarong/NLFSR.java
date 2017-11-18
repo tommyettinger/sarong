@@ -21,142 +21,168 @@ import java.io.Serializable;
  * a more complex process such as encoding a saved file in a more robust way.
  * It is important to note that an NLFSR or LFSR will produce each number from 1 until its maximum exactly once before
  * repeating, so this may be useful as a way of generating test data in an unpredictable order.
+ * <br>
+ * There are multiple implementations of NLFSR with different sizes for the produced numbers, which affects their
+ * period, and also very different performance qualities. The faster of the two is {@link NLFSR25}, which takes about
+ * 2.2x as much time to produce a 25-bit integer as it takes {@link LFSR} to produce a 64-bit number. It has a period of
+ * 2 to the 25 minus 1. The slower one is {@link NLFSR27}, which has over 4 times as long of a period, at 2 to the 27
+ * minus 1, but also takes more than 6x as long to produce a 27-bit integer as it takes LFSR to produce a 64-bit number.
+ * Typically, you should prefer NLFSR25 if speed is even remotely a concern; NLFSR27 is probably the slowest way to
+ * generate a 32-bit-or-less value in the whole library.
  * @author Tommy Ettinger
  */
-public class NLFSR implements StatefulRandomness, Serializable {
+public abstract class NLFSR implements StatefulRandomness, Serializable {
 
-	private static final long DOUBLE_MASK = (1L << 53) - 1;
-    private static final double NORM_53 = 1. / (1L << 53);
-    private static final long FLOAT_MASK = (1L << 24) - 1;
-    private static final double NORM_24 = 1. / (1L << 24);
+	private static final long serialVersionUID = -1473549048478690391L;
 
-	private static final long serialVersionUID = -2373549048478690398L;
+    public long state;
 
-    public int state;
-
+    public abstract int bitLimit();
     /**
      * Creates a new generator seeded using Math.random.
      */
     public NLFSR() {
-        this((int) (Math.random() * Long.MAX_VALUE));
-    }
-
-    public NLFSR(final int seed) {
-        if(seed <= 0 || seed > 134217727)
-            state = 134217727;
-        else
-            state = seed;
+        this((long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
     public NLFSR(final CharSequence seed)
     {
-        this(CrossHash.hash(seed));
+        this(CrossHash.hash64(seed));
     }
 
-
-    @Override
-    public int next(int bits) {
-        return (int) (nextLong() >>> (64 - bits));
-    }
-
-    @Override
-    public long nextLong() {
-        return nextInt() * 0x2000000000L ^ nextInt() * 0x40000L ^ nextInt();
-    }
-    /**
-     * Produces up to 27 bits of random int, with a minimum result of 1 and a max of 134217727 (both inclusive).
-     * @return a random int between 1 and 134217727, both inclusive
-     */
-    public int nextInt() {
-        return state = (state >>> 1 | (0x4000000 & (
-                (state << 26) //0
-                        ^ (state << 22) //4
-                        ^ (state << 18) //8
-                        ^ (state << 17) //9
-                        ^ (state << 15) //11
-                        ^ (state << 14) //12
-                        ^ (state << 11) //15
-                        ^ (state << 10) //16
-                        ^ (state << 3)  //23
-                        ^ ((state << 14) & (state << 4)) //12 22
-                        ^ ((state << 13) & (state << 3)) //13 23
-                        ^ ((state << 13) & (state << 1)) //13 25
-                        ^ ((state << 4) & (state << 3))  //22 23
-                        ^ ((state << 19) & (state << 18) & (state << 2))  //7 8 24
-                        ^ ((state << 14) & (state << 12) & (state))       //12 14 26
-                        ^ ((state << 20) & (state << 15) & (state << 7) & (state << 4))       //6 11 19 22
-
-        )));
+    public NLFSR(final long seed) {
+        setState(seed);
     }
 
     /**
-     * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
-     * copy, both will generate the same sequence of random numbers from the point copy() was called. This just needs to
-     * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
-     *
-     * @return a copy of this RandomnessSource
+     * A non-linear feedback shift register with maximal period for 27 bits (2 to the 27 minus 1). It is very complex
+     * internally, especially compared to {@link NLFSR25}. If you don't need 27 bits of period, which really isn't very
+     * much anyway, you may have better performance with NLFSR25. No maximal-period NLFSRs are publicly known with
+     * longer periods than this one that still use only one variable for state, though there are ways to construct much
+     * larger NLFSRs by combining existing ones.
      */
-    @Override
-    public RandomnessSource copy() {
-        return new NLFSR(state);
-    }
+    public static class NLFSR27 extends NLFSR {
 
-    /**
-     * Exclusive on the upper bound.  The lower bound is 0.
-     * @param bound the upper bound; should be positive
-     * @return a random int less than n and at least equal to 0
-     */
-    public int nextInt( final int bound ) {
-        return (int)((bound * (nextLong() & 0x7FFFFFFFL)) >> 31);
-    }
-    /**
-     * Inclusive lower, exclusive upper.
-     * @param lower the lower bound, inclusive, can be positive or negative
-     * @param upper the upper bound, exclusive, should be positive, must be greater than lower
-     * @return a random int at least equal to lower and less than upper
-     */
-    public int nextInt( final int lower, final int upper ) {
-        if ( upper - lower <= 0 ) throw new IllegalArgumentException("Upper bound must be greater than lower bound");
-        return lower + nextInt(upper - lower);
-    }
+        public NLFSR27() {
+            super();
+        }
 
-    /**
-     * Exclusive on the upper bound. The lower bound is 0.
-     * @param bound the upper bound; should be positive
-     * @return a random long less than n
-     */
-    public long nextLong( final long bound ) {
-        if ( bound <= 0 ) return 0;
-        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
-        for (;;) {
-            long bits = nextLong() & 0x7fffffffffffffffL;
-            if (bits >= threshold)
-                return bits % bound;
+        public NLFSR27(CharSequence seed) {
+            super(seed);
+        }
+
+        public NLFSR27(long seed) {
+            super(seed);
+        }
+
+        @Override
+        public final int bitLimit() {
+            return 27;
+        }
+
+        @Override
+        public final int next(int bits) {
+            return (int) (nextLong() >>> (27 - bits));
+        }
+
+        /**
+         * Produces up to 27 bits of random long, with a minimum result of 1 and a max of 134217727 (both inclusive).
+         *
+         * @return a random long between 1 and 134217727, both inclusive
+         */
+        @Override
+        public final long nextLong() {
+            return state = (state >>> 1 | (0x4000000 & (
+                    (state << 26) //0
+                            ^ (state << 22) //4
+                            ^ (state << 18) //8
+                            ^ (state << 17) //9
+                            ^ (state << 15) //11
+                            ^ (state << 14) //12
+                            ^ (state << 11) //15
+                            ^ (state << 10) //16
+                            ^ (state << 3)  //23
+                            ^ ((state << 14) & (state << 4)) //12 22
+                            ^ ((state << 13) & (state << 3)) //13 23
+                            ^ ((state << 13) & (state << 1)) //13 25
+                            ^ ((state << 4) & (state << 3))  //22 23
+                            ^ ((state << 19) & (state << 18) & (state << 2))  //7 8 24
+                            ^ ((state << 14) & (state << 12) & (state))       //12 14 26
+                            ^ ((state << 20) & (state << 15) & (state << 7) & (state << 4))       //6 11 19 22
+
+            )));
+        }
+
+        /**
+         * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
+         * copy, both will generate the same sequence of random numbers from the point copy() was called. This just needs to
+         * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
+         *
+         * @return a copy of this RandomnessSource
+         */
+        @Override
+        public NLFSR27 copy() {
+            return new NLFSR27(state);
         }
     }
+    /**
+     * A non-linear feedback shift register with maximal period for 25 bits (2 to the 25 minus 1). It is fairly simple
+     * internally, especially compared to {@link NLFSR27}. This is currently suggested as a potential better option over
+     * NLFSR27, due to improved performance, unless you need 4 times the period. Both NLFSR25 and NLFSR27 have very
+     * small periods for a PRNG to begin with, so they should probably be combined with another generator.
+     */
+    public static class NLFSR25 extends NLFSR {
 
-    public double nextDouble() {
-        return (nextLong() & DOUBLE_MASK) * NORM_53;
-    }
+        public NLFSR25() {
+            super();
+        }
 
-    public float nextFloat() {
-        return (float) ((nextLong() & FLOAT_MASK) * NORM_24);
-    }
+        public NLFSR25(CharSequence seed) {
+            super(seed);
+        }
 
-    public boolean nextBoolean() {
-        return (nextInt() & 1) == 0;
-    }
+        public NLFSR25(long seed) {
+            super(seed);
+        }
 
-    public void nextBytes(final byte[] bytes) {
-        int i = bytes.length, n = 0;
-        while (i != 0) {
-            n = Math.min(i, 8);
-            for (long bits = nextLong(); n-- != 0; bits >>>= 8) {
-                bytes[--i] = (byte) bits;
-            }
+        @Override
+        public final int bitLimit() {
+            return 25;
+        }
+
+        @Override
+        public final int next(int bits) {
+            return (int) (nextLong() >>> (25 - bits));
+        }
+
+        /**
+         * Produces up to 25 bits of random long, with a minimum result of 1 and a max of 134217727 (both inclusive).
+         *
+         * @return a random long between 1 and 134217727, both inclusive
+         */
+        @Override
+        public final long nextLong() {
+            return state = (state >>> 1 | (0x1000000 & (
+                    (state << 24) //0
+                            ^ (state << 20) //4
+                            ^ (state << 8) //16
+                            ^ ((state << 23) & (state << 3) & (state << 1))  //1 21 23
+            )));
+        }
+
+        /**
+         * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
+         * copy, both will generate the same sequence of random numbers from the point copy() was called. This just needs to
+         * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
+         *
+         * @return a copy of this RandomnessSource
+         */
+        @Override
+        public NLFSR25 copy() {
+            return new NLFSR25(state);
         }
     }
-
     /**
      * Get the current internal state of the StatefulRandomness as a long.
      *
@@ -173,15 +199,13 @@ public class NLFSR implements StatefulRandomness, Serializable {
      */
     @Override
     public void setState(final long seed) {
-        if(seed <= 0 || seed > 134217727)
-            state = 134217727;
-        else
-            state = (int) seed;
+        state = seed & (-1 >>> (64 - bitLimit()));
+        if(state == 0) state = 1;
     }
 
     @Override
     public String toString() {
-        return "NLFSR with state 0x" + StringKit.hex(state);
+        return "NLFSR" + bitLimit() + " with state 0x" + StringKit.hex(state);
     }
 
     @Override
@@ -191,11 +215,11 @@ public class NLFSR implements StatefulRandomness, Serializable {
 
         NLFSR nlfsr = (NLFSR) o;
 
-        return (state == nlfsr.state);
+        return (bitLimit() == nlfsr.bitLimit() && state == nlfsr.state);
     }
 
     @Override
     public int hashCode() {
-        return state;
+        return (int) (state ^ (state >>> 32));
     }
 }

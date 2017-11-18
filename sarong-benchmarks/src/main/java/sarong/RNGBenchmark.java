@@ -1942,8 +1942,6 @@ public class RNGBenchmark {
     }
 */
 
-
-
     public long doJDK()
     {
         Random rng = new Random(seed);

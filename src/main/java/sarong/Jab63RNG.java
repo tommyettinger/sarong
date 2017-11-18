@@ -81,7 +81,7 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
     }
 
     /**
-     * Advances or rolls back the ThrustRNG's state without actually generating each number. Skips forward
+     * Advances or rolls back the Jab63RNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
      * and returns the random number produced at that step (you can get the state with {@link #getState()}).
      *
@@ -104,12 +104,12 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
-        return new ThrustRNG(state);
+    public Jab63RNG copy() {
+        return new Jab63RNG(state);
     }
     @Override
     public String toString() {
-        return "ThrustRNG with state 0x" + StringKit.hex(state) + 'L';
+        return "Jab63RNG with state 0x" + StringKit.hex(state) + 'L';
     }
 
     @Override
@@ -117,9 +117,9 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ThrustRNG thrustRNG = (ThrustRNG) o;
+        Jab63RNG jab63RNG = (Jab63RNG) o;
 
-        return state == thrustRNG.state;
+        return state == jab63RNG.state;
     }
 
     @Override

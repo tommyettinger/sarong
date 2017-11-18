@@ -116,7 +116,7 @@ public final class PermutedRNG implements RandomnessSource, StatefulRandomness, 
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public PermutedRNG copy() {
         PermutedRNG next = new PermutedRNG(state);
         next.setState(state);
         return next;

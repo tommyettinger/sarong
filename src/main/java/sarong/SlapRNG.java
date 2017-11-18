@@ -194,7 +194,7 @@ public class SlapRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public SlapRNG copy() {
         return new SlapRNG(state0, state1);
     }
 

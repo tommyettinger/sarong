@@ -93,7 +93,7 @@ public final class PintRNG implements RandomnessSource, StatefulRandomness, Seri
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public PintRNG copy() {
         return new PintRNG(state);
     }
 

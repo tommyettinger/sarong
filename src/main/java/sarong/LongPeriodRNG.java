@@ -248,7 +248,7 @@ public final class LongPeriodRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public LongPeriodRNG copy() {
         LongPeriodRNG next = new LongPeriodRNG();
         System.arraycopy(state, 0, next.state, 0, 16);
         next.choice = choice;

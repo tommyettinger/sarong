@@ -138,7 +138,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public Lunge32RNG copy() {
         return new Lunge32RNG(state);
     }
     @Override

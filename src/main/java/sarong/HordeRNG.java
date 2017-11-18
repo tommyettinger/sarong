@@ -123,7 +123,7 @@ public class HordeRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public HordeRNG copy() {
         HordeRNG hr = new HordeRNG(state);
         hr.choice = choice;
         return hr;

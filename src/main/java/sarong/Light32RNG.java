@@ -109,7 +109,7 @@ public final class Light32RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public Light32RNG copy() {
         return new Light32RNG(state, inc);
     }
 

@@ -361,7 +361,7 @@ public final class Isaac32RNG implements RandomnessSource {
      * @return another RandomnessSource with the same implementation but no guarantees as to generation
      */
     @Override
-    public RandomnessSource copy() {
+    public final Isaac32RNG copy() {
         return new Isaac32RNG(results);
     }
 

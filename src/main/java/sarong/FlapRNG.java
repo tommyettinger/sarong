@@ -176,7 +176,7 @@ public final class FlapRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public FlapRNG copy() {
         return new FlapRNG(state0, state1);
     }
 

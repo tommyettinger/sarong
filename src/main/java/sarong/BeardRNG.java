@@ -140,7 +140,7 @@ public class BeardRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public BeardRNG copy() {
         BeardRNG hr = new BeardRNG(state);
         hr.choice = choice;
         return hr;

@@ -158,7 +158,7 @@ public class ZapRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public ZapRNG copy() {
         return new ZapRNG(state0, state1);
     }
 

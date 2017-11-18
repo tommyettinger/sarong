@@ -67,7 +67,7 @@ public class LFSR implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public LFSR copy() {
         return new LFSR(state);
     }
 
@@ -147,12 +147,12 @@ public class LFSR implements StatefulRandomness, Serializable {
     }
 
     /**
-     * Sets the seed of this generator using one long, running that through LightRNG's algorithm twice to get the state.
-     * @param seed the number to use as the seed
+     * Sets the state of this generator to the given long, unless it is 0 (in which case it sets the state to 1).
+     * @param seed the number to use as the seed; if 0 will be treated as 1
      */
     public void setState(final long seed) {
         if(seed == 0)
-            state = -1L;
+            state = 1L;
         else
             state = seed;
     }

@@ -183,7 +183,7 @@ uint32_t splitmix32(uint32_t *x) {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public BardRNG copy() {
         BardRNG br = new BardRNG(state);
         br.choice = choice;
         return br;

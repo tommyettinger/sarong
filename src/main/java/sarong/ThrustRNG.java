@@ -156,7 +156,7 @@ public final class ThrustRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public ThrustRNG copy() {
         return new ThrustRNG(state);
     }
     @Override

@@ -134,7 +134,7 @@ public class SquirrelRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public SquirrelRNG copy() {
         return new SquirrelRNG(state0, state1);
     }
 

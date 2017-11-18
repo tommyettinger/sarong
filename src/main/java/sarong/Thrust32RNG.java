@@ -172,7 +172,7 @@ public final class Thrust32RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public Thrust32RNG copy() {
         return new Thrust32RNG(state);
     }
     @Override

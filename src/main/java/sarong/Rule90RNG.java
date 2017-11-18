@@ -101,7 +101,7 @@ public class Rule90RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public Rule90RNG copy() {
         return new Rule90RNG(state);
     }
     @Override

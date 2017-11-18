@@ -86,7 +86,7 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public RandomnessSource copy() {
+    public XoRoRNG copy() {
         XoRoRNG next = new XoRoRNG(state0);
         next.state0 = state0;
         next.state1 = state1;
