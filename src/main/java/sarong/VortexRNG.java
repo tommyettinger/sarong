@@ -5,26 +5,20 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A variant on {@link ThrustAltRNG} that gives up some speed to increase its period substantially (it should be 2 to
- * the 128 instead of ThrustAltRNG's 2 to the 64). It switches between 8 different streams, all with fairly high quality
- * and no statistical failures with gjrand on 100GB of data, and makes the switch in a pseudo-random way after each 2 to
- * the 64 numbers it generates. This switch is just a selection of a different stream based on the top 3 bits (which are
- * the highest-period) of a linear congruential generator's result, and the LCG is only advanced once per 2 to the 64
- * generated numbers. This generator is faster than both XoRoRNG and LightRNG after it warms up, and may have comparable
- * quality to XoRoRNG while having a slightly-larger period (by one number). This also doesn't fail one test that
- * XoRoRNG fails by its nature, although that test, binary matrix rank, isn't usually a great indicator of quality.
- * Because this only differs from ThrustAltRNG after a very large amount of generated numbers, usually, many practical
- * tests may not ever reach a point where they would be able to detect a failure, even though it is very possible there
- * are detectable issues after 2 to the 64 generated numbers, even before 2 to the 128.
+ * A modified 64-bit linear congruential generator that allows 2 to the 63 possible streams (any odd long).
+ * Its period is 2 to the 64, but you can change the stream after some large amount of generated numbers if you want to
+ * effectively extend the period. It is currently rather slow, but this seems to be due to the JVM mis-optimizing (or
+ * pessimizing, to use another term) the rotation code this uses, or some other section. This is likely to change to try
+ * to improve performance. With a stream of 1, the quality this has is exceptional; other streams of course can't all be
+ * tested, so they may have some minor issues.
  * <br>
- * As a side note, because XoRoRNG and VortexRNG differ in period, but by the smallest amount possible, you could run
- * both generators simultaneously and they wouldn't cycle until 2 to the 256 minus 2 to the 128 numbers are produced.
- * The output from XOR-ing or summing the results of both generators might have better quality than one on its own.
+ * Changed from an earlier version that switched between 8 streams, using an algorithm based on ThrustAltRNG, because
+ * that version had some strange quality issues that ThrustAltRNG does not have on its own.
  * <br>
  * Created by Tommy Ettinger on 11/9/2017.
  */
 public final class VortexRNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     /**
      * Can be any long value.
      */
@@ -38,11 +32,6 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     private long stream;
 
-    private static final long[] increments = {
-             0x6C8E9CF570932BD5L,  0x6C8E9CD570932BD5L,  0x6C8E9CD7D0932BD5L,  0x6C8E9CF5E0932BD5L,
-            -0x6C8E9CF5E0932BD5L, -0x6C8E9CF570932BD5L, -0x6C8E9CD570932BD5L, -0x6C8E9CD7D0932BD5L
-    };
-    private long pick;
     /**
      * Creates a new generator seeded using Math.random.
      */
@@ -55,13 +44,11 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     public VortexRNG(long seed)
     {
         state = seed;
-        stream = 0;
-        pick = increments[0];
+        stream = 1;
     }
     public VortexRNG(final long seed, final long stream) {
         state = seed;
-        this.stream = stream;
-        pick = increments[(int) (stream >>> 61)];
+        this.stream = stream | 1L;
     }
 
     /**
@@ -89,8 +76,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     }
 
     public void setStream(long stream) {
-        this.stream = stream;
-        pick = increments[(int)(stream >>> 61)];
+        this.stream = stream | 1L;
     }
 
     /**
@@ -102,11 +88,10 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        long z = (state += pick);
-        if(z == 0)
-            pick = increments[(int) ((stream = stream * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) >>> 61)];
-        z = (z ^ (z >>> 25)) * (z | 0xA529L);
-        return (int)(z ^ (z >>> 22)) >>> (32 - bits);
+        final long z = (state = state * 0x369DEA0F31A53F85L + stream);
+        return (int)(
+                ((z << 23) | (z >>> 41)) - ((z << 19) | (z >>> 45)) - ((z >>> 27) ^ z)
+                >>> (64 - bits));
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -118,11 +103,8 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state += pick);
-        if(z == 0)
-            pick = increments[(int) ((stream = stream * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) >>> 61)];
-        z = (z ^ (z >>> 25)) * (z | 0xA529L);
-        return z ^ (z >>> 22);
+        final long z = (state = state * 0x369DEA0F31A53F85L + stream);
+        return ((z << 23) | (z >>> 41)) - ((z << 19) | (z >>> 45)) - ((z >>> 27) ^ z) - ((z >>> 27) ^ z);
     }
 
     /**
@@ -153,85 +135,6 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
 
     @Override
     public int hashCode() {
-        return (int) (31 * (state ^ (state >>> 32)) + (stream ^ (stream >>> 32)));
+        return (int) (31 * (state ^ (state >>> 32)) + ((stream >>> 1) ^ (stream >>> 32)));
     }
-    /**
-     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
-     * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
-     * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by a large and
-     * specifically-chosen number selected by {@code stream} within this method, so using a small increment won't be
-     * much different from using a very large one, as long as it is odd. The period is 2 to the 64 if you increment or
-     * decrement by 1 and keep stream the same. The value for stream can be any int, but only the 2 least-significant
-     * bits are used; it's recommended but not required to only use the values 0, 1, 2, and 3 for stream.
-     * @param state a variable that should be different every time you want a different random result;
-     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
-     *              generate numbers in reverse order
-     * @param stream an int that determines which of four streams to use; only the bottom 2 bits are used (using 0, 1, 2, or 3 here is recommended)
-     * @return a pseudo-random permutation of state
-     */
-    public static long determine(long state, final int stream) {
-        return (state = ((state *= increments[stream & 3]) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22);
-    }
-    //for quick one-line pastes of how the algo can be used with "randomize(++state)"
-    //public static long randomize(long state) { return (state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22); }
-
-    /**
-     * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
-     * return the same float. This is expected to be called with a changing variable, e.g. {@code determine(++state)},
-     * where the increment for state should be odd but otherwise doesn't really matter. This multiplies state by a large
-     * and specifically-chosen number selected by {@code stream} within this method, so using a small increment won't be
-     * much different from using a very large one, as long as it is odd. The period is 2 to the 64 if you increment or
-     * decrement by 1 and keep stream the same, but there are only 2 to the 30 possible floats between 0 and 1. The
-     * value for stream can be any int, but only the 2 least-significant bits are used; it's recommended but not
-     * required to only use the values 0, 1, 2, and 3 for stream.
-     * @param state a variable that should be different every time you want a different random result;
-     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
-     *              generate numbers in reverse order
-     * @param stream an int that determines which of four streams to use; only the bottom 2 bits are used (using 0, 1, 2, or 3 here is recommended)
-     * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
-     */
-    public static float determineFloat(long state, final int stream) { return (((state = ((state *= increments[stream & 3]) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22)) & 0xFFFFFF) * 0x1p-24f; }
-
-
-    /**
-     * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
-     * will return the same float. This is expected to be called with a changing variable, e.g.
-     * {@code determine(++state)}, where the increment for state should be odd but otherwise doesn't really matter. This
-     * multiplies state by a large and specifically-chosen number selected by {@code stream} within this method, so
-     * using a small increment won't be much different from using a very large one, as long as it is odd. The period is
-     * 2 to the 64 if you increment or decrement by 1 and keep stream the same, but there are only 2 to the 62 possible
-     * doubles between 0 and 1. The value for stream can be any int, but only the 2 least-significant bits are used;
-     * it's recommended but not required to only use the values 0, 1, 2, and 3 for stream.
-     * @param state a variable that should be different every time you want a different random result;
-     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
-     *              generate numbers in reverse order
-     * @param stream an int that determines which of four streams to use; only the bottom 2 bits are used (using 0, 1, 2, or 3 here is recommended)
-     * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
-     */
-    public static double determineDouble(long state, final int stream) { return (((state = ((state *= increments[stream & 3]) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
-
-    /**
-     * Given a state that should usually change each time this is called, and a bound that limits the result to some
-     * (typically fairly small) int, produces a pseudo-random int between 0 and bound (exclusive). The bound can be
-     * negative, which will cause this to produce 0 or a negative int; otherwise this produces 0 or a positive int.
-     * The state should change each time this is called, generally by incrementing by an odd number (not an even number,
-     * especially not 0). It's fine to use {@code determineBounded(++state, bound)} to get a different int each time.
-     * The period is usually 2 to the 64 when you increment or decrement by 1, but some bounds may reduce the period (in
-     * the extreme case, a bound of 1 would force only 0 to be generated, so that would make the period 1). You can
-     * change the sequence of random numbers this draws from by using a different int for {@code stream}; only the 2
-     * least-significant bits are used, so only using 0, 1, 2, and 3 as values for stream is recommended.
-     * @param state a variable that should be different every time you want a different random result;
-     *              using {@code determineBounded(++state, bound)} is recommended to go forwards or
-     *              {@code determineBounded(--state, bound)} to generate numbers in reverse order
-     * @param bound the outer exclusive bound for the int this produces; can be negative or positive
-     * @param stream an int that determines which of four streams to use; only the bottom 2 bits are used (using 0, 1, 2, or 3 here is recommended)
-     * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
-     */
-    public static int determineBounded(long state, final int bound, final int stream)
-    {
-        return (int)((bound * (
-                ((state = ((state *= increments[stream & 3]) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22))
-                        & 0xFFFFFFFFL)) >> 32);
-    }
-
 }

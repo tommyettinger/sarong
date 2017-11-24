@@ -1342,6 +1342,7 @@ public class RNGBenchmark {
         doThrust32IntR();
     }
 
+    /*
     public long doJet()
     {
         JetRNG rng = new JetRNG(seed);
@@ -1488,19 +1489,17 @@ public class RNGBenchmark {
             seed += ThrustAltRNG.determine(++state);
         }
     }
-    /*
-    // Performs rather poorly, surprisingly. JIT needs method calls rather than inlined code, it looks like.
-    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
-    public void a________measureDetermineBare() {
-        seed = 9000;
-        long running = seed, state = 9000L;
-        for (int i = 0; i < 1000000007; i++) {
-            seed += ((state = ((running += 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22));
-        }
-    }
-    */
 
+//    // Performs rather poorly, surprisingly. JIT needs method calls rather than inlined code, it looks like.
+//    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//    @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
+//    public void a________measureDetermineBare() {
+//        seed = 9000;
+//        long running = seed, state = 9000L;
+//        for (int i = 0; i < 1000000007; i++) {
+//            seed += ((state = ((running += 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22));
+//        }
+//    }
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
     public void a________measureRandomness() {
@@ -1511,6 +1510,8 @@ public class RNGBenchmark {
             seed += rng.nextLong();
         }
     }
+
+    */
 
 
 
