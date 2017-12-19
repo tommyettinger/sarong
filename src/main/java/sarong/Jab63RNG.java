@@ -12,7 +12,7 @@ import java.io.Serializable;
  * state is always odd here, and {@link #setState(long)} will always ensure that is maintained.
  * Created by Tommy Ettinger on 11/1/2017.
  */
-public class Jab63RNG implements StatefulRandomness, Serializable {
+public final class Jab63RNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * Can be any long value.
@@ -60,8 +60,8 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(int bits) {
-        final long s = (state += 0x6A5D39EAE12657BAL);
-        final long z = (s ^ (s >>> 26)) * s;
+        long z = (state += 0x6A5D39EAE12657BAL);
+        z *= (z ^ (z >>> 26));
         return (int)(z ^ z >>> 22) >>> (32 - bits);
     }
 
@@ -75,8 +75,21 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        final long s = (state += 0x6A5D39EAE12657BAL);
-        final long z = (s ^ (s >>> 26)) * s;
+        long z = (state += 0x6A5D39EAE12657BAL);
+        z *= (z ^ (z >>> 26));
+        return z ^ z >>> 22;
+    }
+
+    /**
+     * Call with {@code nextLong(z += 0x6A5D39EAE12657BAL)}. Using -= is also OK. The value for z must be odd; you
+     * can ensure this initially with {@code z |= 1} if it is set from a random source or user input. Using the given
+     * increment (or decrement) value for z will keep an odd-number value for z as an odd number; this is important to
+     * the behavior of this algorithm.
+     * @param z an odd-number long that should change with {@code z += 0x6A5D39EAE12657BAL} each time this is called
+     * @return a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive)
+     */
+    public static long randomize(long z) {
+        z *= (z ^ (z >>> 26));
         return z ^ z >>> 22;
     }
 
@@ -89,8 +102,8 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final long skip(long advance) {
-        final long s = (state += 0x6A5D39EAE12657BAL * advance);
-        final long z = (s ^ (s >>> 26)) * s;
+        long z = (state += 0x6A5D39EAE12657BAL * advance);
+        z *= (z ^ (z >>> 26));
         return z ^ z >>> 22;
 
     }
@@ -130,17 +143,21 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
     /**
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
-     * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
+     * the increment for state should be odd but otherwise doesn't really matter. This uses state multiplied by
      * {@code 0x6A5D39EAE12657BAL} within this method, so using a small increment won't be much different from using a
-     * very large one, as long as it is odd.
+     * very large one, as long as it is odd. You want to use {@link #randomize(long)} instead if you can control how
+     * the state is changed and can ensure it is an odd number; randomize() uses the exact behavior of the
+     * RandomnessSource methods in class and this method doesn't, necessarily.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random permutation of state
+     * @see #randomize(long) randomize is meant for when you can ensure the state is odd and will be changed exactly
      */
     public static long determine(long state)
     {
-        state = ((state *= 0x6A5D39EAE12657BAL) ^ (state >>> 26)) * (state | 1L);
+        state = state * 0x6A5D39EAE12657BAL | 1L;
+        state *= (state ^ (state >>> 26));
         return state ^ state >>> 22;
     }
 
@@ -158,7 +175,8 @@ public class Jab63RNG implements StatefulRandomness, Serializable {
      */
     public static int determineBounded(long state, final int bound)
     {
-        state = ((state *= 0x6A5D39EAE12657BAL) ^ (state >>> 26)) * (state | 1L);
+        state = state * 0x6A5D39EAE12657BAL | 1L;
+        state *= (state ^ (state >>> 26));
         return (int)((bound * ((state ^ state >>> 22) & 0x7FFFFFFFL)) >> 31);
     }
 

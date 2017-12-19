@@ -7,13 +7,12 @@ import java.io.Serializable;
 /**
  * A modified 64-bit linear congruential generator that allows 2 to the 63 possible streams (any odd long).
  * Its period is 2 to the 64, but you can change the stream after some large amount of generated numbers if you want to
- * effectively extend the period. It is currently rather slow, but this seems to be due to the JVM mis-optimizing (or
- * pessimizing, to use another term) the rotation code this uses, or some other section. This is likely to change to try
- * to improve performance. With a stream of 1, the quality this has is exceptional; other streams of course can't all be
- * tested, so they may have some minor issues.
+ * effectively extend the period. It is currently slightly slower than LightRNG, a generator that at least in theory
+ * also supports 2 to the 63 switchable streams, but the SplitMix64 algorithm in practice requires disallowing many of
+ * those streams. It is unclear how many streams of Vortex may be unsuitable, though because the stream variable changes
+ * in-step with the state variable, it seems less likely that a single stream would be problematic for long.
  * <br>
- * Changed from an earlier version that switched between 8 streams, using an algorithm based on ThrustAltRNG, because
- * that version had some strange quality issues that ThrustAltRNG does not have on its own.
+ * Changed from several earlier versions with speed or quality issues.
  * <br>
  * Created by Tommy Ettinger on 11/9/2017.
  */
@@ -25,9 +24,11 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     public long state;
 
     /**
-     * Which stream this VortexRNG will generate numbers with; each stream is effectively a completely different
-     * algorithm, and may produce specific numbers more or less frequently, and should always produce them in a
-     * different order. This can be changed after construction but not with any guarantees of quality staying the same
+     * An odd number that decides which stream this VortexRNG will generate numbers with; the stream changes in a Weyl
+     * sequence (adding a large odd number), and the relationship between the Weyl sequence and the state determines how
+     * numbers will be generated differently when stream or state changes. As stated, this must be odd.
+     * <br>
+     * This can be changed after construction but not with any guarantees of quality staying the same
      * relative to previously-generated numbers on a different stream.
      */
     private long stream;
@@ -44,7 +45,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     public VortexRNG(long seed)
     {
         state = seed;
-        stream = 1;
+        stream = -1L;
     }
     public VortexRNG(final long seed, final long stream) {
         state = seed;
@@ -62,13 +63,13 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     }
 
     /**
-     * Set the current internal state of this StatefulRandomness with a long.
+     * Set the current internal state of this StatefulRandomness with a long; the least-significant bit is disregarded.
      *
      * @param state a 64-bit long
      */
     @Override
     public void setState(long state) {
-        this.state = state;
+        this.state = state | 1L;
     }
 
     public long getStream() {
@@ -76,7 +77,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     }
 
     public void setStream(long stream) {
-        this.stream = stream | 1L;
+        this.stream = stream;
     }
 
     /**
@@ -88,9 +89,10 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        final long z = (state = state * 0x369DEA0F31A53F85L + stream);
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 26) * (stream += 0x6A5D39EAE12657BAL);
         return (int)(
-                ((z << 23) | (z >>> 41)) - ((z << 19) | (z >>> 45)) - ((z >>> 27) ^ z)
+                (z ^ z >>> 28)
                 >>> (64 - bits));
     }
     /**
@@ -103,8 +105,9 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        final long z = (state = state * 0x369DEA0F31A53F85L + stream);
-        return ((z << 23) | (z >>> 41)) - ((z << 19) | (z >>> 45)) - ((z >>> 27) ^ z) - ((z >>> 27) ^ z);
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 26) * (stream += 0x6A5D39EAE12657BAL);
+        return (z ^ (z ^ stream) >>> 28);
     }
 
     /**
@@ -135,6 +138,21 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
 
     @Override
     public int hashCode() {
-        return (int) (31 * (state ^ (state >>> 32)) + ((stream >>> 1) ^ (stream >>> 32)));
+        return (int) ((state ^ state >>> 32) + 31 * (stream >>> 1 ^ stream >>> 33));
+    }
+    public static void main(String[] args)
+    {
+        /*
+        cd target/classes
+        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/VortexRNG > vortex_asm.txt
+         */
+        long seed = 1L;
+        VortexRNG rng = new VortexRNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        System.out.println(seed);
+
     }
 }

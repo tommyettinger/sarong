@@ -89,7 +89,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(final int bits) {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
         return (int)(z ^ (z >>> 22)) >>> (32 - bits);
     }
     /**
@@ -103,7 +103,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
         return z ^ (z >>> 22);
     }
 
@@ -117,7 +117,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      */
     public final long skip(long advance) {
         final long s = (state += 0x6C8E9CF570932BD5L * advance);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
         return z ^ (z >>> 22);
     }
 
@@ -171,6 +171,16 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
     //public static long randomize(long state) { return (state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22); }
 
     /**
+     * Limited-use; when called with successive state values that differ by 0x6C8E9CF570932BD5L, this produces fairly
+     * high-quality random 64-bit numbers. You should call this with
+     * {@code ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L)} to go forwards or
+     * {@code ThrustAltRNG.randomize(state -= 0x6C8E9CF570932BD5L)} to go backwards in the sequence.
+     * @param state must be changed between calls to get changing results;
+     *              you should probably use {@code ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L)}
+     * @return a pseudo-random number generated from state
+     */
+    public static long randomize(long state) { return (state = (state ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22); }
+    /**
      * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
      * return the same float. This is expected to be called with a changing variable, e.g. {@code determine(++state)},
      * where the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
@@ -219,4 +229,20 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
                 ((state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22))
                         & 0xFFFFFFFFL)) >> 32);
     }
+    public static void main(String[] args)
+    {
+        /*
+        cd target/classes
+        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
+         */
+        long seed = 1L;
+        ThrustAltRNG rng = new ThrustAltRNG(seed);
+
+        for (int i = 0; i < 1000000007; i++) {
+            seed += rng.nextLong();
+        }
+        System.out.println(seed);
+
+    }
+
 }
