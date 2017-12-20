@@ -12,12 +12,13 @@ import java.io.Serializable;
  * those streams. It is unclear how many streams of Vortex may be unsuitable, though because the stream variable changes
  * in-step with the state variable, it seems less likely that a single stream would be problematic for long.
  * <br>
- * Changed from several earlier versions with speed or quality issues.
+ * Changed from several earlier versions with speed or quality issues. This enabled the return of {@link #skip(long)},
+ * which is present in LightRNG, ThrustRNG and ThrustAltRNG but was not in earlier versions of this generator.
  * <br>
  * Created by Tommy Ettinger on 11/9/2017.
  */
 public final class VortexRNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
     /**
      * Can be any long value.
      */
@@ -62,22 +63,21 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
         return state;
     }
 
-    /**
-     * Set the current internal state of this StatefulRandomness with a long; the least-significant bit is disregarded.
-     *
-     * @param state a 64-bit long
-     */
     @Override
     public void setState(long state) {
-        this.state = state | 1L;
+        this.state = state;
     }
 
     public long getStream() {
         return stream;
     }
-
+    /**
+     * Set the current internal stream of this StatefulRandomness with a long; the least-significant bit is disregarded.
+     *
+     * @param stream a 64-bit long; the least-significant bit is disregarded (i.e. 2 and 3 will be treated the same)
+     */
     public void setStream(long stream) {
-        this.stream = stream;
+        this.stream = stream | 1L;
     }
 
     /**
@@ -89,10 +89,10 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * (stream += 0x6A5D39EAE12657BAL);
+        long z = (state += 0x6C8E9CF570932BD5L);
+        z = (z ^ (z >>> 25)) * (stream += 0x6A5D39EAE12657BAL);
         return (int)(
-                (z ^ z >>> 28)
+                (stream ^ z ^ (z >>> 28))
                 >>> (64 - bits));
     }
     /**
@@ -105,9 +105,22 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * (stream += 0x6A5D39EAE12657BAL);
-        return (z ^ (z ^ stream) >>> 28);
+        long z = (state += 0x6C8E9CF570932BD5L);
+        z = (z ^ (z >>> 25)) * (stream += 0x6A5D39EAE12657BAL);
+        return stream ^ z ^ (z >>> 28);
+    }
+    /**
+     * Advances or rolls back the ThrustAltRNG's state without actually generating each number. Skips forward
+     * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
+     * and returns the random number produced at that step (you can get the state with {@link #getState()}).
+     *
+     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
+     * @return the random long generated after skipping forward or backwards by {@code advance} numbers
+     */
+    public final long skip(long advance) {
+        long z = (state += 0x6C8E9CF570932BD5L * advance);
+        z = (z ^ z >>> 25) * (stream += 0x6A5D39EAE12657BAL * advance);
+        return stream ^ z ^ (z >>> 28);
     }
 
     /**
@@ -140,19 +153,19 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     public int hashCode() {
         return (int) ((state ^ state >>> 32) + 31 * (stream >>> 1 ^ stream >>> 33));
     }
-    public static void main(String[] args)
-    {
-        /*
-        cd target/classes
-        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/VortexRNG > vortex_asm.txt
-         */
-        long seed = 1L;
-        VortexRNG rng = new VortexRNG(seed);
-
-        for (int i = 0; i < 1000000007; i++) {
-            seed += rng.nextLong();
-        }
-        System.out.println(seed);
-
-    }
+//    public static void main(String[] args)
+//    {
+//        /*
+//        cd target/classes
+//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/VortexRNG > vortex_asm.txt
+//         */
+//        long seed = 1L;
+//        VortexRNG rng = new VortexRNG(seed);
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            seed += rng.nextLong();
+//        }
+//        System.out.println(seed);
+//
+//    }
 }

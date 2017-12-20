@@ -89,7 +89,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(final int bits) {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
         return (int)(z ^ (z >>> 22)) >>> (32 - bits);
     }
     /**
@@ -103,7 +103,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
         return z ^ (z >>> 22);
     }
 
@@ -117,7 +117,7 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
      */
     public final long skip(long advance) {
         final long s = (state += 0x6C8E9CF570932BD5L * advance);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L); //0xA529L
+        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
         return z ^ (z >>> 22);
     }
 
@@ -229,20 +229,19 @@ public final class ThrustAltRNG implements StatefulRandomness, Serializable {
                 ((state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22))
                         & 0xFFFFFFFFL)) >> 32);
     }
-    public static void main(String[] args)
-    {
-        /*
-        cd target/classes
-        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
-         */
-        long seed = 1L;
-        ThrustAltRNG rng = new ThrustAltRNG(seed);
-
-        for (int i = 0; i < 1000000007; i++) {
-            seed += rng.nextLong();
-        }
-        System.out.println(seed);
-
-    }
+//    public static void main(String[] args)
+//    {
+//        /*
+//        cd target/classes
+//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
+//         */
+//        long seed = 1L;
+//        ThrustAltRNG rng = new ThrustAltRNG(seed);
+//
+//        for (int i = 0; i < 1000000007; i++) {
+//            seed += rng.nextLong();
+//        }
+//        System.out.println(seed);
+//    }
 
 }
