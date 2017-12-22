@@ -25,14 +25,15 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     public long state;
 
     /**
-     * An odd number that decides which stream this VortexRNG will generate numbers with; the stream changes in a Weyl
+     * A long that decides which stream this VortexRNG will generate numbers with; the stream changes in a Weyl
      * sequence (adding a large odd number), and the relationship between the Weyl sequence and the state determines how
-     * numbers will be generated differently when stream or state changes. As stated, this must be odd.
+     * numbers will be generated differently when stream or state changes. It's perfectly fine to supply a value of 0
+     * for stream, since it won't be used verbatim and will also change during the first number generation.
      * <br>
      * This can be changed after construction but not with any guarantees of quality staying the same
      * relative to previously-generated numbers on a different stream.
      */
-    private long stream;
+    public long stream;
 
     /**
      * Creates a new generator seeded using Math.random.
@@ -50,7 +51,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     }
     public VortexRNG(final long seed, final long stream) {
         state = seed;
-        this.stream = stream | 1L;
+        this.stream = stream;
     }
 
     /**
@@ -77,7 +78,7 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      * @param stream a 64-bit long; the least-significant bit is disregarded (i.e. 2 and 3 will be treated the same)
      */
     public void setStream(long stream) {
-        this.stream = stream | 1L;
+        this.stream = stream;
     }
 
     /**
@@ -90,9 +91,9 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(final int bits) {
         long z = (state += 0x6C8E9CF570932BD5L);
-        z = (z ^ (z >>> 25)) * (stream += 0x6A5D39EAE12657BAL);
+        z = (z ^ (z >>> 25)) * ((stream += 0x9E3779B97F4A7BB5L) | 1L);
         return (int)(
-                (stream ^ z ^ (z >>> 28))
+                (z ^ (z >>> 28))
                 >>> (64 - bits));
     }
     /**
@@ -106,9 +107,40 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         long z = (state += 0x6C8E9CF570932BD5L);
-        z = (z ^ (z >>> 25)) * (stream += 0x6A5D39EAE12657BAL);
-        return stream ^ z ^ (z >>> 28);
+        z = (z ^ (z >>> 25)) * ((stream += 0x9E3779B97F4A7BB5L) | 1L);
+        return z ^ (z >>> 28);
     }
+
+    /**
+     * Call with {@code VortexRNG.determine(++state, ++stream)}, where state and stream can each be any long; if the
+     * assignments to state and stream have stayed intact on the next time this is called in the same way, it will have
+     * the same qualities as VortexRNG normally does. You can use {@code VortexRNG.determine(--state, --stream)} to go
+     * backwards. If you have control over state and stream, you may prefer {@link #determineBare(long, long)}, which
+     * requires adding a specific large number to each parameter but may be slightly faster.
+     * @param state any long; increment while calling with {@code ++state}
+     * @param stream any long; increment while calling with {@code ++stream}
+     * @return a pseudo-random long obtained from the given state and stream deterministically
+     */
+    public static long determine(long state, long stream)
+    {
+        state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (stream * 0x9E3779B97F4A7BB5L | 1L);
+        return state ^ (state >>> 28);
+    }
+
+    /**
+     * Call with {@code VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5)}, where
+     * state and stream can each be any long; if the assignments to state and stream have stayed intact on
+     * the next time this is called in the same way, it will have the same qualities as VortexRNG normally does.
+     * @param state any long; increment while calling with {@code state += 0x6C8E9CF570932BD5L}
+     * @param stream any long; increment while calling with {@code stream += 0x9E3779B97F4A7BB5L}
+     * @return a pseudo-random long obtained from the given state and stream deterministically
+     */
+    public static long determineBare(long state, long stream)
+    {
+        state = (state ^ (state >>> 25)) * (stream | 1L);
+        return state ^ (state >>> 28);
+    }
+//public static long vortex(long state, long stream) { state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (stream * 0x9E3779B97F4A7BB5L | 1L); return state ^ (state >>> 28); } //vortex(++state, ++stream)
     /**
      * Advances or rolls back the ThrustAltRNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
@@ -119,8 +151,8 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
      */
     public final long skip(long advance) {
         long z = (state += 0x6C8E9CF570932BD5L * advance);
-        z = (z ^ z >>> 25) * (stream += 0x6A5D39EAE12657BAL * advance);
-        return stream ^ z ^ (z >>> 28);
+        z = (z ^ z >>> 25) * ((stream += 0x9E3779B97F4A7BB5L * advance) | 1L);
+        return z ^ (z >>> 28);
     }
 
     /**
