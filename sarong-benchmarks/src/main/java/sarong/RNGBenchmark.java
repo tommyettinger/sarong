@@ -105,13 +105,13 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.a_________measureVortexIntR  avgt    4  1618.856 ± 11.315  ms/op
  * RNGBenchmark.a_________measureVortexR     avgt    4  1725.289 ± 24.195  ms/op
  * RNGBenchmark.a________measureAltThrust    avgt    4  1122.029 ±  8.399  ms/op // out of order, with this group:
- * RNGBenchmark.a________measureDetermine    avgt    4  1209.380 ± 14.145  ms/op
+ * RNGBenchmark.a________measureAltThrustDetermine    avgt    4  1209.380 ± 14.145  ms/op
  * RNGBenchmark.a________measureJab63        avgt    4  1038.138 ± 13.519  ms/op
  * RNGBenchmark.a________measureJab63Int     avgt    4  1122.019 ± 20.745  ms/op
  * RNGBenchmark.a________measureJab63IntR    avgt    4  1123.782 ± 19.098  ms/op
  * RNGBenchmark.a________measureJab63R       avgt    4  1035.747 ± 14.015  ms/op
  * RNGBenchmark.a________measureJabWeird     avgt    4  1035.967 ± 17.499  ms/op
- * RNGBenchmark.a________measureRandomize    avgt    4  1120.833 ± 23.762  ms/op
+ * RNGBenchmark.a________measureAltThrustRandomize    avgt    4  1120.833 ± 23.762  ms/op
  * RNGBenchmark.a______measureAltThrustInt   avgt    4  1206.633 ±  8.731  ms/op // measureAltThrust goes above here
  * RNGBenchmark.a______measureAltThrustIntR  avgt    4  1316.511 ± 14.109  ms/op
  * RNGBenchmark.a______measureAltThrustR     avgt    4  1276.617 ±  8.209  ms/op
@@ -1129,9 +1129,8 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long a________measureDetermine() {
-        long seed = 9000L;
-        long state = 9000L;
+    public long a___________measureAltThrustDetermine() {
+        long seed = 9000L, state = 9000L;
         for (int i = 0; i < 1000000007; i++) {
             seed += ThrustAltRNG.determine(++state);
         }
@@ -1140,11 +1139,31 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long a________measureRandomize() {
+    public long a___________measureVortexDetermine() {
+        long seed = 9000L, state = 9000L, stream = 900L;
+        for (int i = 0; i < 1000000007; i++) {
+            seed += VortexRNG.determine(++state, ++stream);
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public long a___________measureVortexDetermineBare() {
+        long seed = 9000L, state = 9000L, stream = 900L;
+        for (int i = 0; i < 1000000007; i++) {
+            seed += VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5L);
+        }
+        return seed;
+    }
+
+    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public long a___________measureAltThrustRandomize() {
         long seed = 9000L;
         long state = 9000L;
-        for (int i = 0; i < 1000000007; i++, state += 0x6C8E9CF570932BD5L) {
-            seed += ThrustAltRNG.randomize(state);
+        for (int i = 0; i < 1000000007; i++) {
+            seed += ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L);
         }
         return seed;
     }
@@ -1587,7 +1606,7 @@ public class RNGBenchmark {
 
     @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 10) @Measurement(iterations = 8) @Fork(1)
-    public void a________measureDetermine() {
+    public void a________measureThrustAltDetermine() {
         seed = 9000;
         long state = 9000L;
         for (int i = 0; i < 1000000007; i++) {

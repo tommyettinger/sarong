@@ -41,13 +41,13 @@ public class DeckRNG extends StatefulRNG implements Serializable{
      */
     public DeckRNG(final long seed) {
         lastShuffledState = seed;
-        random = new LightRNG(seed);
+        random = new ThrustAltRNG(seed);
         step = 0;
     }
 
     /**
-     * String-seeded constructor uses the hash of the String as a seed for LightRNG, which is of high quality, but low
-     * period (which rarely matters for games), and has good speed and tiny state size.
+     * String-seeded constructor uses the hash of the String as a seed for ThrustAltRNG, which is of high quality, but
+     * low period (which rarely matters for games), and has good speed and tiny state size.
      *
      * @param seedString a String to use as a seed; will be hashed in a uniform way across platforms.
      */
@@ -301,7 +301,7 @@ public class DeckRNG extends StatefulRNG implements Serializable{
     @Override
     public Random asRandom() {
         if (ran == null) {
-            ran = new CustomRandom(new LightRNG(getState()));
+            ran = new CustomRandom(new ThrustAltRNG(getState()));
         }
         return ran;
     }
@@ -364,18 +364,19 @@ public class DeckRNG extends StatefulRNG implements Serializable{
 
     /**
      * Shuffle an array using the Fisher-Yates algorithm.
-     *
      * @param array an array of double; WILL be modified
      */
-    private void shuffleInPlace(double[] array) {
-        lastShuffledState = ((LightRNG) random).getState();
-        int n = array.length;
+    private void shuffleInPlace(double[] array)
+    {
+        lastShuffledState = ((StatefulRandomness)random).getState();
+        final int n = array.length;
         System.arraycopy(baseDeck, 0, array, 0, n);
-        for (int i = 0; i < n; i++) {
-            int r = i + ((LightRNG) random).nextInt(n - i);
+        for (int i = 0; i < n; i++)
+        {
+            int r = i + ThrustAltRNG.determineBounded(lastShuffledState + (i << 1), n - i);
             double t = array[r];
             array[r] = array[i];
-            array[i] = ((LightRNG) random).nextDouble(0.0625) + t;
+            array[i] = ThrustAltRNG.determineDouble(lastShuffledState + (i << 1) + 1) * 0.0625 + t;
         }
     }
 
@@ -397,7 +398,7 @@ public class DeckRNG extends StatefulRNG implements Serializable{
      */
     @Override
     public void setState(long state) {
-        ((LightRNG) random).setState(state);
+        ((StatefulRandomness) random).setState(state);
         shuffleInPlace(deck);
         step = 0;
 

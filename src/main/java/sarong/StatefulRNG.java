@@ -16,32 +16,32 @@ public class StatefulRNG extends RNG implements Serializable {
     private static final long serialVersionUID = -2456306898212937163L;
 
     public StatefulRNG() {
-        super(new LightRNG());
+        super(new ThrustAltRNG());
     }
 
     public StatefulRNG(RandomnessSource random) {
-        super((random instanceof StatefulRandomness) ? random : new LightRNG(random.nextLong()));
+        super(random == null ? new ThrustAltRNG() : (random instanceof StatefulRandomness) ? random : new ThrustAltRNG(random.nextLong()));
     }
 
     /**
-     * Seeded constructor uses LightRNG, which is of high quality, but low period (which rarely matters for games),
+     * Seeded constructor uses ThrustAltRNG, which is of high quality, but low period (which rarely matters for games),
      * and has good speed and tiny state size.
      */
     public StatefulRNG(long seed) {
-        this(new LightRNG(seed));
+        this(new ThrustAltRNG(seed));
     }
 
     /**
-     * String-seeded constructor uses the hash of the String as a seed for LightRNG, which is of high quality, but low
+     * String-seeded constructor uses the hash of the String as a seed for ThrustAltRNG, which is of high quality, but low
      * period (which rarely matters for games), and has good speed and tiny state size.
      */
     public StatefulRNG(String seedString) {
-        this(new LightRNG(CrossHash.hash64(seedString)));
+        this(new ThrustAltRNG(CrossHash.hash64(seedString)));
     }
 
     @Override
     public void setRandomness(RandomnessSource random) {
-        super.setRandomness((random instanceof StatefulRandomness) ? random : new LightRNG(random.nextLong()));
+        super.setRandomness((random instanceof StatefulRandomness) ? random : new ThrustAltRNG(random.nextLong()));
     }
 
     /**

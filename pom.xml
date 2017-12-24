@@ -7,9 +7,6 @@
     <groupId>com.github.tommyettinger</groupId>
     <artifactId>sarong</artifactId>
     <version>0.6-SNAPSHOT</version>
-    <modules>
-        <!--<module>sarong-benchmarks</module>-->
-    </modules>
 
 
     <name>sarong</name>

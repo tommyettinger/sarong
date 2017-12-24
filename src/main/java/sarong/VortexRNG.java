@@ -17,7 +17,7 @@ import java.io.Serializable;
  * <br>
  * Created by Tommy Ettinger on 11/9/2017.
  */
-public final class VortexRNG implements StatefulRandomness, Serializable {
+public class VortexRNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 3L;
     /**
      * Can be any long value.
@@ -128,11 +128,16 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
     }
 
     /**
-     * Call with {@code VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5)}, where
+     * Call with {@code VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5L)}, where
      * state and stream can each be any long; if the assignments to state and stream have stayed intact on
      * the next time this is called in the same way, it will have the same qualities as VortexRNG normally does.
-     * @param state any long; increment while calling with {@code state += 0x6C8E9CF570932BD5L}
-     * @param stream any long; increment while calling with {@code stream += 0x9E3779B97F4A7BB5L}
+     * You can probably experiment with different increments for stream. 0x9E3779B97F4A7BB5L is a fixed-point version of
+     * the golden ratio that takes up 64 bits, and using an irrational number like the golden ratio is key to how a Weyl
+     * sequence like this should be made, but any large-enough odd number should work as an increment. You probably
+     * shouldn't change the increment for state, since other parts of the generator depend on its qualities (to be
+     * precise, bitwise shifts are aligned to where clusters of bits are the same in the increment 0x6C8E9CF570932BD5L).
+     * @param state any long; increment while calling with {@code state += 0x6C8E9CF570932BD5L} (this number should not be changed)
+     * @param stream any long; increment while calling with {@code stream += 0x9E3779B97F4A7BB5L} (other large odd numbers may work just as well)
      * @return a pseudo-random long obtained from the given state and stream deterministically
      */
     public static long determineBare(long state, long stream)
@@ -191,11 +196,13 @@ public final class VortexRNG implements StatefulRandomness, Serializable {
 //        cd target/classes
 //        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/VortexRNG > vortex_asm.txt
 //         */
-//        long seed = 1L;
-//        VortexRNG rng = new VortexRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
+//        long seed = 1L, state = 1L, stream = 11L;
+//        //VortexRNG rng = new VortexRNG(seed);
+//        for (int r = 0; r < 10; r++) {
+//            for (int i = 0; i < 1000000007; i++) {
+//                seed += determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5L);
+//                //seed += rng.nextLong();
+//            }
 //        }
 //        System.out.println(seed);
 //
