@@ -40,7 +40,7 @@ import java.io.Serializable;
  * <br>
  * Created by Tommy Ettinger on 10/18/2017.
  */
-public final class ThrustAltRNG implements StatefulRandomness, Serializable {
+public final class ThrustAltRNG implements StatefulRandomness, SkippingRandomness, Serializable {
     private static final long serialVersionUID = 4L;
     /**
      * Can be any long value.

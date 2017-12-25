@@ -6,16 +6,23 @@ import java.io.Serializable;
 
 /**
  * A very fast and high-quality generator, but one that is not equidistributed because it produces 64-bit longs from 63
- * bits of state (meaning half of all possible long values cannot be returned by this generator). This still passes
- * gjrand with no failures on 100 GB of test data, and PractRand with 4 TB (!), while keeping speed in line with
- * ThrustRNG. ThrustRNG fails PractRand at 32GB, so this version seems to be a substantial improvement in some ways. The
- * state is always odd here, and {@link #setState(long)} will always ensure that is maintained.
+ * bits of state (meaning at least half of all possible long values cannot be returned by this generator). This still
+ * passes gjrand with no failures on 100 GB of test data, and PractRand with 4TB (possibly more), while sometimes being
+ * significantly faster than {@link ThrustRNG} and {@link ThrustAltRNG}. ThrustRNG fails PractRand at 32GB, so this
+ * seems to be a substantial improvement in some ways, but ThrustAltRNG passes PractRand at the normal limit of 32TB,
+ * which this may as well despite having a limited distribution. The inlined version of {@link #nextLong()} is the
+ * fastest generator in all of Sarong, even counting deeply-flawed generators like {@link LapRNG}. The name comes from
+ * its origin with Thrust, but as opposed to a full-body movement for a thrust in fencing, this only "moves" some of its
+ * bits, like a jab in boxing.
+ * <br>
+ * The state is always odd here, and {@link #setState(long)} will always ensure that is maintained.
+ * <br>
  * Created by Tommy Ettinger on 11/1/2017.
  */
 public final class Jab63RNG implements StatefulRandomness, Serializable {
     private static final long serialVersionUID = 1L;
     /**
-     * Can be any long value.
+     * Can be any odd-number long value.
      */
     private long state;
 
@@ -179,5 +186,4 @@ public final class Jab63RNG implements StatefulRandomness, Serializable {
         state *= (state ^ (state >>> 26));
         return (int)((bound * ((state ^ state >>> 22) & 0x7FFFFFFFL)) >> 31);
     }
-
 }

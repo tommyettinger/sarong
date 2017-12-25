@@ -51,7 +51,7 @@ import java.io.Serializable;
  * @author Tommy Ettinger
  * @see PintRNG PintRNG is similar to this algorithm but uses only 32-bit math, where possible; meant for GWT.
  */
-public final class PermutedRNG implements RandomnessSource, StatefulRandomness, Serializable
+public final class PermutedRNG implements RandomnessSource, StatefulRandomness, SkippingRandomness, Serializable
 {
     /** 2 raised to the 53, - 1. */
     private static final long DOUBLE_MASK = ( 1L << 53 ) - 1;

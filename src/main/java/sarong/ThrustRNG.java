@@ -46,7 +46,7 @@ import java.io.Serializable;
  * constants used (originally for linear congruential generators).
  * Created by Tommy Ettinger on 8/3/2017.
  */
-public final class ThrustRNG implements StatefulRandomness, Serializable {
+public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * Can be any long value.
