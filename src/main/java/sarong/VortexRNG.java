@@ -130,8 +130,7 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
      */
     public static long determine(long state, long stream)
     {
-        state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (stream * 0x9E3779B97F4A7BB5L | 1L);
-        return state ^ (state >>> 28);
+        return (state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (stream * 0x9E3779B97F4A7BB5L | 1L)) ^ (state >>> 28);
     }
 
     /**
@@ -149,8 +148,7 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
      */
     public static long determineBare(long state, long stream)
     {
-        state = (state ^ (state >>> 25)) * (stream | 1L);
-        return state ^ (state >>> 28);
+        return (state = (state ^ (state >>> 25)) * (stream | 1L)) ^ (state >>> 28);
     }
 //public static long vortex(long state, long stream) { state = ((state *= 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (stream * 0x9E3779B97F4A7BB5L | 1L); return state ^ (state >>> 28); } //vortex(++state, ++stream)
     /**
@@ -191,12 +189,12 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
 
         VortexRNG vortexRNG = (VortexRNG) o;
 
-        return state == vortexRNG.state;
+        return state == vortexRNG.state && stream == vortexRNG.stream;
     }
 
     @Override
     public int hashCode() {
-        return (int) ((state ^ state >>> 32) + 31 * (stream >>> 1 ^ stream >>> 33));
+        return (int) ((state ^ state >>> 32) + 31 * (stream ^ stream >>> 32));
     }
 //    public static void main(String[] args)
 //    {

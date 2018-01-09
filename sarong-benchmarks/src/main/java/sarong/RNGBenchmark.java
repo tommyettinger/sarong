@@ -1086,9 +1086,9 @@ public class RNGBenchmark {
     @Benchmark
     public long measureInlineJab63()
     {
-        long z = (oddState += 0x6A5D39EAE12657BAL);
-        z *= (z ^ (z >>> 26));
-        return z ^ z >>> 22;
+        long z = (oddState += 0x3C6EF372FE94F82AL);
+        z *= (z ^ (z >>> 21));
+        return z - (z >>> 28);
     }
 
 
@@ -1103,7 +1103,6 @@ public class RNGBenchmark {
     private VortexRNG Vortex = new VortexRNG(9999L);
     private RNG VortexR = new RNG(Vortex);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureVortex()
     {
         return Vortex.nextLong();
@@ -1124,6 +1123,32 @@ public class RNGBenchmark {
     public long measureVortexIntR()
     {
         return VortexR.nextInt();
+    }
+
+
+    private MeshRNG Mesh = new MeshRNG(9999L);
+    private RNG MeshR = new RNG(Mesh);
+    @Benchmark
+    public long measureMesh()
+    {
+        return Mesh.nextLong();
+    }
+
+    @Benchmark
+    public long measureMeshInt()
+    {
+        return Mesh.next(32);
+    }
+    @Benchmark
+    public long measureMeshR()
+    {
+        return MeshR.nextLong();
+    }
+
+    @Benchmark
+    public long measureMeshIntR()
+    {
+        return MeshR.nextInt();
     }
 
 
