@@ -274,7 +274,6 @@ public class RNGBenchmark {
     private LongPeriodRNG LongPeriod = new LongPeriodRNG(9999L);
     private RNG LongPeriodR = new RNG(LongPeriod);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureLongPeriod()
     {
         return LongPeriod.nextLong();
@@ -1152,6 +1151,31 @@ public class RNGBenchmark {
     }
 
 
+    private SpiralRNG Spiral = new SpiralRNG(9999L);
+    private RNG SpiralR = new RNG(Spiral);
+    @Benchmark
+    public long measureSpiral()
+    {
+        return Spiral.nextLong();
+    }
+
+    @Benchmark
+    public long measureSpiralInt()
+    {
+        return Spiral.next(32);
+    }
+    @Benchmark
+    public long measureSpiralR()
+    {
+        return SpiralR.nextLong();
+    }
+
+    @Benchmark
+    public long measureSpiralIntR()
+    {
+        return SpiralR.nextInt();
+    }
+
 
 //    public long doThrust32()
 //    {
@@ -1823,7 +1847,6 @@ public class RNGBenchmark {
 
     private Random JDK = new Random(9999L);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureJDK()
     {
         return JDK.nextLong();

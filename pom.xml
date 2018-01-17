@@ -49,10 +49,10 @@
     </distributionManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.version>3.3</maven.compiler.version>
-        <maven.javadoc.version>2.10.3</maven.javadoc.version>
+        <maven.compiler.version>3.6.1</maven.compiler.version>
+        <maven.javadoc.version>2.10.4</maven.javadoc.version>
         <maven.resources.version>2.7</maven.resources.version>
-        <maven.source.version>2.4</maven.source.version>
+        <maven.source.version>3.0.1</maven.source.version>
         <maven.gpg.version>1.6</maven.gpg.version>
         <jdk.version>1.7</jdk.version>
         <junit.version>4.11</junit.version>
@@ -64,6 +64,13 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>0.6.66</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
