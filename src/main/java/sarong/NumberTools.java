@@ -9,7 +9,7 @@ package sarong;
  * GWT thanks to JS typed arrays, which are well-supported now across all recent browsers and have fallbacks in GWT in
  * the unlikely event of a browser not supporting them.
  */
-public class NumberTools {
+public final class NumberTools {
     /**
      * Identical to {@link Double#doubleToLongBits(double)} on desktop; optimized on GWT. When compiling to JS via GWT,
      * there is no way to distinguish NaN values with different bits but that are still NaN, so this doesn't try to
@@ -230,11 +230,13 @@ public class NumberTools {
      * noise, where it may be useful to limit the amount of change between nearby points' noise values and prevent both
      * sudden "jumps" in noise value and "cracks" where a line takes a sudden jagged movement at an angle. It is very
      * similar to {@link #bounce(double)} and {@link #zigzag(double)}, but unlike bounce() this will maintain its
-     * frequency of returning max or min values, regardless of the magnitude of its input, and unlike zigzag() this
-     * will smooth its path. An input of any even number should produce something very close to -1.0, any odd
-     * number should produce something very close to 1.0, and any number halfway between two incremental integers (like
-     * 8.5 or -10.5) should produce 0.0 or a very small fraction.
-     * @param value any double other than NaN or infinite values
+     * frequency of returning max or min values, regardless of the magnitude of its input (as long as there is enough
+     * floating-point precision to represent changes smaller than 1.0), and unlike zigzag() this will smooth its path.
+     * An input of any even number should produce something very close to -1.0, any odd number should produce something
+     * very close to 1.0, and any number halfway between two incremental integers (like 8.5 or -10.5) should produce 0.0
+     * or a very small fraction. In the (unlikely) event that this is given a double that is too large to represent
+     * many or any non-integer values, this will simply return -1.0 or 1.0.
+     * @param value any double other than NaN or infinite values; extremely large values can't work properly
      * @return a double from -1.0 (inclusive) to 1.0 (inclusive)
      */
     public static double sway(final double value)
@@ -252,11 +254,13 @@ public class NumberTools {
      * noise, where it may be useful to limit the amount of change between nearby points' noise values and prevent both
      * sudden "jumps" in noise value and "cracks" where a line takes a sudden jagged movement at an angle. It is very
      * similar to {@link #bounce(float)} and {@link #zigzag(float)}, but unlike bounce() this will maintain its
-     * frequency of returning max or min values, regardless of the magnitude of its input, and unlike zigzag() this
-     * will smooth its path. An input of any even number should produce something very close to -1f, any odd
-     * number should produce something very close to 1f, and any number halfway between two incremental integers (like
-     * 8.5f or -10.5f) should produce 0f or a very small fraction.
-     * @param value any float other than NaN or infinite values
+     * frequency of returning max or min values, regardless of the magnitude of its input (as long as there is enough
+     * floating-point precision to represent changes smaller than 1f), and unlike zigzag() this will smooth its path.
+     * An input of any even number should produce something very close to -1f, any odd number should produce something
+     * very close to 1f, and any number halfway between two incremental integers (like 8.5f or -10.5f) should produce 0f
+     * or a very small fraction. In the (unlikely) event that this is given a float that is too large to represent
+     * many or any non-integer values, this will simply return -1f or 1f.
+     * @param value any float other than NaN or infinite values; extremely large values can't work properly
      * @return a float from -1f (inclusive) to 1f (inclusive)
      */
     public static float sway(final float value)
@@ -272,13 +276,15 @@ public class NumberTools {
      * input is halfway between two integers, smoothly curving at any points between those extremes. This is meant for
      * noise, where it may be useful to limit the amount of change between nearby points' noise values and prevent both
      * sudden "jumps" in noise value and "cracks" where a line takes a sudden jagged movement at an angle. It is very
-     * similar to {@link #bounce(float)} and {@link #zigzag(float)}, but unlike bounce() this will maintain not change
-     * its frequency of returning max or min values, regardless of the magnitude of its input, and unlike zigzag() this
-     * will smooth its path. An input of any even number should produce something very close to 0f, any odd
-     * number should produce something very close to 1f, and any number halfway between two incremental integers (like
-     * 8.5f or -10.5f) should produce 0.5f. This version is called "Tight" because its range is tighter than
+     * similar to {@link #bounce(float)} and {@link #zigzag(float)}, but unlike bounce() this will not change its
+     * frequency of returning max or min values, regardless of the magnitude of its input (as long as there is enough
+     * floating-point precision to represent changes smaller than 1f), and unlike zigzag() this will smooth its path.
+     * An input of any even number should produce something very close to 0f, any odd number should produce something
+     * very close to 1f, and any number halfway between two incremental integers (like 8.5f or -10.5f) should produce
+     * 0.5f. In the (unlikely) event that this is given a float that is too large to represent many or any non-integer
+     * values, this will simply return 0f or 1f. This version is called "Tight" because its range is tighter than
      * {@link #sway(float)}.
-     * @param value any float other than NaN or infinite values
+     * @param value any float other than NaN or infinite values; extremely large values can't work properly
      * @return a float from 0f (inclusive) to 1f (inclusive)
      */
     public static float swayTight(final float value)
@@ -293,13 +299,15 @@ public class NumberTools {
      * input is halfway between two integers, smoothly curving at any points between those extremes. This is meant for
      * noise, where it may be useful to limit the amount of change between nearby points' noise values and prevent both
      * sudden "jumps" in noise value and "cracks" where a line takes a sudden jagged movement at an angle. It is very
-     * similar to {@link #bounce(double)} and {@link #zigzag(double)}, but unlike bounce() this will maintain not change
-     * its frequency of returning max or min values, regardless of the magnitude of its input, and unlike zigzag() this
-     * will smooth its path. An input of any even number should produce something very close to 0.0, any odd
-     * number should produce something very close to 1.0, and any number halfway between two incremental integers (like
-     * 8.5 or -10.5) should produce 0.5. This version is called "Tight" because its range is tighter than
+     * similar to {@link #bounce(double)} and {@link #zigzag(double)}, but unlike bounce() this will not change its
+     * frequency of returning max or min values, regardless of the magnitude of its input (as long as there is enough
+     * floating-point precision to represent changes smaller than 1.0), and unlike zigzag() this will smooth its path.
+     * An input of any even number should produce something very close to 0.0, any odd number should produce something
+     * very close to 1.0, and any number halfway between two incremental integers (like 8.5 or -10.5) should produce
+     * 0.5f. In the (unlikely) event that this is given a double that is too large to represent many or any non-integer
+     * values, this will simply return 0.0 or 1.0. This version is called "Tight" because its range is tighter than
      * {@link #sway(double)}.
-     * @param value any double other than NaN or infinite values
+     * @param value any double other than NaN or infinite values; extremely large values can't work properly
      * @return a double from 0.0 (inclusive) to 1.0 (inclusive)
      */
     public static double swayTight(final double value)
@@ -470,51 +478,103 @@ public class NumberTools {
     }
 
     /**
+     * Given a long as a seed, this uses its least-significant 52 bits to produce a double between 0 (inclusive) and 1
+     * (exclusive). This does not randomize the seed at all, and the upper 12 bits of the seed are ignored.
+     * @param seed a long; only the bottom 52 bits will be used
+     * @return a double between 0 (inclusive) and 1 (exclusive)
+     */
+    public static double formDouble(final long seed)
+    {
+        return Double.longBitsToDouble((seed & 0xfffffffffffffL) | 0x3ff0000000000000L) - 1f;
+    }
+    /**
+     * Given a long as a seed, this uses its least-significant 52 bits to produce a double between -1 (inclusive) and 1
+     * (exclusive). This does not randomize the seed at all, and the upper 12 bits of the seed are ignored.
+     * @param seed a long; only the bottom 52 bits will be used
+     * @return a double between -1 (inclusive) and 1 (exclusive)
+     */
+    public static double formSignedDouble(final long seed)
+    {
+        return Double.longBitsToDouble((seed & 0xfffffffffffffL) | 0x4000000000000000L) - 3f;
+    }
+
+    /**
+     * A different kind of determine-like method that expects to be given a random long and produces a random double
+     * with a curved distribution that centers on 0 (where it has a bias) and can (rarely) approach -1f and 1f.
+     * The distribution for the values is similar to Irwin-Hall, and is frequently near 0 but not too-rarely near -1.0
+     * or 1.0. It cannot produce 1.0, -1.0, or any values further from 0 than those bounds.
+     * @param start a long, usually random, such as one produced by any RandomnessSource; all bits will be used
+     * @return a deterministic double between -1.0 (exclusive) and 1.0 (exclusive); very likely to be close to 0.0
+     */
+    public static double formCurvedDouble(long start) {
+        return    longBitsToDouble((start >>> 12) | 0x3fe0000000000000L)
+                + longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L)
+                - longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L)
+                - longBitsToDouble(((start *  0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L)
+                ;
+    }
+    /**
+     * A different kind of determine-like method that expects to be given a random long and produces a random double
+     * with a curved distribution that centers on 0 (where it has a bias) and can (rarely) approach 0.0 and 1.0.
+     * The distribution for the values is similar to Irwin-Hall, and is frequently near 0 but not too-rarely near 0.0 or
+     * 1.0. It cannot produce 0.0, 1.0, or any values further from 0.5 than those bounds.
+     * @param start a long, usually random, such as one produced by any RandomnessSource; all bits will be used
+     * @return a deterministic double between 0.0 (exclusive) and 1.0 (exclusive); very likely to be close to 0.5
+     */
+    public static double formCurvedDoubleTight(long start) {
+        return  0.5
+                + longBitsToDouble((start >>> 12) | 0x3fd0000000000000L)
+                + longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L)
+                - longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L)
+                - longBitsToDouble(((start *  0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L);
+    }
+
+    /**
      * A different kind of determine-like method that expects to be given a random long and produces a random float with
      * a curved distribution that centers on 0 (where it has a bias) and can (rarely) approach -1f and 1f.
      * The distribution for the values is similar to Irwin-Hall, and is frequently near 0 but not too-rarely near -1f or
-     * 1f. It cannot produce values greater than or equal to 1f, or less than -1f, but it can produce -1f.
+     * 1f. It cannot produce 1f, -1f, or any values further from 0 than those bounds.
      * @param start a long, usually random, such as one produced by any RandomnessSource
-     * @return a deterministic float between -1f (inclusive) and 1f (exclusive), that is very likely to be close to 0f
+     * @return a deterministic float between -1f (exclusive) and 1f (exclusive), that is very likely to be close to 0f
      */
     public static float formCurvedFloat(final long start) {
-        return   (intBitsToFloat((int)start >>> 9 | 0x3F000000)
+        return    intBitsToFloat((int)start >>> 9 | 0x3F000000)
                 + intBitsToFloat((int) (start >>> 41) | 0x3F000000)
-                + intBitsToFloat(((int)(start ^ ~start >>> 20) & 0x007FFFFF) | 0x3F000000)
-                + intBitsToFloat(((int) (~start ^ start >>> 30) & 0x007FFFFF) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(((int)(start ^ ~start >>> 20) & 0x007FFFFF) | 0x3F000000)
+                - intBitsToFloat(((int) (~start ^ start >>> 30) & 0x007FFFFF) | 0x3F000000)
+                ;
     }
 
     /**
      * A different kind of determine-like method that expects to be given random ints and produces a random float with
      * a curved distribution that centers on 0 (where it has a bias) and can (rarely) approach -1f and 1f.
      * The distribution for the values is similar to Irwin-Hall, and is frequently near 0 but not too-rarely near -1f or
-     * 1f. It cannot produce values greater than or equal to 1f, or less than -1f, but it can produce -1f.
+     * 1f. It cannot produce 1f, -1f, or any values further from 0 than those bounds.
      * @param start1 an int usually random, such as one produced by any RandomnessSource
      * @param start2 an int usually random, such as one produced by any RandomnessSource
-     * @return a deterministic float between -1f (inclusive) and 1f (exclusive), that is very likely to be close to 0f
+     * @return a deterministic float between -1f (exclusive) and 1f (exclusive), that is very likely to be close to 0f
      */
     public static float formCurvedFloat(final int start1, final int start2) {
-        return   (intBitsToFloat(start1 >>> 9 | 0x3F000000)
+        return    intBitsToFloat(start1 >>> 9 | 0x3F000000)
                 + intBitsToFloat((~start1 & 0x007FFFFF) | 0x3F000000)
-                + intBitsToFloat(start2 >>> 9 | 0x3F000000)
-                + intBitsToFloat((~start2 & 0x007FFFFF) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(start2 >>> 9 | 0x3F000000)
+                - intBitsToFloat((~start2 & 0x007FFFFF) | 0x3F000000)
+                ;
     }
     /**
      * A different kind of determine-like method that expects to be given a random int and produces a random float with
      * a curved distribution that centers on 0 (where it has a bias) and can (rarely) approach -1f and 1f.
      * The distribution for the values is similar to Irwin-Hall, and is frequently near 0 but not too-rarely near -1f or
-     * 1f. It cannot produce values greater than or equal to 1f, or less than -1f, but it can produce -1f.
+     * 1f. It cannot produce 1f, -1f, or any values further from 0 than those bounds.
      * @param start an int, usually random, such as one produced by any RandomnessSource
-     * @return a deterministic float between -1f (inclusive) and 1f (exclusive), that is very likely to be close to 0f
+     * @return a deterministic float between -1f (exclusive) and 1f (exclusive), that is very likely to be close to 0f
      */
     public static float formCurvedFloat(final int start) {
-        return   (intBitsToFloat(start >>> 9 | 0x3F000000)
+        return    intBitsToFloat(start >>> 9 | 0x3F000000)
                 + intBitsToFloat((start & 0x007FFFFF) | 0x3F000000)
-                + intBitsToFloat(((start << 18 & 0x007FFFFF) ^ ~start >>> 14) | 0x3F000000)
-                + intBitsToFloat(((start << 13 & 0x007FFFFF) ^ ~start >>> 19) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(((start << 18 & 0x007FFFFF) ^ ~start >>> 14) | 0x3F000000)
+                - intBitsToFloat(((start << 13 & 0x007FFFFF) ^ ~start >>> 19) | 0x3F000000)
+                ;
     }
 
     /**
@@ -554,5 +614,69 @@ public class NumberTools {
     public static long lowestOneBit(long num)
     {
         return num & -num;
+    }
+
+    /**
+     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (40x faster sin() calls
+     * in benchmarking). Takes the same arguments Math.sin() does, so one angle in radians, which may technically be any
+     * double (but this will lose accuracy on extremely large doubles, such as those that are larger than the largest
+     * long value). This is closely related to {@link #sway(float)}, but the shape of the output when graphed is almost
+     * identical to sin().
+     * @param radians an angle in radians, often from -pi to pi, though not required to be.
+     * @return the sine of the given angle, as a double between -1.0 and 1.0 (probably exclusive on -1.0, but not 1.0)
+     */
+    public static double sin(final double radians)
+    {
+        final long s = Double.doubleToLongBits(radians * 0.3183098861837907f + (radians < -1.5707963267948966 ? -1.5 : 2.5)), m = (s >>> 52 & 0x7FFL) - 0x400, sm = s << m;
+        final double a = (Double.longBitsToDouble(((sm ^ -((sm & 0x8000000000000L) >> 51)) & 0xfffffffffffffL) | 0x4000000000000000L) - 2.0);
+        return a * a * (3.0 - 2.0 * a) * 2.0 - 1.0;
+    }
+
+    /**
+     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (40x faster sin() calls
+     * in benchmarking), and both takes and returns floats. Takes the same arguments Math.sin() does, so one angle in
+     * radians, which may technically be any float (but this will lose accuracy on extremely large floats, such as those
+     * that are larger than the largest int value). This is closely related to {@link #sway(float)}, but the shape of
+     * the output when graphed is almost identical to sin().
+     * @param radians an angle in radians as a float, often from -pi to pi, though not required to be.
+     * @return the sine of the given angle, as a float between -1f and 1f (probably exclusive on -1f, but not 1f)
+     */
+    public static float sin(final float radians)
+    {
+        final int s = Float.floatToIntBits(radians * 0.3183098861837907f + (radians < -1.5707963267948966f ? -1.5f : 2.5f)), m = (s >>> 23 & 0xFF) - 0x80, sm = s << m;
+        final float a = (Float.intBitsToFloat(((sm ^ -((sm & 0x00400000)>>22)) & 0x007fffff) | 0x40000000) - 2f);
+        return a * a * (3f - 2f * a) * 2f - 1f;
+    }
+
+    /**
+     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (40x faster cos() calls
+     * in benchmarking). Takes the same arguments Math.cos() does, so one angle in radians, which may technically be any
+     * double (but this will lose accuracy on extremely large doubles, such as those that are larger than the largest
+     * long value). This is closely related to {@link #sway(float)}, but the shape of the output when graphed is almost
+     * identical to cos().
+     * @param radians an angle in radians, often from -pi to pi, though not required to be.
+     * @return the cosine of the given angle, as a double between -1.0 and 1.0 (probably exclusive on 1.0, but not -1.0)
+     */
+    public static double cos(final double radians)
+    {
+        final long s = Double.doubleToLongBits(radians * 0.3183098861837907f + (radians < 0.0 ? -2.0 : 2.0)), m = (s >>> 52 & 0x7FFL) - 0x400, sm = s << m;
+        final double a = (Double.longBitsToDouble(((sm ^ -((sm & 0x8000000000000L) >> 51)) & 0xfffffffffffffL) | 0x4000000000000000L) - 2.0);
+        return a * a * (3.0 - 2.0 * a) * -2.0 + 1.0;
+    }
+
+    /**
+     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (40x faster cos() calls
+     * in benchmarking), and both takes and returns floats. Takes the same arguments Math.cos() does, so one angle in
+     * radians, which may technically be any float (but this will lose accuracy on extremely large floats, such as those
+     * that are larger than the largest int value). This is closely related to {@link #sway(float)}, but the shape of
+     * the output when graphed is almost identical to cos().
+     * @param radians an angle in radians as a float, often from -pi to pi, though not required to be.
+     * @return the cosine of the given angle, as a float between -1f and 1f (probably exclusive on 1f, but not -1f)
+     */
+    public static float cos(final float radians)
+    {
+        final int s = Float.floatToIntBits(radians * 0.3183098861837907f + (radians < 0f ? -2f : 2f)), m = (s >>> 23 & 0xFF) - 0x80, sm = s << m;
+        final float a = (Float.intBitsToFloat(((sm ^ -((sm & 0x00400000)>>22)) & 0x007fffff) | 0x40000000) - 2f);
+        return a * a * (3f - 2f * a) * -2f + 1f;
     }
 }

@@ -32,7 +32,7 @@ public class NumberTools {
 
     public static double longBitsToDouble(final long bits) {
         wia.set(1, (int)(bits >>> 32));
-        wia.set(0, (int)bits);
+        wia.set(0, (int)(bits & 0xFFFFFFFF));
         return wda.get(0);
     }
 
@@ -80,7 +80,7 @@ public class NumberTools {
     {
         final int s = (int)(value>>>32&0xfffff), flip = -((s & 0x80000)>>19);
         wia.set(1, ((s ^ flip) & 0xfffff) | 0x40100000);
-        wia.set(0, ((int)value) ^ flip);
+        wia.set(0, ((int)(value & 0xFFFFFFFF)) ^ flip);
         return wda.get(0) - 5.0;
     }
 
@@ -223,26 +223,53 @@ public class NumberTools {
         wia.set(0, (seed & 0x7FFFFF) | 0x40000000);
         return wfa.get(0) - 3f;
     }
+
+    public static double formDouble(final long seed)
+    {
+        wia.set(1, (int)(seed >>> 32 & 0xFFFFF) | 0x3ff00000);
+        wia.set(0, (int)(seed & 0xFFFFFFFF));
+        return wda.get(0) - 1.0;
+    }
+
+    public static double formSignedDouble(final long seed)
+    {
+        wia.set(1, (int)(seed >>> 32 & 0xFFFFF) | 0x40000000);
+        wia.set(0, (int)(seed & 0xFFFFFFFF));
+        return wda.get(0) - 3.0;
+    }
+    public static double formCurvedDouble(long start) {
+        return    longBitsToDouble((start >>> 12) | 0x3fe0000000000000L)
+                + longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L)
+                - longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L)
+                - longBitsToDouble(((start *  0x2545F4914F6CDD1DL) >>> 12) | 0x3fe0000000000000L);
+    }
+    public static double formCurvedDoubleTight(long start) {
+        return  0.5
+                + longBitsToDouble((start >>> 12) | 0x3fd0000000000000L)
+                + longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L)
+                - longBitsToDouble(((start *= 0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L)
+                - longBitsToDouble(((start *  0x2545F4914F6CDD1DL) >>> 12) | 0x3fd0000000000000L);
+    }
     public static float formCurvedFloat(final long start) {
-        return   (intBitsToFloat((int)start >>> 9 | 0x3F000000)
-                + intBitsToFloat(((int)~start & 0x007FFFFF) | 0x3F000000)
+        return    intBitsToFloat((int)start >>> 9 | 0x3F000000)
                 + intBitsToFloat((int) (start >>> 41) | 0x3F000000)
-                + intBitsToFloat(((int) (~start >>> 32) & 0x007FFFFF) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(((int)(start ^ ~start >>> 20) & 0x007FFFFF) | 0x3F000000)
+                - intBitsToFloat(((int) (~start ^ start >>> 30) & 0x007FFFFF) | 0x3F000000)
+                ;
     }
     public static float formCurvedFloat(final int start1, final int start2) {
-        return   (intBitsToFloat(start1 >>> 9 | 0x3F000000)
+        return    intBitsToFloat(start1 >>> 9 | 0x3F000000)
                 + intBitsToFloat((~start1 & 0x007FFFFF) | 0x3F000000)
-                + intBitsToFloat(start2 >>> 9 | 0x3F000000)
-                + intBitsToFloat((~start2 & 0x007FFFFF) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(start2 >>> 9 | 0x3F000000)
+                - intBitsToFloat((~start2 & 0x007FFFFF) | 0x3F000000)
+                ;
     }
     public static float formCurvedFloat(final int start) {
-        return   (intBitsToFloat(start >>> 9 | 0x3F000000)
+        return    intBitsToFloat(start >>> 9 | 0x3F000000)
                 + intBitsToFloat((start & 0x007FFFFF) | 0x3F000000)
-                + intBitsToFloat(((start << 18 & 0x007FFFFF) ^ ~start >>> 14) | 0x3F000000)
-                + intBitsToFloat(((start << 13 & 0x007FFFFF) ^ ~start >>> 19) | 0x3F000000)
-                - 3f);
+                - intBitsToFloat(((start << 18 & 0x007FFFFF) ^ ~start >>> 14) | 0x3F000000)
+                - intBitsToFloat(((start << 13 & 0x007FFFFF) ^ ~start >>> 19) | 0x3F000000)
+                ;
     }
     public static int lowestOneBit(int num)
     {
@@ -254,4 +281,39 @@ public class NumberTools {
         return num & ~(num - 1L);
     }
 
+    public static double sin(final double radians)
+    {
+        wda.set(0, radians * 0.3183098861837907 + (radians < -1.5707963267948966 ? -1.5 : 2.5));
+        final int s = wia.get(1), m = (s >>> 20 & 0x7FF) - 0x400, sm = s << m, flip = -((sm & 0x80000)>>19);
+        wia.set(1, ((sm ^ flip) & 0xFFFFF) | 0x40000000);
+        wia.set(0, wia.get(0) ^ flip);
+        final double a = wda.get(0) - 2.0;
+        return a * a * (3.0 - 2.0 * a) * 2.0 - 1.0;
+    }
+    public static float sin(final float radians)
+    {
+        wfa.set(0, radians * 0.3183098861837907f + (radians < -1.5707963267948966f ? -1.5f : 2.5f));
+        final int s = wia.get(0), m = (s >>> 23 & 0xFF) - 0x80, sm = s << m;
+        wia.set(0, ((sm ^ -((sm & 0x00400000)>>22)) & 0x007fffff) | 0x40000000);
+        final float a = wfa.get(0) - 2f;
+        return a * a * (3f - 2f * a) * 2f - 1f;
+    }
+
+    public static double cos(final double radians)
+    {
+        wda.set(0, radians * 0.3183098861837907 + (radians < 0.0 ? -2.0 : 2.0));
+        final int s = wia.get(1), m = (s >>> 20 & 0x7FF) - 0x400, sm = s << m, flip = -((sm & 0x80000)>>19);
+        wia.set(1, ((sm ^ flip) & 0xFFFFF) | 0x40000000);
+        wia.set(0, wia.get(0) ^ flip);
+        final double a = wda.get(0) - 2.0;
+        return a * a * (3.0 - 2.0 * a) * -2.0 + 1.0;
+    }
+    public static float cos(final float radians)
+    {
+        wfa.set(0, radians * 0.3183098861837907f + (radians < 0f ? -2f : 2f));
+        final int s = wia.get(0), m = (s >>> 23 & 0xFF) - 0x80, sm = s << m;
+        wia.set(0, ((sm ^ -((sm & 0x00400000)>>22)) & 0x007fffff) | 0x40000000);
+        final float a = wfa.get(0) - 2f;
+        return a * a * (3f - 2f * a) * -2f + 1f;
+    }
 }

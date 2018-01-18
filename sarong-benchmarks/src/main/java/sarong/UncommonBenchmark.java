@@ -43,13 +43,25 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Mostly, this is just benchmarks of rarely-used or slower generators. However, there's also a test of a somewhat-new
- * method of approximating the shape of Math.cos() (when scaled so the peaks and troughs are on even and odd integers,
- * respectively). The performance results here are startling:
+ * method of approximating the shape of Math.cos() and Math.sin(). The performance results here are startling, trying
+ * both a "more traditional" method using a quadratic curve adapted from
+ * <a href="http://www.mclimatiano.com/faster-sine-approximation-using-quadratic-curve/">this blog</a>, and a newer
+ * technique that is able to avoid one of the slowest parts of the curve method (it uses bitwise operations on the
+ * representation of the double or float input as a long or int to be able to handle out-of-range inputs). The quality
+ * of the approximation in measureCosApproxClimatiano is best, followed by measureCosApprox (which is the fastest), then
+ * measureCosApproxClimatianoLP (which is much worse, probably not good enough of an approximation for many tasks).
+ * Calculating the sin() approximation is pretty much the same speed as cos(), within the margin of error.
  * <br>
- * Benchmark                                Mode  Cnt    Score    Error  Units
- * UncommonBenchmark.measureCosApprox       avgt    8    9.443 ±  0.553  ns/op // approximation with doubles
- * UncommonBenchmark.measureCosApproxFloat  avgt    8    9.934 ±  0.506  ns/op // approximation with floats
- * UncommonBenchmark.measureMathCos         avgt    8  431.759 ± 20.522  ns/op // Math.cos(x * Math.PI)
+ * Benchmark                                       Mode  Cnt    Score   Error  Units
+ * UncommonBenchmark.measureCosApprox              avgt    5    8.398 ± 0.050  ns/op // approximation with doubles
+ * UncommonBenchmark.measureCosApproxClimatiano    avgt    5   39.962 ± 0.753  ns/op // high precision quadratic curve
+ * UncommonBenchmark.measureCosApproxClimatianoLP  avgt    5   35.040 ± 0.161  ns/op // low precision quadratic curve
+ * UncommonBenchmark.measureCosApproxFloat         avgt    5    8.638 ± 0.173  ns/op // approximation with floats
+ * UncommonBenchmark.measureMathCos                avgt    5  384.818 ± 2.157  ns/op // Math.cos(x)
+ * UncommonBenchmark.measureMathCosStrict          avgt    5  384.922 ± 3.201  ns/op // StrictMath.cos(x)
+ * UncommonBenchmark.measureMathSin                avgt    5  383.923 ± 1.560  ns/op // Math.sin(x)
+ * UncommonBenchmark.measureSinApprox              avgt    5    8.407 ± 0.126  ns/op // approximation with doubles
+ * UncommonBenchmark.measureSinApproxFloat         avgt    5    8.510 ± 0.073  ns/op // approximation with floats
  * <br>
  * This shows the approximation is at last 40x faster than Math.cos(), though it's by less than a microsecond per call.
  * See <a href="https://www.desmos.com/calculator/lgozarjsq3">this graph, using the Desmos graphing calculator</a> for
@@ -346,37 +358,112 @@ public class UncommonBenchmark {
         return JDK.nextInt();
     }
 
-    private double wave = 1.0, waveApprox = 1.0;
+    private double wave = 1.0;
 
     @Benchmark
     public double measureMathCos()
     {
-        return Math.cos((wave += 0.0625) * 3.141592653589793);
+        return Math.cos((wave += 0.0625));
+        //return Math.cos((wave += 0.0625) * 3.141592653589793);
+    }
+
+    private double waveSin = 1.0;
+
+    @Benchmark
+    public double measureMathSin()
+    {
+        return Math.sin((waveSin += 0.0625));
+        //return Math.cos((wave += 0.0625) * 3.141592653589793);
     }
 
     @Benchmark
-    public double measureCosApprox() {
-        waveApprox += 0.0625;
-        final long s = Double.doubleToLongBits(waveApprox + (waveApprox < 0.0 ? -2.0 : 2.0)), m = (s >>> 52 & 0x7FFL) - 0x400, sm = s << m;
-        final double a = (Double.longBitsToDouble(((sm ^ -((sm & 0x8000000000000L) >> 51)) & 0xfffffffffffffL) | 0x4000000000000000L) - 2.0);
-        return a * a * (3.0 - 2.0 * a) * 2.0 - 1.0;
+    public double measureMathCosStrict()
+    {
+        return StrictMath.cos((wave += 0.0625));
+        //return StrictMath.cos((wave += 0.0625) * 3.141592653589793);
     }
+
+    private double waveApprox = 1.0;
+    @Benchmark
+    public double measureCosApprox() {
+        return NumberTools.cos(waveApprox += 0.0625);
+//        waveApprox += 0.0625;
+//        final long s = Double.doubleToLongBits(waveApprox * 0.3183098861837907 + (waveApprox < 0.0 ? -2.0 : 2.0)), m = (s >>> 52 & 0x7FFL) - 0x400, sm = s << m;
+//        final double a = (Double.longBitsToDouble(((sm ^ -((sm & 0x8000000000000L) >> 51)) & 0xfffffffffffffL) | 0x4000000000000000L) - 2.0);
+//        return a * a * (3.0 - 2.0 * a) * -2.0 + 1.0;
+    }
+    private double sinApprox = 1.0;
+    @Benchmark
+    public double measureSinApprox() {
+        return NumberTools.sin(sinApprox += 0.0625);
+//        sinApprox += 0.0625;
+//        final long s = Double.doubleToLongBits(sinApprox * 0.3183098861837907 + (sinApprox < -1.5707963267948966 ? -1.5 : 2.5)), m = (s >>> 52 & 0x7FFL) - 0x400, sm = s << m;
+//        final double a = (Double.longBitsToDouble(((sm ^ -((sm & 0x8000000000000L) >> 51)) & 0xfffffffffffffL) | 0x4000000000000000L) - 2.0);
+//        return a * a * (3.0 - 2.0 * a) * 2.0 - 1.0;
+    }
+
     private float waveFloat = 1f;
 
     @Benchmark
     public float measureCosApproxFloat() {
-        waveFloat += 0.0625f;
-        final int s = Float.floatToIntBits(waveFloat + (waveFloat < 0f ? -2f : 2f)), m = (s >>> 23 & 0xFF) - 0x80, sm = s << m;
-        final float a = (Float.intBitsToFloat(((sm ^ -((sm & 0x00400000)>>22)) & 0x007fffff) | 0x40000000) - 2f);
-        return a * a * (3f - 2f * a) * 2f - 1f;
+        return NumberTools.cos(waveFloat += 0.0625f);
+    }
+
+    private float sinFloat = 1f;
+
+    @Benchmark
+    public float measureSinApproxFloat() {
+        return NumberTools.sin(sinFloat += 0.0625f);
     }
 
 
+    private float waveClimatiano = 1f;
+
+    /**
+     * Climatiano code is adapted from <a href="http://www.mclimatiano.com/faster-sine-approximation-using-quadratic-curve/">this blog</a>.
+     * @return an approximation of cosine, with the argument in radians
+     */
+    @Benchmark
+    public float measureCosApproxClimatiano() {
+        float cos = ((((waveClimatiano += 0.0625f) < 0 ? -waveClimatiano : waveClimatiano) + 4.71238898038469f) % 6.283185307179586f) - 3.141592653589793f;
+        //float cos = (((waveClimatiano += 0.0625f) * (waveClimatiano < 0 ? -3.141592653589793f : 3.141592653589793f) + 4.71238898038469f) % 6.283185307179586f) - 3.141592653589793f;
+        //float cos = (((((waveClimatianoLP += 0.0625f) * 3.141592653589793f - 1.5707963267948966f) % 6.283185307179586f) + 6.283185307179586f) % 6.283185307179586f) - 3.141592653589793f;
+        if (cos < 0) {
+            cos *= (1.2732395447351628f + 0.4052847345693511f * cos);
+
+            if (cos < 0)
+                return cos * (-0.255f * (cos + 1) + 1);
+            else
+                return cos * (0.255f * (cos - 1) + 1);
+        } else {
+            cos *= (1.2732395447351628f - 0.4052847345693511f * cos);
+
+            if (cos < 0)
+                return cos * (-0.255f * (cos + 1) + 1);
+            else
+                return cos * (0.255f * (cos - 1) + 1);
+        }
+    }
+    /**
+     * Climatiano code is adapted from <a href="http://www.mclimatiano.com/faster-sine-approximation-using-quadratic-curve/">this blog</a>.
+     * This is the low-precision variant.
+     * @return an approximation of cosine, with the argument in radians
+     */
+    private float waveClimatianoLP = 1f;
+    @Benchmark
+    public float measureCosApproxClimatianoLP()
+    {
+        //final float cos = (((waveClimatianoLP += 0.0625f) * (waveClimatianoLP < 0 ? -3.141592653589793f : 3.141592653589793f) + 4.71238898038469f) % 6.283185307179586f) - 3.141592653589793f;
+        final float cos = ((((waveClimatianoLP += 0.0625f) < 0 ? -waveClimatianoLP : waveClimatianoLP) + 4.71238898038469f) % 6.283185307179586f) - 3.141592653589793f;
+        //final float cos = (((waveClimatianoLP += 0.0625f) * 3.141592653589793f % 6.283185307179586f) - 4.71238898038469f) % 3.141592653589793f;
+        //final float cos = (((((waveClimatianoLP += 0.0625f) * 3.141592653589793f - 1.5707963267948966f) % 6.283185307179586f) + 6.283185307179586f) % 6.283185307179586f) - 3.141592653589793f;
+        return cos * (1.2732395447351628f + (cos < 0 ? 0.4052847345693511f : -0.4052847345693511f) * cos);
+    }
     /*
 mvn clean install
 java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
      */
-    public static void main(String[] args) throws RunnerException {
+    public static void main2(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(UncommonBenchmark.class.getSimpleName())
                 .timeout(TimeValue.seconds(60))
@@ -386,5 +473,51 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
                 .build();
 
         new Runner(opt).run();
+    }
+    public static void main(String[] args)
+    {
+        UncommonBenchmark u = new UncommonBenchmark();
+        double mathError = 0.0, approxError = 0.0, approxFError = 0.0, climatianoError = 0.0, clLPError = 0.0,
+                sinApproxError = 0.0, sinApproxFError = 0.0,
+                floatError = 0.0, margin = 0.0;
+        System.out.println("Math.sin()       : " + u.measureMathSin());
+        System.out.println("Math.sin()       : " + u.measureMathSin());
+        System.out.println("Math.cos()       : " + u.measureMathSin());
+        System.out.println("double sin approx: " + u.measureSinApprox());
+        System.out.println("double cos approx:" + u.measureCosApprox());
+//        System.out.println("float approx     : " + u.measureCosApproxFloat());
+//        System.out.println("Climatiano       : " + u.measureCosApproxClimatiano());
+//        System.out.println("ClimatianoLP     : " + u.measureCosApproxClimatianoLP());
+        for (double i = -64.0; i <= 64.0; i+= 0x1p-5) {
+            margin += 0.0001;
+            u.wave = i;
+            u.waveSin = i;
+            u.waveApprox = i;
+            u.sinApprox = i;
+            u.waveFloat = (float)i;
+            u.sinFloat = (float)i;
+            u.waveClimatiano = (float)i;
+            u.waveClimatianoLP = (float)i;
+            double c = u.measureMathCosStrict(), s = u.measureMathSin();
+            u.wave = i;
+            mathError += Math.abs(u.measureMathCos() - c);
+            floatError += Math.abs(c - (float)c);
+            approxError += Math.abs(u.measureCosApprox() - c);
+            approxFError += Math.abs(u.measureCosApproxFloat() - c);
+            climatianoError += Math.abs(u.measureCosApproxClimatiano() - c);
+            clLPError += Math.abs(u.measureCosApproxClimatianoLP() - c);
+            sinApproxError += Math.abs(u.measureSinApprox() - s);
+            sinApproxFError += Math.abs(u.measureSinApproxFloat() - s);
+        }
+        System.out.println("Margin allowed   : " + margin);
+        System.out.println("Math.cos()       : " + mathError);
+        System.out.println("double approx    : " + approxError);
+        System.out.println("base float error : " + floatError);
+        System.out.println("float approx     : " + approxFError);
+        System.out.println("Climatiano       : " + climatianoError);
+        System.out.println("Climatiano LP    : " + clLPError);
+        System.out.println("sin approx       : " + sinApproxError);
+        System.out.println("sin approx float : " + sinApproxFError);
+
     }
 }
