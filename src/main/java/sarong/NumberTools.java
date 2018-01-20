@@ -617,19 +617,25 @@ public final class NumberTools {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (40x faster sin() calls
-     * in benchmarking). Takes the same arguments Math.sin() does, so one angle in radians, which may technically be any
-     * double (but this will lose accuracy on extremely large doubles, such as those that are larger than the largest
-     * long value). This is closely related to {@link #sway(float)}, but the shape of the output when graphed is almost
-     * identical to sin().
+     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (between 4x and 40x
+     * faster sin() calls in benchmarking, depending on whether HotSpot deoptimizes Math.sin() for its own inscrutable
+     * reasons), and both takes and returns doubles. Takes the same arguments Math.sin() does, so one angle in radians,
+     * which may technically be any double (but this will lose precision on fairly large doubles, such as those that
+     * are larger than about 65536.0). This is closely related to {@link #sway(float)}, but the shape of the output when
+     * graphed is almost identical to sin().  The difference between the result of this method and
+     * {@link Math#sin(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * about 0.0005; not all points have been checked for potentially higher errors, though. Coercion between float and
+     * double takes about as long as this method normally takes to run, so if you have floats you should usually use
+     * methods that take floats (or return floats, if assigning the result to a float), and likewise for doubles.
+     * <br>
+     * If you call this frequently, consider giving it either all positive numbers, i.e. 0 to PI * 2 instead of -PI to
+     * PI; this can help the performance of this particular approximation by making its one branch easier to predict.
      * <br>
      * The technique for sine approximation is mostly from
      * <a href="https://web.archive.org/web/20080228213915/http://devmaster.net/forums/showthread.php?t=5784">this archived DevMaster thread</a>,
      * with credit to "Nick". Changes have been made to accelerate wrapping from any double to the valid input range,
-     * using code extremely similar to {@link #zigzag(double)}. The difference between the result of this method and
-     * {@link Math#sin(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
-     * about 0.0005; not all points have been checked for potentially higher errors, though.
-     * @param radians an angle in radians, often from -pi to pi, though not required to be.
+     * using code extremely similar to {@link #zigzag(double)}.
+     * @param radians an angle in radians as a double, often from 0 to pi * 2, though not required to be.
      * @return the sine of the given angle, as a double between -1.0 and 1.0 (probably exclusive on -1.0, but not 1.0)
      */
     public static double sin(final double radians)
@@ -650,21 +656,27 @@ public final class NumberTools {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (40x faster sin() calls
-     * in benchmarking), and both takes and returns floats. Takes the same arguments Math.sin() does, so one angle in
-     * radians, which may technically be any float (but this will lose accuracy on extremely large floats, such as those
-     * that are larger than the largest int value). This is closely related to {@link #sway(float)}, but the shape of
-     * the output when graphed is almost identical to sin(). The difference between the result of this method and
+     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (between 4x and 40x
+     * faster sin() calls in benchmarking, depending on whether HotSpot deoptimizes Math.sin() for its own inscrutable
+     * reasons), and both takes and returns floats. Takes the same arguments Math.sin() does, so one angle in radians,
+     * which may technically be any float (but this will lose precision on fairly large floats, such as those that are
+     * larger than about 4096f). This is closely related to {@link #sway(float)}, but the shape of the output when
+     * graphed is almost identical to sin(). The difference between the result of this method and
      * {@link Math#sin(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though. The error for this float
      * version is extremely close to the double version, {@link #sin(double)}, so you should choose based on what type
-     * you have as input and/or want to return rather than on quality concerns.
+     * you have as input and/or want to return rather than on quality concerns. Coercion between float and double takes
+     * about as long as this method normally takes to run, so if you have floats you should usually use methods that
+     * take floats (or return floats, if assigning the result to a float), and likewise for doubles.
+     * <br>
+     * If you call this frequently, consider giving it either all positive numbers, i.e. 0 to PI * 2 instead of -PI to
+     * PI; this can help the performance of this particular approximation by making its one branch easier to predict.
      * <br>
      * The technique for sine approximation is mostly from
      * <a href="https://web.archive.org/web/20080228213915/http://devmaster.net/forums/showthread.php?t=5784">this archived DevMaster thread</a>,
      * with credit to "Nick". Changes have been made to accelerate wrapping from any double to the valid input range,
      * using code extremely similar to {@link #zigzag(float)}.
-     * @param radians an angle in radians as a float, often from -pi to pi, though not required to be.
+     * @param radians an angle in radians as a float, often from 0 to pi * 2, though not required to be.
      * @return the sine of the given angle, as a float between -1f and 1f (probably exclusive on -1f, but not 1f)
      */
     public static float sin(final float radians)
@@ -685,19 +697,25 @@ public final class NumberTools {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (40x faster cos() calls
-     * in benchmarking). Takes the same arguments Math.cos() does, so one angle in radians, which may technically be any
-     * double (but this will lose accuracy on extremely large doubles, such as those that are larger than the largest
-     * long value). This is closely related to {@link #sway(float)}, but the shape of the output when graphed is almost
-     * identical to cos().
+     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (between 4x and 40x
+     * faster cos() calls in benchmarking, depending on whether HotSpot deoptimizes Math.cos() for its own inscrutable
+     * reasons), and both takes and returns doubles. Takes the same arguments Math.cos() does, so one angle in radians,
+     * which may technically be any double (but this will lose precision on fairly large doubles, such as those that
+     * are larger than about 65536.0). This is closely related to {@link #sway(float)}, but the shape of the output when
+     * graphed is almost identical to cos(). The difference between the result of this method and
+     * {@link Math#cos(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * about 0.0005; not all points have been checked for potentially higher errors, though.Coercion between float and
+     * double takes about as long as this method normally takes to run, so if you have floats you should usually use
+     * methods that take floats (or return floats, if assigning the result to a float), and likewise for doubles.
+     * <br>
+     * If you call this frequently, consider giving it either all positive numbers, i.e. 0 to PI * 2 instead of -PI to
+     * PI; this can help the performance of this particular approximation by making its one branch easier to predict.
      * <br>
      * The technique for cosine approximation is mostly from
      * <a href="https://web.archive.org/web/20080228213915/http://devmaster.net/forums/showthread.php?t=5784">this archived DevMaster thread</a>,
      * with credit to "Nick". Changes have been made to accelerate wrapping from any double to the valid input range,
-     * using code extremely similar to {@link #zigzag(double)}. The difference between the result of this method and
-     * {@link Math#cos(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
-     * about 0.0005; not all points have been checked for potentially higher errors, though.
-     * @param radians an angle in radians, often from -pi to pi, though not required to be.
+     * using code extremely similar to {@link #zigzag(double)}.
+     * @param radians an angle in radians as a double, often from 0 to pi * 2, though not required to be.
      * @return the cosine of the given angle, as a double between -1.0 and 1.0 (probably exclusive on 1.0, but not -1.0)
      */
     public static double cos(final double radians)
@@ -718,21 +736,27 @@ public final class NumberTools {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (40x faster cos() calls
-     * in benchmarking), and both takes and returns floats. Takes the same arguments Math.cos() does, so one angle in
-     * radians, which may technically be any float (but this will lose accuracy on extremely large floats, such as those
-     * that are larger than the largest int value). This is closely related to {@link #sway(float)}, but the shape of
-     * the output when graphed is almost identical to cos(). The difference between the result of this method and
+     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (between 4x and 40x
+     * faster cos() calls in benchmarking, depending on whether HotSpot deoptimizes Math.cos() for its own inscrutable
+     * reasons), and both takes and returns floats. Takes the same arguments Math.cos() does, so one angle in radians,
+     * which may technically be any float (but this will lose precision on fairly large floats, such as those that are
+     * larger than about 4096f). This is closely related to {@link #sway(float)}, but the shape of the output when
+     * graphed is almost identical to cos(). The difference between the result of this method and
      * {@link Math#cos(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though. The error for this float
      * version is extremely close to the double version, {@link #cos(double)}, so you should choose based on what type
-     * you have as input and/or want to return rather than on quality concerns.
+     * you have as input and/or want to return rather than on quality concerns. Coercion between float and double takes
+     * about as long as this method normally takes to run, so if you have floats you should usually use methods that
+     * take floats (or return floats, if assigning the result to a float), and likewise for doubles.
+     * <br>
+     * If you call this frequently, consider giving it either all positive numbers, i.e. 0 to PI * 2 instead of -PI to
+     * PI; this can help the performance of this particular approximation by making its one branch easier to predict.
      * <br>
      * The technique for cosine approximation is mostly from
      * <a href="https://web.archive.org/web/20080228213915/http://devmaster.net/forums/showthread.php?t=5784">this archived DevMaster thread</a>,
      * with credit to "Nick". Changes have been made to accelerate wrapping from any double to the valid input range,
      * using code extremely similar to {@link #zigzag(float)}.
-     * @param radians an angle in radians as a float, often from -pi to pi, though not required to be.
+     * @param radians an angle in radians as a float, often from 0 to pi * 2, though not required to be.
      * @return the cosine of the given angle, as a float between -1f and 1f (probably exclusive on 1f, but not -1f)
      */
     public static float cos(final float radians)
