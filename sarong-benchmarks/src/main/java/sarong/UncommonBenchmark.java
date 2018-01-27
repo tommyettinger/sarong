@@ -114,7 +114,7 @@ public class UncommonBenchmark {
     private final float[] floatInputs = new float[65536];
     {
         for (int i = 0; i < 65536; i++) {
-            floatInputs[i] = (float) (inputs[i] = NumberTools.randomDouble(i + 107) * 4096.0 - 2048.0);
+            floatInputs[i] = (float) (inputs[i] = NumberTools.randomDouble(i + 107) * 4096.0);
         }
 
     }

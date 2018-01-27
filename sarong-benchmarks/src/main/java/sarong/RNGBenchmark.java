@@ -1176,6 +1176,31 @@ public class RNGBenchmark {
         return SpiralR.nextInt();
     }
 
+    private SFC64RNG SFC64 = new SFC64RNG(9999L);
+    private RNG SFC64R = new RNG(SFC64);
+    @Benchmark
+    public long measureSFC64()
+    {
+        return SFC64.nextLong();
+    }
+
+    @Benchmark
+    public long measureSFC64Int()
+    {
+        return SFC64.next(32);
+    }
+    @Benchmark
+    public long measureSFC64R()
+    {
+        return SFC64R.nextLong();
+    }
+
+    @Benchmark
+    public long measureSFC64IntR()
+    {
+        return SFC64R.nextInt();
+    }
+
 
 //    public long doThrust32()
 //    {
