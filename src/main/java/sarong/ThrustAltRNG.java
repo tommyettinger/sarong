@@ -9,7 +9,7 @@ import java.io.Serializable;
  * expected to pass BigCrush, which is a difficult statistical quality test that is part of TestU01, because it does so
  * well on other statistical tests. On <a href="http://gjrand.sourceforge.net/">gjrand</a>'s "testunif" checks, this
  * does very well on 100GB of tested data, with the "Overall summary one sided P-value P = 0.981", where 1 is perfect
- * and 0.1 or less is a failure. On <a href="http://pracrand.sourceforge.net/">PractRand</a>, this runs past 8TB of
+ * and 0.1 or less is a failure. On <a href="http://pracrand.sourceforge.net/">PractRand</a>, this runs past 32TB of
  * generated numbers without finding any failures, and this version avoids issues with Gap-16 tests that cause ThrustRNG
  * to fail at 32GB and can cause slight variations on the code here to fail at 256GB. Like ThrustRNG and LightRNG, this
  * changes its state with a steady fixed increment, and does cipher-like adjustments to the current state to randomize
@@ -115,6 +115,7 @@ public final class ThrustAltRNG implements StatefulRandomness, SkippingRandomnes
      * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
+    @Override
     public final long skip(long advance) {
         final long s = (state += 0x6C8E9CF570932BD5L * advance);
         final long z = (s ^ (s >>> 25)) * (s | 0xA529L);

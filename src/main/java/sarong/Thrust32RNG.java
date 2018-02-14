@@ -6,22 +6,28 @@ import java.io.Serializable;
 
 /**
  * A variant on ThrustRNG that uses only 32-bit math and has good quality, but has a very short period (2 to the 32).
- * This RandomnessSource has no failures or when tested with PractRand (it has anomalies on par with LightRNG), allows
- * all ints as states (including 0), implements StatefulRandomness, and is measurably faster than Light32RNG (not
+ * This RandomnessSource has no failures when tested with PractRand on short periods (64MB, which is sometimes enough),
+ * allows all ints as states (including 0), implements StatefulRandomness, and is measurably faster than Light32RNG (not
  * LightRNG or ThrustRNG) at generating both ints and longs. This is very similar in capabilities to ThrustRNG because
  * the algorithm is similar, with both able to skip forward and backward about as quickly as they can generate numbers
  * normally (Light32RNG does not have this feature, but LightRNG does). Thrust32RNG should generally only be used when
- * you need a generator that only needs 32-bit math, but it's relatively fast considering its high quality. The period
- * for a Thrust32RNG should be 2 to the 32, because it is based on the same concept that ThrustRNG and LightRNG use,
- * where it increments its state by an odd number and uses a very different permutation of the state as its returned
- * random result; the difference is that this uses an int for state and the others use a long. It only repeats a cycle
- * of numbers after the state has wrapped around the modulus for int addition enough times to come back to the original
- * starting state, which should take exactly 2 to the 32 generated numbers. The main weakness Thrust32RNG has is its
- * very low period, 2 to the 32 (4,294,967,296), which is poor compared to ThrustRNG's period of 2 to the 64
- * (18,446,744,073,709,551,616) and much worse than XoRoRNG's 2 to the 128 - 1
- * (340,282,366,920,938,463,463,374,607,431,768,211,455). It is also slow to generate long values, since it uses 32-bit
- * math to generate random numbers. It is not nearly as fast as ThrustRNG on 64-bit hardware, either, since various
- * extra steps need to be performed to ensure quality here.
+ * you need a generator that only needs 32-bit math, but it's relatively fast in that case. The period for a Thrust32RNG
+ * should be 2 to the 32, because it is based on the same concept that ThrustRNG and LightRNG use, where it increments
+ * its state by an odd number and uses a very different permutation of the state as its returned random result; the
+ * difference is that this uses an int for state and the others use a long. It only repeats a cycle of numbers after the
+ * state has wrapped around the modulus for int addition enough times to come back to the original starting state, which
+ * should take exactly 2 to the 32 generated numbers. The main weakness Thrust32RNG has is its very low period, 2 to the
+ * 32 (4,294,967,296), which is poor compared to ThrustRNG's period of 2 to the 64 (18,446,744,073,709,551,616) and much
+ * worse than XoRoRNG's 2 to the 128 - 1 (340,282,366,920,938,463,463,374,607,431,768,211,455). It is also slow to
+ * generate long values, since it uses 32-bit math to generate random numbers. It is not nearly as fast as ThrustRNG on
+ * 64-bit hardware, either, since various extra steps need to be performed to ensure quality here.
+ * <br>
+ * This class is similar to {@link ThrustAlt32RNG}, both in structure and speed, but ThrustAlt32RNG has an assurance of
+ * high quality across its full period (2 to the 32 ints, or 16GB of data), while Thrust32RNG only has been checked up
+ * to at most 256MB of data. This class is slightly faster than ThrustAlt32RNG, but not by much, while the quality is
+ * very unlikely to be comparable between the two classes, so for cases where the quality may be important you may want
+ * to prefer ThrustAlt32RNG (visual effects with random components on a grid, for example, may make any flaws in
+ * Thrust32RNG more noticeable).
  * <br>
  * Created by Tommy Ettinger on 8/3/2017.
  */

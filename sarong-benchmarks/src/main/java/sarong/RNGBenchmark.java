@@ -882,7 +882,8 @@ public class RNGBenchmark {
     {
         return ThrustR.nextInt();
     }
-    @Benchmark
+
+    //@Benchmark
     public long measureInlineThrust()
     {
         long z = (state += 0x9E3779B97F4A7C15L);
@@ -1201,73 +1202,58 @@ public class RNGBenchmark {
         return SFC64R.nextInt();
     }
 
+    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
+    private RNG Thrust32R = new RNG(Thrust32);
 
-//    public long doThrust32()
-//    {
-//        Thrust32RNG rng = new Thrust32RNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureThrust32() {
-//        seed = 9000;
-//        doThrust32();
-//    }
-//
-//    public long doThrust32Int()
-//    {
-//        Thrust32RNG rng = new Thrust32RNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//    public void measureThrust32Int() {
-//        iseed = 9000;
-//        doThrust32Int();
-//    }
-//
-//    public long doThrust32R()
-//    {
-//        RNG rng = new RNG(new Thrust32RNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureThrust32R() {
-//        seed = 9000;
-//        doThrust32R();
-//    }
-//
-//    public long doThrust32IntR()
-//    {
-//        RNG rng = new RNG(new Thrust32RNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureThrust32IntR() {
-//        iseed = 9000;
-//        doThrust32IntR();
-//    }
+    @Benchmark
+    public long measureThrust32()
+    {
+        return Thrust32.nextLong();
+    }
+
+    @Benchmark
+    public long measureThrust32Int()
+    {
+        return Thrust32.next(32);
+    }
+    @Benchmark
+    public long measureThrust32R()
+    {
+        return Thrust32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureThrust32IntR()
+    {
+        return Thrust32R.nextInt();
+    }
+
+
+    private ThrustAlt32RNG ThrustAlt32 = new ThrustAlt32RNG(9999);
+    private RNG ThrustAlt32R = new RNG(ThrustAlt32);
+
+    @Benchmark
+    public long measureThrustAlt32()
+    {
+        return ThrustAlt32.nextLong();
+    }
+
+    @Benchmark
+    public long measureThrustAlt32Int()
+    {
+        return ThrustAlt32.next(32);
+    }
+    @Benchmark
+    public long measureThrustAlt32R()
+    {
+        return ThrustAlt32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureThrustAlt32IntR()
+    {
+        return ThrustAlt32R.nextInt();
+    }
 
     /*
     public long doJet()
