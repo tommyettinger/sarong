@@ -1255,6 +1255,32 @@ public class RNGBenchmark {
         return ThrustAlt32R.nextInt();
     }
 
+    private Light32RNG Light32 = new Light32RNG(9999);
+    private RNG Light32R = new RNG(Light32);
+
+    @Benchmark
+    public long measureLight32()
+    {
+        return Light32.nextLong();
+    }
+
+    @Benchmark
+    public long measureLight32Int()
+    {
+        return Light32.next(32);
+    }
+    @Benchmark
+    public long measureLight32R()
+    {
+        return Light32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureLight32IntR()
+    {
+        return Light32R.nextInt();
+    }
+
     /*
     public long doJet()
     {
