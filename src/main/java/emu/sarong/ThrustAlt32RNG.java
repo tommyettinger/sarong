@@ -6,7 +6,7 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
     public int state;
 
     public ThrustAlt32RNG() {
@@ -14,7 +14,7 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
     }
 
     public ThrustAlt32RNG(final int seed) {
-        state = seed;
+        state = seed | 0;
     }
 
     public ThrustAlt32RNG(final long seed) {
@@ -27,35 +27,37 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
 
     @Override
     public void setState(long state) {
-        this.state = (int)state;
+        this.state = (int)state | 0;
     }
 
     @Override
     public final int next(final int bits) {
-        final int a = (state = state + 0x70932BD5 | 0);
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5) | 0;
-        return ((((z << 7) | (z >>> 25)) - a) ^ (z >>> 13)) >>> (32 - bits);
+        final int a = (state = state + 0x62BD5 | 0);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5)) >>> (32 - bits);
+
     }
     public final int nextInt()
     {
-        final int a = (state = state + 0x70932BD5 | 0);
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((z << 7) | (z >>> 25)) - a) ^ (z >>> 13);
+        final int a = (state = state + 0x62BD5 | 0);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5));
     }
 
     @Override
     public final long nextLong() {
-        final int b = (state = state + 0xE12657AA | 0);
-        final int a = (b - 0x70932BD5 | 0);
-        final int y = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5) | 0;
-        final int z = (b ^ b >>> 13) * ((b & 0xFFFF8) ^ 0x277B5) | 0;
-        return (long) ((((y << 7) | (y >>> 25)) - a) ^ (y >>> 13)) << 32 | (((((z << 7) | (z >>> 25)) - b) ^ (z >>> 13)) & 0xFFFFFFFFL);
+        final int b = (state = state + 0xC57AA | 0);
+        final int a = (b - 0x62BD5 | 0);
+        final int y = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5) | 0;
+        final int z = (b ^ b >>> 13) * ((b & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return (long) (((y << 21) | (y >>> 11)) ^ (((y << 7) | (y >>> 25)) * 0x62BD5)) << 32
+                | ((((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5)) & 0xFFFFFFFFL);
     }
 
-    public final int skip(int advance) {
-        final int a = (state = (int)(state + advance * 0x70932BD5L));
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((z << 7) | (z >>> 25)) - a) ^ (z >>> 13);
+    public final int skip(final int advance) {
+        final int a = (state = state + advance * 0x62BD5 | 0);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5));
     }
 
 
@@ -84,34 +86,30 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
     }
 
     public static int determine(int state) {
-        final int z = ((state = (int)(state * 0x70932BD5L)) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
+        state = ((state = state * 0x62BD5 | 0) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return ((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5);
     }
-
-    public static int determineSmall(int state) {
-        final int z = ((state = state * 0x70932BD5 | 0) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
-    }
-
+    
     /**
-     * Be careful calling this with {@code randomize(state += 0x70932BD5)} as you would normally on desktop, since state
-     * won't overflow (it needs to). You need to use {@code randomize(state = state + 0x70932BD5 | 0)} instead.
-     * @param state call with {@code randomize(state += 0x70932BD5)}
+     * Be careful calling this with {@code randomize(state += 0x62BD5)} as you would normally on desktop, since state
+     * won't overflow (it needs to). You need to use {@code randomize(state = state + 0x62BD5 | 0)} instead.
+     * @param state call with {@code randomize(state += 0x62BD5)}
      * @return a pseudo-random long determined by state
      */
     public static int randomize(int state) {
-        final int z = (state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
+        state = (state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return ((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5);
+
     }
 
     public static float determineFloat(int state) {
-        final int z = ((state = (int)(state * 0x70932BD5L)) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5) | 0;
-        return (((((z << 7) | (z >>> 25)) - state) ^ (z >>> 13)) & 0xFFFFFF) * 0x1p-24f;
+        state = ((state = state * 0x62BD5 | 0) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return ((((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5)) & 0xFFFFFF) * 0x1p-24f;
     }
 
     public static int determineBounded(int state, final int bound)
     {
-        final int z = ((state = (int)(state * 0x70932BD5L)) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5) | 0;
-        return (int) (((((((z << 7) | (z >>> 25)) - state) ^ (z >>> 13)) & 0xFFFFFFFFL) * bound) >> 32);
+        state = ((state = state * 0x62BD5 | 0) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5) | 0;
+        return (int) ((((((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5)) & 0xFFFFFFFFL) * bound) >> 32);
     }
 }

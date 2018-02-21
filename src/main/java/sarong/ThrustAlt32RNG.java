@@ -29,7 +29,7 @@ import java.io.Serializable;
  * Created by Tommy Ettinger on 2/13/2017.
  */
 public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
     /**
      * Can be any int value.
      */
@@ -78,15 +78,15 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        final int a = (state += 0x70932BD5);
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5);
-        return ((((z << 7) | (z >>> 25)) - a) ^ (z >>> 13)) >>> (32 - bits);
+        final int a = (state += 0x62BD5);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5);
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5)) >>> (32 - bits);
     }
     public final int nextInt()
     {
-        final int a = (state += 0x70932BD5);
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5);
-        return (((z << 7) | (z >>> 25)) - a) ^ (z >>> 13);
+        final int a = (state += 0x62BD5);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5);
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5));
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -98,11 +98,12 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        final int b = (state += 0xE12657AA);
-        final int a = (b - 0x70932BD5);
-        final int y = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5);
-        final int z = (b ^ b >>> 13) * ((b & 0xFFFF8) ^ 0x277B5);
-        return (long) ((((y << 7) | (y >>> 25)) - a) ^ (y >>> 13)) << 32 | (((((z << 7) | (z >>> 25)) - b) ^ (z >>> 13)) & 0xFFFFFFFFL);
+        final int b = (state += 0xC57AA);
+        final int a = (b - 0x62BD5);
+        final int y = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5);
+        final int z = (b ^ b >>> 13) * ((b & 0xFFFF8) ^ 0xCD7B5);
+        return (long) (((y << 21) | (y >>> 11)) ^ (((y << 7) | (y >>> 25)) * 0x62BD5)) << 32
+                | ((((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5)) & 0xFFFFFFFFL);
     }
 
     /**
@@ -113,10 +114,10 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
      * @return the random int generated after skipping forward or backwards by {@code advance} numbers
      */
-    public final int skip(int advance) {
-        final int a = (state += 0x70932BD5 * advance);
-        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0x277B5);
-        return (((z << 7) | (z >>> 25)) - a) ^ (z >>> 13);
+    public final int skip(final int advance) {
+        final int a = (state += 0x62BD5 * advance);
+        final int z = (a ^ a >>> 13) * ((a & 0xFFFF8) ^ 0xCD7B5);
+        return (((z << 21) | (z >>> 11)) ^ (((z << 7) | (z >>> 25)) * 0x62BD5));
     }
 
 
@@ -156,76 +157,55 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      * number. This is expected to be called with some changing variable, e.g. {@code determine(state = state + 1 | 0)},
      * where the increment for state should be odd but otherwise doesn't really matter (the {@code | 0} is needed to
      * force overflow to occur correctly on GWT; if you know you won't target GWT you can use {@code determine(++state)}
-     * instead). This multiplies state by {@code 0x70932BD5} within this method, so using a small increment won't be
+     * instead). This multiplies state by {@code 0x62BD5} within this method, so using a small increment won't be
      * much different from using a very large one, as long as it is odd. The period is 2 to the 32 if you increment or
      * decrement by 1 (and perform any bitwise operation, such as {@code | 0}, if you might target GWT). If you use this
      * on GWT and don't perform a bitwise operation on the new value for state, then the period will gradually shrink as
      * precision is lost by the JavaScript double that GWT will use for state as a Java int. If you know that state will
      * start at 0 and you call with {@code determine(++state)}, then on GWT you may not have to worry at all until 2 to
-     * the 53 calls have been made, after which state may cease to have the precision to represent an increase by 1.
-     * The super-sourced version of this method on GWT needs to briefly use multiplication by a long to behave the same
-     * as on desktop; a faster alternative on GWT if you know state will be small (21 bits or less, unsigned) is
-     * {@link #determineSmall(int)}, which is the same on desktop and assumes the caller is doing the bookkeeping to
-     * ensure state is the correct size (as with {@code state &= 0x1FFFFF;} before calling).
+     * the 34 calls have been made, after which state may cease to have the precision to represent an increase by 1 when
+     * the math inside this method is considered. The period will have been exhausted by that point anyway (4 times), so
+     * it's more of a concern if state may start at a much higher int.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(state = state + 1 | 0)} is recommended to go forwards or
      *              {@code determine(state = state - 1 | 0)} to generate numbers in reverse order
      * @return a pseudo-random permutation of state
      */
     public static int determine(int state) {
-        final int z = ((state *= 0x70932BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5);
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
+        state = ((state *= 0x62BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5);
+        return ((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5); 
     }
 
-    /**
-     * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
-     * number. This is expected to be called with some changing variable, e.g.
-     * {@code determineSmall(state = state + 1 & 0x1FFFFF)}, where state is ensured to stay within 21 bits by the
-     * bitwise AND. The AND isn't always necessary if you know the initial value of state and how many times this will
-     * be called; if state would be non-negative and less than or equal to 0x1FFFFF (2097151) at all points, then you
-     * can just use {@code determineSmall(++state)}. The reason this method exists is because {@link #determine(int)}
-     * needs long multiplication on GWT to maintain compatibility with other platforms, but that slower long math isn't
-     * needed if the values stay small enough that multiplication stays within the precision of a JS number (a double,
-     * maxing out at 2 to the 53 before it loses precision).
-     * @param state a variable that should be different every time you want a different random result;
-     *              using {@code determine(state = state + 1 & 0x1FFFFF)} is recommended to go forwards or
-     *              {@code determine(state = state - 1 & 0x1FFFFF)} to generate numbers in reverse order
-     * @return a pseudo-random permutation of state
-     */
-    public static int determineSmall(int state) {
-        final int z = ((state *= 0x70932BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5);
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
-    }
     //for quick one-line pastes of how the algo can be used with "randomize(++state)"
-    //public static int randomize(int state) { final int z = ((state *= 0x70932BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5); return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13); }
+    //public static int randomize(int state) { state = ((state *= 0x62BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5); return ((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5); }
 
     /**
-     * Limited-use; when called with successive state values that differ by 0x70932BD5, this produces fairly
+     * Limited-use; when called with successive state values that differ by 0x62BD5, this produces fairly
      * high-quality random 32-bit numbers. You should be very careful with this on GWT, because the normal way of
      * adding and assigning a value can easily fail to overflow correctly on GWT. You should call this with
-     * {@code ThrustAltRNG.randomize(state = state + 0x70932BD5 | 0)} to go forwards or
-     * {@code ThrustAltRNG.randomize(state = state - 0x70932BD5 | 0)} to go backwards in the sequence. If and only if
-     * GWT is not a possible target, you can use {@code ThrustAltRNG.randomize(state += 0x70932BD5)} to go forwards or
-     * {@code ThrustAltRNG.randomize(state -= 0x70932BD5)} to go backwards in the sequence.
+     * {@code ThrustAltRNG.randomize(state = state + 0x62BD5 | 0)} to go forwards or
+     * {@code ThrustAltRNG.randomize(state = state - 0x62BD5 | 0)} to go backwards in the sequence. If and only if
+     * GWT is not a possible target, you can use {@code ThrustAltRNG.randomize(state += 0x62BD5)} to go forwards or
+     * {@code ThrustAltRNG.randomize(state -= 0x62BD5)} to go backwards in the sequence.
      * @see #determine(int) you should usually consider determine() instead if you can't control how your state updates
      * @param state must be changed between calls to get changing results; for GWT compatibility,
-     *              you should probably use {@code ThrustAltRNG.randomize(state = state + 0x70932BD5 | 0)}
+     *              you should probably use {@code ThrustAltRNG.randomize(state = state + 0x62BD5 | 0)}
      * @return a pseudo-random number generated from state
      */
-    public static int randomize(final int state) {
-        final int z = (state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5);
-        return (((z << 7) | (z >>> 25)) - state) ^ (z >>> 13);
+    public static int randomize(int state) {
+        state = (state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5);
+        return ((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5);
     }
     //For when only a small number of bits are needed:
-    //public static int randomize8(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5), 7) - state >>> 24;}
-    //public static int randomize6(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5), 7) - state >>> 26;}
-    //public static int randomize5(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5), 7) - state >>> 27;}
-    //public static int randomize4(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5), 7) - state >>> 28;}
+    //public static int randomize8(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5), 7) - state >>> 24;}
+    //public static int randomize6(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5), 7) - state >>> 26;}
+    //public static int randomize5(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5), 7) - state >>> 27;}
+    //public static int randomize4(final int state) {return Integer.rotateLeft((state ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5), 7) - state >>> 28;}
     /**
      * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
      * return the same float. This is expected to be called with a changing variable, e.g. {@code determine(++state)},
      * where the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x70932BD5} within this method, so using a small increment won't be much different from using a
+     * {@code 0x62BD5} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd. The period is 2 to the 32 if you increment or decrement by 1, but there are
      * only 2 to the 30 possible floats between 0 and 1.
      * @param state a variable that should be different every time you want a different random result;
@@ -234,8 +214,8 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
     public static float determineFloat(int state) {
-        final int z = ((state *= 0x70932BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5);
-        return (((((z << 7) | (z >>> 25)) - state) ^ (z >>> 13)) & 0xFFFFFF) * 0x1p-24f;
+        state = ((state *= 0x62BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5);
+        return (((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5) & 0xFFFFFF) * 0x1p-24f;
     }
 
     /**
@@ -254,7 +234,7 @@ public final class ThrustAlt32RNG implements StatefulRandomness, Serializable {
      */
     public static int determineBounded(int state, final int bound)
     {
-        final int z = ((state *= 0x70932BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0x277B5);
-        return (int) (((((((z << 7) | (z >>> 25)) - state) ^ (z >>> 13)) & 0xFFFFFFFFL) * bound) >> 32);
+        state = ((state *= 0x62BD5) ^ state >>> 13) * ((state & 0xFFFF8) ^ 0xCD7B5);
+        return (int) ((((((state << 21) | (state >>> 11)) ^ (((state << 7) | (state >>> 25)) * 0x62BD5)) & 0xFFFFFFFFL) * bound) >> 32);
     }
 }
