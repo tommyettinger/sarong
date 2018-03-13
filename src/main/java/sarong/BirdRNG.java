@@ -12,10 +12,7 @@ import java.util.Arrays;
  * lookbehind and isn't especially fast, those are its most significant flaws. While it is slower than FlapRNG and
  * HerdRNG, it should be faster than PintRNG, which is also its closest competitor on quality. While it is similar to
  * LongPeriodRNG in that it has a lot of state, BirdRNG is faster on int generation and not drastically worse on long
- * generation (despite not using long values for state). BirdRNG currently passes the PractRand suite of RNG quality
- * testing with no failures given 64MB of random ints, and generally no more than a few minor anomalies depending on the
- * seeds used. It may be able to pass DIEHARDER, but that wouldn't be much of a surprise because BirdRNG has so much
- * state, and that tends to make passing that test suite easier.
+ * generation (despite not using long values for state).
  * <br>
  * There are a lot of quirks in each generator, but it should be mentioned that BirdRNG has an unorthodox state update
  * pattern that may result in a lower period but also ensures its high quality. There are 64 ints of main state stored

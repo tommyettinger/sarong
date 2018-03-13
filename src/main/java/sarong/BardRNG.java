@@ -14,10 +14,7 @@ import java.util.Arrays;
  * is nowhere near the speed of FlapRNG (probably closer to HerdRNG). While it is similar to LongPeriodRNG and BirdRNG
  * in that it has a lot of state, BardRNG is faster on int generation and should be comparable on long generation. It
  * does not slow down significantly if used as a RandomnessSource for an RNG, while BirdRNG and sometimes LongPeriodRNG
- * will suffer from the indirection of calling {@link #next(int)}. BardRNG currently passes the PractRand suite of RNG
- * quality testing with no anomalies, failure or otherwise, given 64MB of random ints. This is better than BirdRNG,
- * which still has anomalies of varying severity. It may be able to pass DIEHARDER, but that wouldn't be much of a
- * surprise because BardRNG has so much state, and that tends to make passing that test suite easier.
+ * will suffer from the indirection of calling {@link #next(int)}.
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */

@@ -16,7 +16,6 @@ import java.io.Serializable;
  * <br>
  * Created by Tommy Ettinger on 5/25/2017.
  * @see FlapRNG FlapRNG is similar in goal to LapRNG but is implemented using int math, ideal for GWT or 32-bit OSes
- * @see ZapRNG ZapRNG is based on LapRNG, and is somewhat slower but has better quality with the same period
  */
 public final class LapRNG implements RandomnessSource, Serializable {
     private static final long serialVersionUID = 1L;

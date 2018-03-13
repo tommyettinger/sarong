@@ -6,8 +6,8 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * An int-math version of the Middle Square Weyl Sequence RNG, this has high quality (passes PractRand with no anomalies
- * or failures), has a period of at least {@code pow(2, 32)} (but probably a fair amount more than that), and poor speed
+ * An int-math version of the Middle Square Weyl Sequence RNG, this has high quality (at least on small sizes of tested
+ * data), has a period of at least {@code pow(2, 32)} (but probably a fair amount more than that), and poor speed
  * (especially for {@link #nextLong()}). This generator takes more than twice as long as {@link Lunge32RNG} to do
  * equivalent work. Based on <a href="https://arxiv.org/pdf/1704.00358.pdf">this paper (PDF)</a> and its corresponding
  * <a href="https://en.wikipedia.org/wiki/Middle-square_method">Wikipedia article</a>, though those versions use 64-bit

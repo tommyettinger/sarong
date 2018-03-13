@@ -11,16 +11,18 @@ import java.io.Serializable;
  * next result. Why should you consider it? It appears to be the fastest RandomnessSource we have available,
  * and is the only RNG in the library that can generate 1 billion random long values in under 1 second (or
  * rather, under 900 ms) on an Intel i7-4700MQ laptop processor (second-fastest RandomnessSource depends on
- * other factors, but is effectively a tie between LightRNG and XoRoRNG at roughly 1200 ms on the same laptop).
- * Any layer on top of generating long values slows this down, which is the case for most of the
- * RandomnessSource implementations, but ThunderRNG's {@link #nextInt()} method, which gets the most
- * significant 32 bits of a random long and returns them as an int, is also the fastest way we have to generate
- * int values. This does not implement StatefulRandomness because it stores state in two parts, each a long;
- * each is incremented by a different addend with each number generated. Part B is always odd, and is
- * incremented by a large, empirically-chosen number that is even; because odd + even = odd, always, part B
- * never becomes even. Part A is always incremented by an irregular selection of the bits in Part B, but the
- * selection never causes the increment to be by an even number (this also means it never increments by 0).
- * This irregular increment seems to increase ThunderRNG's period, but by how much is not clear.
+ * other factors, but is probably ThrustAltRNG at roughly 1000 ms on the same laptop). Any layer on top of
+ * generating long values slows this down, which is the case for most of the RandomnessSource implementations,
+ * but ThunderRNG's {@link #nextInt()} method, which gets the most significant 32 bits of a random long and
+ * returns them as an int, is also the fastest way we have to generate int values. This does not implement 
+ * StatefulRandomness because it stores state in two parts, each a long; each is incremented by a different
+ * addend with each number generated. Part B is always odd, and is incremented by a large, empirically-chosen
+ * number that is even; because odd + even = odd, always, part B never becomes even. Part A is always
+ * incremented by an irregular selection of the bits in Part B, but the selection never causes the increment
+ * to be by an even number (this also means it never increments by 0). This irregular increment seems to
+ * increase ThunderRNG's period, but by how much is not clear; the period is probably 2 to the 65, though it
+ * could be lower. The quality of ThunderRNG is probably not very good over gigabytes of tested data, though
+ * it's more than good enough to fool human observers most of the time.
  * <br>
  * The reason why nextInt() uses only the most significant half of the bits, even though it requires a shift in
  * addition to a cast, is because the period of the less significant bits is lower, though by how much isn't
@@ -38,14 +40,7 @@ import java.io.Serializable;
  * random-seeming, non-zero subset of Part B where the LSB is always set, the final result can't have a lower
  * period than Part B).
  * <br>
- * The tool used for testing this RNG is PractRand, http://pracrand.sourceforge.net/ > The binaries it provides
- * don't seem to work as intended on Windows, so I built from source, generated 64MB files of random 64-bit
- * output with various generators as "Thunder.dat", "Light.dat" and so on, then ran the executables I had
- * built with the MS compilers, with the command line {@code RNG_test.exe stdin64 < Thunder.dat} . For most of
- * the other generators I tried, there were no or nearly-no statistical failures it could find, and as of the (second)
- * commit on August 31, ThunderRNG also has no statistical failures or even anomalies. Earlier versions were
- * slightly faster (at best speed, 600-700ms) but had multiple outright failures (the fastest ones failed the
- * majority of tests).
+ *     
  * <br>
  * Created by Tommy Ettinger on 8/23/2016.
  */

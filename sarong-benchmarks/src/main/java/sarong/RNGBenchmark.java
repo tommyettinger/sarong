@@ -1004,13 +1004,13 @@ public class RNGBenchmark {
     @Benchmark
      // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureVortexDetermine() {
-        return VortexRNG.determine(++state, ++stream);
+        return VortexRNG.determine(++state);
     }
 
     @Benchmark
      // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureVortexDetermineBare() {
-        return VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L, stream += 0x9E3779B97F4A7BB5L);
+        return VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L);
     }
 
     @Benchmark
@@ -1095,9 +1095,10 @@ public class RNGBenchmark {
     @Benchmark
     public long measureInlineVortex()
     {
-        long z = (state += 0x6C8E9CF570932BD5L);
-        z = (z ^ (z >>> 25)) * ((stream += 0x9E3779B97F4A7BB5L) | 1L);
-        return z ^ (z >>> 28);
+        long z = (state += 0x6C8E9CF970932BD5L);
+        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+        return z ^ (z >>> 25);
     }
 
     private VortexRNG Vortex = new VortexRNG(9999L);
@@ -1123,6 +1124,32 @@ public class RNGBenchmark {
     public long measureVortexIntR()
     {
         return VortexR.nextInt();
+    }
+
+
+    private MotorRNG Motor = new MotorRNG(9999L);
+    private RNG MotorR = new RNG(Motor);
+    @Benchmark
+    public long measureMotor()
+    {
+        return Motor.nextLong();
+    }
+
+    @Benchmark
+    public long measureMotorInt()
+    {
+        return Motor.next(32);
+    }
+    @Benchmark
+    public long measureMotorR()
+    {
+        return MotorR.nextLong();
+    }
+
+    @Benchmark
+    public long measureMotorIntR()
+    {
+        return MotorR.nextInt();
     }
 
 
@@ -1202,84 +1229,84 @@ public class RNGBenchmark {
         return SFC64R.nextInt();
     }
 
-    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
-    private RNG Thrust32R = new RNG(Thrust32);
+//    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
+//    private RNG Thrust32R = new RNG(Thrust32);
+//
+//    @Benchmark
+//    public long measureThrust32()
+//    {
+//        return Thrust32.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureThrust32Int()
+//    {
+//        return Thrust32.next(32);
+//    }
+//    @Benchmark
+//    public long measureThrust32R()
+//    {
+//        return Thrust32R.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureThrust32IntR()
+//    {
+//        return Thrust32R.nextInt();
+//    }
+//
+//
+//    private ThrustAlt32RNG ThrustAlt32 = new ThrustAlt32RNG(9999);
+//    private RNG ThrustAlt32R = new RNG(ThrustAlt32);
+//
+//    @Benchmark
+//    public long measureThrustAlt32()
+//    {
+//        return ThrustAlt32.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureThrustAlt32Int()
+//    {
+//        return ThrustAlt32.next(32);
+//    }
+//    @Benchmark
+//    public long measureThrustAlt32R()
+//    {
+//        return ThrustAlt32R.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureThrustAlt32IntR()
+//    {
+//        return ThrustAlt32R.nextInt();
+//    }
 
-    @Benchmark
-    public long measureThrust32()
-    {
-        return Thrust32.nextLong();
-    }
-
-    @Benchmark
-    public long measureThrust32Int()
-    {
-        return Thrust32.next(32);
-    }
-    @Benchmark
-    public long measureThrust32R()
-    {
-        return Thrust32R.nextLong();
-    }
-
-    @Benchmark
-    public long measureThrust32IntR()
-    {
-        return Thrust32R.nextInt();
-    }
-
-
-    private ThrustAlt32RNG ThrustAlt32 = new ThrustAlt32RNG(9999);
-    private RNG ThrustAlt32R = new RNG(ThrustAlt32);
-
-    @Benchmark
-    public long measureThrustAlt32()
-    {
-        return ThrustAlt32.nextLong();
-    }
-
-    @Benchmark
-    public long measureThrustAlt32Int()
-    {
-        return ThrustAlt32.next(32);
-    }
-    @Benchmark
-    public long measureThrustAlt32R()
-    {
-        return ThrustAlt32R.nextLong();
-    }
-
-    @Benchmark
-    public long measureThrustAlt32IntR()
-    {
-        return ThrustAlt32R.nextInt();
-    }
-
-    private Light32RNG Light32 = new Light32RNG(9999);
-    private RNG Light32R = new RNG(Light32);
-
-    @Benchmark
-    public long measureLight32()
-    {
-        return Light32.nextLong();
-    }
-
-    @Benchmark
-    public long measureLight32Int()
-    {
-        return Light32.next(32);
-    }
-    @Benchmark
-    public long measureLight32R()
-    {
-        return Light32R.nextLong();
-    }
-
-    @Benchmark
-    public long measureLight32IntR()
-    {
-        return Light32R.nextInt();
-    }
+//    private Light32RNG Light32 = new Light32RNG(9999);
+//    private RNG Light32R = new RNG(Light32);
+//
+//    @Benchmark
+//    public long measureLight32()
+//    {
+//        return Light32.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureLight32Int()
+//    {
+//        return Light32.next(32);
+//    }
+//    @Benchmark
+//    public long measureLight32R()
+//    {
+//        return Light32R.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureLight32IntR()
+//    {
+//        return Light32R.nextInt();
+//    }
 
     /*
     public long doJet()

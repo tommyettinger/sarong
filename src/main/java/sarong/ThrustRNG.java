@@ -24,11 +24,12 @@ import java.io.Serializable;
  * <br>
  * The speed of this generator is fairly good, and it is the fastest generator in this library that passes BigCrush.
  * It succeeds on a mid-sized amount of data with PractRand (it easily passes with the 64MB that other generators have
- * been tested with, and also 256MB), but fails on 32GB or more of random data. LapRNG, FlapRNG (when FlapRNG produces
- * ints), and (narrowly) ThunderRNG are faster, but all have significant amounts of PractRand testing failures and
- * wouldn't possibly pass BigCrush, indicating flaws in quality. You may want {@link ThrustAltRNG}, which is slower
- * (on par with SplitMix64, called LightRNG here), but has much better quality on large amounts of test data (it can
- * pass PractRand with a terabyte or more of random data, and beats LightRNG on gjrand's tests with 100GB of data).
+ * been tested with, and also 256MB), but fails on 32GB or more of random data, or sometimes on 16GB. LapRNG, FlapRNG
+ * (when FlapRNG produces ints), and (narrowly) ThunderRNG are faster, but all have significant amounts of PractRand
+ * testing failures and wouldn't possibly pass BigCrush, indicating flaws in quality. You may want {@link ThrustAltRNG},
+ * which is slower (on par with SplitMix64, called LightRNG here), but has much better quality on large amounts of test
+ * data (it can pass PractRand with 32TB of random data, and beats LightRNG on gjrand's tests with 100GB of data, but
+ * can't produce all possible long values and produces some long values more often).
  * <br>
  * The performance of this RandomnessSource has been surprisingly reasonable to improve beyond the baseline of
  * SplitMix64; where LightRNG takes 1.385 seconds to generate a billion pseudo-random long values, this takes just under

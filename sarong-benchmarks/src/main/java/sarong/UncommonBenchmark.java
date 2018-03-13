@@ -144,31 +144,31 @@ public class UncommonBenchmark {
         return LongPeriodR.nextInt();
     }
 
-    private LightRNG Light = new LightRNG(9999L);
-    private RNG LightR = new RNG(Light);
-    @Benchmark
-    public long measureLight()
-    {
-        return Light.nextLong();
-    }
-
-    @Benchmark
-    public long measureLightInt()
-    {
-        return Light.next(32);
-    }
-    @Benchmark
-    public long measureLightR()
-    {
-        return LightR.nextLong();
-    }
-
-    @Benchmark
-    public long measureLightIntR()
-    {
-        return LightR.nextInt();
-    }
-
+//    private LightRNG Light = new LightRNG(9999L);
+//    private RNG LightR = new RNG(Light);
+//    @Benchmark
+//    public long measureLight()
+//    {
+//        return Light.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureLightInt()
+//    {
+//        return Light.next(32);
+//    }
+//    @Benchmark
+//    public long measureLightR()
+//    {
+//        return LightR.nextLong();
+//    }
+//
+//    @Benchmark
+//    public long measureLightIntR()
+//    {
+//        return LightR.nextInt();
+//    }
+//
 
 
 

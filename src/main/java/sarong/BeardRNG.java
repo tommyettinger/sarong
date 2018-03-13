@@ -10,17 +10,16 @@ import java.util.Arrays;
  * One of the highest-quality 64-bit-math generators present in this library, complete with a very long period and over
  * 4096 bits of state (4128 if you include a necessary counter). While BeardRNG does not have a fast lookahead or
  * lookbehind and isn't especially fast, those are its most significant flaws. It is related to BirdRNG, but uses more
- * state and 64-bit math to speed up its {@link #nextLong()} operation. BeardRNG currently passes the PractRand suite of
- * RNG quality testing with no failures given 64MB of random ints, on any of the given folding modes. It may be able to
- * pass DIEHARDER, but that wouldn't be much of a surprise because BeardRNG has so much state, and that tends to make
- * passing that test suite easier.
+ * state and 64-bit math to speed up its {@link #nextLong()} operation. 
  * <br>
- * The exact period of BeardRNG is unknown at this point. It has 64 longs of state, and updates one long of state by
- * adding a constant value with each generation. Another long, which may be the same one, is also updated by adding a
- * value derived from the state update earlier in the generation. The two longs of state are chosen by using the most
- * significant 6 bits and least significant 6 bits of an int value that has a constant added to it each generation.
- * The maximum period a PRNG can have with 4096 bits of state is 2 to the 4096, but Beard probably has a smaller period
- * than that, possibly as low as 2 to the 127.
+ * The exact period of BeardRNG, and its quality on larger test data, is unknown at this point. It has 64 longs of
+ * state, and updates one long of state by adding a constant value with each generation. Another long, which may be the
+ * same one, is also updated by adding a value derived from the state update earlier in the generation. The two longs of
+ * state are chosen by using the most significant 6 bits and least significant 6 bits of an int value that has a
+ * constant added to it each generation. The maximum period a PRNG can have with 4096 bits of state is 2 to the 4096,
+ * but Beard probably has a smaller period than that, possibly as low as 2 to the 127. Because this uses an int as a
+ * counter, it won't behave well on GWT without some changes; int values won't overflow on GWT unless you use a bitwise
+ * operator on them to force wrapping into a 32-bit range, and will instead lose precision over time.
  * <br>
  * Created by Tommy Ettinger on 6/14/2017.
  */

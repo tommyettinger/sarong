@@ -13,7 +13,8 @@ import java.io.Serializable;
  * changes by adding a large even constant and that is used for the rest of the next 2 to the 32 generations. Although
  * this uses a ternary conditional to determine when to change state B, the branch on which state B changes happens so
  * rarely that processor branch prediction can almost optimize it out, and this is just slightly slower than LightRNG on
- * 32-bit int generation. Quality is good here, and this passes PractRand without failures on 64 MB of random values.
+ * 32-bit int generation. Quality is not great with such a small state; this shouldn't be expected to pass many tests on
+ * 2GB or more of tested data.
  * Created by Tommy Ettinger on 7/15/2017.
  */
 public final class Light32RNG implements StatefulRandomness, Serializable {
