@@ -1,5 +1,6 @@
 package sarong;
 
+import org.huldra.math.BigInt;
 import org.junit.Test;
 import sarong.util.StringKit;
 
@@ -317,6 +318,97 @@ public class StrengthTest {
         System.out.println("each bit changes this often relative to 0.5 probability...");
         for (int i = 0; i < 64; i++) {
             System.out.printf("%02d : % .24f %s\n", i, 0.5 - bits[i] / (double) 0x1000000, (Math.abs(0.5 - bits[i] / (double) 0x1000000) >= 0.01) ? "!!!" : "");
+        }
+    }
+
+    @Test
+    public void testVortexStreams()
+    {
+        VortexRNG streamA = new VortexRNG(0xBCD7890456123DEFL, 0);
+        VortexRNG streamB = new VortexRNG(0xBCD7890456123DEFL, 1);
+        VortexRNG streamC = new VortexRNG(0xBCD7890456123DEFL, 2);
+        System.out.println("VortexRNG (testing stream correlation)");
+        long[] bitsAB = new long[64], bitsAC = new long[64], bitsBC = new long[64];
+        long currA = streamA.nextLong(), currB = streamB.nextLong(), currC = streamC.nextLong(), a, b, c;
+        long xorA = currA, xorB = currB, xorC = currC;
+        BigInt totalA = new BigInt(currA), totalB = new BigInt(currB), totalC = new BigInt(currC);
+        int bi;
+        for (long i = 0; i < 0x1000000L; i++) {
+            a = currA ^ (currA = streamA.nextLong());
+            b = currB ^ (currB = streamB.nextLong());
+            c = currC ^ (currC = streamC.nextLong());
+            xorA ^= currA;
+            xorB ^= currB;
+            xorC ^= currC;
+            totalA.add(currA);
+            totalB.add(currB);
+            totalC.add(currC);
+            bi = 63;
+            for (long bit = 0x8000000000000000L; bit != 0; bit >>>= 1, bi--) {
+                bitsAB[bi] += (a & b & bit) >>> bi;
+                bitsAC[bi] += (a & c & bit) >>> bi;
+                bitsBC[bi] += (b & c & bit) >>> bi;
+            }
+        }
+        System.out.println("THRUST: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("Stream 0 stats: bit xor " + StringKit.bin(xorA) + " ; total " + totalA.toString());
+        System.out.println("Stream 1 stats: bit xor " + StringKit.bin(xorB) + " ; total " + totalB.toString());
+        System.out.println("Stream 2 stats: bit xor " + StringKit.bin(xorC) + " ; total " + totalC.toString());
+        System.out.println("each bit changes in both of two streams this often relative to 0.0 probability...");
+        for (int i = 0; i < 64; i++) {
+            System.out.printf("With stream 0 and stream 1: %02d : % .24f\n", i, bitsAB[i] / 0x1p24);
+        }
+        for (int i = 0; i < 64; i++) {
+            System.out.printf("With stream 0 and stream 2: %02d : % .24f\n", i, bitsAC[i] / 0x1p24);
+        }
+        for (int i = 0; i < 64; i++) {
+            System.out.printf("With stream 1 and stream 2: %02d : % .24f\n", i, bitsBC[i] / 0x1p24);
+        }
+    }
+    @Test
+    public void testVortexStreamsLow32()
+    {
+        VortexRNG streamA = new VortexRNG(0xABD7890456123DEFL, 0);
+        VortexRNG streamB = new VortexRNG(0xABD7890456123DEFL, 1);
+        VortexRNG streamC = new VortexRNG(0xABD7890456123DEFL, 2);
+        System.out.println("VortexRNG (testing stream correlation)");
+        long[] bitsAB = new long[32], bitsAC = new long[32], bitsBC = new long[32];
+        long currA = streamA.nextLong() & 0xFFFFFFFFL, currB = streamB.nextLong() & 0xFFFFFFFFL, currC = streamC.nextLong() & 0xFFFFFFFFL, a, b, c;
+        long xorA = currA, xorB = currB, xorC = currC;
+        BigInt totalA = new BigInt(currA), totalB = new BigInt(currB), totalC = new BigInt(currC);
+        int bi;
+        for (long i = 0; i < 0x1000000L; i++) {
+            a = currA ^ (currA = (streamA.nextLong() & 0xFFFFFFFFL));
+            b = currB ^ (currB = (streamB.nextLong() & 0xFFFFFFFFL));
+            c = currC ^ (currC = (streamC.nextLong() & 0xFFFFFFFFL));
+            xorA ^= currA;
+            xorB ^= currB;
+            xorC ^= currC;
+            totalA.add(currA);
+            totalB.add(currB);
+            totalC.add(currC);
+            bi = 31;
+            for (long bit = 0x80000000L; bit != 0; bit >>>= 1, bi--) {
+                bitsAB[bi] += (a & b & bit) >>> bi;
+                bitsAC[bi] += (a & c & bit) >>> bi;
+                bitsBC[bi] += (b & c & bit) >>> bi;
+            }
+        }
+        System.out.println("THRUST: Out of 0x1000000 random numbers,");
+        //System.out.println("Out of 4,294,967,296 random numbers,");
+        System.out.println("Stream 0 stats: bit xor " + StringKit.bin(xorA).substring(32) + " ; total " + totalA.toString());
+        System.out.println("Stream 1 stats: bit xor " + StringKit.bin(xorB).substring(32) + " ; total " + totalB.toString());
+        System.out.println("Stream 2 stats: bit xor " + StringKit.bin(xorC).substring(32) + " ; total " + totalC.toString());
+        System.out.println("each bit changes in both of two streams this often relative to 0.0 probability...");
+        for (int i = 0; i < 32; i++) {
+            System.out.printf("With stream 0 and stream 1: %02d : % .24f\n", i, bitsAB[i] / 0x1p24);
+        }
+        for (int i = 0; i < 32; i++) {
+            System.out.printf("With stream 0 and stream 2: %02d : % .24f\n", i, bitsAC[i] / 0x1p24);
+        }
+        for (int i = 0; i < 32; i++) {
+            System.out.printf("With stream 1 and stream 2: %02d : % .24f\n", i, bitsBC[i] / 0x1p24);
         }
     }
 

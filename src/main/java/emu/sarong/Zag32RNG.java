@@ -14,8 +14,9 @@ import java.io.Serializable;
  * through every int by assigning the XLCG result calculated with stateB to stateB; that is then used as input to a
  * XorShift algorithm (with different constants) and the result added to stateA to get the output of one int. The total
  * period is 0xFFFFFFFF00000000 (18446744069414584320). Quality is very good here, and this passes PractRand without
- * failures and with 3 minor anomalies on 16TB of testing; it may fail or have another anomaly at 32TB, but generally
- * passing 16TB without serious or repeated anomalies is enough to confirm a generator as high-quality.
+ * failures and with 3 minor (classified as "unusual" and all different kinds) anomalies on 32TB of testing; this is
+ * probably enough to confirm a generator as high-quality. It's still possible that tests not present in PractRand can
+ * detect errors in Zag32RNG.
  * <br>
  * Although Zag32RNG has a {@link #determine(int, int)} method, calling it is considerably more complex than other
  * RandomnessSources that provide determine() methods. It also doesn't allow skipping through the state, and a moderate

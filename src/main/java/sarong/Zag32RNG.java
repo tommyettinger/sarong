@@ -6,16 +6,35 @@ import java.io.Serializable;
 
 /**
  * A 32-bit generator that needs no math on 64-bit values to calculate high-quality pseudo-random numbers, and has been
- * adapted to meet the needs of GWT while maintaining compatibility with other JDK platforms. It is a combination of a
- * Marsaglia-style XorShift generator with an "XLCG" generator (like a linear congruential generator but using XOR
- * instead of addition). It has 2 ints for state, stateA and stateB, where stateA is modified by the XorShift and cannot
- * be given 0, and stateB is modified by the XLCG and can be assigned any int. stateA will never be 0, but will be
- * every other int with equal frequency; it repeats every {@code Math.pow(2, 32) - 1} generated numbers. stateB goes
- * through every int by assigning the XLCG result calculated with stateB to stateB; that is then used as input to a
- * XorShift algorithm (with different constants) and the result added to stateA to get the output of one int. The total
- * period is 0xFFFFFFFF00000000 (18446744069414584320). Quality is very good here, and this passes PractRand without
- * failures and with 3 minor anomalies on 16TB of testing; it may fail or have another anomaly at 32TB, but generally
- * passing 16TB without serious or repeated anomalies is enough to confirm a generator as high-quality.
+ * adapted to meet the needs of GWT while maintaining compatibility with other JDK platforms. It won't ever multiply an
+ * int by a number with more than 20 bits, and along with bitwise operations used frequently, this prevents precision
+ * loss on GWT from when an int fails to overflow and exceeds 2 to the 53. The only other generators in this library
+ * that avoid precision loss like that are {@link Zig32RNG}, which precedes this generator and is slightly slower, and
+ * {@link ThrustAlt32RNG}, but that generator isn't capable of producing all int results and has a small bias toward
+ * some other results.
+ * <br>
+ * Zag32RNG has extremely good performance on GWT, though how good depends on the browser being used and whether 32-bit
+ * or 64-bit results are needed. In Opera 51 on a  Windows 7 laptop (64-bit), it takes roughly 43 microseconds to 
+ * generate 10,000 int values with Zag32RNG; ThrustAlt32RNG takes roughly 37 microseconds, and LightRNG takes roughly
+ * 1929 microseconds (yes, math on long values does have a speed penalty to make up for its better accuracy). The total
+ * period of Zag32RNG is 0xFFFFFFFF00000000 (18446744069414584320). Quality is very good here, and this passes PractRand
+ * without failures and with 3 minor anomalies (classified as "unusual" and all different kinds) on 32TB of testing;
+ * this is probably enough to confirm a generator as high-quality. It's still possible that tests not present in
+ * PractRand can detect errors in Zag32RNG.
+ * <br>
+ * For the specific structure of Zag32RNG, it is a combination of a Marsaglia-style XorShift generator with an "XLCG"
+ * generator (like a linear congruential generator but using XOR instead of addition). It has 2 ints for state, stateA
+ * and stateB, where stateA is modified by the XorShift and cannot be given 0, and stateB is modified by the XLCG and
+ * can be assigned any int. stateA will never be 0, but will be every non-0 int with equal frequency; it repeats every
+ * {@code Math.pow(2, 32) - 1} generated numbers. stateB goes through every int over the course of the XLCG's period; it
+ * naturally has a period of {@code Math.pow(2, 32)}. Just adding an XLCG to a XorShift generator isn't enough to ensure
+ * quality; the XLCG's result (not the actual stateB) is xorshifted right twice, as in {@code tempB ^= tempB >>> 13},
+ * before adding the XorShift result of stateA and then xorshifting right once more to get the final value. The XorShift
+ * that stateA uses is a normal kind that involves two rightward shifts and one leftward shift, but because stateB is
+ * updated by an XLCG (which has a higher period on its more-significant bits and a very low period on its
+ * least-significant bits), the numbers using stateB's value need only rightward shifts by varying amounts. This
+ * generator is not reversible given the output of {@link #nextInt()}, though the update steps for stateA and stateB are
+ * both individually reversible.
  * <br>
  * Although Zag32RNG has a {@link #determine(int, int)} method, calling it is considerably more complex than other
  * RandomnessSources that provide determine() methods. It also doesn't allow skipping through the state, and a moderate
