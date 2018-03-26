@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Results:
+ * <br>
+ * <pre>
  * Benchmark                                 Mode  Cnt   Score   Error  Units
  * RNGBenchmark.measureAltThrustDetermine    avgt    5   3.887 ± 0.055  ns/op
  * RNGBenchmark.measureAltThrustRandomize    avgt    5   3.532 ± 0.035  ns/op
@@ -91,14 +93,42 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureXoRoInt               avgt    5   4.206 ± 0.049  ns/op
  * RNGBenchmark.measureXoRoIntR              avgt    5   4.674 ± 0.069  ns/op
  * RNGBenchmark.measureXoRoR                 avgt    5   4.206 ± 0.053  ns/op
- *
+ * </pre>
+ * <br>
  * ThrustAltRNG is the fastest so far that passes stringent quality tests (no failures with gjrand on many seeds and few
  * seeds cause severe failures, none systematically; 32TB PractRand testing completed without failure). Jab63, inlined
- * in particular, is faster and still tests as having high quality, but it can't produce all possible 64-bit longs.
- * LightRNG passes PractRand but has more frequent issues with gjrand. XoRo fails PractRand unless you disregard binary
- * matrix rank tests, as the author recommends; because gjrand can't take a test out of consideration, XoRo probably
- * fails it fully. ThrustRNG does reasonably well on gjrand but fails on PractRand at only 32GB. VortexRNG does very
- * well on gjrand and passes PractRand at 32TB, but it's also slower than XoRo with a smaller period on the same state.
+ * in particular, is faster and still tests as having high quality, but neither it nor ThrustAltRNG can produce all
+ * possible 64-bit longs. LightRNG passes PractRand but has more frequent issues with gjrand. XoRo fails PractRand
+ * unless you disregard binary matrix rank tests, as the author recommends; because gjrand can't take a test out of
+ * consideration, XoRo probably fails it fully. ThrustRNG does reasonably well on gjrand but fails on PractRand at only
+ * 32GB. VortexRNG does very well on gjrand and passes PractRand at 32TB, but it's also slower than XoRo with a smaller
+ * period on the same state.
+ * <br>
+ * As for the recently-added GWT-friendly generators Zig32RNG, Zag32RNG, Zog32RNG, and XoRo32RNG, the first three all
+ * perform about equally well on GWT and pass PractRand, while XoRo32RNG performs very well on GWT but fails a few tests
+ * in PractRand fairly early on (There are ways to eliminate the statistical quality issues, but they also slow down the
+ * generator significantly). Even though Zig and Zag are similar, Zog32RNG performs quite a bit better on desktop:
+ * <br>
+ * <pre>
+ * Benchmark                       Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureXoRo32      avgt    5  5.148 ± 0.352  ns/op
+ * RNGBenchmark.measureXoRo32Int   avgt    5  3.825 ± 0.427  ns/op
+ * RNGBenchmark.measureXoRo32IntR  avgt    5  4.111 ± 0.396  ns/op
+ * RNGBenchmark.measureXoRo32R     avgt    5  6.029 ± 1.172  ns/op
+ * RNGBenchmark.measureZag32       avgt    5  7.638 ± 1.260  ns/op
+ * RNGBenchmark.measureZag32Int    avgt    5  4.732 ± 0.851  ns/op
+ * RNGBenchmark.measureZag32IntR   avgt    5  5.393 ± 0.919  ns/op
+ * RNGBenchmark.measureZag32R      avgt    5  8.506 ± 1.333  ns/op
+ * RNGBenchmark.measureZig32       avgt    5  8.167 ± 1.734  ns/op
+ * RNGBenchmark.measureZig32Int    avgt    5  4.843 ± 0.582  ns/op
+ * RNGBenchmark.measureZig32IntR   avgt    5  5.573 ± 0.647  ns/op
+ * RNGBenchmark.measureZig32R      avgt    5  9.015 ± 1.248  ns/op
+ * RNGBenchmark.measureZog32       avgt    5  7.151 ± 1.485  ns/op
+ * RNGBenchmark.measureZog32Int    avgt    5  4.488 ± 0.899  ns/op
+ * RNGBenchmark.measureZog32IntR   avgt    5  5.248 ± 0.758  ns/op
+ * RNGBenchmark.measureZog32R      avgt    5  7.950 ± 1.415  ns/op
+ * </pre>
+ * 
  */
 
 @State(Scope.Thread)
@@ -1355,7 +1385,56 @@ public class RNGBenchmark {
     {
         return Zag32R.nextInt();
     }
-    
+
+    private Zog32RNG Zog32 = new Zog32RNG(9999L);
+    private RNG Zog32R = new RNG(Zog32);
+    @Benchmark
+    public long measureZog32()
+    {
+        return Zog32.nextLong();
+    }
+
+    @Benchmark
+    public long measureZog32Int()
+    {
+        return Zog32.next(32);
+    }
+    @Benchmark
+    public long measureZog32R()
+    {
+        return Zog32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureZog32IntR()
+    {
+        return Zog32R.nextInt();
+    }
+
+    private XoRo32RNG XoRo32 = new XoRo32RNG(9999L);
+    private RNG XoRo32R = new RNG(XoRo32);
+    @Benchmark
+    public long measureXoRo32()
+    {
+        return XoRo32.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoRo32Int()
+    {
+        return XoRo32.next(32);
+    }
+    @Benchmark
+    public long measureXoRo32R()
+    {
+        return XoRo32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoRo32IntR()
+    {
+        return XoRo32R.nextInt();
+    }
 
     /*
     public long doJet()

@@ -8,7 +8,9 @@ import java.util.Iterator;
  * Created by Tommy Ettinger on 3/21/2016.
  */
 public class StringKit {
-
+    
+    private static final char[] workArray = new char[64];
+    
     public static String join(CharSequence delimiter, CharSequence... elements) {
         if (elements == null || elements.length == 0) return "";
         StringBuilder sb = new StringBuilder(64);
@@ -402,29 +404,76 @@ public class StringKit {
     }
 
     public static String bin(long number) {
-        String h = Long.toBinaryString(number);
-        return mask64.substring(0, 64 - h.length()) + h;
+        for (int i = 0; i < 64; i++) {
+            workArray[63 - i] = (char)(48L | (number >>> i & 1L));
+        }
+        return new String(workArray, 0, 64);
+//        String h = Long.toBinaryString(number);
+//        return mask64.substring(0, 64 - h.length()) + h;
     }
 
     public static String bin(int number) {
-        String h = Integer.toBinaryString(number);
-        return mask32.substring(0, 32 - h.length()) + h;
+        for (int i = 0; i < 32; i++) {
+            workArray[31 - i] = (char)(48 | (number >>> i & 1));
+        }
+        return new String(workArray, 0, 32);
+//        String h = Integer.toBinaryString(number);
+//        return mask32.substring(0, 32 - h.length()) + h;
     }
 
     public static String bin(short number) {
-        String h = Integer.toHexString(number & 0xffff);
-        return mask16.substring(0, 16 - h.length()) + h;
+        for (int i = 0; i < 16; i++) {
+            workArray[15 - i] = (char)(48 | (number >>> i & 1));
+        }
+        return new String(workArray, 0, 16);
+
+//        String h = Integer.toHexString(number & 0xffff);
+//        return mask16.substring(0, 16 - h.length()) + h;
     }
 
     public static String bin(char number) {
-        String h = Integer.toHexString(number & 0xffff);
-        return mask16.substring(0, 16 - h.length()) + h;
+        for (int i = 0; i < 16; i++) {
+            workArray[15 - i] = (char)(48 | (number >>> i & 1));
+        }
+        return new String(workArray, 0, 16);
+
+//        String h = Integer.toHexString(number & 0xffff);
+//        return mask16.substring(0, 16 - h.length()) + h;
     }
 
     public static String bin(byte number) {
-        String h = Integer.toHexString(number & 0xff);
-        return mask8.substring(0, 8 - h.length()) + h;
+        for (int i = 0; i < 8; i++) {
+            workArray[7 - i] = (char)(48 | (number >>> i & 1));
+        }
+        return new String(workArray, 0, 8);
+
+//        String h = Integer.toHexString(number & 0xff);
+//        return mask8.substring(0, 8 - h.length()) + h;
     }
+
+    /**
+     * Gets the binary (base-2) representation of the int {@code number} in reverse order (least significant bit first).
+     * @param number any int
+     * @return a String consisting of only '0' and '1' representing the bits of number, with the first char the LSB
+     */
+    public static String binRev(int number) {
+        for (int i = 0; i < 32; i++) {
+            workArray[i] = (char)(48 | (number >>> i & 1));
+        }
+        return new String(workArray, 0, 32);
+    }
+    /**
+     * Gets the binary (base-2) representation of the long {@code number} in reverse order (least significant bit first).
+     * @param number any long
+     * @return a String consisting of only '0' and '1' representing the bits of number, with the first char the LSB
+     */
+    public static String binRev(long number) {
+        for (int i = 0; i < 64; i++) {
+            workArray[i] = (char)(48L | (number >>> i & 1L));
+        }
+        return new String(workArray, 0, 64);
+    }
+
     private static final int[] hexCodes = new int[]
             {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                     -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,

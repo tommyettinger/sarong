@@ -36,6 +36,8 @@ Never space after for or if or akin, it looks ugly.
 Bracketless loops may be on one line. For nested bracketless loops each should be indented on a new line.
 */
 
+import sarong.util.StringKit;
+
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -1785,6 +1787,36 @@ public class BigInt extends Number implements Comparable<BigInt>
 		System.arraycopy(cpy,0,dig,0, len = cpy.length);
 		return new String(buf, top, buf.length-top);
 	}
+	/**
+	 * Gets the base-2 representation of this BigInt with the most significant bit (padded with zeroes to a multiple of
+	 * 32) first.
+	 * @return a String starting with '+' or '-' and followed by several '0' and '1' with the last char representing the least significant bit
+	 */
+	public String toBinaryString()
+	{
+		StringBuilder sb = new StringBuilder((len << 5) + 1);
+		sb.append(sign < 0 ? '-' : '+');
+		for (int i = len - 1; i >= 0; i--) {
+			sb.append(StringKit.bin(dig[i]));
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Gets the base-2 representation of this BigInt with the least significant bit first. This can be useful when
+	 * output is left-justified and you need to compare columns of equivalent significance.
+	 * @return a String starting with '+' or '-' and followed by several '0' and '1' with the second char representing the least significant bit
+	 */
+	public String toReversedBinaryString()
+	{
+		StringBuilder sb = new StringBuilder((len << 5) + 1);
+		sb.append(sign < 0 ? '-' : '+');
+		for (int i = 0; i < len; i++) {
+			sb.append(StringKit.binRev(dig[i]));
+		}
+		return sb.toString();
+	}
+
 	// Divides the number by 10^13 and returns the remainder.
 	// Does not change the sign of the number.
 	private long toStringDiv()
@@ -1933,8 +1965,7 @@ public class BigInt extends Number implements Comparable<BigInt>
 		for(; j<=bigBit && dig[j]==0;) ++j;
 		if(j>bigBit) return false;
 		if(j<bigBit) return (dig[bigBit]&1<<smallBit)==0;
-		j = -dig[bigBit];
-		return (j&1<<smallBit)!=0;
+		return ((-dig[bigBit])&1<<smallBit)!=0;
 	}
 
 	/**
