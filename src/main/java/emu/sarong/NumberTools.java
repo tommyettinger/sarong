@@ -316,4 +316,67 @@ public class NumberTools {
         radians *= 2f - radians;
         return radians * (-0.775f - 0.225f * radians) * ((floor & 2) - 1);
     }
+    /**
+     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
+     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
+     * Takes y and x (in that unusual order) as doubles, and returns the angle from the origin to that point in radians.
+     * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
+     * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
+     * @return the angle to the given point, in radians as a double
+     */
+    public static double atan2(double y, double x) {
+        if(y == 0.0)
+        {
+            return x < 0 ? 3.141592653589793 : 0.0;
+        }
+        else if(y < 0.0)
+        {
+            if (x >= 0.0) {
+                return 0.7853981633974483 - 0.7853981633974483 * ((x + y) / (x - y));
+            } else {
+                return 2.3561944901923453 - 0.7853981633974483 * ((x - y) / (-y - x));
+            }
+        }
+        else
+        {
+            if (x >= 0.0) {
+                return 0.7853981633974483 - 0.7853981633974483 * ((x - y) / (x + y));
+            } else {
+                return 2.3561944901923453 - 0.7853981633974483 * ((x + y) / (y - x));
+            }
+
+        }
+    }
+    /**
+     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
+     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
+     * Takes y and x (in that unusual order) as floats, and returns the angle from the origin to that point in radians.
+     * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
+     * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
+     * @return the angle to the given point, in radians as a float
+     */
+    public static float atan2(float y, float x) {
+        if(y == 0f)
+        {
+            return x < 0f ? 3.141592653589793f : 0.0f;
+        }
+        else if(y < 0.0f)
+        {
+            if (x >= 0.0f) {
+                return 0.7853981633974483f - 0.7853981633974483f * ((x + y) / (x - y));
+            } else {
+                return 2.3561944901923453f - 0.7853981633974483f * ((x - y) / (-y - x));
+            }
+        }
+        else
+        {
+            if (x >= 0.0f) {
+                return 0.7853981633974483f - 0.7853981633974483f * ((x - y) / (x + y));
+            } else {
+                return 2.3561944901923453f - 0.7853981633974483f * ((x + y) / (y - x));
+            }
+
+        }
+    }
+
 }

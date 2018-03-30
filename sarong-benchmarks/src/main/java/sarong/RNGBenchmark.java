@@ -129,6 +129,24 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureZog32R      avgt    5  7.950 ± 1.415  ns/op
  * </pre>
  * 
+ * Testing the newly-added variant on XoRo32RNG called Oriole32RNG, Oriole beats Zog on speed (but very narrowly) and
+ * about the same quality, while both Oriole and Zog trounce XoRo32 on quality but are still slower than it. Oriole also
+ * has the best period of the group, but isn't a StatefulRandomness.
+ * <pre>
+ * Benchmark                         Mode  Cnt   Score   Error  Units
+ * RNGBenchmark.measureOriole32      avgt   10   8.282 ± 0.549  ns/op
+ * RNGBenchmark.measureOriole32Int   avgt   10   5.689 ± 0.352  ns/op
+ * RNGBenchmark.measureOriole32IntR  avgt   10   6.313 ± 0.237  ns/op
+ * RNGBenchmark.measureOriole32R     avgt   10   8.837 ± 0.370  ns/op
+ * RNGBenchmark.measureXoRo32        avgt   10   6.710 ± 0.453  ns/op
+ * RNGBenchmark.measureXoRo32Int     avgt   10   5.070 ± 0.237  ns/op
+ * RNGBenchmark.measureXoRo32IntR    avgt   10   5.583 ± 0.444  ns/op
+ * RNGBenchmark.measureXoRo32R       avgt   10   7.566 ± 0.271  ns/op
+ * RNGBenchmark.measureZog32         avgt   10   9.183 ± 0.543  ns/op
+ * RNGBenchmark.measureZog32Int      avgt   10   5.876 ± 0.361  ns/op
+ * RNGBenchmark.measureZog32IntR     avgt   10   6.448 ± 0.395  ns/op
+ * RNGBenchmark.measureZog32R        avgt   10  10.192 ± 0.701  ns/op
+ * </pre>
  */
 
 @State(Scope.Thread)
@@ -1436,6 +1454,34 @@ public class RNGBenchmark {
         return XoRo32R.nextInt();
     }
 
+
+
+    private Oriole32RNG Oriole32 = new Oriole32RNG(9999, 999, 99);
+    private RNG Oriole32R = new RNG(Oriole32);
+    @Benchmark
+    public long measureOriole32()
+    {
+        return Oriole32.nextLong();
+    }
+
+    @Benchmark
+    public long measureOriole32Int()
+    {
+        return Oriole32.next(32);
+    }
+    @Benchmark
+    public long measureOriole32R()
+    {
+        return Oriole32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureOriole32IntR()
+    {
+        return Oriole32R.nextInt();
+    }
+
+    
     /*
     public long doJet()
     {

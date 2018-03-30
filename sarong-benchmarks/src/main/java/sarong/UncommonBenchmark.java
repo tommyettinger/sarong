@@ -411,6 +411,12 @@ public class UncommonBenchmark {
     private short cosClimatiano = -0x8000;
     private short cosClimatianoLP = -0x8000;
     private short baseline = -0x8000;
+    private short mathAtan2X = -0x4000;
+    private short mathAtan2Y = -0x8000;
+    private short atan2ApproxX = -0x4000;
+    private short atan2ApproxY = -0x8000;
+    private short atan2ApproxXF = -0x4000;
+    private short atan2ApproxYF = -0x8000;
 
 
     @Benchmark
@@ -436,6 +442,24 @@ public class UncommonBenchmark {
 //        return s;
         return Math.sin(inputs[mathSin++ & 0xFFFF]);
         //return Math.cos((mathCos += 0.0625) * 3.141592653589793);
+    }
+
+    @Benchmark
+    public double measureMathAtan2()
+    {
+        return Math.atan2(inputs[mathAtan2Y++ & 0xFFFF], inputs[mathAtan2X++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public double measureApproxAtan2()
+    {
+        return NumberTools.atan2(inputs[atan2ApproxY++ & 0xFFFF], inputs[atan2ApproxX++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float measureApproxAtan2Float()
+    {
+        return NumberTools.atan2(floatInputs[atan2ApproxYF++ & 0xFFFF], floatInputs[atan2ApproxXF++ & 0xFFFF]);
     }
 
 
