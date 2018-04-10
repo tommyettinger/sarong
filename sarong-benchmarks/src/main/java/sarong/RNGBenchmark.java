@@ -129,23 +129,28 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureZog32R      avgt    5  7.950 ± 1.415  ns/op
  * </pre>
  * 
- * Testing the newly-added variant on XoRo32RNG called Oriole32RNG, Oriole beats Zog on speed (but very narrowly) and
- * about the same quality, while both Oriole and Zog trounce XoRo32 on quality but are still slower than it. Oriole also
- * has the best period of the group, but isn't a StatefulRandomness.
+ * Testing the newly-added variants on XoRo32RNG called Oriole32RNG and Lathe32RNG, Lathe is the faster of the two, and
+ * both beat Zog on speed (Oriole very narrowly, Lathe comfortably) while all three have about the same quality.
+ * Lathe, Oriole, and Zog trounce XoRo32 on quality but are still slower than it. Oriole also has the best period of the
+ * group, but isn't a StatefulRandomness, while Lathe has the same period as XoRo32 and is a StatefulRandomness.
  * <pre>
- * Benchmark                         Mode  Cnt   Score   Error  Units
- * RNGBenchmark.measureOriole32      avgt   10   8.282 ± 0.549  ns/op
- * RNGBenchmark.measureOriole32Int   avgt   10   5.689 ± 0.352  ns/op
- * RNGBenchmark.measureOriole32IntR  avgt   10   6.313 ± 0.237  ns/op
- * RNGBenchmark.measureOriole32R     avgt   10   8.837 ± 0.370  ns/op
- * RNGBenchmark.measureXoRo32        avgt   10   6.710 ± 0.453  ns/op
- * RNGBenchmark.measureXoRo32Int     avgt   10   5.070 ± 0.237  ns/op
- * RNGBenchmark.measureXoRo32IntR    avgt   10   5.583 ± 0.444  ns/op
- * RNGBenchmark.measureXoRo32R       avgt   10   7.566 ± 0.271  ns/op
- * RNGBenchmark.measureZog32         avgt   10   9.183 ± 0.543  ns/op
- * RNGBenchmark.measureZog32Int      avgt   10   5.876 ± 0.361  ns/op
- * RNGBenchmark.measureZog32IntR     avgt   10   6.448 ± 0.395  ns/op
- * RNGBenchmark.measureZog32R        avgt   10  10.192 ± 0.701  ns/op
+ * Benchmark                         Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLathe32       avgt   10  5.692 ± 0.054  ns/op
+ * RNGBenchmark.measureLathe32Int    avgt   10  3.971 ± 0.022  ns/op
+ * RNGBenchmark.measureLathe32IntR   avgt   10  4.684 ± 0.460  ns/op
+ * RNGBenchmark.measureLathe32R      avgt   10  6.456 ± 0.109  ns/op
+ * RNGBenchmark.measureOriole32      avgt   10  6.168 ± 0.029  ns/op
+ * RNGBenchmark.measureOriole32Int   avgt   10  4.262 ± 0.020  ns/op
+ * RNGBenchmark.measureOriole32IntR  avgt   10  4.816 ± 0.038  ns/op
+ * RNGBenchmark.measureOriole32R     avgt   10  6.884 ± 0.101  ns/op
+ * RNGBenchmark.measureXoRo32        avgt   10  5.047 ± 0.026  ns/op
+ * RNGBenchmark.measureXoRo32Int     avgt   10  3.717 ± 0.022  ns/op
+ * RNGBenchmark.measureXoRo32IntR    avgt   10  4.034 ± 0.029  ns/op
+ * RNGBenchmark.measureXoRo32R       avgt   10  5.749 ± 0.024  ns/op
+ * RNGBenchmark.measureZog32         avgt   10  6.839 ± 0.029  ns/op
+ * RNGBenchmark.measureZog32Int      avgt   10  4.305 ± 0.026  ns/op
+ * RNGBenchmark.measureZog32IntR     avgt   10  4.967 ± 0.028  ns/op
+ * RNGBenchmark.measureZog32R        avgt   10  7.586 ± 0.065  ns/op
  * </pre>
  */
 
@@ -1479,6 +1484,31 @@ public class RNGBenchmark {
     public long measureOriole32IntR()
     {
         return Oriole32R.nextInt();
+    }
+
+    private Lathe32RNG Lathe32 = new Lathe32RNG(9999, 999);
+    private RNG Lathe32R = new RNG(Lathe32);
+    @Benchmark
+    public long measureLathe32()
+    {
+        return Lathe32.nextLong();
+    }
+
+    @Benchmark
+    public long measureLathe32Int()
+    {
+        return Lathe32.next(32);
+    }
+    @Benchmark
+    public long measureLathe32R()
+    {
+        return Lathe32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureLathe32IntR()
+    {
+        return Lathe32R.nextInt();
     }
 
     

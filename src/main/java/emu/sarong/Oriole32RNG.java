@@ -1,10 +1,11 @@
-package sarong;/*  Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
+/*  Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
 
 To the extent possible under law, the author has dedicated all copyright
 and related and neighboring rights to this software to the public domain
 worldwide. This software is distributed without any warranty.
 
 See <http://creativecommons.org/publicdomain/zero/1.0/>. */
+package sarong;
 
 import sarong.util.StringKit;
 
@@ -212,8 +213,7 @@ public final class Oriole32RNG implements RandomnessSource, Serializable {
 
         Oriole32RNG oriole32RNG = (Oriole32RNG) o;
 
-        if (stateA != oriole32RNG.stateA) return false;
-        return stateB == oriole32RNG.stateB;
+        return stateA == oriole32RNG.stateA && stateB == oriole32RNG.stateB && stateC == oriole32RNG.stateC;
     }
 
     @Override

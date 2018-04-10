@@ -214,8 +214,7 @@ public final class Oriole32RNG implements RandomnessSource, Serializable {
 
         Oriole32RNG oriole32RNG = (Oriole32RNG) o;
 
-        if (stateA != oriole32RNG.stateA) return false;
-        return stateB == oriole32RNG.stateB;
+        return stateA == oriole32RNG.stateA && stateB == oriole32RNG.stateB && stateC == oriole32RNG.stateC;
     }
 
     @Override
