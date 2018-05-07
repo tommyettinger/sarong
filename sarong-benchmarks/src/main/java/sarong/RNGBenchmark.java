@@ -1048,28 +1048,35 @@ public class RNGBenchmark {
 
 
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureAltThrustDetermine() {
-        return ThrustAltRNG.determine(++state);
+        return ThrustAltRNG.determine(state++);
     }
 
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    public long measureLightDetermine() {
+        return LightRNG.determine(state++);
+    }
+
+    @Benchmark
+    public long measureDervishDetermine() {
+        return DervishRNG.determine(state++);
+    }
+
+    //@Benchmark
     public long measureVortexDetermine() {
-        return VortexRNG.determine(++state);
+        return VortexRNG.determine(state++);
     }
 
-    @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
+    //@Benchmark
     public long measureVortexDetermineBare() {
         return VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L);
     }
 
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureAltThrustRandomize() {
         return ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L);
     }
+
     private ThrustAltRNG ThrustAlt = new ThrustAltRNG(9999L);
     private RNG ThrustAltR = new RNG(ThrustAlt);
     @Benchmark
@@ -1511,6 +1518,31 @@ public class RNGBenchmark {
         return Lathe32R.nextInt();
     }
 
+
+    private DervishRNG Dervish = new DervishRNG(9999L);
+    private RNG DervishR = new RNG(Dervish);
+    @Benchmark
+    public long measureDervish()
+    {
+        return Dervish.nextLong();
+    }
+
+    @Benchmark
+    public long measureDervishInt()
+    {
+        return Dervish.next(32);
+    }
+    @Benchmark
+    public long measureDervishR()
+    {
+        return DervishR.nextLong();
+    }
+
+    @Benchmark
+    public long measureDervishIntR()
+    {
+        return DervishR.nextInt();
+    }
     
     /*
     public long doJet()
