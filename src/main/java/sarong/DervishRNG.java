@@ -52,7 +52,10 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
     @Override
     public final int next(int bits)
     {
-        return determineBits(state++, bits);
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return (int)(y ^ y >>> 26) >>> (32 - bits);
     }
 
     /**
@@ -62,7 +65,13 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      */
     @Override
     public final long nextLong() {
-        return determine(state++);
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return y ^ y >>> 26;
+        
+
+        //return determine(state++);
         //final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
         //return y ^ y >>> 26;
     }
@@ -85,7 +94,10 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        return (int)determine(state++);
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return (int)(y ^ y >>> 26);
     }
 
     /**
@@ -96,7 +108,10 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        return determineBounded(state++, bound);
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return (int)((bound * ((y ^ y >>> 26) & 0xFFFFFFFFL)) >> 32);
     }
 
     /**
@@ -144,7 +159,11 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        return determineDouble(state++);
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return ((y ^ y >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+
     }
 
     /**
@@ -155,7 +174,10 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        return determineDouble(state++) * outer;
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L;
+        return ((y ^ y >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
     /**
@@ -164,7 +186,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        return determineFloat(state++);
+        final long z = state;
+        state += 0x9E3779B97F4A7C15L;
+        return (((z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L) >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -174,7 +198,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        return determine(state++) < 0L;
+        final long z = state;
+        state += 0x9E3779B97F4A7C15L;
+        return ((z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L) < 0;
     }
 
     /**
@@ -220,8 +246,11 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     @Override
-    public final long skip(long advance) {
-        return determine((state += advance) - 1L);
+    public final long skip(final long advance) {
+        final long z = state;
+        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
+        state += 0x9E3779B97F4A7C15L * advance;
+        return y ^ y >>> 26;
     }
 
 
@@ -271,24 +300,48 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
     public int hashCode() {
         return (int) (state ^ (state >>> 32));
     }
-    
+//    
 //    public static void main(String[] args)
 //    {
 //        /*
 //        cd target/classes
 //        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/DervishRNG > Dervish_asm.txt
 //         */
-//        long seed = 1L, state = 1L;
-//        DervishRNG rng = new DervishRNG(seed);
+//        long longState = 1L;
+//        int intState = 1;
+//        float floatState = 0f;
+//        double doubleState = 0.0;
+//        DervishRNG rng = new DervishRNG(1L);
+//        //longState += determine(i);
+//        //longState = longState + 0x9E3779B97F4A7C15L;
+//        //seed += determine(longState++);
 //        for (int r = 0; r < 10; r++) {
-//            for (int i = 0; i < 1000000007; i++) {
-//                //seed += determine(i);
-//                //state = state + 0x9E3779B97F4A7C15L;
-//                //seed += determine(state++);
-//                seed += rng.nextLong();
+//            for (int i = 0; i < 10000007; i++) {
+//                longState += rng.nextLong();
 //            }
 //        }
-//        System.out.println(seed);
+//        System.out.println(longState);
+//        
+//        for (int r = 0; r < 10; r++) {
+//            for (int i = 0; i < 10000007; i++) {
+//                intState += rng.next(16);
+//            }
+//        }
+//        System.out.println(intState);
+//
+//        for (int r = 0; r < 10; r++) {
+//            for (int i = 0; i < 10000007; i++) {
+//                floatState += rng.nextFloat();
+//            }
+//        }
+//        System.out.println(floatState);
+//
+//        for (int r = 0; r < 10; r++) {
+//            for (int i = 0; i < 10000007; i++) {
+//                doubleState += rng.nextDouble();
+//            }
+//        }
+//        System.out.println(doubleState);
 //
 //    }
 
