@@ -1543,6 +1543,32 @@ public class RNGBenchmark {
     {
         return DervishR.nextInt();
     }
+
+
+    private LinnormRNG Linnorm = new LinnormRNG(9999L);
+    private RNG LinnormR = new RNG(Linnorm);
+    @Benchmark
+    public long measureLinnorm()
+    {
+        return Linnorm.nextLong();
+    }
+
+    @Benchmark
+    public long measureLinnormInt()
+    {
+        return Linnorm.next(32);
+    }
+    @Benchmark
+    public long measureLinnormR()
+    {
+        return LinnormR.nextLong();
+    }
+
+    @Benchmark
+    public long measureLinnormIntR()
+    {
+        return LinnormR.nextInt();
+    }
     
     /*
     public long doJet()

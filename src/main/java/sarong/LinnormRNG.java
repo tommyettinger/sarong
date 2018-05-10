@@ -6,28 +6,27 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A random number generator with 64 bits of state that natively outputs 64 bits at a time, based around a reversible
- * rearrangement of the state's bits that seems very robust quality-wise. This technique is similar to
- * {@link PermutedRNG}, but the exact mechanism is rather different. The state updates linearly, using a large fixed
- * increment like {@link LightRNG}. That state's value is bitwise-rotated 4 times and all rotations are XORed with the
- * state, before one multiplication and one right xorshift, then that is returned. All 64-bit states will be used by
- * this generator over its full period of 2 to the 64, and because it is fully reversible, we know that all 64-bit
- * outputs will be produced over that period (this is also like LightRNG). Using four bitwise rotations is uncommon, but
- * anything less is either non-reversible or fails statistical quality tests. The {@link #determine(long)} methods in
- * this class should be fairly good, and require one less 64-bit multiplication than {@link LightRNG#determine(long)} at
- * the expense of more bitwise operations. This generator passes PractRand at 32TB with only one anomaly (rated
- * "unusual" and near the end of testing, and the last two steps are free of anomalies). It failed one test on TestU01
- * with a seed of 1, but didn't fail any with the same seed when the bits are reversed. It is unclear currently if the
- * TestU01 failure (out of 160 tests run) is a sign of a deeper problem, but PractRand couldn't find one. In fact, the 1
- * anomaly at the 8TB mark of PractRand is better than LightRNG's 2 anomalies at its 8GB mark in PractRand, testing on
- * 1/1024 the data (neither fails PractRand).
+ * A very-high-quality StatefulRandomness that is the fastest 64-bit generator in this library that passes statistical
+ * tests and is equidistributed. Has 64 bits of state and natively outputs 64 bits at a time, changing the state with a
+ * basic linear congruential generator (it is simply {@code state = state * 1103515245 + 1}). Starting with that LCG's
+ * output, it xorshifts that output, multiplies by a very large negative long, then returns another xorshift. For
+ * whatever reason, the output of this simple function passes 16TB of PractRand with no anomalies, meaning its
+ * statistical quality is excellent. It is highly likely to pass 32TB without a failure, though some anomalies may be
+ * possible on other starting states or at the final 32TB step of testing. As mentioned earlier, this appears to be the
+ * fastest high-quality generator other than maybe {@link ThrustAltRNG}. Unlike ThrustAltRNG, this can produce all long
+ * values as output; ThrustAltRNG bunches some outputs and makes producing them more likely while others can't be
+ * produced at all. Notably, this generator is faster than {@link LightRNG} while keeping the same or higher quality,
+ * and also faster than {@link XoRoRNG} while passing tests that XoRoRNG always or frequently fails, such as binary
+ * matrix rank tests. Since statistical tests are still running, the performance benchmarks have had to be repeated to
+ * account for increased and variable CPU load, and LinnormRNG is reliably at the top during any group of benchmarks.
  * <br>
- * The name comes from the many rotations the code performs by different amounts, like a whirling dervish.
+ * The name comes from LINear congruential generator this uses to change it state, while the rest is a NORMal
+ * SplitMix64-like generator. "Linnorm" is a Norwegian name for a kind of dragon, as well. 
  * <br>
  * Written in 2018 by Tommy Ettinger.
  * @author Tommy Ettinger
  */
-public final class DervishRNG implements StatefulRandomness, SkippingRandomness, Serializable {
+public final class LinnormRNG implements StatefulRandomness, Serializable {
 
     private static final long serialVersionUID = 153186732328748834L;
 
@@ -36,26 +35,25 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
     /**
      * Creates a new generator seeded using Math.random.
      */
-    public DervishRNG() {
+    public LinnormRNG() {
         this((long) ((Math.random() - 0.5) * 0x10000000000000L)
                 ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
-    public DervishRNG(final long seed) {
+    public LinnormRNG(final long seed) {
         state = seed;
     }
 
-    public DervishRNG(final String seed) {
+    public LinnormRNG(final String seed) {
         state = CrossHash.hash64(seed);
     }
 
     @Override
     public final int next(int bits)
     {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return (int)(y ^ y >>> 26) >>> (32 - bits);
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
 
     /**
@@ -65,15 +63,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      */
     @Override
     public final long nextLong() {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return y ^ y >>> 26;
-        
-
-        //return determine(state++);
-        //final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        //return y ^ y >>> 26;
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (z ^ z >>> 25);
     }
 
     /**
@@ -84,8 +76,8 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a copy of this RandomnessSource
      */
     @Override
-    public DervishRNG copy() {
-        return new DervishRNG(state);
+    public LinnormRNG copy() {
+        return new LinnormRNG(state);
     }
 
     /**
@@ -94,10 +86,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return (int)(y ^ y >>> 26);
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25);
     }
 
     /**
@@ -108,10 +99,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return (int)((bound * ((y ^ y >>> 26) & 0xFFFFFFFFL)) >> 32);
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
 
     /**
@@ -121,7 +111,7 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @param outer the outer bound, exclusive, can be positive or negative, usually greater than inner
      * @return a random int between inner (inclusive) and outer (exclusive)
      */
-    public int nextInt(final int inner, final int outer) {
+    public final int nextInt(final int inner, final int outer) {
         return inner + nextInt(outer - inner);
     }
 
@@ -159,10 +149,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return ((y ^ y >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
 
@@ -174,10 +163,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L;
-        return ((y ^ y >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
+        long z = (state = state * 0x41C64E6DL + 1L);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
     /**
@@ -186,9 +174,8 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        final long z = state;
-        state += 0x9E3779B97F4A7C15L;
-        return (((z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L) >>> 40) * 0x1p-24f;
+        long z = (state = state * 0x41C64E6DL + 1L);
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -198,9 +185,8 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        final long z = state;
-        state += 0x9E3779B97F4A7C15L;
-        return ((z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L) < 0;
+        long z = (state = state * 0x41C64E6DL + 1L);
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L) < 0;
     }
 
     /**
@@ -237,53 +223,9 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
         return state;
     }
 
-    /**
-     * Advances or rolls back the DervishRNG's state without actually generating each number. Skips forward
-     * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
-     * and returns the random number produced at that step (you can get the state with {@link #getState()}).
-     *
-     * @param advance Number of future generations to skip over; can be negative to backtrack, 0 gets the most-recently-generated number
-     * @return the random long generated after skipping forward or backwards by {@code advance} numbers
-     */
-    @Override
-    public final long skip(final long advance) {
-        final long z = state;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        state += 0x9E3779B97F4A7C15L * advance;
-        return y ^ y >>> 26;
-    }
-
-
     @Override
     public String toString() {
-        return "DervishRNG with state 0x" + StringKit.hex(state) + 'L';
-    }
-
-    public static long determine(final long state) {
-        final long z = state * 0x9E3779B97F4A7C15L;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        return y ^ y >>> 26;
-    }
-
-    public static int determineBits(final long state, final int bits) {
-        final long z = state * 0x9E3779B97F4A7C15L;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        return (int)(y ^ y >>> 26) >>> (32 - bits);
-    }
-    
-    public static int determineBounded(final long state, final int bound) {
-        final long z = state * 0x9E3779B97F4A7C15L;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        return (int)((bound * ((y ^ y >>> 26) & 0xFFFFFFFFL)) >> 32);
-    }
-    public static float determineFloat(final long state) {
-        final long z = state * 0x9E3779B97F4A7C15L;
-        return (((z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L) >>> 40) * 0x1p-24f;
-    }
-    public static double determineDouble(final long state) {
-        final long z = state * 0x9E3779B97F4A7C15L;
-        final long y = (z ^ (z << 13 | z >>> 51) ^ (z << 31 | z >>> 33) ^ (z << 41 | z >>> 23) ^ (z << 59 | z >>> 5)) * 0x6C8E9CF570932BD3L;
-        return ((y ^ y >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        return "LinnormRNG with state 0x" + StringKit.hex(state) + 'L';
     }
 
     @Override
@@ -291,7 +233,7 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DervishRNG dervishRNG = (DervishRNG) o;
+        LinnormRNG dervishRNG = (LinnormRNG) o;
 
         return state == dervishRNG.state;
     }
@@ -300,7 +242,7 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
     public int hashCode() {
         return (int) (state ^ (state >>> 32));
     }
-//    
+
 //    public static void main(String[] args)
 //    {
 //        /*
@@ -311,7 +253,7 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
 //        int intState = 1;
 //        float floatState = 0f;
 //        double doubleState = 0.0;
-//        DervishRNG rng = new DervishRNG(1L);
+//        LinnormRNG rng = new LinnormRNG(1L);
 //        //longState += determine(i);
 //        //longState = longState + 0x9E3779B97F4A7C15L;
 //        //seed += determine(longState++);
@@ -321,7 +263,7 @@ public final class DervishRNG implements StatefulRandomness, SkippingRandomness,
 //            }
 //        }
 //        System.out.println(longState);
-//        
+//
 //        for (int r = 0; r < 10; r++) {
 //            for (int i = 0; i < 10000007; i++) {
 //                intState += rng.next(16);
