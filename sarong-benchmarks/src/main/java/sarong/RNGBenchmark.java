@@ -152,6 +152,24 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureZog32IntR     avgt   10  4.967 ± 0.028  ns/op
  * RNGBenchmark.measureZog32R        avgt   10  7.586 ± 0.065  ns/op
  * </pre>
+ * <br>
+ * Testing the top 3 contenders among equidistributed generators (LightRNG and the new LinnormRNG pass 32TB on PractRand
+ * but XoRoRNG reliably fails one group of tests and sometimes fails others):
+ * <pre>
+ * Benchmark                       Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLight       avgt    5  3.763 ± 0.204  ns/op
+ * RNGBenchmark.measureLightInt    avgt    5  4.047 ± 0.008  ns/op
+ * RNGBenchmark.measureLinnorm     avgt    5  3.442 ± 0.018  ns/op
+ * RNGBenchmark.measureLinnormInt  avgt    5  3.668 ± 0.010  ns/op
+ * RNGBenchmark.measureXoRo        avgt    5  3.656 ± 0.028  ns/op
+ * RNGBenchmark.measureXoRoInt     avgt    5  3.941 ± 0.034  ns/op
+ * ...and one result for the non-equidistributed ThrustAltRNG...
+ * RNGBenchmark.measureThrustAlt   avgt    5  3.322 ± 0.053  ns/op
+ * </pre>
+ * Linnorm is the new best generator we have, except that it isn't a SkippingRandomness and its period is "just" 2 to
+ * the 64. Every other need seems to be met by its high speed, easily-stored state, unsurpassed statistical quality, and
+ * ability to produce all long values. ThrustAltRNG may be faster, but since it isn't known how many numbers it is
+ * incapable of producing, it probably shouldn't be used for procedural generation.
  */
 
 @State(Scope.Thread)

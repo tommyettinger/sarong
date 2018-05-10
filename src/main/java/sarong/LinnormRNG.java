@@ -10,20 +10,20 @@ import java.io.Serializable;
  * tests and is equidistributed. Has 64 bits of state and natively outputs 64 bits at a time, changing the state with a
  * basic linear congruential generator (it is simply {@code state = state * 1103515245 + 1}). Starting with that LCG's
  * output, it xorshifts that output, multiplies by a very large negative long, then returns another xorshift. For
- * whatever reason, the output of this simple function passes 16TB of PractRand with no anomalies, meaning its
- * statistical quality is excellent. It is highly likely to pass 32TB without a failure, though some anomalies may be
- * possible on other starting states or at the final 32TB step of testing. As mentioned earlier, this appears to be the
- * fastest high-quality generator other than maybe {@link ThrustAltRNG}. Unlike ThrustAltRNG, this can produce all long
- * values as output; ThrustAltRNG bunches some outputs and makes producing them more likely while others can't be
- * produced at all. Notably, this generator is faster than {@link LightRNG} while keeping the same or higher quality,
- * and also faster than {@link XoRoRNG} while passing tests that XoRoRNG always or frequently fails, such as binary
- * matrix rank tests. Since statistical tests are still running, the performance benchmarks have had to be repeated to
- * account for increased and variable CPU load, and LinnormRNG is reliably at the top during any group of benchmarks.
+ * whatever reason, the output of this simple function passes all 32TB of PractRand with no anomalies, meaning its
+ * statistical quality is excellent. The closest generator in terms of PractRand quality is {@link DervishRNG} with 1
+ * anomaly, and this is much faster. As mentioned earlier, this is the fastest high-quality generator here other than
+ * {@link ThrustAltRNG}. Unlike ThrustAltRNG, this can produce all long values as output; ThrustAltRNG bunches some
+ * outputs and makes producing them more likely while others can't be produced at all. Notably, this generator is faster
+ * than {@link LightRNG} while keeping the same or higher quality, and also faster than {@link XoRoRNG} while passing
+ * tests that XoRoRNG always or frequently fails, such as binary matrix rank tests. This generator is a
+ * StatefulRandomness but not a SkippingRandomness, so it can't use (efficiently, anyway) the skip() method that
+ * LightRNG has. A method could be written to run the generator's state backwards, though.
  * <br>
  * The name comes from LINear congruential generator this uses to change it state, while the rest is a NORMal
  * SplitMix64-like generator. "Linnorm" is a Norwegian name for a kind of dragon, as well. 
  * <br>
- * Written in 2018 by Tommy Ettinger.
+ * Written May 9, 2018 by Tommy Ettinger.
  * @author Tommy Ettinger
  */
 public final class LinnormRNG implements StatefulRandomness, Serializable {
@@ -232,10 +232,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        LinnormRNG dervishRNG = (LinnormRNG) o;
-
-        return state == dervishRNG.state;
+        return state == ((LinnormRNG) o).state;
     }
 
     @Override
