@@ -1587,6 +1587,31 @@ public class RNGBenchmark {
     {
         return LinnormR.nextInt();
     }
+
+    private MizuchiRNG Mizuchi = new MizuchiRNG(9999L);
+    private RNG MizuchiR = new RNG(Mizuchi);
+    @Benchmark
+    public long measureMizuchi()
+    {
+        return Mizuchi.nextLong();
+    }
+
+    @Benchmark
+    public long measureMizuchiInt()
+    {
+        return Mizuchi.next(32);
+    }
+    @Benchmark
+    public long measureMizuchiR()
+    {
+        return MizuchiR.nextLong();
+    }
+
+    @Benchmark
+    public long measureMizuchiIntR()
+    {
+        return MizuchiR.nextInt();
+    }
     
     /*
     public long doJet()

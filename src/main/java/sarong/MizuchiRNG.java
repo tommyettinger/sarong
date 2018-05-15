@@ -6,37 +6,41 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A very-high-quality StatefulRandomness that is the fastest 64-bit generator in this library that passes statistical
- * tests and is equidistributed. Has 64 bits of state and natively outputs 64 bits at a time, changing the state with a
- * basic linear congruential generator (it is simply {@code state = state * 1103515245 + 1}). Starting with that LCG's
- * output, it xorshifts that output, multiplies by a very large negative long, then returns another xorshift. For
- * whatever reason, the output of this simple function passes all 32TB of PractRand with no anomalies, meaning its
- * statistical quality is excellent. Other than the nearly-identical algorithm used by {@link MizuchiRNG}, the closest
- * generator in terms of PractRand quality is {@link DervishRNG} with 1 anomaly, and this is much faster. As mentioned
- * earlier, this is the fastest high-quality generator here (tied with MizuchiRNG) other than {@link ThrustAltRNG}.
- * Unlike ThrustAltRNG, this can produce all long values as output; ThrustAltRNG bunches some outputs and makes
- * producing them more likely while others can't be produced at all. Notably, this generator is faster than
- * {@link LightRNG} while keeping the same or higher quality, and also faster than {@link XoRoRNG} while passing tests
- * that XoRoRNG always or frequently fails, such as binary matrix rank tests.
+ * A very-high-quality StatefulRandomness based on {@link LinnormRNG} but modified to allow any odd number as a stream,
+ * instead of LinnormRNG's hardcoded stream of 1. Has 64 bits of state, 64 bits used to store a stream (which cannot be
+ * changed after construction) and natively outputs 64 bits at a time. Changes its state with a basic linear
+ * congruential generator (it is simply {@code state = state * 1103515245 + stream}). Starting with that LCG's
+ * output, it xorshifts that output, multiplies by a very large negative long, then returns another xorshift. Like
+ * LinnormRNG, the output of this simple function passes all 32TB of PractRand with no anomalies (at least for the
+ * tested streams), meaning its statistical quality is excellent. The speed of this particular class isn't fully clear
+ * yet, but benchmarks performed under the heavy load of PractRand testing happening at the same time appeared to show
+ * no significant difference between LinnormRNG and MizuchiRNG in speed (which means it's tied for first place in its
+ * category). Some streams may have statistical issues, even failures, but such streams are unlikely to exist because
+ * the theory on LCGs shows that any odd-number increments are all fundamentally similar (I'm no expert, I've just read
+ * <a href="http://www.pcg-random.org/posts/critiquing-pcg-streams.html">this blog post on the related PCG family</a>).
+ * If streams are problematic, they are more likely to be in the "3 structure" than the "1 structure" in that blog post,
+ * where the 3 structure is the structure shared by all LCG increments where {@code (increment & 3) == 3} and the 1
+ * structure is where {@code (increment & 3) == 1}. Really in-depth testing has so far only been done on streams where
+ * {@code (increment & 7) == 1} (this should be a subset of the 1 structure). If issues are found with a group of
+ * streams, this class will be updated and the stream setting will change from {@code this.stream = (stream | 1L);} to
+ * some more involved technique, like potentially {@code this.stream = ((stream & -3L) | 1L);}, which would make
+ * {@code (this.stream & 3) == 1} always true.
  * <br>
  * This generator is a StatefulRandomness but not a SkippingRandomness, so it can't (efficiently) have the skip() method
  * that LightRNG has. A method could be written to run the generator's state backwards, though, as well as to get the
- * state from an output of {@link #nextLong()}. {@link MizuchiRNG} uses the same algorithm except for the number added
- * in the LCG state update; here this number is always 1, but in MizuchiRNG it can be any odd long. This means that any
- * given MizuchiRNG object has two long values stored in it instead of the one here, but it allows two MizuchiRNG
+ * state from an output of {@link #nextLong()}. {@link LinnormRNG} uses the same algorithm except for the number added
+ * in the LCG state update; there this number is always 1, but here it can be any odd long. This means that any given
+ * MizuchiRNG object has two long values stored in it instead of the one in a LinnormRNG, but it allows two MizuchiRNG
  * objects with different streams to produce different, probably-not-correlated sequences of results, even with the same
  * seed. This property may be useful for cases where an adversary is trying to predict results in some way, though using
  * different streams for this purpose isn't enough and should be coupled with truncation of a large part of output (see
  * PCG-Random's techniques for this).
  * <br>
- * The name comes from LINear congruential generator this uses to change it state, while the rest is a NORMal
- * SplitMix64-like generator. "Linnorm" is a Norwegian name for a kind of dragon, as well. 
+ * The name comes from combining the concept of a linnorm, which is a dragon and the namesake of LinnormRNG, with
+ * streams, since Mizuchi allows many possible streams, to get the concept of a river-or-stream-dwelling dragon. The
+ * mizuchi is a (by some versions of the story) river dragon from Japanese mythology.
  * <br>
- * The shift amounts changed on May 14, which seems to improve quality on more starting seeds. These match the shift
- * amounts used by {@link MizuchiRNG}, which is virtually identical except for allowing a large amount of separate
- * streams.
- * <br>
- * Written May 19, 2018 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators both
+ * Written May 14, 2018 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators both
  * this and her PCG-Random fall into, and to the team that worked on SplitMix64 for SplittableRandom in JDK 8. Chris
  * Doty-Humphrey's work on PractRand has been invaluable, and the LCG multiplier this uses is the same one used by
  * PractRand in its "varqual" LCGs (the other, longer multiplier is from PCG-Random, and that's both the
@@ -46,32 +50,45 @@ import java.io.Serializable;
  * the generator (LinnormRNG passes over 100TB of HWD, and probably would pass much more if I gave it more days to run).
  * @author Tommy Ettinger
  */
-public final class LinnormRNG implements StatefulRandomness, Serializable {
+public final class MizuchiRNG implements StatefulRandomness, Serializable {
 
     private static final long serialVersionUID = 153186732328748834L;
 
     private long state; /* The state can be seeded with any value. */
+    
+    private final long stream;
 
     /**
      * Creates a new generator seeded using Math.random.
      */
-    public LinnormRNG() {
+    public MizuchiRNG() {
         this((long) ((Math.random() - 0.5) * 0x10000000000000L)
-                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L),
+                (long) ((Math.random() - 0.5) * 0x10000000000000L)
+                        ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
-    public LinnormRNG(final long seed) {
+    public MizuchiRNG(final long seed) {
         state = seed;
+        this.stream = (seed
+                ^ Long.rotateLeft((seed ^ 0x369DEA0F31A53F85L) * 0x6A5D39EAE116586DL + 0x9E3779B97F4A7C15L, (int)seed)
+                ^ Long.rotateLeft((seed ^ 0x6A5D39EAE116586DL) * 0x369DEA0F31A53F85L + 0x4A7C159E3779B97FL, (int)seed * 0x41C64E6D >>> 26)) | 1L;
     }
 
-    public LinnormRNG(final String seed) {
+    public MizuchiRNG(final long seed, final long stream) {
+        state = seed;
+        this.stream = (stream | 1L);
+    }
+
+    public MizuchiRNG(final String seed) {
         state = CrossHash.hash64(seed);
+        stream = (CrossHash.Mist.predefined[(int) state & 31].hash64(seed) | 1L);
     }
 
     @Override
     public final int next(int bits)
     {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return (int)(z ^ z >>> 30) >>> (32 - bits);
     }
@@ -83,7 +100,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return (z ^ z >>> 30);
     }
@@ -96,8 +113,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public LinnormRNG copy() {
-        return new LinnormRNG(state);
+    public MizuchiRNG copy() {
+        return new MizuchiRNG(state);
     }
 
     /**
@@ -106,7 +123,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return (int)(z ^ z >>> 30);
     }
@@ -119,7 +136,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return (int)((bound * ((z ^ z >>> 30) & 0xFFFFFFFFL)) >> 32);
     }
@@ -169,7 +186,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
@@ -183,7 +200,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        long z = (state = state * 0x41C64E6DL + 1L);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
         return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
@@ -194,7 +211,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        final long z = (state = state * 0x41C64E6DL + 1L);
+        final long z = (state = state * 0x41C64E6DL + stream);
         return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
     }
 
@@ -205,7 +222,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        final long z = (state = state * 0x41C64E6DL + 1L);
+        final long z = (state = state * 0x41C64E6DL + stream);
         return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L) < 0;
     }
 
@@ -245,19 +262,20 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "LinnormRNG with state 0x" + StringKit.hex(state) + 'L';
+        return "MizuchiRNG with state 0x" + StringKit.hex(state) + "L on stream 0x" + StringKit.hex(stream) + 'L';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return state == ((LinnormRNG) o).state;
+        MizuchiRNG mizuchiRNG = ((MizuchiRNG) o);
+        return state == mizuchiRNG.state && stream == mizuchiRNG.stream;
     }
 
     @Override
     public int hashCode() {
-        return (int) (state ^ (state >>> 32));
+        return (int) ((state ^ (state >>> 32)) * 31L + (stream ^ (stream >>> 32)));
     }
 
 //    public static void main(String[] args)
@@ -270,7 +288,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
 //        int intState = 1;
 //        float floatState = 0f;
 //        double doubleState = 0.0;
-//        LinnormRNG rng = new LinnormRNG(1L);
+//        MizuchiRNG rng = new MizuchiRNG(1L, 123456789L);
 //        //longState += determine(i);
 //        //longState = longState + 0x9E3779B97F4A7C15L;
 //        //seed += determine(longState++);

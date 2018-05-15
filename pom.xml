@@ -220,7 +220,6 @@
                     <linksource>true</linksource>
                     <detectOfflineLinks>false</detectOfflineLinks>
                     <excludePackageNames>*emu*</excludePackageNames>
-                    <!--<additionalparam>-Xdoclint:none</additionalparam>-->
                 </configuration>
             </plugin>
         </plugins>
