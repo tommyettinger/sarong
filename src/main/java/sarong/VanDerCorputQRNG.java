@@ -40,23 +40,31 @@ import java.io.Serializable;
  * desirable for many kinds of positioning in 2D: once a point has been generated, an identical point will never be
  * generated until floating-point precision runs out, but more than that, nearby points will almost never be generated
  * for many generations, and most points will stay at a comfortable distance from each other if the bases are different
- * and both prime (as well as, more technically, if they share no common denominators). This is also known as a Halton
- * sequence, which is a group of sequences of points instead of simply numbers. The choices of 3 and 5 are examples; any
- * two different primes will technically work for 2D, but patterns can be noticeable with primes larger than about 7,
- * with 11 and 13 sometimes acceptable. Three VanDerCorputQRNG sequences could be used for a Halton sequence of 3D
+ * and both prime (or, more technically, if they share no common denominators). This is also known as a Halton sequence,
+ * which is a group of sequences of points instead of simply numbers. The choices of 3 and 5 are examples; any two
+ * different primes will technically work for 2D (as well as any two numbers that share no common factor other than 1,
+ * that is, they are relatively coprime), but patterns can be noticeable with primes larger than about 7, with 11 and 13
+ * sometimes acceptable. Three VanDerCorputQRNG sequences could be used for a Halton sequence of 3D
  * points, using three different prime bases, four for 4D, etc. SobolQRNG can be used for the same purpose, but the
  * points it generates are typically more closely-aligned to a specific pattern, the pattern is symmetrical between all
  * four quadrants of the square between (0.0, 0.0) and (1.0, 1.0) in 2D, and it probably extends into higher dimensions.
  * Using one of the possible Halton sequences gives some more flexibility in the kinds of random-like points produced.
+ * Oddly, using a base-2 van der Corput sequence as the x axis in a Halton sequence and a base-39 van der Corput
+ * sequence as the y axis results in the greatest minimum distance between points found so far while still involving a
+ * base-2 sequence (which is preferential for performance). There, the minimum distance between the first 65536 points
+ * in the [0,1) range is 0.001147395; a runner-up is a y base of 13, which has a minimum distance of 0.000871727 . The
+ * (2,39) Halton sequence is used by {@link #halton(int, int, int, int[])}.
  * <br>
  * Because just using the state in a simple incremental fashion puts some difficult requirements on the choice of base
  * and seed, we can scramble the long state {@code i} with code equivalent to
- * {@code (i ^ Long.rotateLeft(i, 3) ^ Long.rotateLeft(i, 17))}. This scramble is different from earlier versions and
+ * {@code (i ^ Long.rotateLeft(i, 7) ^ Long.rotateLeft(i, 17))}. This scramble is different from earlier versions and
  * unlike the earlier ones has a one-to-one mapping from input states to scrambled states.
  * <br>
- * Created by Tommy Ettinger on 11/18/2016.
+ * Created by Tommy Ettinger on 11/18/2016. Uses code adapted from
+ * <a href="https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/">Alan Wolfe's blog</a>,
+ * which turned out to be a lot faster than the previous way I had it implemented.
  */
-public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
+public class VanDerCorputQRNG implements StatefulRandomness, RandomnessSource, Serializable {
     private static final long serialVersionUID = 6;
     public long state;
     public final int base;
@@ -74,7 +82,7 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     /**
      * Constructs a new van der Corput sequence generator with the given starting point in the sequence as a seed.
      * Usually seed should be at least 20 with this constructor, but not drastically larger; 2000 is probably too much.
-     * This will use a base 13 van der Corput sequence and have scrambling disabled.
+     * This will use a base 7 van der Corput sequence and have scrambling disabled.
      * @param seed the seed as a long that will be used as the starting point in the sequence; ideally positive but low
      */
     public VanDerCorputQRNG(long seed)
@@ -109,10 +117,10 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public long nextLong() {
-        long n = (scramble) ? (++state ^ (state << 3 | state >>> 61) ^ (state << 17 | state >>> 47))
-                : (++state & 0x7fffffffffffffffL);
+        long n = (((scramble) ? (++state ^ (state << 7 | state >>> 57) ^ (state << 17 | state >>> 47)) : ++state)
+                & 0x7fffffffffffffffL);
         if(base <= 2) {
-            return Long.reverse(n);
+            return Long.reverse(n) >>> 1;
         }
         double denominator = base, res = 0.0;
         while (n > 0)
@@ -138,8 +146,8 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      * @return a quasi-random double that will always be less than 1.0 and will be no lower than 0.0
      */
     public double nextDouble() {
-        long n = (scramble) ? (++state ^ (state << 3 | state >>> 61) ^ (state << 17 | state >>> 47))
-                : (++state & 0x7fffffffffffffffL);
+        long n = (((scramble) ? (++state ^ (state << 7 | state >>> 57) ^ (state << 17 | state >>> 47)) : ++state)
+                & 0x7fffffffffffffffL);
         if(base <= 2) {
             return (Long.reverse(n) >>> 11) * 0x1p-53;
         }
@@ -172,7 +180,7 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     public String toString() {
         return "VanDerCorputQRNG with base " + base +
                 ", scrambling " + (scramble ? "on" : "off") +
-                ", and state 0x" + StringKit.hex(state);
+                ", and state 0x" + StringKit.hex(state) + "L";
     }
 
     @Override
@@ -195,13 +203,14 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
 
     /**
      * Convenience method that gets a quasi-random 2D point between integer (0,0) inclusive and (width,height)
-     * exclusive. This is roughly equivalent to creating two VanDerCorputQRNG generators, one with
-     * {@code new VanDerCorputQRNG(2, index, false)} and the other with {@code new VanDerCorputQRNG(3, index, false)},
-     * then getting an x-coordinate from the first with {@code (int)(nextDouble() * width)} and similarly for y with the
-     * other generator. The advantage here is you don't actually create any objects using this static method, only
-     * assigning to point, if valid. You might find an advantage in using values for index that start higher than 20 or
-     * so, but you can pass sequential values for index and generally get points that won't be near each other; this is
-     * not true for all parameters to Halton sequences, but it is true for this one.
+     * exclusive and fills it into point. This is roughly equivalent to creating two VanDerCorputQRNG generators, one
+     * with {@code new VanDerCorputQRNG(2, index, false)} and the other with
+     * {@code new VanDerCorputQRNG(39, index, false)}, then getting an x-coordinate from the first with
+     * {@code (int)(nextDouble() * width)} and similarly for y with the other generator. The advantage here is you don't
+     * actually create any objects using this static method, only assigning to point, if valid. You might find an
+     * advantage in using values for index that start higher than 20 or so, but you can pass sequential values for index
+     * and generally get points that won't be near each other; this is not true for all parameters to Halton sequences,
+     * but it is true for this one.
      * @param width the maximum exclusive bound for the x-positions (index 0) of points this can return
      * @param height the maximum exclusive bound for the y-positions (index 1) of points this can return
      * @param index an int that, if unique, positive, and not too large, will usually result in unique points
@@ -213,18 +222,19 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
         if(point == null || point.length < 2)
             point = new int[2];
 
-        double denominator = 3.0, resY = 0.0;
+        double denominator = 39.0, resY = 0.0;
         int n = (index+1 & 0x7fffffff);
         while (n > 0)
         {
-            resY += (n % 3) / denominator;
-            n /= 3;
-            denominator *= 3.0;
+            resY += (n % 39) / denominator;
+            n /= 39;
+            denominator *= 39.0;
         }
         point[0] = (int)(width * (Integer.reverse(index + 1) >>> 1) * 0x1p-31);
         point[1] = (int)(resY * height);
         return point;
     }
+
     /**
      * Convenience method that gets a quasi-random 3D point between integer (0,0,0) inclusive and (width,height,depth)
      * exclusive. This is roughly equivalent to creating three VanDerCorputQRNG generators, one with
@@ -244,7 +254,7 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      */
     public static int[] halton(int width, int height, int depth, int index, int[] point)
     {
-        if(point == null || point.length < 3) 
+        if(point == null || point.length < 3)
             point = new int[3];
 
         double denominator = 3.0, resY = 0.0, resZ = 0.0;
@@ -269,7 +279,7 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
         point[2] = (int)(resZ * depth);
         return point;
     }
-
+    
     /**
      * Convenience method to get a double from the van der Corput sequence with the given {@code base} at the requested
      * {@code index} without needing to construct a VanDerCorputQRNG. You should use a prime number for base; 2, 3, 5,
@@ -280,11 +290,11 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      * own does not perform any scrambling on index other than incrementing it and ensuring it is positive (by
      * discarding the sign bit; for all positive index values other than 0x7FFFFFFF, this has no effect). If you want
      * to quickly scramble an int index {@code i} for this purpose, try
-     * {@code (i ^ (i << 3 | i >>> 29)) ^ (i << 19 | i >>> 13))}, which may compile to SSE instructions on recent 
+     * {@code (i ^ (i << 7 | i >>> 25) ^ (i << 19 | i >>> 13))}, which may compile to SSE instructions on recent 
      * desktop processors and won't risk losing precision on GWT.
      * <br>
      * Uses the same algorithm as {@link #determine2(int)} when base is 2, which should offer some speed improvement.
-     * The other bases use code from
+     * The other bases use code adapted from
      * <a href="https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/">Alan Wolfe's blog</a>,
      * which turned out to be a lot faster than the previous way I had it implemented.
      * @param base a prime number to use as the base/radix of the van der Corput sequence
