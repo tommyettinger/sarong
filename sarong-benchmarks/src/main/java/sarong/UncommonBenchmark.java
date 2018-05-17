@@ -170,8 +170,62 @@ public class UncommonBenchmark {
 //    }
 //
 
+    public static double determineB(final int base, final int index) {
+        if (base <= 2) {
+            return (Integer.reverse(index + 1) >>> 1) * 0x1p-31;
+        }
+        final int s = (index + 1 & 0x7fffffff);
+        int num = s % base, den = base;
+        while (den <= s) {
+            num *= base;
+            num += (s % (den * base)) / den;
+            den *= base;
+        }
+        return num / (double) den;
+    }
 
-
+    private int VDC3_A = 0, VDC5_A = 0, VDC19_A = 0, VDC0xDE4D_A = 0,
+            VDC3_B = 0, VDC5_B = 0, VDC19_B = 0, VDC0xDE4D_B = 0;
+    @Benchmark
+    public double measureVDC3_A()
+    {
+        return VanDerCorputQRNG.determine(3, VDC3_A++);
+    }
+    @Benchmark
+    public double measureVDC5_A()
+    {
+        return VanDerCorputQRNG.determine(5, VDC5_A++);
+    }
+    @Benchmark
+    public double measureVDC19_A()
+    {
+        return VanDerCorputQRNG.determine(19, VDC19_A++);
+    }
+    @Benchmark
+    public double measureVDC0xDE4D_A()
+    {
+        return VanDerCorputQRNG.determine(0xDE4D, VDC0xDE4D_A++);
+    }
+    @Benchmark
+    public double measureVDC3_B()
+    {
+        return determineB(3, VDC3_B++);
+    }
+    @Benchmark
+    public double measureVDC5_B()
+    {
+        return determineB(5, VDC5_B++);
+    }
+    @Benchmark
+    public double measureVDC19_B()
+    {
+        return determineB(19, VDC19_B++);
+    }
+    @Benchmark
+    public double measureVDC0xDE4D_B()
+    {
+        return determineB(0xDE4D, VDC0xDE4D_B++);
+    }
 
     private IsaacRNG Isaac = new IsaacRNG(9999L);
     private RNG IsaacR = new RNG(Isaac);

@@ -13,8 +13,8 @@ import java.io.Serializable;
  * that is incremented once per generated number, but when scramble is true, the state is altered with something similar
  * to a Gray code before being used; more on this later if you want to read about it. The important things to know about
  * this class are: size of state affects speed (prefer smaller seeds, but quality is sometimes a bit poor at first if
- * you start at 0); the base (when given) should be prime and moderately small (or very small if scramble is false, any
- * of 2, 3, 5, or 7 should be safe); this doesn't generate very random numbers when scramble is false (which can be good
+ * you start at 0); the base (when given) should be prime (smaller bases tend to yield better quality, but oddly, larger
+ * bases perform better); this doesn't generate very random numbers when scramble is false (which can be good
  * for making points that should not overlap), but it will seem much more random when scramble is true; this is a
  * StatefulRandomness with an additional method for generating quasi-random doubles, {@link #nextDouble()}; and there
  * are several static methods offered for convenient generation of points on the related Halton sequence (as well as
@@ -22,15 +22,15 @@ import java.io.Serializable;
  * it uses depending on the index to seem even less clearly-patterned).
  * <br>
  * This generator allows a base (also called a radix) that changes the sequence significantly; a base should be prime,
- * and this performs a little better in terms of time used with larger primes, though quality is also improved by
- * preferring primes that aren't very large relative to the quantity of numbers expected to be generated. Unfortunately,
+ * and this performs better in terms of time used with larger primes, though quality is also improved by preferring
+ * primes that aren't very large relative to the quantity of numbers expected to be generated. Unfortunately,
  * performance is not especially similar to conventional PRNGs; smaller (positive) state values are processed more
  * quickly than larger ones, or most negative states. At least one 64-bit integer modulus and one 64-bit integer
  * division are required for any number to be produced, and the amount of both of these relatively-non-cheap operations
  * increases linearly with the number of digits (in the specified base, which is usually not 10) needed to represent
  * the current state. Since performance is not optimal, and the results are rather strange anyway relative to PRNGs,
  * this should not be used as a direct substitute for a typical RandomnessSource (however, it is similar to, but simpler
- * than, {@link SobolQRNG}). So what's it good for?
+ * and faster than, {@link SobolQRNG}). So what's it good for?
  * <br>
  * A VanDerCorputSequence can be a nice building block for more complicated quasi-randomness, especially for points in
  * 2D or 3D, when scramble is false. There's a simple way that should almost always "just work" as the static method
@@ -50,65 +50,38 @@ import java.io.Serializable;
  * Using one of the possible Halton sequences gives some more flexibility in the kinds of random-like points produced.
  * <br>
  * Because just using the state in a simple incremental fashion puts some difficult requirements on the choice of base
- * and seed, we can use a technique like Gray codes to scramble the state. The sequence of these Gray-like codes for the
- * integers from 0 to 16 is {@code 0, 9, 21, 16, 50, 51, 23, 10, 4, 28, 49, 39, 246, 198, 179, 97, 393}, and this can be
- * generated efficiently with {@code (i * i) ^ ((i * 137) >>> 4)}. No duplicate results were found in any numbers of 20
- * bits or less, and trying to find duplicates in 24 bits exhausted the testing computer's memory, without finding a
- * duplicate. You should be fine.
- * <br>
- * Expected output for {@link #nextDouble()} called 33 times on an instance made with {@code new VanDerCorputQRNG(11, 83L, true)}:
- * 0.5194317328051362, 0.8590943241581859, 0.5931288846390274, 0.5045420394781778, 0.7892220476743392,
- * 0.6645037907246772, 0.7809575848644218, 0.0725360289597705, 0.6322655556314459, 0.6998838877125879,
- * 0.5578853903421898, 0.5969537599890717, 0.6323338569769824, 0.873505908066389, 0.09514377433235435,
- * 0.6623864490130456, 0.4376750221979373, 0.6946929854518133, 0.4250392732736835, 0.5294720305990028,
- * 0.4790656375930606, 0.2626869749334062, 0.056075404685472306, 0.9758213236800765, 0.676729731575712,
- * 0.899118912642579, 0.1876237961887849, 0.652755959292398, 0.039683081756710606, 0.10504746943514787,
- * 0.2598183184208729, 0.4078273341984837, 0.3034628782187009
- * <br>
- * Expected output for {@link #nextDouble()} called 33 times on an instance made with {@code new VanDerCorputQRNG(19, 83L, true)}:
- * 0.8944452544102639, 0.7842327790609341, 0.4352023081468067, 0.0696971324652205, 0.5957213342439054,
- * 0.8864342661581787, 0.0167739658228528, 0.8956192785506557, 0.26943470353972115, 0.3525371966145134,
- * 0.09754375733765087, 0.8924118139056637, 0.3585147443619984, 0.9126771587081131, 0.28926266679967155,
- * 0.8542138258607592, 0.8789987799356972, 0.7905019145034184, 0.1624220194749887, 0.9349836173755572,
- * 0.48623015477167914, 0.6716799287912155, 0.8240344994283346, 0.6557883994137552, 0.4561966221867542,
- * 0.07946532024769608, 0.15134168706501638, 0.1382202407900492, 0.7890439760284221, 0.7142517322611092,
- * 0.3069037223471275, 0.7030256060036372, 0.01678163918324752
- * <br>
- * Note on Gray-like code implementation: This is not a typical Gray code. Normally, the operation looks like
- * {@code i ^ (i >>> 1)}, which gives negative results for negative values of i (not wanted here), and also clusters
- * two very similar numbers together for every pair of sequential numbers. An earlier version scrambled with a basic
- * Gray code, but the current style, {@code (i * i) ^ ((i * 137) >>> 4)}, produces much more "wild and crazy" results,
- * but never negative ones. The period of this, if it is seen as a RandomnessSource, is probably about 2^56, at least
- * for reasonably small starting states (under 1000 or so?). This is ideal for a scramble.
+ * and seed, we can scramble the long state {@code i} with code equivalent to
+ * {@code (i ^ Long.rotateLeft(i, 3) ^ Long.rotateLeft(i, 17))}. This scramble is different from earlier versions and
+ * unlike the earlier ones has a one-to-one mapping from input states to scrambled states.
  * <br>
  * Created by Tommy Ettinger on 11/18/2016.
  */
 public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 5;
+    private static final long serialVersionUID = 6;
     public long state;
     public final int base;
     public final boolean scramble;
     /**
-     * Constructs a new van der Corput sequence generator with base 13, starting point 83, and scrambling enabled.
+     * Constructs a new van der Corput sequence generator with base 7, starting point 37, and scrambling disabled.
      */
     public VanDerCorputQRNG()
     {
         base = 7;
         state = 37;
-        scramble = true;
+        scramble = false;
     }
 
     /**
      * Constructs a new van der Corput sequence generator with the given starting point in the sequence as a seed.
      * Usually seed should be at least 20 with this constructor, but not drastically larger; 2000 is probably too much.
-     * This will use a base 13 van der Corput sequence and have scrambling enabled.
+     * This will use a base 13 van der Corput sequence and have scrambling disabled.
      * @param seed the seed as a long that will be used as the starting point in the sequence; ideally positive but low
      */
     public VanDerCorputQRNG(long seed)
     {
         base = 7;
         state = seed;
-        scramble = true;
+        scramble = false;
     }
 
     /**
@@ -136,15 +109,19 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public long nextLong() {
-        // when scrambling the sequence, intentionally uses a non-standard Gray-like code
-        long s = (scramble) ? (++state & 0x7fffffffffffffffL) : (++state * state) ^ (state * 137 >>> 4),
-                num = s % base, den = base;
-        while (den <= s) {
-            num *= base;
-            num += (s % (den * base)) / den;
-            den *= base;
+        long n = (scramble) ? (++state ^ (state << 3 | state >>> 61) ^ (state << 17 | state >>> 47))
+                : (++state & 0x7fffffffffffffffL);
+        if(base <= 2) {
+            return Long.reverse(n);
         }
-        return (Long.MAX_VALUE / den) * num;
+        double denominator = base, res = 0.0;
+        while (n > 0)
+        {
+            res += (n % base) / denominator;
+            n /= base;
+            denominator *= base;
+        }
+        return (long) (res * Long.MAX_VALUE);
     }
 
     @Override
@@ -161,15 +138,19 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      * @return a quasi-random double that will always be less than 1.0 and will be no lower than 0.0
      */
     public double nextDouble() {
-        // when scrambling the sequence, intentionally uses a non-standard Gray-like code
-        long s = (scramble) ? (++state & 0x7fffffffffffffffL) : (++state * state) ^ (state * 137 >>> 4),
-                num = s % base, den = base;
-        while (den <= s) {
-            num *= base;
-            num += (s % (den * base)) / den;
-            den *= base;
+        long n = (scramble) ? (++state ^ (state << 3 | state >>> 61) ^ (state << 17 | state >>> 47))
+                : (++state & 0x7fffffffffffffffL);
+        if(base <= 2) {
+            return (Long.reverse(n) >>> 11) * 0x1p-53;
         }
-        return num / (double)den;
+        double denominator = base, res = 0.0;
+        while (n > 0)
+        {
+            res += (n % base) / denominator;
+            n /= base;
+            denominator *= base;
+        }
+        return res;
     }
 
     @Override
@@ -208,9 +189,8 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     @Override
     public int hashCode() {
         int result = (int) (state ^ (state >>> 32));
-        result = 31 * result + base;
-        result = 31 * result + (scramble ? 1 : 0);
-        return result;
+        result = 31 * result + base | 0;
+        return 31 * result + (scramble ? 1 : 0) | 0;
     }
 
     /**
@@ -232,15 +212,17 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     {
         if(point == null || point.length < 2)
             point = new int[2];
-        int s = (index+1 & 0x7fffffff),
-                numY = s % 3, denY = 3;
-        while (denY <= s) {
-            numY *= 3;
-            numY += (s % (denY * 3)) / denY;
-            denY *= 3;
+
+        double denominator = 3.0, resY = 0.0;
+        int n = (index+1 & 0x7fffffff);
+        while (n > 0)
+        {
+            resY += (n % 3) / denominator;
+            n /= 3;
+            denominator *= 3.0;
         }
-        point[0] = (int)(width * determine2(s));
-        point[1] = numY * height / denY;
+        point[0] = (int)(width * (Integer.reverse(index + 1) >>> 1) * 0x1p-31);
+        point[1] = (int)(resY * height);
         return point;
     }
     /**
@@ -262,67 +244,83 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
      */
     public static int[] halton(int width, int height, int depth, int index, int[] point)
     {
-        if(point == null || point.length < 3)
-        point = new int[3];
+        if(point == null || point.length < 3) 
+            point = new int[3];
 
-        int s = (index+1 & 0x7fffffff),
-                numY = s % 3, denY = 3, numZ = s % 5, denZ = 5;
-        while (denY <= s) {
-            numY *= 3;
-            numY += (s % (denY * 3)) / denY;
-            denY *= 3;
+        double denominator = 3.0, resY = 0.0, resZ = 0.0;
+        int n = (index+1 & 0x7fffffff);
+        while (n > 0)
+        {
+            resY += (n % 3) / denominator;
+            n /= 3;
+            denominator *= 3.0;
         }
-        while (denY <= s) {
-            numZ *= 5;
-            numZ += (s % (denZ * 5)) / denZ;
-            denZ *= 5;
+
+        denominator = 5;
+        n = (index+1 & 0x7fffffff);
+        while (n > 0)
+        {
+            resZ += (n % 5) / denominator;
+            n /= 5;
+            denominator *= 5.0;
         }
-        point[0] = (int)(width * determine2(s));
-        point[1] = numY * height / denY;
-        point[2] = numZ * depth / denZ;
+        point[0] = (int)(width * (Integer.reverse(index + 1) >>> 1) * 0x1p-31);
+        point[1] = (int)(resY * height);
+        point[2] = (int)(resZ * depth);
         return point;
     }
 
     /**
      * Convenience method to get a double from the van der Corput sequence with the given {@code base} at the requested
      * {@code index} without needing to construct a VanDerCorputQRNG. You should use a prime number for base; 2, 3, 5,
-     * and 7 should be among the first choices. This does not perform any scrambling on index other than incrementing it
-     * and ensuring it is positive (by discarding the sign bit; for all positive index values other than 0x7FFFFFFF,
-     * this has no effect).
+     * and 7 should be among the first choices to ensure optimal quality unless you are scrambling the index yourself.
+     * If speed is the priority, then larger prime bases counter-intuitively perform better than small ones; 0x1337,
+     * 0xDE4D, 0x510B and 0xACED are all probable primes (using {@link java.math.BigInteger#isProbablePrime(int)}) that
+     * may do well here for speed but will likely require some basic scrambling of the index order. This method on its
+     * own does not perform any scrambling on index other than incrementing it and ensuring it is positive (by
+     * discarding the sign bit; for all positive index values other than 0x7FFFFFFF, this has no effect). If you want
+     * to quickly scramble an int index {@code i} for this purpose, try
+     * {@code (i ^ (i << 3 | i >>> 29)) ^ (i << 19 | i >>> 13))}, which may compile to SSE instructions on recent 
+     * desktop processors and won't risk losing precision on GWT.
      * <br>
-     * Delegates to {@link #determine2(int)} when base is 2, which should offer some speed improvement.
-     * @param base a (typically very small) prime number to use as the base/radix of the van der Corput sequence
-     * @param index the position in the sequence of the requested base
+     * Uses the same algorithm as {@link #determine2(int)} when base is 2, which should offer some speed improvement.
+     * The other bases use code from
+     * <a href="https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/">Alan Wolfe's blog</a>,
+     * which turned out to be a lot faster than the previous way I had it implemented.
+     * @param base a prime number to use as the base/radix of the van der Corput sequence
+     * @param index the position in the sequence of the requested base, as a non-negative int
      * @return a quasi-random double between 0.0 (inclusive) and 1.0 (exclusive).
      */
-    public static double determine(int base, int index)
+    public static double determine(final int base, final int index)
     {
-        if(base == 2)
-            return determine2(index);
-        int s = (index+1 & 0x7fffffff),
-                num = s % base, den = base;
-        while (den <= s) {
-            num *= base;
-            num += (s % (den * base)) / den;
-            den *= base;
+        if(base <= 2) {
+            return (Integer.reverse(index + 1) >>> 1) * 0x1p-31;
         }
-        return num / (double)den;
+        double denominator = base, res = 0.0;
+        int n = (index+1 & 0x7fffffff);
+        while (n > 0)
+        {
+            res += (n % base) / denominator;
+            n /= base;
+            denominator *= base;
+        }
+        return res;
     }
+
     /**
      * Convenience method to get a double from the van der Corput sequence with the base 2 at the requested
      * {@code index} without needing to construct a VanDerCorputQRNG. This does not perform any scrambling on index
      * other than incrementing it and ensuring it is positive (by discarding the sign bit; for all positive index values
      * other than 0x7FFFFFFF ({@link Integer#MAX_VALUE}), this has no effect).
      * <br>
-     * Because binary manipulation of numbers is easier and more efficient, this method should be somewhat faster than
-     * the alternatives, like {@link #determine(int, int)} with base 2.
-     * @param index the position in the sequence of the requested base
+     * Because binary manipulation of numbers is easier and more efficient, the technique used by this method is also
+     * used by {@link #determine(int, int)} when base is 2, and should be faster than other bases.
+     * @param index the position in the base-2 van der Corput sequence, as a non-negative int
      * @return a quasi-random double between 0.0 (inclusive) and 1.0 (exclusive).
      */
     public static double determine2(int index)
     {
-        int s = (index+1 & 0x7fffffff), leading = Integer.numberOfLeadingZeros(s);
-        return (Integer.reverse(s) >>> leading) / (double)(1 << (32 - leading));
+        return (Integer.reverse(index + 1) >>> 1) * 0x1p-31;
     }
 
     private static final int[] lowPrimes = {2, 3, 2, 3, 5, 2, 3, 2};
@@ -343,8 +341,8 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
     }
     /**
      * Given any int (0 is allowed), this gets a somewhat-sub-random float from 0.0 (inclusive) to 1.0 (exclusive)
-     * using the same implementation as {@link NumberTools#randomFloat(int)} but with index alterations. Only "weak"
-     * because it lacks the stronger certainty of subsequent numbers being separated that the Van der Corput sequence
+     * using the same implementation as {@link NumberTools#randomFloat(long)} but with index alterations. Only "weak"
+     * because it lacks the stronger certainty of subsequent numbers being separated that the van der Corput sequence
      * has. Not actually sub-random, but manages to be distributed remarkably evenly, likely due to the statistical
      * strength of the algorithm it uses (the same as {@link PintRNG}, derived from PCG-Random). Because PintRNG is
      * pseudo-random and uses very different starting states on subsequent calls to its {@link PintRNG#next(int)}
@@ -372,7 +370,7 @@ public class VanDerCorputQRNG implements StatefulRandomness, Serializable {
 
     /**
      * Like {@link #weakDetermine(int)}, but returns a float between -1.0f and 1.0f, exclusive on both. Uses
-     * {@link NumberTools#randomSignedFloat(int)} internally but alters the index parameter so calls with nearby values
+     * {@link NumberTools#randomSignedFloat(long)} internally but alters the index parameter so calls with nearby values
      * for index are less likely to have nearby results.
      * @param index any int
      * @return a sub-random float between -1.0f and 1.0f (both exclusive, unlike some other methods)
