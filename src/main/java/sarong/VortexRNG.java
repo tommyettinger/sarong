@@ -116,7 +116,7 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
      */
     @Override
     public final long nextLong() { 
-        long z = (state += stream);
+        long z = (state = state * 0x41C64E6DL + stream);
         z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
         z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
         return z ^ (z >>> 25);

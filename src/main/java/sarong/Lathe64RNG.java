@@ -12,18 +12,18 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A port of Blackman and Vigna's xoroshiro 128+ generator; should be very fast and produce high-quality output.
- * Testing shows it is within 5% the speed of LightRNG, sometimes faster and sometimes slower, and has a larger period.
- * It's called XoRo because it involves Xor as well as Rotate operations on the 128-bit pseudo-random state.
+ * A port of Blackman and Vigna's xoroshiro128++ generator; should be fairly fast and produce high-quality output.
+ * This modifies xoroshiro128+ with two small extra operations so it passes statistical quality tests, including all of
+ * PractRand's standard 32TB battery.
  * <br>
  * Machines without access to efficient bitwise rotation (such as all desktop JREs and some JDKs run specifying the
  * {@code -client} flag or that default to the client VM, which includes practically all 32-bit Windows JREs but almost
- * no 64-bit JREs or JDKs) may benefit from using XorRNG over XoRoRNG. LightRNG should continue to be very fast, but has
- * a significantly shorter period (the amount of random numbers it will go through before repeating), at
- * {@code pow(2, 64)} as opposed to XorRNG and XoRoRNG's {@code pow(2, 128)}, but LightRNG also allows the current RNG
- * state to be retrieved and altered with {@code getState()} and {@code setState()}. For most cases, you should decide
- * between LightRNG and XoRoRNG based on your needs for period length and state manipulation (LightRNG is also used
- * internally by almost all StatefulRNG objects).
+ * no 64-bit JREs or JDKs) may benefit from using XorRNG over Lathe32RNG. LightRNG should continue to be very fast, but
+ * has a significantly shorter period (the amount of random numbers it will go through before repeating), at
+ * {@code pow(2, 64)} as opposed to XorRNG and Lathe64RNG's {@code pow(2, 128) - 1}, but LightRNG also allows the
+ * current RNG state to be retrieved and altered with {@code getState()} and {@code setState()}. For most cases, you
+ * should decide between LightRNG and XoRoRNG based on your needs for period length and state manipulation (LightRNG is
+ * also used internally by almost all StatefulRNG objects).
  * <br>
  * Original version at http://xoroshiro.di.unimi.it/xoroshiro128plus.c
  * Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
@@ -32,7 +32,7 @@ import java.io.Serializable;
  * @author David Blackman
  * @author Tommy Ettinger
  */
-public final class XoRoRNG implements RandomnessSource, Serializable {
+public final class Lathe64RNG implements RandomnessSource, Serializable {
 
     private static final long DOUBLE_MASK = (1L << 53) - 1;
     private static final double NORM_53 = 1. / (1L << 53);
@@ -46,12 +46,12 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
     /**
      * Creates a new generator seeded using Math.random.
      */
-    public XoRoRNG() {
+    public Lathe64RNG() {
         this((long) ((Math.random() - 0.5) * 0x10000000000000L)
                 ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
     }
 
-    public XoRoRNG(final long seed) {
+    public Lathe64RNG(final long seed) {
         setSeed(seed);
     }
 
@@ -64,7 +64,7 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
         s1 ^= s0;
         state0 = (s0 << 55 | s0 >>> 9) ^ s1 ^ (s1 << 14);
         state1 = (s1 << 36 | s1 >>> 28);
-        return (int) (result >>> (64 - bits));
+        return (int) ((result << 23 | result >>> 41) + s0 >>> (64 - bits));
     }
 
     @Override
@@ -75,7 +75,7 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
         s1 ^= s0;
         state0 = (s0 << 55 | s0 >>> 9) ^ s1 ^ (s1 << 14);
         state1 = (s1 << 36 | s1 >>> 28);
-        return result;
+        return (result << 23 | result >>> 41) + s0;
     }
 
     /**
@@ -86,8 +86,8 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public XoRoRNG copy() {
-        XoRoRNG next = new XoRoRNG(state0);
+    public Lathe64RNG copy() {
+        Lathe64RNG next = new Lathe64RNG(state0);
         next.state0 = state0;
         next.state1 = state1;
         return next;
@@ -187,7 +187,7 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
 
     @Override
     public String toString() {
-        return "XoRoRNG with state hash 0x" + StringKit.hexHash(state0, state1) + 'L';
+        return "Lathe64RNG with state hash 0x" + StringKit.hexHash(state0, state1) + 'L';
     }
 
     @Override
@@ -195,10 +195,10 @@ public final class XoRoRNG implements RandomnessSource, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        XoRoRNG xoRoRNG = (XoRoRNG) o;
+        Lathe64RNG lathe64RNG = (Lathe64RNG) o;
 
-        if (state0 != xoRoRNG.state0) return false;
-        return state1 == xoRoRNG.state1;
+        if (state0 != lathe64RNG.state0) return false;
+        return state1 == lathe64RNG.state1;
     }
 
     @Override

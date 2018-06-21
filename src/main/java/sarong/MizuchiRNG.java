@@ -89,8 +89,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
     public final int next(int bits)
     {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)(z ^ z >>> 30) >>> (32 - bits);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
 
     /**
@@ -101,8 +101,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (z ^ z >>> 30);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (z ^ z >>> 25);
     }
 
     /**
@@ -124,8 +124,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt() {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)(z ^ z >>> 30);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25);
     }
 
     /**
@@ -137,8 +137,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt(final int bound) {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)((bound * ((z ^ z >>> 30) & 0xFFFFFFFFL)) >> 32);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
 
     /**
@@ -160,7 +160,7 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final long nextLong(final long bound) {
         if (bound <= 0) return 0;
-        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
+        final long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
         for (; ; ) {
             long bits = nextLong() & 0x7fffffffffffffffL;
             if (bits >= threshold)
@@ -187,8 +187,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble() {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
 
@@ -201,8 +201,8 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble(final double outer) {
         long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
     /**
@@ -212,7 +212,7 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final float nextFloat() {
         final long z = (state = state * 0x41C64E6DL + stream);
-        return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -223,7 +223,7 @@ public final class MizuchiRNG implements StatefulRandomness, Serializable {
      */
     public final boolean nextBoolean() {
         final long z = (state = state * 0x41C64E6DL + stream);
-        return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L) < 0;
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L) < 0;
     }
 
     /**

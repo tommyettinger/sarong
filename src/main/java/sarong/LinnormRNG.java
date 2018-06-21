@@ -32,10 +32,6 @@ import java.io.Serializable;
  * The name comes from LINear congruential generator this uses to change it state, while the rest is a NORMal
  * SplitMix64-like generator. "Linnorm" is a Norwegian name for a kind of dragon, as well. 
  * <br>
- * The shift amounts changed on May 14, which seems to improve quality on more starting seeds. These match the shift
- * amounts used by {@link MizuchiRNG}, which is virtually identical except for allowing a large amount of separate
- * streams.
- * <br>
  * Written May 19, 2018 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators both
  * this and her PCG-Random fall into, and to the team that worked on SplitMix64 for SplittableRandom in JDK 8. Chris
  * Doty-Humphrey's work on PractRand has been invaluable, and the LCG multiplier this uses is the same one used by
@@ -72,8 +68,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     public final int next(int bits)
     {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)(z ^ z >>> 30) >>> (32 - bits);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
 
     /**
@@ -84,8 +80,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (z ^ z >>> 30);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (z ^ z >>> 25);
     }
 
     /**
@@ -107,8 +103,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt() {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)(z ^ z >>> 30);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)(z ^ z >>> 25);
     }
 
     /**
@@ -120,8 +116,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt(final int bound) {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return (int)((bound * ((z ^ z >>> 30) & 0xFFFFFFFFL)) >> 32);
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
 
     /**
@@ -136,33 +132,87 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     }
 
     /**
-     * Exclusive on the upper bound. The lower bound is 0.
-     *
-     * @param bound the upper bound; should be positive (if negative, this returns 0)
-     * @return a random long less than n
+     * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
+     * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
+     * can even be 0, which will cause this to return 0L every time.
+     * <br>
+     * Credit for this method goes to <a href="https://oroboro.com/large-random-in-range/">Rafael Baptista's blog</a>,
+     * with some adaptation for signed long values and a 64-bit generator. This method is drastically faster than the
+     * previous implementation when the bound varies often (roughly 4x faster, possibly more). It also always gets at
+     * most one random number, so it advances the state as much as {@link #nextInt(int)}.
+     * @param bound the outer exclusive bound; can be positive or negative
+     * @return a random long between 0 (inclusive) and bound (exclusive)
      */
-    public final long nextLong(final long bound) {
-        if (bound <= 0) return 0;
-        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
-        for (; ; ) {
-            long bits = nextLong() & 0x7fffffffffffffffL;
-            if (bits >= threshold)
-                return bits % bound;
-        }
+    public long nextLong(long bound) {
+        long rand = (state = state * 0x41C64E6DL + 1L);
+        rand = (rand ^ rand >>> 27) * 0xAEF17502108EF2D9L;
+        rand ^= rand >>> 25;
+        final long randLow = rand & 0xFFFFFFFFL;
+        final long boundLow = bound & 0xFFFFFFFFL;
+        rand >>>= 32;
+        bound >>= 32;
+        final long z = (randLow * boundLow >> 32);
+        long t = rand * boundLow + z;
+        final long tLow = t & 0xFFFFFFFFL;
+        t >>>= 32;
+        return rand * bound + t + (tLow + randLow * bound >> 32) - (z >> 63) - (bound >> 63);
     }
-
     /**
-     * Inclusive lower, exclusive upper.
+     * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
+     * to be greater than or less than the other.
      *
      * @param lower the lower bound, inclusive, can be positive or negative
-     * @param upper the upper bound, exclusive, should be positive, must be greater than lower
-     * @return a random long at least equal to lower and less than upper
+     * @param upper the upper bound, exclusive, can be positive or negative
+     * @return a random long that may be equal to lower and will otherwise be between lower and upper
      */
     public final long nextLong(final long lower, final long upper) {
-        if (upper - lower <= 0) throw new IllegalArgumentException("Upper bound must be greater than lower bound");
         return lower + nextLong(upper - lower);
     }
 
+    
+    
+//    public final long nextLong(final long bound) {
+//        if (bound <= 0) return 0;
+//        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
+//        for (; ; ) {
+//            long bits = nextLong() & 0x7fffffffffffffffL;
+//            if (bits >= threshold)
+//                return bits % bound;
+//        }
+//    }
+    public final long nextLongOld(final long bound) {
+        if (bound <= 0) return 0;
+        long bits, value, z;
+        do {
+            z = (state = state * 0x41C64E6DL + 1L);
+            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+            bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
+            value = bits % bound;
+        }while(bits - value + bound <= 0);
+        return value;
+    }
+    public final long nextLongOther(final long bound) {
+        if (bound <= 0) return 0;
+        final long threshold = (0x8000000000000000L - bound) % bound;
+        long z, bits;
+        do {
+            z = (state = state * 0x41C64E6DL + 1L);
+            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+            bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
+        }while (bits < threshold);
+        return bits % bound;
+    }
+    public final long nextLongOriginal(final long bound) {
+        if (bound <= 0) return 0;
+        for (;;) {
+            long z = (state = state * 0x41C64E6DL + 1L);
+            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+            final long bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
+            final long value = bits % bound;
+            if (bits - value + bound > 0) return value;
+        }
+    }
+    
     /**
      * Gets a uniform random double in the range [0.0,1.0)
      *
@@ -170,8 +220,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble() {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
 
@@ -184,8 +234,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble(final double outer) {
         long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 28) * 0xAEF17502108EF2D9L;
-        return ((z ^ z >>> 30) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
+        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
     /**
@@ -195,7 +245,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final float nextFloat() {
         final long z = (state = state * 0x41C64E6DL + 1L);
-        return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -206,7 +256,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     public final boolean nextBoolean() {
         final long z = (state = state * 0x41C64E6DL + 1L);
-        return ((z ^ z >>> 28) * 0xAEF17502108EF2D9L) < 0;
+        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L) < 0;
     }
 
     /**
@@ -260,6 +310,91 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
         return (int) (state ^ (state >>> 32));
     }
 
+    /**
+     * Static randomizing method that takes its state as a parameter; state is expected to change between calls to this.
+     * It is recommended that you use {@code LinnormRNG.determine(++state)} or {@code LinnormRNG.determine(--state)} to
+     * produce a sequence of different numbers, but you can also use {@code LinnormRNG.determine(state += 12345L)} or
+     * any odd-number increment. All longs are accepted by this method, and all longs can be produced; unlike several
+     * other classes' determine() methods, passing 0 here does not return 0.
+     * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
+     * @return any long
+     */
+    public static long determine(long state)
+    {
+        return (state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25;
+    }
+
+    /**
+     * Like {@link #determine(long)}, but assumes state has already been multiplied by {@code 0x632BE59BD9B4E019L} or
+     * some other very-large and very-complex long (use other numbers at your own risk!). A common usage is to call
+     * randomize() like {@code LinnormRNG.randomize(state += 0x632BE59BD9B4E019L)}, which acts like a multiplier applied
+     * to an incrementing state variable. 0x632BE59BD9B4E019L is "Neely's number", a large prime that has been truncated
+     * and bitwise-rotated and has good properties in other places.
+     * @param state a long that should change between calls with {@code state += 0x632BE59BD9B4E019L}
+     * @return
+     */
+    public static long randomize(long state)
+    {
+        return (state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25;
+    }
+
+    /**
+     * Static randomizing method that takes its state as a parameter and limits output to an int between 0 (inclusive)
+     * and bound (exclusive); state is expected to change between calls to this. It is recommended that you use
+     * {@code LinnormRNG.determineBounded(++state, bound)} or {@code LinnormRNG.determineBounded(--state, bound)} to
+     * produce a sequence of different numbers, but you can also use
+     * {@code LinnormRNG.determineBounded(state += 12345L, bound)} or any odd-number increment. All longs are accepted
+     * by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
+     * odd-number values for bound, this isn't possible for most generators). The bound can be negative.
+     * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
+     * @param bound the outer exclusive bound, as an int
+     * @return an int between 0 (inclusive) and bound (exclusive)
+     */
+    public static int determineBounded(long state, final int bound)
+    {
+        return (int)((bound * (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25) & 0x7FFFFFFFL)) >> 31);
+    }
+
+    /**
+     * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
+     * return the same float. This is expected to be called with a changing variable, e.g. {@code determine(++state)},
+     * where the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
+     * {@code 0x632BE59BD9B4E019L} within this method, so using a small increment won't be much different from using a
+     * very large one, as long as it is odd. The period is 2 to the 64 if you increment or decrement by 1, but there are
+     * only 2 to the 30 possible floats between 0 and 1.
+     * @param state a variable that should be different every time you want a different random result;
+     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
+     *              generate numbers in reverse order
+     * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
+     */
+    public static float determineFloat(long state) { return ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 32) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f; }
+
+    /**
+     * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
+     * will return the same float. This is expected to be called with a changing variable, e.g.
+     * {@code determine(++state)}, where the increment for state should be odd but otherwise doesn't really matter. This
+     * multiplies state by {@code 0x632BE59BD9B4E019L} within this method, so using a small increment won't be much
+     * different from using a very large one, as long as it is odd. The period is 2 to the 64 if you increment or
+     * decrement by 1, but there are only 2 to the 62 possible doubles between 0 and 1.
+     * @param state a variable that should be different every time you want a different random result;
+     *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
+     *              generate numbers in reverse order
+     * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
+     */
+    public static double determineDouble(long state) { return (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
+
+//    public static void main(String[] args){
+//        //Oriole32RNG oriole = new Oriole32RNG(123, 456, 789);
+//        LinnormRNG r = new LinnormRNG(123456789L);
+//        for (int j = 0; j < 15; j++) {
+//            for (long i = 0x100000000L + j; i <= 0x30000000FL; i += 0x100000000L) {
+//                long limit = 4L;//oriole.nextInt();
+//                long result = r.nextLong(limit);
+//                System.out.printf("%016X %021d %016X %021d %b, ", result, result, limit, limit,Math.abs(limit) - Math.abs(result) >= 0 && (limit >> 63) == (result >> 63));
+//            }
+//            System.out.println();
+//        }
+//    }
 //    public static void main(String[] args)
 //    {
 //        /*

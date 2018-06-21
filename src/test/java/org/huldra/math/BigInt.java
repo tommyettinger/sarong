@@ -1771,7 +1771,7 @@ public class BigInt extends Number implements Comparable<BigInt>
 	{
 		if(isZero()) return "0";
 
-		int top = len*10 + 1;
+		int top = len*10 + 2;
 		final char[] buf = new char[top];
 		Arrays.fill(buf, '0');
 		final int[] cpy = Arrays.copyOf(dig,len);
@@ -1780,10 +1780,11 @@ public class BigInt extends Number implements Comparable<BigInt>
 			final int j = top;
 			for(long tmp = toStringDiv(); tmp>0; tmp/=10)
 				buf[--top] += tmp%10; //TODO: Optimize.
-			if(len==1 && dig[0]==0) break;
+			if(len == 0 || (len==1 && dig[0]==0)) break;
 			else top = j-13;
 		}
-		if(sign<0) buf[--top] = '-';
+		if(sign<0)
+			buf[--top] = '-';
 		System.arraycopy(cpy,0,dig,0, len = cpy.length);
 		return new String(buf, top, buf.length-top);
 	}
@@ -1841,8 +1842,8 @@ public class BigInt extends Number implements Comparable<BigInt>
 		final long pow10 = (long)pow5*pow2;
 		rem = (rem - pow5*(mod2 - rem)%pow10*67)%pow10;
 		if(rem<0) rem += pow10;
-		if(dig[len-1]==0 && len>1)
-			if(dig[--len-1]==0 && len>1)
+		if(len>1 && dig[len-1]==0)
+			if(--len>1 && dig[len-1]==0)
 				--len;
 		return rem;
 	}
@@ -1944,9 +1945,11 @@ public class BigInt extends Number implements Comparable<BigInt>
 	*/
 	public void shiftRight(final int shift)
 	{
+		if(isZero()) return;
 		final int bigShift = shift>>>5, smallShift = shift&31;
 		if(bigShift>0) bigShiftRight(bigShift);
 		if(smallShift>0) smallShiftRight(smallShift);
+		if(shift>0 && sign<0)add(-1);
 	}
 
 	/**

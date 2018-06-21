@@ -111,19 +111,21 @@ public final class MeshRNG implements RandomnessSource, Serializable {
     }
     /**
      * Get the extra current internal stream of this VortexRNG as a long.
+     * The value this returns is not identical to the one used internally, but the internal value can be reproduced by
+     * passing this value to {@link #setStream1(long)}.
      * This is not the full state; you also need {@link #getState()} and {@link #getStream0()}.
      *
      * @return the current internal stream of this object.
      */
     public long getStream1() {
-        return stream0;
+        return stream1 >>> 3;
     }
     /**
      * Set the extra current internal stream of this VortexRNG with a long.
-     * @param stream1 any long, but the most significant 2 bits will be discarded and the rest shifted
+     * @param stream1 any long, but the most significant 3 bits will be discarded and the rest shifted
      */
     public void setStream1(long stream1) {
-        this.stream1 = (stream1 << 2) | 1L;
+        this.stream1 = (stream1 << 3) | 5L;
     }
 
     /**
@@ -135,9 +137,11 @@ public final class MeshRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        final long z = (state = state * 0x369DEA0F31A53F85L + (stream1 *= 0x2545F4914F6CDD1DL)) ^ (((stream0 += 0x9E3779B97F4A7C15L) >>> 28) * stream1);
+        final long x = (stream0 += 0x9E3779B97F4A7C15L), 
+                y = (stream1 *= 0x2545F4914F6CDD1DL),
+                z = (state = state * 0x369DEA0F31A53F85L + y) ^ ((x ^ x >>> 25) * y);
         return (int)(
-                (z ^ (stream0 - z) >>> 28)
+                (z ^ z >>> 28)
                         >>> (64 - bits));
     }
     /**
@@ -150,8 +154,9 @@ public final class MeshRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final long nextLong() {
-        final long z = (state = state * 0x369DEA0F31A53F85L + (stream1 *= 0x2545F4914F6CDD1DL)) ^ (((stream0 += 0x9E3779B97F4A7C15L) >>> 28) * stream1);
-        return z ^ (stream0 - z) >>> 28;
+        final long x = (stream0 += 0x9E3779B97F4A7C15L),
+                z = (state = state * 0x369DEA0F31A53F85L + stream1) ^ ((x ^ x >>> 25) * (0x2545F4914F6CDD18L ^ stream1));
+        return (z ^ z >>> 28) + x;
     }
 
     /**

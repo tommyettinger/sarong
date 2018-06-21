@@ -29,7 +29,7 @@ public class LFSR implements StatefulRandomness, Serializable {
 
 	private static final long serialVersionUID = -2373549048478690398L;
 
-    public long state;
+    private long state;
 
     /**
      * Creates a new generator seeded using Math.random.
@@ -51,12 +51,30 @@ public class LFSR implements StatefulRandomness, Serializable {
 
     @Override
     public int next(int bits) {
-        return (int) (nextLong() & (1L << bits) - 1);
+        return (int) (state = (state >>> 1 ^ (-(state & 1L) & 0xD800000000000000L))) >>> 32 - bits;
     }
 
     @Override
     public long nextLong() {
         return state = (state >>> 1 ^ (-(state & 1L) & 0xD800000000000000L));
+    }
+
+    public long nextLongTweak() {
+        final long s = (state = (state >>> 1 ^ (-(state & 1L) & 0xD800000000000000L))) * 0xAEF17502108EF2D9L;
+        return s ^ s >>> 30;
+    }
+    public long xorshift()
+    {
+        state ^=(state<<13);
+        state ^=(state>>>7);
+        return (state ^=(state<<17));
+    }
+    public long xorshift2()
+    {
+        long s = state;
+        s ^=(s<<13);
+        s ^=(s>>>7);
+        return (state = s ^ s<<17);
     }
 
     /**
@@ -77,7 +95,7 @@ public class LFSR implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public int nextInt() {
-        return (int)nextLong();
+        return (int)(state = (state >>> 1 ^ (-(state & 1L) & 0xD800000000000000L)));
     }
 
     /**

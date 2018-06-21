@@ -358,18 +358,18 @@ public class UncommonBenchmark {
 */
 
 
-    private LFSR LFSR = new LFSR(9999L);
-    private RNG LFSRR = new RNG(LFSR);
+    private LFSR lfsr = new LFSR(9999L);
+    private RNG LFSRR = new RNG(lfsr);
     @Benchmark
     public long measureLFSR()
     {
-        return LFSR.nextLong();
+        return lfsr.nextLong();
     }
 
     @Benchmark
     public long measureLFSRInt()
     {
-        return LFSR.next(32);
+        return lfsr.next(32);
     }
     @Benchmark
     public long measureLFSRR()
@@ -382,6 +382,25 @@ public class UncommonBenchmark {
     {
         return LFSRR.nextInt();
     }
+
+    @Benchmark
+    public long measureTweakLFSR()
+    {
+        return lfsr.nextLongTweak();
+    }
+
+    @Benchmark
+    public long measureXSBasic()
+    {
+        return lfsr.xorshift();
+    }
+
+    @Benchmark
+    public long measureXSBasic2()
+    {
+        return lfsr.xorshift2();
+    }
+
 
 
     private NLFSR.NLFSR27 NLFSR27 = new NLFSR.NLFSR27(9999L);
@@ -449,6 +468,110 @@ public class UncommonBenchmark {
     {
         return JDK.nextInt();
     }
+
+    private final Jab63RNG jab = new Jab63RNG(9999L);
+
+    private final LinnormRNG Linnorm1 = new LinnormRNG(9999L);
+    @Benchmark
+    public long measureLinnormRangedLong65537()
+    {
+        return Linnorm1.nextLongOld(65537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLong655537655537()
+    {
+        return Linnorm1.nextLongOld(655537655537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLong7()
+    {
+        return Linnorm1.nextLongOld(7L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongUnknown()
+    {
+        return Linnorm1.nextLongOld(jab.nextLong() >>> 1);
+    }
+
+    private LinnormRNG Linnorm2 = new LinnormRNG(9999L);
+    @Benchmark
+    public long measureLinnormRangedLongOther65537()
+    {
+        return Linnorm2.nextLongOther(65537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOther655537655537()
+    {
+        return Linnorm2.nextLongOther(655537655537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOther7()
+    {
+        return Linnorm2.nextLongOther(7L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOtherUnknown()
+    {
+        return Linnorm2.nextLongOther(jab.nextLong() >>> 1);
+    }
+
+    private LinnormRNG Linnorm3 = new LinnormRNG(9999L);
+    @Benchmark
+    public long measureLinnormRangedLongOriginal65537()
+    {
+        return Linnorm3.nextLongOriginal(65537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOriginal655537655537()
+    {
+        return Linnorm3.nextLongOriginal(655537655537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOriginal7()
+    {
+        return Linnorm3.nextLongOriginal(7L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOriginalUnknown()
+    {
+        return Linnorm3.nextLongOriginal(jab.nextLong() >>> 1);
+    }
+
+    private LinnormRNG Linnorm4 = new LinnormRNG(9999L);
+    @Benchmark
+    public long measureLinnormRangedLongOroboro65537()
+    {
+        return Linnorm4.nextLong(65537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOroboro655537655537()
+    {
+        return Linnorm4.nextLong(655537655537L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOroboro7()
+    {
+        return Linnorm4.nextLong(7L);
+    }
+
+    @Benchmark
+    public long measureLinnormRangedLongOroboroUnknown()
+    {
+        return Linnorm4.nextLong(jab.nextLong() >>> 1);
+    }
+
+
 
     private short mathCos = -0x8000;
     private short mathSin = -0x8000;

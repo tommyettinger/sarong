@@ -248,34 +248,56 @@ public class RNGBenchmark {
 //        iseed = 9000;
 //        doThunderIntR();
 //    }
-    
+
     private XoRoRNG XoRo = new XoRoRNG(9999L);
     private RNG XoRoR = new RNG(XoRo);
     @Benchmark
-     //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureXoRo()
-    {         
+    {
         return XoRo.nextLong();
     }
 
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureXoRoInt()
     {
         return XoRo.next(32);
     }
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureXoRoR()
     {
         return XoRoR.nextLong();
     }
 
     @Benchmark
-     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureXoRoIntR()
     {
         return XoRoR.nextInt();
+    }
+
+    
+    private Lathe64RNG Lathe64 = new Lathe64RNG(9999L);
+    private RNG Lathe64R = new RNG(Lathe64);
+    @Benchmark
+    public long measureLathe64()
+    {
+        return Lathe64.nextLong();
+    }
+
+    @Benchmark
+    public long measureLathe64Int()
+    {
+        return Lathe64.next(32);
+    }
+    @Benchmark
+    public long measureLathe64R()
+    {
+        return Lathe64R.nextLong();
+    }
+
+    @Benchmark
+    public long measureLathe64IntR()
+    {
+        return Lathe64R.nextInt();
     }
 
     /*
@@ -1080,6 +1102,11 @@ public class RNGBenchmark {
         return DervishRNG.determine(state++);
     }
 
+    @Benchmark
+    public long measureLinnormDetermine() {
+        return LinnormRNG.determine(state++);
+    }
+
     //@Benchmark
     public long measureVortexDetermine() {
         return VortexRNG.determine(state++);
@@ -1094,6 +1121,9 @@ public class RNGBenchmark {
     public long measureAltThrustRandomize() {
         return ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L);
     }
+    
+    @Benchmark
+    public long measureLinnormRandomize() { return LinnormRNG.randomize(state += 0x632BE59BD9B4E019L); }
 
     private ThrustAltRNG ThrustAlt = new ThrustAltRNG(9999L);
     private RNG ThrustAltR = new RNG(ThrustAlt);
@@ -1279,6 +1309,25 @@ public class RNGBenchmark {
     public long measureSpiralIntR()
     {
         return SpiralR.nextInt();
+    }
+
+    private SpiralRNG spiralA = new SpiralRNG(9999L),
+            spiralB = new SpiralRNG(9999L),
+            spiralC = new SpiralRNG(9999L);
+    @Benchmark
+    public long measureSpiralA()
+    {
+        return spiralA.nextLongOld();
+    }
+    @Benchmark
+    public long measureSpiralB()
+    {
+        return spiralB.nextLongAlt();
+    }
+    @Benchmark
+    public long measureSpiralC()
+    {
+        return spiralC.nextLongNew();
     }
 
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
@@ -1612,7 +1661,33 @@ public class RNGBenchmark {
     {
         return MizuchiR.nextInt();
     }
-    
+
+    private QuixoticRNG Quixotic = new QuixoticRNG(9999L);
+    private RNG QuixoticR = new RNG(Quixotic);
+    @Benchmark
+    public long measureQuixotic()
+    {
+        return Quixotic.nextLong();
+    }
+
+    @Benchmark
+    public long measureQuixoticInt()
+    {
+        return Quixotic.next(32);
+    }
+    @Benchmark
+    public long measureQuixoticR()
+    {
+        return QuixoticR.nextLong();
+    }
+
+    @Benchmark
+    public long measureQuixoticIntR()
+    {
+        return QuixoticR.nextInt();
+    }
+
+
     /*
     public long doJet()
     {

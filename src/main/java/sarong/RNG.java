@@ -723,14 +723,18 @@ public class RNG implements Serializable {
      * @param bound the upper bound (exclusive)
      * @return the found number
      */
-    public long nextLong(final long bound) {
+    public long nextLong(long bound) {
         if (bound <= 0) return 0;
-        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
-        for (; ; ) {
-            long bits = random.nextLong() & 0x7fffffffffffffffL;
-            if (bits >= threshold)
-                return bits % bound;
-        }
+        long rand = random.nextLong();
+        final long randLow = rand & 0xFFFFFFFFL;
+        final long boundLow = bound & 0xFFFFFFFFL;
+        rand >>>= 32;
+        bound >>>= 32;
+        final long z = (randLow * boundLow >>> 32);
+        long t = rand * boundLow + z;
+        final long tLow = t & 0xFFFFFFFFL;
+        t >>>= 32;
+        return rand * bound + t + (tLow + randLow * bound >> 32);
     }
 
     /**
