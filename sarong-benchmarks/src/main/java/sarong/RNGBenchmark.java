@@ -1311,9 +1311,15 @@ public class RNGBenchmark {
         return SpiralR.nextInt();
     }
 
-    private SpiralRNG spiralA = new SpiralRNG(9999L),
-            spiralB = new SpiralRNG(9999L),
-            spiralC = new SpiralRNG(9999L);
+    private SpiralRNG spiralA = new SpiralRNG(9999L, 1337L),
+            spiralB = new SpiralRNG(9999L, 1337L),
+            spiralC = new SpiralRNG(9999L, 1337L),
+            spiralD = new SpiralRNG(9999L, 1337L),
+            spiralE = new SpiralRNG(9999L, 1337L),
+            spiralF = new SpiralRNG(9999L, 1337L),
+            spiralG = new SpiralRNG(9999L, 1337L),
+            spiralH = new SpiralRNG(9999L, 1337L),
+            spiralI = new SpiralRNG(9999L, 1337L);
     @Benchmark
     public long measureSpiralA()
     {
@@ -1329,6 +1335,63 @@ public class RNGBenchmark {
     {
         return spiralC.nextLongNew();
     }
+    @Benchmark
+    public long measureSpiralD()
+    {
+        return spiralD.nextLongAgain();
+    }
+    @Benchmark
+    public long measureSpiralE()
+    {
+        return spiralE.nextLongAgain3();
+    }
+    @Benchmark
+    public long measureSpiralF()
+    {
+        return spiralF.nextLongAgain4();
+    }
+    @Benchmark
+    public long measureSpiralG()
+    {
+        return spiralG.nextLongAgain5();
+    }
+    @Benchmark
+    public long measureSpiralH()
+    {
+        return spiralH.nextLongAgain6();
+    }
+    @Benchmark
+    public long measureSpiralI()
+    {
+        return spiralI.nextLongAgain7();
+    }
+
+    private OrbitRNG Orbit = new OrbitRNG(9999L, 1337L);
+    private RNG OrbitR = new RNG(Orbit);
+
+    @Benchmark
+    public long measureOrbit()
+    {
+        return Orbit.nextLong();
+    }
+
+    @Benchmark
+    public long measureOrbitInt()
+    {
+        return Orbit.next(32);
+    }
+    @Benchmark
+    public long measureOrbitR()
+    {
+        return OrbitR.nextLong();
+    }
+
+    @Benchmark
+    public long measureOrbitIntR()
+    {
+        return OrbitR.nextInt();
+    }
+
 
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);

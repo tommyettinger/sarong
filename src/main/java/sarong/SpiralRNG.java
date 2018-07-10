@@ -124,10 +124,74 @@ public final class SpiralRNG implements RandomnessSource, Serializable {
     }
     
     public final long nextLongNew(){
-        final long y = (stream = stream >>> 1 ^ (-(stream & 1L) & 0xD800000000000000L));
-        final long z = ((state += 0x632BE59BD9B4E019L) ^ y) * (y | 1L);
-        return (z ^ z >>> 25) + y;
+        final long y = -(stream & 1L);
+        final long z = (state = state * 0x41C64E6DL + 1L) + (stream = stream >>> 1 ^ (y & 0xD800000000000000L));
+        return (z ^ z >>> 27) + (y & 0x9E3779B97F4A7C15L);
+    }
 
+    public final long nextLongAgain()
+    {
+        long y = stream;
+        y ^= y >>> 31;
+        final long z = (state = state * 0x41C64E6DL + 1L) + (y ^= y << 25);
+        return z + (stream = y ^ y >>> 37);
+    }
+
+    public final long nextLongAgain2()
+    {
+        stream ^= stream >>> 31;
+        final long z = (state = state * 0x41C64E6DL + 1L) + (stream ^= stream << 25);
+        return z + (stream ^= stream >>> 37);
+    }
+
+    public final long nextLongAgain3()
+    {
+        final long y = -(stream & 1L);
+        final long z = (state = state * 0x41C64E6DL + 1L + (stream = stream >>> 1 ^ (y & 0xD800000000000000L)));
+        return (z ^ z >>> 28) + (y ^ 0x9E3779B97F4A7C15L);
+    }
+
+//    public final long nextLongAgain4()
+//    {
+//        final long y = -(stream & 1L);
+//        final long z = (state += 0x9E3779B97F4A7C15L + (stream = stream >>> 1 ^ (y & 0xD800000000000000L))) * 0x41C64E6DL;
+//        return (z ^ z >>> 28) + (y ^ 0x6C8E9CF570932BD5L);
+//    }
+
+    public final long nextLongAgain4()
+    {
+        final long s = (state += 0x6C8E9CF570932BD5L);
+        final long z = (s ^ (s >>> 25)) * 
+                //((stream += 0x9E3779B97F4A7C15L << 1L + ((t | (-t)) >> 31)) | 0xA529L);
+                ((stream += (stream == -0x9E3779B97F4A7C15L) ? 0x3C6EF372FE94F82AL : 0x9E3779B97F4A7C15L) | 0xA529L);
+        return (z ^ z >>> 22);
+    }
+
+    public final long nextLongAgain5()
+    {
+//        final long s = (state += 0x6C8E9CF570932BD5L);
+//        final long z = (s ^ (s >>> 25)) * ((stream += 0x3C6EF372FE94F82AL >>> ((s | (-s)) >>> 31)) | 0xA529L);
+//        return (z ^ z >>> 22);
+        stream += 0x9E3779B97F4A7C15L;
+        if(stream == 0L)
+            stream = 0x9E3779B97F4A7C15L;
+        final long y = stream ^ stream >>> 28;
+        //y ^= y >>> 28;
+        final long z = (state = (state ^ 0x9E3779B97F4A7C15L) * 0x41C64E6BL + y);
+        return (z ^ z >>> 28) + y;
+
+    }
+    public final long nextLongAgain6()
+    {
+        stream ^= stream >>> 21;
+        final long z = (state = (state ^ 0x9E3779B97F4A7C15L) * 0x41C64E6BL + (stream ^= stream << 9));
+        return (z ^ z >>> 28) + (stream ^= stream >>> 29);
+    }
+    public final long nextLongAgain7()
+    {
+        final long s = (state += 0x6C8E9CF570932BD5L);
+        final long z = (s ^ (s >>> 25)) * ((stream += 0x9E3779B97F4A7C15L) | 0xA529L);
+        return (z ^ z >>> 22);
     }
     
     /**
@@ -167,13 +231,29 @@ public final class SpiralRNG implements RandomnessSource, Serializable {
         java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
          */
         byte state = 0, stream = 1;
+        int y = 0;
         char[] counts = new char[256];
-        for (int i = 0; i < 0xFF00; i++) {             
-            state += 0x95;             
-            stream = (byte)((stream & 0xFF) >>> 1 ^ (-(stream & 1) & 0xB8));
-            final byte z = (byte) (((state ^ state >>> 27)) * 0xD9);
+        for (int i = 0; i < 0xFF00; i++) {
+            /*
+  					uint64_t y = stateB ^ stateB >> 31;
+					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
+					return (z ^ z >> 27u) + (stateB = y ^ y >> 37);
+             */
+//            y = -(stream & 1);
+//            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+//            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
+
+            stream ^= (stream & 0xFF) >> 3;
+            final byte z = (state = (byte) (((state & 0xFF) ^ 0x65) * 0x93 + (stream ^= stream << 5)));
+            counts[z + (stream ^= (stream & 0xFF) >> 4) & 0xFF]++;
+//            y = -(stream & 1);
+//            final byte z = (state = (byte) (((state & 0xFF) * 0x65) + 0x7F + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8)))));
+////            final byte z = (state += 1 + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+//            counts[(z ^ (z&0xFF) >>> 5) + (y >>> 24 ^ 0x95) & 0xFF]++;
+            
+            //uint64_t z = (stateA = (stateA ^ UINT64_C(0x6C8E9CF570932BD5)) * UINT64_C(0x5DA942042E4DD58B)) + (stateB = stateB >> 1u ^ (y & UINT64_C(0xD800000000000000)));
+            //final byte z = (byte) ((state = (byte) (((state & 0xFF) ^ 0x65) * 0x5B)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
             //final byte z = (byte) (((state ^ state >>> 27) + (stream ^ stream >>> 30)) * 0xD9);
-            counts[(z ^ z >>> 25) + stream & 0xFF]++;
         }
         int b = -1;
         for (int i = 0; i < 32; i++) {
@@ -181,6 +261,5 @@ public final class SpiralRNG implements RandomnessSource, Serializable {
                     ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF,
                     ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF);
         }
-
     }
 }
