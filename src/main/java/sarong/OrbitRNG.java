@@ -6,7 +6,22 @@ import java.io.Serializable;
 
 /**
  * A variant on {@link ThrustAltRNG} that gives up some speed to gain a much better period and the ability to produce
- * all possible long values over that period.
+ * all possible long values over that period. Its period is 2 to the 128, and it produces all long outputs with equal
+ * likelihood. Its closest competitor on speed and period is {@link Lathe64RNG}, and its quality should be similar or
+ * slightly better than Lathe64. Lathe32 has some troubling anomalies near the end of PractRand testing at 32TB, and
+ * there may be issues with Lathe64 then or later on. OrbitRNG is close to ThrustAltRNG in implementation, and
+ * ThrustAltRNG passes PractRand and TestU01 just fine, but OrbitRNG should actually be more robust. For some purposes
+ * you may want to instead consider {@link TangleRNG}, which also has two states and uses a very similar algorithm, but
+ * it skips some work Orbit does and in doing so speeds up a lot and drops its period down to 2 to the 64. An individual
+ * TangleRNG can't produce all possible long outputs and can produce some duplicates, but each pair of states for a
+ * TangleRNG has a different set of which outputs will be skipped and which will be duplicated. Since it would require
+ * months of pure number generation to exhaust the period of a TangleRNG, and that's the only time an output can be
+ * confirmed as skipped, it's probably fine for most usage to use many different TangleRNGs and treat the fraction of
+ * their total period that will actually be used as if it were part of one larger generator's period.
+ * <br>
+ * The name comes from how the pair of states act like two planets orbiting a star at different rates, and also evokes
+ * the larger-scale period relative to {@link TangleRNG}.
+ * <br>
  * Created by Tommy Ettinger on 7/9/2018.
  */
 public final class OrbitRNG implements RandomnessSource, Serializable {
@@ -50,11 +65,30 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
     /**
      * Set the "A" part of the internal state with a long.
      *
-     * @param stateA a 64-bit long
+     * @param stateA any 64-bit long
      */
     public void setStateA(long stateA) {
         this.stateA = stateA;
     }
+
+    /**
+     * Get the "B" part of the internal state as a long.
+     *
+     * @return the current internal "B" state of this object.
+     */
+    public long getStateB() {
+        return stateB;
+    }
+
+    /**
+     * Set the "B" part of the internal state with a long.
+     *
+     * @param stateB any 64-bit long
+     */
+    public void setStateB(long stateB) {
+        this.stateB = stateB;
+    }
+
 
     /**
      * Using this method, any algorithm that might use the built-in Java Random

@@ -1392,6 +1392,35 @@ public class RNGBenchmark {
         return OrbitR.nextInt();
     }
 
+    private TangleRNG Tangle = new TangleRNG(9999L, 1337L);
+    private RNG TangleR = new RNG(Tangle);
+
+    @Benchmark
+    public long measureTangle()
+    {
+        return Tangle.nextLong();
+    }
+
+    @Benchmark
+    public long measureTangleInt()
+    {
+        return Tangle.next(32);
+    }
+    @Benchmark
+    public long measureTangleR()
+    {
+        return TangleR.nextLong();
+    }
+
+    @Benchmark
+    public long measureTangleIntR()
+    {
+        return TangleR.nextInt();
+    }
+
+
+
+
 
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);
