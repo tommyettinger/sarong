@@ -10,16 +10,21 @@ import java.io.Serializable;
  * PractRand quality tests, passing at least 8TB and probably more (it shares a lot of structure with ThrustAltRNG,
  * which does very well in PractRand's testing as well as TestU01's BigCrush). It also outperforms LinnormRNG and comes
  * close to ThrustAltRNG in JMH benchmarks, making it arguably the fastest random number generator algorithm here that
- * can produce all long values (it just needs multiple generator objects to do so, all seeded differently). Because this
- * can produce multiple occurrences of any number in its sequence (except 0, which it should always produce once over
- * its period of 2 to the 64), it can be considered as passing the "birthday problem" test; after running
+ * can produce all long values (it just needs multiple generator objects to do so, all seeded differently).
+ * <br>
+ * Because this can produce multiple occurrences of any number in its sequence (except 0, which it should always produce
+ * once over its period of 2 to the 64), it can be considered as passing the "birthday problem" test; after running
  * <a href="http://www.pcg-random.org/posts/birthday-test.html">this test provided by Melissa E. O'Neill</a> on Tangle,
  * it correctly has 9 repeats compared to an expected 10, using the Skipping adapter to check one out of every 65536
  * outputs for duplicates. A generator that failed that test would have 0 repeats or more than 20, so Tangle passes.
  * ThrustAltRNG probably also passes (or its structure allows it to potentially do so), but LightRNG, LinnormRNG,
  * MizuchiRNG, and even ThrustRNG will fail it by never repeating an output. Truncating the output bits of any of these
  * generators will allow them to pass this test, at the cost of reducing the size of the output to an int instead of a
- * long (less than ideal).
+ * long (less than ideal). Notably, an individual Tangle generator tends to be able to produce about 2/3 of all possible
+ * long outputs, with roughly 1/3 of all outputs not possible to produce and another 1/3 produced exactly once. These
+ * are approximations and will vary between instances. The test that gave the "roughly 2/3 possible" result gave similar
+ * results with 8-bit stateA and stateB and with 16-bit stateA and stateB, though it could change with the 64-bit states
+ * Tangle actually uses.
  * <br>
  * The name "Tangle" comes from how the two states of this generator are "tied up in each other," with synchronized
  * periods of 2 to the 64 (stateA) and 2 to the 63 (stateB) that repeat as a whole every 2 to the 64 outputs. Contrary
@@ -28,6 +33,8 @@ import java.io.Serializable;
  * <br>
  * See also {@link OrbitRNG}, which gives up more speed but moves through all 2 to the 64 long values as streams over
  * its full period, which is 2 to the 128 (with one stream) instead of the 2 to the 64 (with 2 to the 63 streams) here.
+ * Orbit hasn't been evaluated for quality as fully as Tangle, but reduced-word-size variants show it should have a full
+ * period of 2 to the 128.
  * <br>
  * Created by Tommy Ettinger on 7/9/2018.
  */
@@ -140,7 +147,7 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
     }
     @Override
     public String toString() {
-        return "OrbitRNG with stateA 0x" + StringKit.hex(stateA) + "L and stateB 0x" + StringKit.hex(stateB) + 'L';
+        return "TangleRNG with stateA 0x" + StringKit.hex(stateA) + "L and stateB 0x" + StringKit.hex(stateB) + 'L';
     }
 
     @Override
@@ -148,9 +155,9 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TangleRNG orbitRNG = (TangleRNG) o;
+        TangleRNG tangleRNG = (TangleRNG) o;
 
-        return stateA == orbitRNG.stateA && stateB == orbitRNG.stateB;
+        return stateA == tangleRNG.stateA && stateB == tangleRNG.stateB;
     }
 
     @Override
@@ -173,20 +180,4 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
         final long z = (s ^ (s >>> 25)) * (stateB += 0x9E3779B97F4A7C16L * advance);
         return z ^ (z >>> 22);
     }
-
-//    public static void main(String[] args)
-//    {
-//        /*
-//        cd target/classes
-//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
-//         */
-//        long seed = 1L;
-//        ThrustAltRNG rng = new ThrustAltRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        System.out.println(seed);
-//    }
-
 }

@@ -15,9 +15,11 @@ import java.io.Serializable;
  * it skips some work Orbit does and in doing so speeds up a lot and drops its period down to 2 to the 64. An individual
  * TangleRNG can't produce all possible long outputs and can produce some duplicates, but each pair of states for a
  * TangleRNG has a different set of which outputs will be skipped and which will be duplicated. Since it would require
- * months of pure number generation to exhaust the period of a TangleRNG, and that's the only time an output can be
- * confirmed as skipped, it's probably fine for most usage to use many different TangleRNGs and treat the fraction of
- * their total period that will actually be used as if it were part of one larger generator's period.
+ * months of solid number generation to exhaust the period of a TangleRNG, and that's the only time an output can be
+ * confirmed as skipped, it's probably fine for most usage to use many different TangleRNGs, all seeded differently.
+ * In other cases you could use one OrbitRNG, {@link LinnormRNG} (if you don't mind that it never produces a duplicate
+ * output), {@link IsaacRNG} (if speed is less important but more secure output is), or Lathe64RNG, though all of those
+ * are probably slower than using many TangleRNG objects.
  * <br>
  * The name comes from how the pair of states act like two planets orbiting a star at different rates, and also evokes
  * the larger-scale period relative to {@link TangleRNG}.
@@ -102,8 +104,8 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
         final long s = (stateA += 0x6C8E9CF570932BD5L);
         if(s == 0L)
             stateB += 0x9E3779B97F4A7C15L;
-        final long z = (s ^ (s >>> 25)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
-        return (int)(z ^ (z >>> 22)) >>> (32 - bits);
+        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        return (int)(z ^ (z >>> 25)) >>> (32 - bits);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -118,8 +120,50 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
         final long s = (stateA += 0x6C8E9CF570932BD5L);
         if(s == 0L)
             stateB += 0x9E3779B97F4A7C15L;
-        final long z = (s ^ (s >>> 25)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
-        return z ^ (z >>> 22);
+        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong1() {
+        final long s = (stateA += 0x6C8E9CF570932BD5L);
+        if(s == 0L)
+            stateB += 0x9E3779B97F4A7C15L;
+        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong2() {
+        final long b = (stateB += 0x9E3779B97F4A7C15L);
+        final long s = (stateA += b > 0x1000000000000L ? 0x6C8E9CF570932BD5L : 0xD91D39EAE12657AAL);
+        final long z = (s ^ (s >>> 27)) * (b | 1L);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong3() {
+        final long s = (stateA += (stateB += 0x9E3779B97F4A7C15L) == 0L ? 0x6C8E9CF570932BD5L : 0xD91D39EAE12657AAL);
+        final long z = (s ^ (s >>> 27)) * (stateB | 1L);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong4() {
+        long s;
+        if((stateB += 0x6C8E9CF570932BD5L) == 0L)
+            s = (stateA += 0xD91D39EAE12657AAL);
+        else
+            s = (stateA += 0x6C8E9CF570932BD5L);
+        s = (s ^ (s >>> 27)) * (stateB | 1L);
+        return s ^ (s >>> 25);
+    }
+    public final long nextLong5() {
+        if((stateB += 0x6C8E9CF570932BD5L) == 0L)
+            stateA += 0xD91D39EAE12657AAL;
+        else
+            stateA += 0x6C8E9CF570932BD5L;
+        return ((stateA ^ stateA >>> 27)) * (stateB | 1L) + (stateB << 23 | stateB >>> 41);
+    }
+    public final long nextLong6() {
+        if((stateB += 0x6C8E9CF570932BD5L) == 0L)
+            stateA += 0xD91D39EAE12657AAL;
+        else
+            stateA += 0x6C8E9CF570932BD5L;
+        return ((stateA ^ stateA >>> 27)) * (stateB | 1L) + stateB;
+        //return s ^ (s >>> 25);
     }
 
     /**
@@ -153,19 +197,4 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
         return (int) (31L * (stateA ^ (stateA >>> 32)) + (stateB ^ stateB >>> 32));
     }
     
-//    public static void main(String[] args)
-//    {
-//        /*
-//        cd target/classes
-//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
-//         */
-//        long seed = 1L;
-//        ThrustAltRNG rng = new ThrustAltRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        System.out.println(seed);
-//    }
-
 }

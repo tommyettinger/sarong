@@ -3,6 +3,8 @@ package sarong;
 import sarong.util.StringKit;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 /**
  * Work-in-progress.
@@ -208,12 +210,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
     }
     public static void main(String[] args)
     {
-        /*
-        cd target/classes
-        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
-         */
-        byte state = 0, stream = 1;
-        int y = 0;
+        byte state = 6, stream = 8;
         char[] counts = new char[256];
         for (int i = 0; i < 0x10000; i++) {
             /*
@@ -224,11 +221,13 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            y = -(stream & 1);
 //            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
 //            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
-            
-            if((state += 0x95) == 0)
-                stream += 0x6B;
-            final byte z = (byte) ((state ^ (state&0xFF) >> 3) * ((stream += 0x6B) | 1));
-            counts[z & 0xFF]++;
+            state += 0x95;
+            if(state == 0)
+                ++stream;
+            final byte z = (byte)(((state-stream ^ (state&0xFF) >> 3)) * 0x43);
+//            final byte z = (byte) (((stream += 1|(state += 0x95))|1) * (state ^ (state&0xFF) >> 3));
+//            final byte z = (byte) ((state ^ (state&0xFF) >> 3) * ((stream += 0x65)|1));
+            counts[(z^(z&0xFF)>>2) & 0xFF]++;
 
 //            stream ^= (stream & 0xFF) >> 3;
 //            state += 0x95;
@@ -251,5 +250,58 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
                     ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF);
         }
     }
+    public static void main1(String[] args)
+    {
+        /*
+        cd target/classes
+        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
+         */
+        short state = 1338, stream = 11;
+        char[] counts = new char[65536];
+        for (int i = 0; i < 0x10000; i++) {
+            /*
+  					uint64_t y = stateB ^ stateB >> 31;
+					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
+					return (z ^ z >> 27u) + (stateB = y ^ y >> 37);
+             */
+//            y = -(stream & 1);
+//            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+//            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
+            state += 0x9E75;
+//            if(state == 0)
+//                stream += 0x6B;
+            final short z = (short) ((state ^ (state&0xFFFF) >> 6) * ((stream += 0x649A)));
+            counts[z & 0xFFFF]++;
+
+//            stream ^= (stream & 0xFF) >> 3;
+//            state += 0x95;
+//            final byte z = (byte) ((state ^ (state&0xFF) >> 3) * ((stream ^= stream << 5) | 1));
+//            counts[(z ^ (z&0xFF)>>2) + (stream ^= (stream & 0xFF) >> 4) & 0xFF]++;
+
+//            y = -(stream & 1);
+//            final byte z = (state = (byte) (((state & 0xFF) * 0x65) + 0x7F + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8)))));
+////            final byte z = (state += 1 + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+//            counts[(z ^ (z&0xFF) >>> 5) + (y >>> 24 ^ 0x95) & 0xFF]++;
+
+            //uint64_t z = (stateA = (stateA ^ UINT64_C(0x6C8E9CF570932BD5)) * UINT64_C(0x5DA942042E4DD58B)) + (stateB = stateB >> 1u ^ (y & UINT64_C(0xD800000000000000)));
+            //final byte z = (byte) ((state = (byte) (((state & 0xFF) ^ 0x65) * 0x5B)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+            //final byte z = (byte) (((state ^ state >>> 27) + (stream ^ stream >>> 30)) * 0xD9);
+        }
+        Arrays.sort(counts);
+        char prev = counts[0];
+        LinkedHashMap<Integer, Integer> m = new LinkedHashMap<>(256);
+        for (int i = 1, r = 1; i < 65536; i++) {
+            if(prev == counts[i]){
+                r++;
+            }
+            else
+            {
+                m.put((int)prev, r);
+                r = 1;
+                prev = counts[i];
+            }
+        }
+        System.out.println(m);
+   }
 
 }

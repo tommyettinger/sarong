@@ -1418,10 +1418,43 @@ public class RNGBenchmark {
         return TangleR.nextInt();
     }
 
-
-
-
-
+    private OrbitRNG OrbitA = new OrbitRNG(9999L, 1337L),
+            OrbitB = new OrbitRNG(9999L, 1337L),
+            OrbitC = new OrbitRNG(9999L, 1337L),
+            OrbitD = new OrbitRNG(9999L, 1337L),
+            OrbitE = new OrbitRNG(9999L, 1337L),
+            OrbitF = new OrbitRNG(9999L, 1337L);
+    @Benchmark
+    public long measureOrbitA()
+    {
+        return OrbitA.nextLong1();
+    }
+    @Benchmark
+    public long measureOrbitB()
+    {
+        return OrbitB.nextLong2();
+    }
+    @Benchmark
+    public long measureOrbitC()
+    {
+        return OrbitC.nextLong3();
+    }
+    @Benchmark
+    public long measureOrbitD()
+    {
+        return OrbitD.nextLong4();
+    }
+    @Benchmark
+    public long measureOrbitE()
+    {
+        return OrbitE.nextLong5();
+    }
+    @Benchmark
+    public long measureOrbitF()
+    {
+        return OrbitF.nextLong6();
+    }
+    
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);
     @Benchmark
