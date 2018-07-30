@@ -1423,7 +1423,16 @@ public class RNGBenchmark {
             OrbitC = new OrbitRNG(9999L, 1337L),
             OrbitD = new OrbitRNG(9999L, 1337L),
             OrbitE = new OrbitRNG(9999L, 1337L),
-            OrbitF = new OrbitRNG(9999L, 1337L);
+            OrbitF = new OrbitRNG(9999L, 1337L),
+            OrbitG = new OrbitRNG(9999L, 1337L),
+            OrbitH = new OrbitRNG(9999L, 1337L),
+            OrbitI = new OrbitRNG(9999L, 1337L),
+            OrbitJ = new OrbitRNG(9999L, 1337L),
+            OrbitK = new OrbitRNG(9999L, 1337L),
+            OrbitL = new OrbitRNG(9999L, 1337L),
+            OrbitM = new OrbitRNG(9999L, 1337L),
+            OrbitN = new OrbitRNG(9999L, 1337L),
+            OrbitO = new OrbitRNG(9999L, 1337L);
     @Benchmark
     public long measureOrbitA()
     {
@@ -1454,7 +1463,80 @@ public class RNGBenchmark {
     {
         return OrbitF.nextLong6();
     }
-    
+    @Benchmark
+    public long measureOrbitG()
+    {
+        return OrbitG.nextLong7();
+    }
+    @Benchmark
+    public long measureOrbitH()
+    {
+        return OrbitH.nextLong8();
+    }
+    @Benchmark
+    public long measureOrbitI()
+    {
+        return OrbitI.nextLong9();
+    }
+    @Benchmark
+    public long measureOrbitJ()
+    {
+        return OrbitJ.nextLong10();
+    }
+    @Benchmark
+    public long measureOrbitK()
+    {
+        return OrbitK.nextLong11();
+    }
+    @Benchmark
+    public long measureOrbitL()
+    {
+        return OrbitL.nextLong12();
+    }
+    @Benchmark
+    public long measureOrbitM()
+    {
+        return OrbitM.nextLong13();
+    }
+    @Benchmark
+    public long measureOrbitN()
+    {
+        return OrbitN.nextLong14();
+    }
+    @Benchmark
+    public long measureOrbitO()
+    {
+        return OrbitO.nextLong15();
+    }
+
+
+    private TangleRNG TangleA = new TangleRNG(9999L, 1337L),
+            TangleB = new TangleRNG(9999L, 1337L),
+            TangleC = new TangleRNG(9999L, 1337L),
+            TangleD = new TangleRNG(9999L, 1337L);
+    @Benchmark
+    public long measureTangleA()
+    {
+        return TangleA.nextLong1();
+    }
+    @Benchmark
+    public long measureTangleB()
+    {
+        return TangleB.nextLong2();
+    }
+    @Benchmark
+    public long measureTangleC()
+    {
+        return TangleC.nextLong3();
+    }
+
+    @Benchmark
+    public long measureTangleD()
+    {
+        return TangleD.nextLong4();
+    }
+
+
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);
     @Benchmark

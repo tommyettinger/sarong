@@ -1,5 +1,6 @@
 package sarong;
 
+import com.badlogic.gdx.math.MathUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.options.Options;
@@ -14,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
+@Warmup(iterations = 4)
+@Measurement(iterations = 4)
 public class Atan2 {
 
     ///////////////////////////////////////
@@ -84,7 +85,7 @@ public class Atan2 {
     public static void main(String[] args) {
         Atan2Benchmark[] benchmarks = new Atan2Benchmark[]{
 //                new Apache(),
-//                new Default(),
+                new Default(),
                 new Diamond(),
                 new DSPAccurate(),
                 new DSPFast(),
@@ -93,6 +94,7 @@ public class Atan2 {
 //                new Riven(),
                 new Squid(),
                 new Squid2(),
+                new Gdx(),
         };
 
         System.out.println("A lower average means higher accuracy.");
@@ -622,7 +624,7 @@ public class Atan2 {
             if(ax < ay)
             {
                 final float a = ax / ay, s = a * a,
-                r = 1.57079637f - (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
+                        r = 1.57079637f - (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
                 return (x < 0f) ? (y < 0f) ? -3.14159274f + r : 3.14159274f - r : (y < 0f) ? -r : r;
             }
             else {
@@ -640,6 +642,28 @@ public class Atan2 {
         for (float y = LOW_F; y < HIGH_F; y += INC_F) {
             for (float x = LOW_F; x < HIGH_F; x += INC_F) {
                 sum += Squid2.atan2(y, x);
+            }
+        }
+        return sum;
+    }
+    public static class Gdx extends Atan2Benchmark
+    {
+        Gdx() {
+            super("Gdx");
+        }
+
+        @Override
+        public float test(float y, float x) {
+            return MathUtils.atan2(y, x);
+        }
+    }
+
+    @Benchmark
+    public float atan2_gdx() {
+        float sum = 0;
+        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+                sum += MathUtils.atan2(y, x);
             }
         }
         return sum;

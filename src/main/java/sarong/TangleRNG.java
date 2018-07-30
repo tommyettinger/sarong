@@ -133,6 +133,26 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
         final long z = (s ^ s >>> 25) * (stateB += 0x9E3779B97F4A7C16L);
         return z ^ z >>> 22;
     }
+    public final long nextLong1() {
+        final long s = (stateA += 0x6C8E9CF570932BD5L);
+        final long z = (s ^ s >>> 27) * (stateB += 0x9E3779B97F4A7C16L);
+        return z ^ z >>> 25;
+    }
+    public final long nextLong2() {
+        final long s = (stateA = stateA * 0x41C64E6DL + 1L);
+        final long z = (s ^ s >>> 27) * (stateB += 0x9E3779B97F4A7C16L);
+        return z ^ z >>> 25;
+    }
+    public final long nextLong3() {
+        final long s = (stateA += 0x6C8E9CF570932BD5L);
+        final long b = (stateB += 0x9E3779B97F4A7C16L);
+        return s * b ^ (s - b) >>> 32;
+    }
+    public final long nextLong4() {
+        final long s = (stateA = stateA * 0x41C64E6DL + 1L);
+        final long b = (stateB += 0x9E3779B97F4A7C16L);
+        return s * b ^ (s - b) >>> 32;
+    }
 
     /**
      * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the

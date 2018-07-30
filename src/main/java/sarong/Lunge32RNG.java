@@ -210,9 +210,9 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
     }
     public static void main(String[] args)
     {
-        byte state = 6, stream = 8;
+        byte state = 2, stream = 0;
         char[] counts = new char[256];
-        for (int i = 0; i < 0x10000; i++) {
+        for (int i = 0x0; i < 0x8000; i++) {
             /*
   					uint64_t y = stateB ^ stateB >> 31;
 					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
@@ -221,12 +221,29 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            y = -(stream & 1);
 //            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
 //            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
-            state += 0x95;
-            if(state == 0)
-                ++stream;
-            final byte z = (byte)(((state-stream ^ (state&0xFF) >> 3)) * 0x43);
+
+//            Uint64 z = (stateB += INC2), s = (state += INCR);
+//            z *= (s ^ z >> SHIFT_A);
+//            return (z ^ (z + s >> SHIFT_B));
+
+//            state += 0x95;
+//            if(state == 0) 
+//                stream += 0xD4;
+//            else
+//                stream += 0x6A;
+//            final byte z = (byte)(((state ^ (stream&0xFF) >> 3)) * stream);
+//            byte z;
+//            if(stream == 0) // -0x91
+//            {
+//                z = (state *= 0x3D);
+//                stream -= 107;
+//            }
+//            else 
+//                z = (state = (byte)(state * 0x3D + (stream += -107)));
 //            final byte z = (byte) (((stream += 1|(state += 0x95))|1) * (state ^ (state&0xFF) >> 3));
-//            final byte z = (byte) ((state ^ (state&0xFF) >> 3) * ((stream += 0x65)|1));
+            if(stream != 0)
+                state += 0xA7;
+            final byte z = (byte) ((state ^ (state&0xFF) >> 3) * 0x3D + ((stream = (byte)(stream + 0x65 ^ 0x96))));
             counts[(z^(z&0xFF)>>2) & 0xFF]++;
 
 //            stream ^= (stream & 0xFF) >> 3;
@@ -256,7 +273,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
         cd target/classes
         java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
          */
-        short state = 1338, stream = 11;
+        short state = 0x1333, stream = 11;
         char[] counts = new char[65536];
         for (int i = 0; i < 0x10000; i++) {
             /*
@@ -267,11 +284,12 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            y = -(stream & 1);
 //            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
 //            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
-            state += 0x9E75;
+            //state += 0x9E75;
 //            if(state == 0)
 //                stream += 0x6B;
-            final short z = (short) ((state ^ (state&0xFFFF) >> 6) * ((stream += 0x649A)));
-            counts[z & 0xFFFF]++;
+            //final short z = (short) ((state ^ (state&0xFFFF) >> 6) * ((stream += 0x649A)));
+            state = (short)(state + 0x6665 ^ 0x9376);
+            counts[state & 0xFFFF]++;
 
 //            stream ^= (stream & 0xFF) >> 3;
 //            state += 0x95;
@@ -293,6 +311,8 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
         for (int i = 1, r = 1; i < 65536; i++) {
             if(prev == counts[i]){
                 r++;
+                if(i == 65535)
+                    m.put((int)prev, r);
             }
             else
             {

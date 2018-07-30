@@ -165,6 +165,72 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
         return ((stateA ^ stateA >>> 27)) * (stateB | 1L) + stateB;
         //return s ^ (s >>> 25);
     }
+    public final long nextLong7() {
+        final long s = (stateA += 0x9E3779B97F4A7C15L);
+        long z;
+        if(s == 0L)
+            z = (stateB += 0xDA77A83CC694FE14L);
+        else
+            z = (stateB += 0x6D3BD41E634A7F0AL);
+        z *= (s ^ (z >>> 26));
+        return z ^ (z + s >>> 24);
+    }
+    public final long nextLong8() {
+        final long s = (stateA += 0x9E3779B97F4A7C15L);
+        long z = (stateB += 0x6D3BD41E634A7F0AL);
+        z *= (s ^ (z >>> 26));
+        return z ^ (z + s >>> 24);
+    }
+    public final long nextLong9() {
+        final long s = (stateA += 0x9E3779B97F4A7C15L);
+        if(s == 0L)
+            stateB += 0x6C8E9CF570932BD5L;
+        final long z = (s ^ (s >>> 27)) * (s + stateB | 0xA529);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong10() {
+        long z = (stateA += 0x9E3779B97F4A7C15L);
+        z = (z ^ (z >>> 27)) * (z + stateB | 0xA529);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong11()
+    { 
+        long z;
+        if(stateB == 0) // -0x91
+        {
+            z = (stateA *= 0x369DEA0F31A53F85L);
+            stateB += 0x9E3779B97F4A7C15L;
+        }
+        else
+            z = (stateA = (stateA * 0x369DEA0F31A53F85L + (stateB += 0x9E3779B97F4A7C15L)));
+        return z ^ z >>> 26;
+    }
+    public final long nextLong12()
+    {
+        final long z = (stateA = stateA * 0x369DEA0F31A53F85L + (stateB += 0x9E3779B97F4A7C15L));
+        return z ^ z >>> 26;
+    }
+    public final long nextLong13() {
+        if((stateB += 0xC6BC279692B5CC85L) != 0L)
+            stateA += 0x6C8E9CF570932BD5L;
+        final long z = (stateA ^ (stateA >>> 27)) * 0x41C64E6DL + stateB;
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong14(){
+        final long s = (stateA += 0x6C8E9CF570932BD5L);
+        if(s == 0L)
+            stateB += 0x9E3779B97F4A7C15L;
+        final long z = (s ^ s >>> 27) * 0x41C64E6DL + (stateB += 0x9E3779B97F4A7C15L);
+        return z ^ (z >>> 25);
+    }
+    public final long nextLong15(){
+        if(stateB == 0L)             
+            stateA += 0xD91D39EAE12657AAL;
+        else
+            stateA += 0x6C8E9CF570932BD5L;
+        stateB ^= (stateA ^ stateA >>> 27) * 0x41C64E6DL + 0x9E3779B97F4A7C15L;
+        return stateB ^ (stateB >>> 25);
+    }
 
     /**
      * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
