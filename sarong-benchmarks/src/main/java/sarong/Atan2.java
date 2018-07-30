@@ -1,6 +1,5 @@
 package sarong;
 
-import com.badlogic.gdx.math.MathUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.options.Options;
@@ -11,9 +10,39 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Most of this benchmark is fixed up from <a href="http://www.java-gaming.org/topics/fast-atan2-again/38409/view.html">This Java-Gaming post</a>.
+ * The benchmark has been modified to choose x and y from a large array of random floats or doubles, varying in sign.
+ * This thrashes branch prediction, causing the DSP code (as an example) to go from roughly 6 ns (when sign is always
+ * positive for x and y) to 16 ns (with varied signs for each).
+ * <pre>
+ *                       [-----------Speed--------------]  [-----Quality-----]
+ * Benchmark             Mode  Cnt   Score   Error  Units  Average  Worst-Case
+ * Atan2.apache          avgt    4  75.494 ± 2.209  ns/op  0.00000  0.00000
+ * Atan2.baselineDouble  avgt    4   4.210 ± 0.220  ns/op  
+ * Atan2.baselineFloat   avgt    4   4.264 ± 0.080  ns/op  
+ * Atan2.diamond         avgt    4  16.643 ± 0.658  ns/op  0.04318  0.07112
+ * Atan2.dspAccurate     avgt    4  16.836 ± 1.016  ns/op  0.00344  0.01015
+ * Atan2.dspFast         avgt    4  16.704 ± 1.418  ns/op  0.04318  0.07111
+ * Atan2.dspOpt          avgt    4  16.736 ± 0.094  ns/op  0.04318  0.07111
+ * Atan2.gdx             avgt    4  19.660 ± 0.656  ns/op  0.00231  0.00488
+ * Atan2.icecore         avgt    4  21.107 ± 0.357  ns/op  0.00038  0.00098
+ * Atan2.kappa           avgt    4  19.482 ± 0.617  ns/op  0.00224  0.00468
+ * Atan2.math            avgt    4  81.711 ± 1.487  ns/op  0.00000  0.00000
+ * Atan2.riven           avgt    4  22.850 ± 0.673  ns/op  0.00290  0.00787
+ * Atan2.squid           avgt    4  22.150 ± 1.042  ns/op  0.00007  0.00020
+ * Atan2.squidRough      avgt    4  21.261 ± 0.967  ns/op  0.00237  0.00376
+ * </pre>
+ * Apache's FastMath is 100% accurate to Math.atan2(), but is barely any faster, so it doesn't really compare here.
+ * Squid has (by far) the closest approximation that is still significantly faster than Math.atan2().
+ * Icecore is slightly faster than Squid and has the second-best quality, but it uses a lookup table.
+ * Diamond and DspFast have way too much error to be useful in the general case, but are very fast.
+ * Kappa is the fastest without horrible quality, but it's still just 18% faster than Squid (accounting for baseline).
+ * Gdx is slightly slower and lower-quality than Kappa.
+ * Riven should not be used.
+ * SquidRough should probably not be used either.
  */
+@State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Fork(1)
 @Warmup(iterations = 4)
 @Measurement(iterations = 4)
@@ -29,6 +58,15 @@ public class Atan2 {
     private static final float LOW_F = (float) LOW_D;
     private static final float HIGH_F = (float) HIGH_D;
     private static final float INC_F = (float) INC_D;
+    private static final double[] inputs = new double[65536];
+    private final float[] floatInputs = new float[65536];
+    private short counterA = -0x8000, counterB = -0x4000;
+    {
+        for (int i = 0; i < 65536; i++) {
+            floatInputs[i] = (float) (inputs[i] =
+                    (LinnormRNG.determine(i) >> 11) * 0x1p-40);
+        }
+    }
 
     public static Options buildOptions() {
         return new OptionsBuilder()
@@ -84,17 +122,18 @@ public class Atan2 {
 
     public static void main(String[] args) {
         Atan2Benchmark[] benchmarks = new Atan2Benchmark[]{
-//                new Apache(),
+                new Apache(),
                 new Default(),
                 new Diamond(),
                 new DSPAccurate(),
                 new DSPFast(),
+                new DSPOpt(),
+                new Gdx(),
                 new Icecore(),
                 new Kappa(),
-//                new Riven(),
+                new Riven(),
                 new Squid(),
-                new Squid2(),
-                new Gdx(),
+                new SquidRough(),
         };
 
         System.out.println("A lower average means higher accuracy.");
@@ -108,21 +147,223 @@ public class Atan2 {
     ///////////////////////////////////////
 
     @Benchmark
-    public double baseline() {
-        double sum = 0;
-        for (double x = LOW_D; x < HIGH_D; x += INC_D) {
-            for (double y = LOW_D; y < HIGH_D; y += INC_D) {
-                sum += x + y;
-            }
-        }
-        return sum;
+    public double baselineDouble()
+    {
+        return inputs[counterA++ & 0xFFFF] + inputs[counterB++ & 0xFFFF];
     }
+
+    @Benchmark
+    public float baselineFloat()
+    {
+        return floatInputs[counterA++ & 0xFFFF] + floatInputs[counterB++ & 0xFFFF];
+    }
+
+    @Benchmark
+    public double math()
+    {
+        return Math.atan2(inputs[counterA++ & 0xFFFF], inputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public double apache()
+    {
+        return FastMath.atan2(inputs[counterA++ & 0xFFFF], inputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float riven()
+    {
+        return Riven.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float dspFast()
+    {
+        return DSPFast.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float dspOpt()
+    {
+        return NumberTools.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float dspAccurate()
+    {
+        return DSPAccurate.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+    @Benchmark
+    public float kappa()
+    {
+        return Kappa.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float icecore()
+    {
+        return Icecore.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float diamond()
+    {
+        return Diamond.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float squidRough()
+    {
+        return SquidRough.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+    @Benchmark
+    public float squid()
+    {
+        return Squid.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+    
+    @Benchmark
+    public float gdx()
+    {
+        return Gdx.atan2(floatInputs[counterA++ & 0xFFFF], floatInputs[counterB++ & 0xFFFF]);
+    }
+
+
+//    @Benchmark
+//    public double baseline() {
+//        double sum = 0;
+//        for (double x = LOW_D; x < HIGH_D; x += INC_D) {
+//            for (double y = LOW_D; y < HIGH_D; y += INC_D) {
+//                sum += x + y;
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public double atan2_default() {
+//        double sum = 0;
+//        for (double y = LOW_D; y < HIGH_D; y += INC_D) {
+//            for (double x = LOW_D; x < HIGH_D; x += INC_D) {
+//                sum += Math.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public double atan2_apache() {
+//        double sum = 0;
+//        for (double y = LOW_D; y < HIGH_D; y += INC_D) {
+//            for (double x = LOW_D; x < HIGH_D; x += INC_D) {
+//                sum += FastMath.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public float atan2_riven() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += Riven.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public float atan2_dsp_fast() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += DSPFast.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//
+//    @Benchmark
+//    public float atan2_dsp_accurate() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += DSPAccurate.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//
+//    @Benchmark
+//    public float atan2_kappa() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += Kappa.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public float atan2_icecore() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += Icecore.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//
+//    @Benchmark
+//    public float atan2_diamond() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += Diamond.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//
+//    @Benchmark
+//    public float atan2_squid() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += SquidRough.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//
+//    @Benchmark
+//    public float atan2_gdx() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += MathUtils.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+//    @Benchmark
+//    public float atan2_squid2() {
+//        float sum = 0;
+//        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
+//            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
+//                sum += Squid.atan2(y, x);
+//            }
+//        }
+//        return sum;
+//    }
+
+
+
 
     ///////////////////////////////////////
     // Default atan2
     ///////////////////////////////////////
 
-    public static class Default extends Atan2Benchmark {
+    public final static class Default extends Atan2Benchmark {
 
         Default() {
             super("Default");
@@ -133,23 +374,12 @@ public class Atan2 {
             return (float) Math.atan2(y, x);
         }
     }
-
-    @Benchmark
-    public double atan2_default() {
-        double sum = 0;
-        for (double y = LOW_D; y < HIGH_D; y += INC_D) { 
-            for (double x = LOW_D; x < HIGH_D; x += INC_D) {
-                sum += Math.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
+    
     ///////////////////////////////////////
     // Apache's FastMath.atan2 ( http://commons.apache.org/proper/commons-math/javadocs/api-3.3/org/apache/commons/math3/util/FastMath.html )
     ///////////////////////////////////////
 
-    public static class Apache extends Atan2Benchmark {
+    public final static class Apache extends Atan2Benchmark {
 
         Apache() {
             super("Apache");
@@ -161,22 +391,11 @@ public class Atan2 {
         }
     }
 
-    @Benchmark
-    public double atan2_apache() {
-        double sum = 0;
-        for (double y = LOW_D; y < HIGH_D; y += INC_D) { 
-            for (double x = LOW_D; x < HIGH_D; x += INC_D) {
-                sum += FastMath.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     ///////////////////////////////////////
     // Riven's atan2 ( http://www.java-gaming.org/index.php?topic=14647.0 )
     ///////////////////////////////////////
 
-    public static class Riven extends Atan2Benchmark {
+    public final static class Riven extends Atan2Benchmark {
 
         Riven() {
             super("Riven");
@@ -241,22 +460,11 @@ public class Atan2 {
         }
     }
 
-    @Benchmark
-    public float atan2_riven() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Riven.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     ///////////////////////////////////////
     // DSP's atan2 ( http://dspguru.com/dsp/tricks/fixed-point-atan2-with-self-normalization )
     ///////////////////////////////////////
 
-    public static class DSPFast extends Atan2Benchmark {
+    public final static class DSPFast extends Atan2Benchmark {
 
         DSPFast() {
             super("DSPFast");
@@ -294,7 +502,7 @@ public class Atan2 {
         }
     }
 
-    public static class DSPAccurate extends Atan2Benchmark {
+    public final static class DSPAccurate extends Atan2Benchmark {
 
         DSPAccurate() {
             super("DSPAccurate");
@@ -333,34 +541,23 @@ public class Atan2 {
             return y < 0 ? -r : r;
         }
     }
+    public final static class DSPOpt extends Atan2Benchmark {
 
-    @Benchmark
-    public float atan2_dsp_fast() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) { 
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += DSPFast.atan2(y, x);
-            }
+        DSPOpt() {
+            super("DSPOpt");
         }
-        return sum;
-    }
 
-    @Benchmark
-    public float atan2_dsp_accurate() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += DSPAccurate.atan2(y, x);
-            }
+        @Override
+        public float test(float y, float x) {
+            return NumberTools.atan2(y, x);
         }
-        return sum;
     }
 
     ///////////////////////////////////////
     // kappa's atan2 ( http://www.java-gaming.org/topics/extremely-fast-atan2/36467/msg/346112/view.html#msg346112 )
     ///////////////////////////////////////
 
-    public static class Kappa extends Atan2Benchmark {
+    public final static class Kappa extends Atan2Benchmark {
 
         Kappa() {
             super("Kappa");
@@ -403,22 +600,11 @@ public class Atan2 {
         }
     }
 
-    @Benchmark
-    public float atan2_kappa() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) { 
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Kappa.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     ///////////////////////////////////////
     // Icecore's atan2 ( http://www.java-gaming.org/topics/extremely-fast-atan2/36467/msg/346145/view.html#msg346145 )
     ///////////////////////////////////////
 
-    public static class Icecore extends Atan2Benchmark {
+    public final static class Icecore extends Atan2Benchmark {
 
         Icecore() {
             super("Icecore");
@@ -482,22 +668,11 @@ public class Atan2 {
         }
     }
 
-    @Benchmark
-    public float atan2_icecore() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) { 
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Icecore.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     ///////////////////////////////////////
     // Diamond's atan2 ( https://stackoverflow.com/questions/1427422/cheap-algorithm-to-find-measure-of-angle-between-vectors/14675998#14675998 )
     ///////////////////////////////////////
 
-    public static class Diamond extends Atan2Benchmark {
+    public final static class Diamond extends Atan2Benchmark {
 
         Diamond() {
             super("Diamond");
@@ -531,17 +706,6 @@ public class Atan2 {
         }
     }
 
-    @Benchmark
-    public float atan2_diamond() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) { 
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Diamond.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     /**
      * SquidLib's NumberTools.atan2Rough() method.
      * Less-precise but somewhat faster approximation of the frequently-used trigonometric method atan2, with
@@ -553,15 +717,15 @@ public class Atan2 {
      * Credit to Sreeraman Rajan, Sichun Wang, Robert Inkol, and Alain Joyal in
      * <a href="https://www.researchgate.net/publication/3321724_Streamlining_Digital_Signal_Processing_A_Tricks_of_the_Trade_Guidebook_Second_Edition">this DSP article</a>.
      */
-    public static class Squid extends Atan2Benchmark
+    public final static class SquidRough extends Atan2Benchmark
     {
-        Squid() {
-            super("Squid");
+        SquidRough() {
+            super("SquidRough");
         }
 
         @Override
         public float test(float y, float x) {
-            return Squid.atan2(y, x);
+            return SquidRough.atan2(y, x);
         }
 
         static float atan2(final float y, final float x)
@@ -584,17 +748,6 @@ public class Atan2 {
 
     }
 
-    @Benchmark
-    public float atan2_squid() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Squid.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-
     /**
      * SquidLib's NumberTools.atan2() method.
      * Close approximation of the frequently-used trigonometric method atan2, with higher precision than LibGDX's atan2
@@ -606,15 +759,15 @@ public class Atan2 {
      * Credit to StackExchange user njuffa, who gave
      * <a href="https://math.stackexchange.com/a/1105038">this useful answer</a>.
      */
-    public static class Squid2 extends Atan2Benchmark
+    public final static class Squid extends Atan2Benchmark
     {
-        Squid2() {
-            super("Squid2");
+        Squid() {
+            super("Squid");
         }
 
         @Override
         public float test(float y, float x) {
-            return Squid2.atan2(y, x);
+            return Squid.atan2(y, x);
         }
 
         static float atan2(final float y, final float x)
@@ -636,36 +789,36 @@ public class Atan2 {
 
     }
 
-    @Benchmark
-    public float atan2_squid2() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += Squid2.atan2(y, x);
-            }
-        }
-        return sum;
-    }
-    public static class Gdx extends Atan2Benchmark
+    public final static class Gdx extends Atan2Benchmark
     {
+        static final float PI = 3.1415927f;
+
         Gdx() {
             super("Gdx");
         }
 
         @Override
         public float test(float y, float x) {
-            return MathUtils.atan2(y, x);
+            return Gdx.atan2(y, x);
         }
+        /** Returns atan2 in radians, faster but less accurate than Math.atan2. Average error of 0.00231 radians (0.1323 degrees),
+         * largest error of 0.00488 radians (0.2796 degrees). */
+        static float atan2 (float y, float x) {
+            if (x == 0f) {
+                if (y > 0f) return PI / 2;
+                if (y == 0f) return 0f;
+                return -PI / 2;
+            }
+            final float atan, z = y / x;
+            if (Math.abs(z) < 1f) {
+                atan = z / (1f + 0.28f * z * z);
+                if (x < 0f) return atan + (y < 0f ? -PI : PI);
+                return atan;
+            }
+            atan = PI / 2 - z / (z * z + 0.28f);
+            return y < 0f ? atan - PI : atan;
+        }
+
     }
 
-    @Benchmark
-    public float atan2_gdx() {
-        float sum = 0;
-        for (float y = LOW_F; y < HIGH_F; y += INC_F) {
-            for (float x = LOW_F; x < HIGH_F; x += INC_F) {
-                sum += MathUtils.atan2(y, x);
-            }
-        }
-        return sum;
-    }
 }

@@ -112,11 +112,8 @@ public class UncommonBenchmark {
     {
         for (int i = 0; i < 65536; i++) {
             floatInputs[i] = (float) (inputs[i] =
-                    //-2.0 + (i * 0.0625)
-                    NumberTools.randomDouble(i + 107) * 4096.0
-            );
+                    (LinnormRNG.determine(i) >> 11) * 0x1p-40);
         }
-
     }
 
     private LongPeriodRNG LongPeriod = new LongPeriodRNG(9999L);

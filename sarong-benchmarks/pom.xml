@@ -62,11 +62,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <artifactId>sarong</artifactId>
             <version>0.6-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.badlogicgames.gdx</groupId>
-            <artifactId>gdx</artifactId>
-            <version>1.9.8</version>
-        </dependency>
     </dependencies>
 
     <properties>
