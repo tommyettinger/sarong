@@ -193,7 +193,7 @@ public class EditRNG extends StatefulRNG implements Serializable {
     @Override
     public double nextDouble() {
         long l = random.nextLong();
-        double gen = (l & 0x1fffffffffffffL) * DOUBLE_UNIT, scatter = (l & 0xffffffL) * FLOAT_UNIT;
+        double gen = (l & 0x1fffffffffffffL) * DOUBLE_UNIT, scatter = (l & 0xffffffL) * 0x1p-24f;
         rawLatest = 0.9999999999999999 - gen;
         gen = 0.9999999999999999 - Math.pow(gen, 1.0 / (1.0 - expected) - 1.0);
         if (centrality > 0) {

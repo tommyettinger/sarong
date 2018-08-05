@@ -9,17 +9,27 @@ import java.math.BigInteger;
  * Created by Tommy Ettinger on 6/17/2018.
  */
 public class Test128 {
-    public long mulhi(long x, long y) {
-        final long xLow = x & 0xFFFFFFFFL;
-        final long yLow = y & 0xFFFFFFFFL;
-        x >>= 32;
-        y >>= 32;
-        final long z = (xLow * yLow >> 32);
-        long t = x * yLow + z;
-        final long tLow = t & 0xFFFFFFFFL;
-        t >>= 32;
-        return x * y + t + (tLow + xLow * y >> 32) - (z >> 63);
+//    public long mulhi(long x, long y) {
+//        final long xLow = x & 0xFFFFFFFFL;
+//        final long yLow = y & 0xFFFFFFFFL;
+//        x >>= 32;
+//        y >>= 32;
+//        final long z = (xLow * yLow >> 32);
+//        long t = x * yLow + z;
+//        final long tLow = t & 0xFFFFFFFFL;
+//        t >>= 32;
+//        return x * y + t + (tLow + xLow * y >> 32) - (z >> 63);
+//    }
+    public long mulhi(long left, long right) {
+        final long leftLow = left & 0xFFFFFFFFL;
+        final long rightLow = right & 0xFFFFFFFFL;
+        left >>= 32;
+        right >>= 32;
+        final long z = (leftLow * rightLow >> 32);
+        final long t = left * rightLow + z;
+        return left * right + (t >> 32) + ((t & 0xFFFFFFFFL) + leftLow * right >> 32) - (z >> 63);
     }
+
     public long mulhi2(long x, long y)
     {
 //        long x_high = x >> 32;
@@ -57,25 +67,27 @@ public class Test128 {
     @Test
     public void test128()
     {
-        MizuchiRNG r1 = new MizuchiRNG(1234567890L, 987654321L), r2 = new MizuchiRNG(9876543210L, 123456789L);
+//        MizuchiRNG r1 = new MizuchiRNG(1234567890L, 987654321L), r2 = new MizuchiRNG(9876543210L, 123456789L);
+        MizuchiRNG r1 = new MizuchiRNG(), r2 = new MizuchiRNG();
         for (int i = 0; i < 8; i++) {
             r1.nextLong();
             r2.nextLong();
         }
         long a, b, x, y;
-        for (int i = 0; i < 0x100; i++) {
+        for (int i = 0; i < 0x10000000; i++) {
             a = r1.nextLong();
             b = r2.nextLong();
             x = mulhi(a, b);
             y = mulPrecise(a, b);
-            System.out.printf("On iteration %d, 0x%016X * 0x%016X (sum %016X) gave: 0x%016X and 0x%016X", i, a, b, a+b, x, y);
+            //System.out.printf("On iteration %d, 0x%016X * 0x%016X (sum %016X) gave: 0x%016X and 0x%016X", i, a, b, a+b, x, y);
             if(x != y)
             {
-                System.out.println(" :( by " + (y - x) + " ");
+                System.out.println("\n :( by " + (y - x) + " ");
+                break;
                 //x = mulhi(a, b);
                 //System.out.println(x);
             }
-            else System.out.println();
+            //else System.out.println();
         }
     }
     @Test

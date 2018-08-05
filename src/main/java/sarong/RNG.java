@@ -18,22 +18,8 @@ import static sarong.NumberTools.intBitsToFloat;
  * @author Tommy Ettinger
  * @author smelC
  */
-public class RNG implements Serializable {
-
-    /**
-     * A very small multiplier used to reduce random numbers to from the {@code [0.0,9007199254740991.0)} range to the
-     * {@code [0.0,1.0)} range. Equivalent to {@code 1.0 / (1 << 53)}, if that number makes more sense to you, but the
-     * source uses the hexadecimal double literal {@code 0x1p-53}. The hex literals are a nice "hidden feature" of Java
-     * 5 onward, and allow exact declaration of floating-point numbers without precision loss from decimal conversion.
-     */
-    protected static final double DOUBLE_UNIT = 0x1p-53; // more people should know about hex double literals!
-    /**
-     * A very small multiplier used to reduce random numbers to from the {@code [0.0,16777216.0)} range to the
-     * {@code [0.0,1.0)} range. Equivalent to {@code 1.0f / (1 << 24)}, if that number makes more sense to you, but the
-     * source uses the hexadecimal double literal {@code 0x1p-24f}. The hex literals are a nice "hidden feature" of Java
-     * 5 onward, and allow exact declaration of floating-point numbers without precision loss from decimal conversion.
-     */
-    protected static final float FLOAT_UNIT = 0x1p-24f;
+public class RNG extends AbstractRNG implements Serializable, IRNG {
+    
     protected RandomnessSource random;
     protected double nextNextGaussian;
     protected boolean haveNextNextGaussian = false;
@@ -43,38 +29,47 @@ public class RNG implements Serializable {
 
 
     /**
-     * Default constructor; uses ThrustAltRNG, which is of high quality, but low period (which rarely matters for games),
-     * and has good speed, tiny state size, and excellent 64-bit number generation.
+     * Default constructor; uses {@link LinnormRNG}, which is of high quality, but low period (which rarely matters
+     * for games), and has excellent speed, tiny state size, and natively generates 64-bit numbers.
+     * <br>
+     * Previous versions of SquidLib used different implementations, including {@link LightRNG}, {@link ThrustAltRNG},
+     * and {@link MersenneTwister}. You can still use one of these by instantiating one of those classes and passing it
+     * to {@link #RNG(RandomnessSource)}, which may be the best way to ensure the same results across versions.
      */
     public RNG() {
-        this(new ThrustAltRNG());
+        this(new LinnormRNG());
     }
 
     /**
-     * Seeded constructor; uses ThrustAltRNG, which is of high quality, but low period (which rarely matters for games),
-     * and has good speed, tiny state size, and excellent 64-bit number generation.
+     * Default constructor; uses {@link LinnormRNG}, which is of high quality, but low period (which rarely matters
+     * for games), and has excellent speed, tiny state size, and natively generates 64-bit numbers. The seed can be
+     * any long, including 0.
+     * @param seed any long
      */
     public RNG(long seed) {
-        this(new ThrustAltRNG(seed));
+        this(new LinnormRNG(seed));
     }
 
     /**
-     * String-seeded constructor; uses a platform-independent hash of the String (it does not use String.hashCode) as a
-     * seed for ThrustAltRNG, which is of high quality, but low period (which rarely matters for games), and has good speed,
-     * tiny state size, and excellent 64-bit number generation.
+     * String-seeded constructor; uses a platform-independent hash of the String (it does not use String.hashCode,
+     * instead using {@link CrossHash#hash64(CharSequence)}) as a seed for {@link LinnormRNG}, which is of high quality,
+     * but low period (which rarely matters for games), and has excellent speed, tiny state size, and natively generates
+     * 64-bit numbers.
      */
     public RNG(CharSequence seedString) {
-        this(new ThrustAltRNG(CrossHash.hash(seedString)));
+        this(new LinnormRNG(CrossHash.hash64(seedString)));
     }
 
     /**
-     * Uses the provided source of randomness for all calculations. This
-     * constructor should be used if an alternate RandomnessSource other than ThrustAltRNG is desirable.
+     * Uses the provided source of randomness for all calculations. This constructor should be used if an alternate
+     * RandomnessSource other than LinnormRNG is desirable, such as to keep compatibility with earlier SquidLib
+     * versions that defaulted to LightRNG or ThrustAltRNG.
+     * <br>
      * If the parameter is null, this is equivalent to using {@link #RNG()} as the constructor.
-     * @param random the source of pseudo-randomness, such as a MersenneTwister or SobolQRNG object
+     * @param random the source of pseudo-randomness, such as a LightRNG or LongPeriodRNG object
      */
     public RNG(RandomnessSource random) {
-        this.random = (random == null) ? new ThrustAltRNG() : random;
+        this.random = (random == null) ? new LinnormRNG() : random;
     }
 
     /**
@@ -146,45 +141,6 @@ public class RNG implements Serializable {
         return ran;
     }
 
-    /**
-     * Returns a value from an even distribution from min (inclusive) to max
-     * (exclusive).
-     *
-     * @param min the minimum bound on the return value (inclusive)
-     * @param max the maximum bound on the return value (exclusive)
-     * @return the found value
-     */
-    public double between(double min, double max) {
-        return min + (max - min) * nextDouble();
-    }
-
-    /**
-     * Returns a value between min (inclusive) and max (exclusive).
-     * <p>
-     * The inclusive and exclusive behavior is to match the behavior of the
-     * similar method that deals with floating point values.
-     *
-     * @param min the minimum bound on the return value (inclusive)
-     * @param max the maximum bound on the return value (exclusive)
-     * @return the found value
-     */
-    public int between(int min, int max) {
-        return nextInt(max - min) + min;
-    }
-
-    /**
-     * Returns a value between min (inclusive) and max (exclusive).
-     * <p>
-     * The inclusive and exclusive behavior is to match the behavior of the
-     * similar method that deals with floating point values.
-     *
-     * @param min the minimum bound on the return value (inclusive)
-     * @param max the maximum bound on the return value (exclusive)
-     * @return the found value
-     */
-    public long between(long min, long max) {
-        return nextLong(max - min) + min;
-    }
 
     /**
      * Returns the average of a number of randomly selected numbers from the
@@ -210,67 +166,7 @@ public class RNG implements Serializable {
         return Math.round((float) sum / samples);
     }
 
-    /**
-     * Returns a random element from the provided array and maintains object
-     * type.
-     *
-     * @param <T>   the type of the returned object
-     * @param array the array to get an element from
-     * @return the randomly selected element
-     */
-    public <T> T getRandomElement(T[] array) {
-        if (array.length < 1) {
-            return null;
-        }
-        return array[nextInt(array.length)];
-    }
-
-    /**
-     * Returns a random element from the provided list. If the list is empty
-     * then null is returned.
-     *
-     * @param <T>  the type of the returned object
-     * @param list the list to get an element from
-     * @return the randomly selected element
-     */
-    public <T> T getRandomElement(List<T> list) {
-        if (list.isEmpty()) {
-            return null;
-        }
-        return list.get(nextInt(list.size()));
-    }
-
-    /**
-     * Returns a random element from the provided Collection, which should have predictable iteration order if you want
-     * predictable behavior for identical RNG seeds, though it will get a random element just fine for any Collection
-     * (just not predictably in all cases). If you give this a Set, it should be a LinkedHashSet or some form of sorted
-     * Set like TreeSet if you want predictable results. Any List or Queue should be fine. Map does not implement
-     * Collection, thank you very much Java library designers, so you can't actually pass a Map to this, though you can
-     * pass the keys or values. If coll is empty, returns null.
-     * <p>
-     * <p>
-     * Requires iterating through a random amount of coll's elements, so performance depends on the size of coll but is
-     * likely to be decent, as long as iteration isn't unusually slow. This replaces {@code getRandomElement(Queue)},
-     * since Queue implements Collection and the older Queue-using implementation was probably less efficient.
-     * </p>
-     *
-     * @param <T>  the type of the returned object
-     * @param coll the Collection to get an element from; remember, Map does not implement Collection
-     * @return the randomly selected element
-     */
-    public <T> T getRandomElement(Collection<T> coll) {
-        int n;
-        if ((n = coll.size()) <= 0) {
-            return null;
-        }
-        n = nextInt(n);
-        T t = null;
-        Iterator<T> it = coll.iterator();
-        while (n-- >= 0 && it.hasNext())
-            t = it.next();
-        return t;
-    }
-
+    
     /*
      * Returns a random elements from the provided queue. If the queue is empty
      * then null is returned.
@@ -398,171 +294,6 @@ public class RNG implements Serializable {
         };
     }
 
-    /**
-     * Mutates the array arr by switching the contents at pos1 and pos2.
-     * @param arr an array of T; must not be null
-     * @param pos1 an index into arr; must be at least 0 and no greater than arr.length
-     * @param pos2 an index into arr; must be at least 0 and no greater than arr.length
-     */
-    private static <T> void swap(T[] arr, int pos1, int pos2) {
-        final T tmp = arr[pos1];
-        arr[pos1] = arr[pos2];
-        arr[pos2] = tmp;
-    }
-
-    /**
-     * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy.
-     * GWT-compatible since GWT 2.8.0, which is the default if you use libGDX 1.9.5 or higher.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     *
-     * @param elements an array of T; will not be modified
-     * @param <T>      can be any non-primitive type.
-     * @return a shuffled copy of elements
-     */
-    public <T> T[] shuffle(final T[] elements) {
-        final int size = elements.length;
-        final T[] array = Arrays.copyOf(elements, size);
-        for (int i = size; i > 1; i--) {
-            swap(array, i - 1, nextIntHasty(i));
-        }
-        return array;
-    }
-
-    /**
-     * Shuffles an array in-place using the Fisher-Yates algorithm.
-     * If you don't want the array modified, use {@link #shuffle(Object[], Object[])}.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     *
-     * @param elements an array of T; <b>will</b> be modified
-     * @param <T>      can be any non-primitive type.
-     * @return elements after shuffling it in-place
-     */
-    public <T> T[] shuffleInPlace(T[] elements) {
-        final int size = elements.length;
-        for (int i = size; i > 1; i--) {
-            swap(elements, i - 1, nextIntHasty(i));
-        }
-        return elements;
-    }
-
-    /**
-     * Shuffle an array using the Fisher-Yates algorithm. DO NOT give the same array for both elements and
-     * dest, since the prior contents of dest are rearranged before elements is used, and if they refer to the same
-     * array, then you can end up with bizarre bugs where one previously-unique item shows up dozens of times. If
-     * possible, create a new array with the same length as elements and pass it in as dest; the returned value can be
-     * assigned to whatever you want and will have the same items as the newly-formed array.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     *
-     * @param elements an array of T; will not be modified
-     * @param <T>      can be any non-primitive type.
-     * @param dest     Where to put the shuffle. If it does not have the same length as {@code elements}, this will use the
-     *                 randomPortion method of this class to fill the smaller dest. MUST NOT be the same array as elements!
-     * @return {@code dest} after modifications
-     */
-    public <T> T[] shuffle(T[] elements, T[] dest) {
-        if (dest.length != elements.length)
-            return randomPortion(elements, dest);
-        System.arraycopy(elements, 0, dest, 0, elements.length);
-        shuffleInPlace(dest);
-        return dest;
-    }
-
-    /**
-     * Shuffles a {@link Collection} of T using the Fisher-Yates algorithm and returns an ArrayList of T.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     * @param elements a Collection of T; will not be modified
-     * @param <T>      can be any non-primitive type.
-     * @return a shuffled ArrayList containing the whole of elements in pseudo-random order.
-     */
-    public <T> ArrayList<T> shuffle(Collection<T> elements) {
-        return shuffle(elements, null);
-    }
-
-    /**
-     * Shuffles a {@link Collection} of T using the Fisher-Yates algorithm. The result
-     * is allocated if {@code buf} is null or if {@code buf} isn't empty,
-     * otherwise {@code elements} is poured into {@code buf}.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     * @param elements a Collection of T; will not be modified
-     * @param <T>      can be any non-primitive type.
-     * @return a shuffled ArrayList containing the whole of elements in pseudo-random order.
-     */
-    public <T> ArrayList<T> shuffle(Collection<T> elements, /*@Nullable*/ ArrayList<T> buf) {
-        final ArrayList<T> al;
-        if (buf == null || !buf.isEmpty())
-            al = new ArrayList<>(elements);
-        else {
-            al = buf;
-            al.addAll(elements);
-        }
-        final int n = al.size();
-        for (int i = n; i > 1; i--) {
-            Collections.swap(al, nextInt(i), i - 1);
-        }
-        return al;
-    }
-    /**
-     * Shuffles a Collection of T items in-place using the Fisher-Yates algorithm.
-     * This only shuffles List data structures.
-     * If you don't want the array modified, use {@link #shuffle(Collection)}, which returns a List as well.
-     * <br>
-     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
-     *
-     * @param elements a Collection of T; <b>will</b> be modified
-     * @param <T>      can be any non-primitive type.
-     * @return elements after shuffling it in-place
-     */
-    public <T> List<T> shuffleInPlace(List<T> elements) {
-        final int n = elements.size();
-        for (int i = n; i > 1; i--) {
-            Collections.swap(elements, nextInt(i), i - 1);
-        }
-        return elements;
-    }
-
-
-    /**
-     * Generates a random permutation of the range from 0 (inclusive) to length (exclusive).
-     * Useful for passing to OrderedMap or OrderedSet's reorder() methods.
-     *
-     * @param length the size of the ordering to produce
-     * @return a random ordering containing all ints from 0 to length (exclusive)
-     */
-    public int[] randomOrdering(int length) {
-        if (length <= 0)
-            return new int[0];
-        return randomOrdering(length, new int[length]);
-    }
-
-    /**
-     * Generates a random permutation of the range from 0 (inclusive) to length (exclusive) and stores it in
-     * the dest parameter, avoiding allocations.
-     * Useful for passing to OrderedMap or OrderedSet's reorder() methods.
-     *
-     * @param length the size of the ordering to produce
-     * @param dest   the destination array; will be modified
-     * @return dest, filled with a random ordering containing all ints from 0 to length (exclusive)
-     */
-    public int[] randomOrdering(int length, int[] dest) {
-        if (dest == null) return null;
-
-        final int n = Math.min(length, dest.length);
-        for (int i = 0; i < n; i++) {
-            dest[i] = i;
-        }
-        for (int i = n; i > 1; i--) {
-            final int r = nextIntHasty(i),
-                    t = dest[r];
-            dest[r] = dest[i];
-            dest[i] = t;
-        }
-        return dest;
-    }
 
     /**
      * Gets a random portion of a List and returns it as a new List. Will only use a given position in the given
@@ -654,6 +385,7 @@ public class RNG implements Serializable {
      *
      * @return a double between 0.0 (inclusive) and 0.9999999999999999 (inclusive)
      */
+    @Override
     public double nextDouble() {
         return (random.nextLong() & 0x1fffffffffffffL) * 0x1p-53;
         //this is here for a record of another possibility; it can't generate quite a lot of possible values though
@@ -668,6 +400,7 @@ public class RNG implements Serializable {
      * @param outer the outer exclusive bound as a double; can be negative or positive
      * @return a double between 0.0 (inclusive) and outer (exclusive)
      */
+    @Override
     public double nextDouble(final double outer) {
         return (random.nextLong() & 0x1fffffffffffffL) * 0x1p-53 * outer;
     }
@@ -678,6 +411,7 @@ public class RNG implements Serializable {
      *
      * @return a float between 0f (inclusive) and 0.99999994f (inclusive)
      */
+    @Override
     public float nextFloat() {
         return random.next(24) * 0x1p-24f;
     }
@@ -689,6 +423,7 @@ public class RNG implements Serializable {
      * @param outer the outer exclusive bound as a float; can be negative or positive
      * @return a float between 0f (inclusive) and outer (exclusive)
      */
+    @Override
     public float nextFloat(final float outer) {
         return random.next(24) * 0x1p-24f * outer;
     }
@@ -714,60 +449,6 @@ public class RNG implements Serializable {
      */
     public long nextLong() {
         return random.nextLong();
-    }
-
-    /**
-     * Returns a random long below the given bound, or 0 if the bound is 0 or
-     * negative.
-     *
-     * @param bound the upper bound (exclusive)
-     * @return the found number
-     */
-    public long nextLong(long bound) {
-        if (bound <= 0) return 0;
-        long rand = random.nextLong();
-        final long randLow = rand & 0xFFFFFFFFL;
-        final long boundLow = bound & 0xFFFFFFFFL;
-        rand >>>= 32;
-        bound >>>= 32;
-        final long z = (randLow * boundLow >>> 32);
-        long t = rand * boundLow + z;
-        final long tLow = t & 0xFFFFFFFFL;
-        t >>>= 32;
-        return rand * bound + t + (tLow + randLow * bound >> 32);
-    }
-
-    /**
-     * Returns a random non-negative integer below the given bound, or 0 if the bound is 0 or
-     * negative.
-     *
-     * @param bound the upper bound (exclusive)
-     * @return the found number
-     */
-    public int nextInt(final int bound) {
-        if (bound <= 0) return 0;
-        int threshold = (0x7fffffff - bound + 1) % bound;
-        for (; ; ) {
-            int bits = random.next(31);
-            if (bits >= threshold)
-                return bits % bound;
-        }
-    }
-
-    /**
-     * Returns a random non-negative integer between 0 (inclusive) and the given bound (exclusive),
-     * or 0 if the bound is 0. The bound can be negative, which will produce 0 or a negative result.
-     * Uses an aggressively optimized technique that has some bias, but mostly for values of
-     * bound over 1 billion. This method is considered "hasty" since it should be faster than
-     * {@link #nextInt(int)} but gives up some statistical quality to do so.
-     * <br>
-     * Credit goes to Daniel Lemire, http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-     *
-     * @param bound the outer bound (exclusive), can be negative or positive
-     * @return the found number
-     */
-    public int nextIntHasty(final int bound) {
-        return (int) ((bound * (random.nextLong() & 0x7FFFFFFFL)) >> 31);
     }
 
     /**
@@ -823,90 +504,20 @@ public class RNG implements Serializable {
     public RNG copy() {
         return new RNG(random.copy());
     }
-
-    /**
-     * Generates a random 64-bit long with a number of '1' bits (Hamming weight) approximately equal to bitCount.
-     * For example, calling this with a parameter of 32 will be equivalent to calling nextLong() on this object's
-     * RandomnessSource (it doesn't consider overridden nextLong() methods, where present, on subclasses of RNG).
-     * Calling this with a parameter of 16 will have on average 16 of the 64 bits in the returned long set to '1',
-     * distributed pseudo-randomly, while a parameter of 47 will have on average 47 bits set. This can be useful for
-     * certain code that uses bits to represent data but needs a different ratio of set bits to unset bits than 1:1.
-     * <br>
-     * Implementors should limit any overriding method to calling and returning super(), potentially storing any extra
-     * information they need to internally, but should not change the result. This works based on a delicate balance of
-     * the RandomnessSource producing bits with an even 50% chance of being set, regardless of position, and RNG
-     * subclasses that alter the odds won't work as expected here, particularly if those subclasses use doubles
-     * internally (which almost always produce less than 64 random bits). You should definitely avoid using certain
-     * RandomnessSources that aren't properly pseudo-random, such as any QRNG class (SobolQRNG and VanDerCorputQRNG,
-     * pretty much), since these won't fill all 64 bits with equal likelihood.
-     *
-     * @param bitCount an int, only considered if between 0 and 64, that is the average number of bits to set
-     * @return a 64-bit long that, on average, should have bitCount bits set to 1, potentially anywhere in the long
-     */
-    public long approximateBits(int bitCount) {
-        if (bitCount <= 0)
-            return 0L;
-        if (bitCount >= 64)
-            return -1L;
-        if (bitCount == 32)
-            return random.nextLong();
-        boolean high = bitCount > 32;
-        int altered = (high ? 64 - bitCount : bitCount), lsb = NumberTools.lowestOneBit(altered);
-        long data = random.nextLong();
-        for (int i = lsb << 1; i <= 16; i <<= 1) {
-            if ((altered & i) == 0)
-                data &= random.nextLong();
-            else
-                data |= random.nextLong();
-        }
-        return high ? ~(random.nextLong() & data) : (random.nextLong() & data);
-    }
-
-    /**
-     * Gets a somewhat-random long with exactly 32 bits set; in each pair of bits starting at bit 0 and bit 1, then bit
-     * 2 and bit 3, up to bit 62 and bit 3, one bit will be 1 and one bit will be 0 in each pair.
-     * <br>
-     * Not exactly general-use; meant for generating data for GreasedRegion.
-     * @return a random long with 32 "1" bits, distributed so exactly one bit is "1" for each pair of bits
-     */
-    public long randomInterleave() {
-        long bits = nextLong() & 0xFFFFFFFFL, ib = ~bits & 0xFFFFFFFFL;
-        bits |= (bits << 16);
-        ib |= (ib << 16);
-        bits &= 0x0000FFFF0000FFFFL;
-        ib &= 0x0000FFFF0000FFFFL;
-        bits |= (bits << 8);
-        ib |= (ib << 8);
-        bits &= 0x00FF00FF00FF00FFL;
-        ib &= 0x00FF00FF00FF00FFL;
-        bits |= (bits << 4);
-        ib |= (ib << 4);
-        bits &= 0x0F0F0F0F0F0F0F0FL;
-        ib &= 0x0F0F0F0F0F0F0F0FL;
-        bits |= (bits << 2);
-        ib |= (ib << 2);
-        bits &= 0x3333333333333333L;
-        ib &= 0x3333333333333333L;
-        bits |= (bits << 1);
-        ib |= (ib << 1);
-        bits &= 0x5555555555555555L;
-        ib &= 0x5555555555555555L;
-        return (bits | (ib << 1));
-    }
-
+    
     /**
      * Gets the minimum random long between 0 and {@code bound} generated out of {@code trials} generated numbers.
      * Useful for when numbers should have a strong bias toward zero, but all possible values are between 0, inclusive,
      * and bound, exclusive.
-     * @param bound the outer exclusive bound
+     * @param bound the outer exclusive bound; may be negative or positive
      * @param trials how many numbers to generate and get the minimum of
      * @return the minimum generated long between 0 and bound out of the specified amount of trials
      */
     public long minLongOf(final long bound, final int trials)
     {
-        long value = nextLong(bound);
+        long value = nextSignedLong(bound);
         for (int i = 1; i < trials; i++) {
-            value = Math.min(value, nextLong(bound));
+            value = Math.min(value, nextSignedLong(bound));
         }
         return value;
     }
@@ -914,15 +525,15 @@ public class RNG implements Serializable {
      * Gets the maximum random long between 0 and {@code bound} generated out of {@code trials} generated numbers.
      * Useful for when numbers should have a strong bias away from zero, but all possible values are between 0,
      * inclusive, and bound, exclusive.
-     * @param bound the outer exclusive bound
+     * @param bound the outer exclusive bound; may be negative or positive
      * @param trials how many numbers to generate and get the maximum of
      * @return the maximum generated long between 0 and bound out of the specified amount of trials
      */
     public long maxLongOf(final long bound, final int trials)
     {
-        long value = nextLong(bound);
+        long value = nextSignedLong(bound);
         for (int i = 1; i < trials; i++) {
-            value = Math.max(value, nextLong(bound));
+            value = Math.max(value, nextSignedLong(bound));
         }
         return value;
     }
@@ -931,15 +542,15 @@ public class RNG implements Serializable {
      * Gets the minimum random int between 0 and {@code bound} generated out of {@code trials} generated numbers.
      * Useful for when numbers should have a strong bias toward zero, but all possible values are between 0, inclusive,
      * and bound, exclusive.
-     * @param bound the outer exclusive bound
+     * @param bound the outer exclusive bound; may be negative or positive
      * @param trials how many numbers to generate and get the minimum of
      * @return the minimum generated int between 0 and bound out of the specified amount of trials
      */
     public int minIntOf(final int bound, final int trials)
     {
-        int value = nextIntHasty(bound);
+        int value = nextSignedInt(bound);
         for (int i = 1; i < trials; i++) {
-            value = Math.min(value, nextIntHasty(bound));
+            value = Math.min(value, nextSignedInt(bound));
         }
         return value;
     }
@@ -947,15 +558,15 @@ public class RNG implements Serializable {
      * Gets the maximum random int between 0 and {@code bound} generated out of {@code trials} generated numbers.
      * Useful for when numbers should have a strong bias away from zero, but all possible values are between 0,
      * inclusive, and bound, exclusive.
-     * @param bound the outer exclusive bound
+     * @param bound the outer exclusive bound; may be negative or positive
      * @param trials how many numbers to generate and get the maximum of
      * @return the maximum generated int between 0 and bound out of the specified amount of trials
      */
     public int maxIntOf(final int bound, final int trials)
     {
-        int value = nextIntHasty(bound);
+        int value = nextSignedInt(bound);
         for (int i = 1; i < trials; i++) {
-            value = Math.max(value, nextIntHasty(bound));
+            value = Math.max(value, nextSignedInt(bound));
         }
         return value;
     }
@@ -1078,6 +689,15 @@ public class RNG implements Serializable {
         }
 
         return output;
+    }
+    
+    /**
+     * Returns this RNG in a way that can be deserialized even if only {@link IRNG}'s methods can be called.
+     * @return a {@link Serializable} view of this RNG; always {@code this}
+     */
+    @Override
+    public Serializable toSerializable() {
+        return this;
     }
 
 }
