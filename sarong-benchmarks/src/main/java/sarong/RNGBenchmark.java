@@ -1537,6 +1537,32 @@ public class RNGBenchmark {
     }
 
 
+    private Mover32RNG Mover32 = new Mover32RNG(9999, 1337);
+    private RNG Mover32R = new RNG(Mover32);
+
+    @Benchmark
+    public long measureMover32()
+    {
+        return Mover32.nextLong();
+    }
+
+    @Benchmark
+    public long measureMover32Int()
+    {
+        return Mover32.next(32);
+    }
+    @Benchmark
+    public long measureMover32R()
+    {
+        return Mover32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureMover32IntR()
+    {
+        return Mover32R.nextInt();
+    }
+
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);
     @Benchmark
