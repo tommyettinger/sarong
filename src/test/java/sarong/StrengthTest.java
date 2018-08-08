@@ -926,10 +926,10 @@ public class StrengthTest {
     }
     //0x85157AF5 0x632BE5AB 0x9296FE97  0x108EF2D9   all prime
 
-    private static BigInteger lcm(long[] values, int span)
+    private static BigInteger lcm(long... values)
     {
         BigInteger result = BigInteger.valueOf(values[0]), tmp;
-        for (int i = 1; i < span; i++) {
+        for (int i = 1; i < values.length; i++) {
             tmp = BigInteger.valueOf(values[i]);
             result = tmp.divide(result.gcd(tmp)).multiply(result);
         }
@@ -1053,7 +1053,7 @@ public class StrengthTest {
             for (long i = 0; i < 0x100000000L; i++) {
                 buckets[(++ctr >>> 1) * p >>> 28]++;
             }
-            best = best.max(l = lcm(buckets, buckets.length));
+            best = best.max(l = lcm(buckets));
             if (best.equals(l)) {
                 optimalPrime = p;
                 System.out.printf("%d: %s (%d bits)\n", p, best.toString(16), best.bitLength());
