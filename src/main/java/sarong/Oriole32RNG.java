@@ -219,6 +219,6 @@ public final class Oriole32RNG implements RandomnessSource, Serializable {
 
     @Override
     public int hashCode() {
-        return 31 * stateA + stateB;
+        return (31 * (31 * stateA + stateB) + stateC) | 0;
     }
 }

@@ -208,7 +208,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
         state = ((state *= 0x7F4A7C15) ^ state >>> 14) * (0x2C9277B5 + (state * 0x632BE5A6));
         return (int)((bound * ((state ^ state >>> 14) * 0x5F356495 & 0x7FFFFFFFL)) >> 31);
     }
-    public static void main(String[] args)
+    public static void main0(String[] args)
     {
         byte state = 2, stream = 0;
         char[] counts = new char[256];
@@ -267,15 +267,16 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
                     ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF);
         }
     }
-    public static void main1(String[] args)
+    public static void main(String[] args)
     {
         /*
         cd target/classes
         java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
          */
-        short state = 0x1333, stream = 11;
+        int state;
+        byte stateA = -120, stateB = 2, stateC = 2;
         char[] counts = new char[65536];
-        for (int i = 0; i < 0x10000; i++) {
+        for (int i = 0; i < 0xFFFF00; i++) {//0x7FFF80
             /*
   					uint64_t y = stateB ^ stateB >> 31;
 					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
@@ -288,8 +289,59 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            if(state == 0)
 //                stream += 0x6B;
             //final short z = (short) ((state ^ (state&0xFFFF) >> 6) * ((stream += 0x649A)));
-            state = (short)(state + 0x6665 ^ 0x9376);
-            counts[state & 0xFFFF]++;
+            //state = (short)(state + 0x6665 ^ 0x9376);
+            byte s0 = stateA;
+            byte s1 = stateB;
+//            byte result = s1;
+            s1 ^= s0;
+            stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
+            stateB = (byte)(s1 << 3 | (s1&0xFF) >>> 5); // c
+            //state = result << 8 & 0xFFFF;
+            //state = ((result << 7 | (result&0xFF) >>> 1) + (stateC += 0x6D)) << 8 & 0xFFFF;
+//            stateC+= 0x65;
+//            s1 ^= (stateC);
+
+            stateC+= 0x65;
+            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
+//            s1 = (byte)((s1 << (stateC & 7) | (s1 & 0xFF) >>> (-stateC & 7)));
+            s1 += stateC;
+//            s1 *= 0x9D;
+//            s1 ^= (s1&0xFF) >>> 3;
+
+            state = s1 << 8 & 0xFFFF;
+//            state = (s1) << 8 & 0xFFFF;
+//            result ^= (s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7));
+//            s1 = (byte)((stateC & 0xFF) >>> 5); 
+//            state = ((result << (s1 & 7) | (result & 0xFF) >>> (-s1 & 7))) << 8 & 0xFFFF;
+//            state = ((stateC << (s1 & 7) | (stateC & 0xFF) >>> (-s1 & 7))) << 8 & 0xFFFF;
+//            state = ((s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7)) ^ result) << 8 & 0xFFFF;
+            s0 = stateA;
+            s1 = stateB;
+//            result = s1;
+            s1 ^= s0;
+            stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
+            stateB = (byte)(s1 << 3 | (s1&0xFF) >>> 5); // c
+            //state |= result & 0xFF;
+//            stateC+= 0x65;
+//            s1 ^= (stateC);
+
+            stateC += 0x65;
+//            s1 = (byte)((s1 << (stateC & 7) | (s1 & 0xFF) >>> (-stateC & 7)));
+            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
+            s1 += stateC;
+//            s1 *= 0x9D;
+//            s1 ^= (s1&0xFF) >>> 3;
+            state |= s1 & 0xFF;
+//            state |= (s1 ^ (s1&0xFF) >>> 3 ^ stateC) & 0xFF;
+            //state |= ((stateC << (s1 & 7) | (stateC & 0xFF) >>> (-s1 & 7))) & 0xFF;
+//            result ^= (s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7));
+//            s1 = (byte)((stateC & 0xFF) >>> 5);
+//            state |= ((result << (s1 & 7) | (result & 0xFF) >>> (-s1 & 7))) & 0xFF;
+            
+//            state |= ((s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7)) ^ result) & 0xFF;
+//            state |= ((s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7)) ^ result) & 0xFF;
+            //state |= ((result << 7 | (result&0xFF) >>> 1) + (stateC += 0x6D)) & 0xFF;
+            counts[state]++;
 
 //            stream ^= (stream & 0xFF) >> 3;
 //            state += 0x95;
@@ -304,6 +356,10 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
             //uint64_t z = (stateA = (stateA ^ UINT64_C(0x6C8E9CF570932BD5)) * UINT64_C(0x5DA942042E4DD58B)) + (stateB = stateB >> 1u ^ (y & UINT64_C(0xD800000000000000)));
             //final byte z = (byte) ((state = (byte) (((state & 0xFF) ^ 0x65) * 0x5B)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
             //final byte z = (byte) (((state ^ state >>> 27) + (stream ^ stream >>> 30)) * 0xD9);
+        }
+        for (int i = 0; i < 65536; i++) {
+            if(counts[i] >= 0x8000)
+                System.out.println(i + " occurs with frequency: " + (int)counts[i]);
         }
         Arrays.sort(counts);
         char prev = counts[0];
