@@ -259,15 +259,18 @@ public final class Mover32RNG implements RandomnessSource {
 //        }
 //        System.out.println("};");
 //    }
-
+///////// BEGIN subcycle finder code and period evaluator
 //    public static void main(String[] args)
 //    {
+//        // multiplying
+//        // A refers to 0x9E377
 //        // A 10 0xC010AEB4
+//        // B refers to 0x64E6D
 //        // B 22 0x195B9108
 //        // all  0x04C194F3485D5A68
 //
-//        // A 17 0xF7F87D28
-//        // B 14 0xF023E25B 
+//        // A=Integer.rotateLeft(A*0x9E377, 17) 0xF7F87D28
+//        // B=Integer.rotateLeft(A*0x64E6D, 14) 0xF023E25B 
 //        // all  0xE89BB7902049CD38
 //
 //
@@ -298,7 +301,18 @@ public final class Mover32RNG implements RandomnessSource {
 //        // rotation 31: 0xFA18CD57
 //        // 0xBA55
 //        // rotation 19: 0xFB059E43
-//
+//        // 0xC6D5
+//        // rotation 05: 0xFFD78FD4
+//        // 0x5995
+//        // rotation 28: 0xFF4AB87D
+//        // rotation 02: 0xFF2AA5D5
+//        // 0xA3A9
+//        // rotation 09: 0xFF6B3AF7
+//        // 0xB9EF
+//        // rotation 23: 0xFFAEB037
+//        
+//        
+//        
 //        // adding
 //        // 0x9E3779B9
 //        // rotation 2 : 0xFFCC8933
@@ -376,22 +390,22 @@ public final class Mover32RNG implements RandomnessSource {
 //        // can get 63.98 with:
 //        // adding 0x9E3779B9 for A and rotating left by 2
 //        // multiplying by 0xACED, NOTing, and rotating left by 28 for B
-//        BigInteger result = BigInteger.valueOf(0xFB059E43L), tmp = BigInteger.valueOf(0xFC98CC08L);
+//        BigInteger result = new BigInteger("FFFFFFFFFFFFFFFF", 16), tmp = BigInteger.valueOf(0xFFE73631L);
 //        result = tmp.divide(result.gcd(tmp)).multiply(result);
 ////        tmp = BigInteger.valueOf(0xFFD299CBL);
 ////        result = tmp.divide(result.gcd(tmp)).multiply(result);
 ////        tmp = BigInteger.valueOf(0xFFABD755L);
 ////        result = tmp.divide(result.gcd(tmp)).multiply(result);
-//        System.out.printf("\n0x%s, %2.6f\n", result.toString(16), Math.log(result.doubleValue()) / Math.log(2));
+//        System.out.printf("\n0x%s, %2.6f\n", result.toString(16).toUpperCase(), Math.log(result.doubleValue()) / Math.log(2));
 //        int stateA = 1, i;
 //        for (int c = 1; c <= 200; c++) {
-//            final int r = Light32RNG.determine(5007 + c) | 0x80000001;
+//            final int r = (Light32RNG.determine(3007 + c) & 0xFFFF) | 1;
 //            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
 //            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
 //            for (int j = 1; j < 32; j++) {
 //                i = 0;
 //                for (; ; i++) {
-//                    if ((stateA = Integer.rotateLeft(stateA + 0xC68E9CB7 ^ r, j)) == 1) {
+//                    if ((stateA = Integer.rotateLeft(stateA * r, j)) == 1) {
 //                        if (i >>> 24 == 0xFF)
 //                            System.out.printf("(state + 0xC68E9CB7 ^ 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
 //                        break;
@@ -422,24 +436,26 @@ public final class Mover32RNG implements RandomnessSource {
 ////        System.out.printf("\n0x%016X\n", result.longValue());
 //
 //    }
-
-    public static void main(String[] args)
-    {
-        Mover32RNG m = new Mover32RNG();
-        System.out.println("int[] startingA = {");
-        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x00000200) {
-            m.setState(i);
-            System.out.printf("0x%08X, ", m.stateA);
-            if((ctr & 7) == 7)
-                System.out.println();
-        }
-        System.out.println("}, startingB = {");
-        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x02000000) {
-            m.setState(i);
-            System.out.printf("0x%08X, ", m.stateB);
-            if((ctr & 7) == 7)
-                System.out.println();
-        }
-        System.out.println("};");
-    }
+///////// END subcycle finder code and period evaluator
+    
+    
+//    public static void main(String[] args)
+//    {
+//        Mover32RNG m = new Mover32RNG();
+//        System.out.println("int[] startingA = {");
+//        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x00000200) {
+//            m.setState(i);
+//            System.out.printf("0x%08X, ", m.stateA);
+//            if((ctr & 7) == 7)
+//                System.out.println();
+//        }
+//        System.out.println("}, startingB = {");
+//        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x02000000) {
+//            m.setState(i);
+//            System.out.printf("0x%08X, ", m.stateB);
+//            if((ctr & 7) == 7)
+//                System.out.println();
+//        }
+//        System.out.println("};");
+//    }
 }

@@ -107,7 +107,17 @@ public final class Dizzy32RNG implements RandomnessSource, Serializable {
         s2 ^= s2 >>> 16;
         return ((s2 ^ s2 >>> 15) + s1);
     }
-
+    
+    public final int nextInt2() {
+        final int s0 = stateA;
+        int s1 = stateB ^ s0;
+        stateA = (s0 << 26 | s0 >>>  6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        final int s2 = (stateC = (stateC ^ 0x9E3779BD) * 3 | 0);
+        s1 += s2 ^ s2 >>> 16;
+        return (s1 ^ s1 >>> 15);
+    }
+    
     @Override
     public final long nextLong() {
         int s0 = stateA;

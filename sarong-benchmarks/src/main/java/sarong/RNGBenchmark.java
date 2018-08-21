@@ -1843,6 +1843,42 @@ public class RNGBenchmark {
     {
         return Churro32R.nextInt();
     }
+    private Dizzy32RNG Dizzy32 = new Dizzy32RNG(9999, 999, 99);
+    private RNG Dizzy32R = new RNG(Dizzy32);
+    @Benchmark
+    public long measureDizzy32()
+    {
+        return Dizzy32.nextLong();
+    }
+
+    @Benchmark
+    public long measureDizzy32Int()
+    {
+        return Dizzy32.next(32);
+    }
+    @Benchmark
+    public long measureDizzy32R()
+    {
+        return Dizzy32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureDizzy32IntR()
+    {
+        return Dizzy32R.nextInt();
+    }
+
+    @Benchmark
+    public long measureDizzy32IntNative1()
+    {
+        return Dizzy32.nextInt();
+    }
+    @Benchmark
+    public long measureDizzy32IntNative2()
+    {
+        return Dizzy32.nextInt2();
+    }
+
 
 
     private DervishRNG Dervish = new DervishRNG(9999L);

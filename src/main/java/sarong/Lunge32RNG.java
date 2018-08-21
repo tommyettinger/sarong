@@ -293,6 +293,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
             byte s0 = stateA;
             byte s1 = (byte)((stateB ^ s0));
             byte s2 = (stateC = (byte)((stateC ^ 0x9D) * 3));
+//            byte s2 = (byte)((stateC += 0x9D));
 //            byte result = s1;
 //            s1 ^= s0;
             stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
@@ -307,8 +308,13 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            s1 ^= stateC;
 //            stateC += 0x9D;
 //            s1 += (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) ^ (s2 << 2 | (s2 & 0xFF) >>> 6) ^ s2);
-            s2 ^= (s2 & 0xFF) >>> 2;
-            s1 += (byte)((s2 ^ (s2 & 0xFF) >>> 3));
+            s2 ^= (s2 & 0xFF) >>> 4;
+            s1 += s2;
+            s1 ^= (s1 & 0xFF) >>> 3;
+//            s1 += ((s1 & 0xFF) << 4) + s2;
+//            s1 ^= (s1 & 0xFF) >>> 3;
+
+//            s1 = (byte)((s2 ^ (s2 & 0xFF) >>> 3) + s1);
 //            s1 = (byte)((s1 << 5 | (s1 & 0xFF) >>> 3) + (s2 ^ (s2 & 0xFF) >>> 3));
 //            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) + (s2 << 2 | (s2 & 0xFF) >>> 6) + s2);
 //            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3));
@@ -328,6 +334,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
             s0 = stateA;
             s1 = (byte)((stateB ^ s0));
             s2 = (stateC = (byte)((stateC ^ 0x9D) * 3));
+//            s2 = (byte)((stateC += 0x9D));
 //            result = s1;
 //            s1 ^= s0;
             stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
@@ -341,8 +348,14 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            s1 = (byte)(stateA + stateB);
 //            s1 ^= stateC;
 //            stateC += 0x9D;
-            s2 ^= (s2 & 0xFF) >>> 2;
-            s1 += (byte)((s2 ^ (s2 & 0xFF) >>> 3));
+            s2 ^= (s2 & 0xFF) >>> 4;
+            s1 += s2;
+            s1 ^= (s1 & 0xFF) >>> 3;
+//            s1 += ((s1 & 0xFF) << 4) + s2;
+//            s1 = (byte)((s2 ^ (s2 & 0xFF) >>> 3) + s1);
+
+//            s1 = (byte)(s2 + (s1 ^ (s1 & 0xFF) >>> 3));
+//            s1 ^= (s1 & 0xFF) >>> 3;
 //            s1 = (byte)((s1 << 5 | (s1 & 0xFF) >>> 3) + (s2 ^ (s2 & 0xFF) >>> 3));
 //            s1 += (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) ^ (s2 << 2 | (s2 & 0xFF) >>> 6) ^ s2);
 //            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) + (s2 << 2 | (s2 & 0xFF) >>> 6) + s2);
