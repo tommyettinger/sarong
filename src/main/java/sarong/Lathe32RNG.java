@@ -45,7 +45,7 @@ import java.io.Serializable;
  * generator adds an extra bitwise rotation to xoroshiro's variant with 32-bit states to remove several types of
  * undesirable statistical failures from its test results.
  * <br>
- * <a href="http://xoroshiro.di.unimi.it/xoroshiro128plus.c">Original version here for xorshiro128+</a>; this version
+ * <a href="http://xoroshiro.di.unimi.it/xoroshiro128plus.c">Original version here for xoroshiro128+</a>; this version
  * uses <a href="https://groups.google.com/d/msg/prng/Ll-KDIbpO8k/bfHK4FlUCwAJ">different constants</a> by the same
  * author, Sebastiano Vigna.
  * <br>
