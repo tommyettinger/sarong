@@ -291,9 +291,10 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
             //final short z = (short) ((state ^ (state&0xFFFF) >> 6) * ((stream += 0x649A)));
             //state = (short)(state + 0x6665 ^ 0x9376);
             byte s0 = stateA;
-            byte s1 = stateB;
+            byte s1 = (byte)((stateB ^ s0));
+            byte s2 = (stateC = (byte)((stateC ^ 0x9D) * 3));
 //            byte result = s1;
-            s1 ^= s0;
+//            s1 ^= s0;
             stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
             stateB = (byte)(s1 << 3 | (s1&0xFF) >>> 5); // c
             //state = result << 8 & 0xFFFF;
@@ -301,10 +302,19 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            stateC+= 0x65;
 //            s1 ^= (stateC);
 
-            stateC+= 0x65;
-            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
+//            stateC += 0x9D;
+//            s1 = (byte)(stateA + stateB);
+//            s1 ^= stateC;
+//            stateC += 0x9D;
+//            s1 += (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) ^ (s2 << 2 | (s2 & 0xFF) >>> 6) ^ s2);
+            s2 ^= (s2 & 0xFF) >>> 2;
+            s1 += (byte)((s2 ^ (s2 & 0xFF) >>> 3));
+//            s1 = (byte)((s1 << 5 | (s1 & 0xFF) >>> 3) + (s2 ^ (s2 & 0xFF) >>> 3));
+//            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) + (s2 << 2 | (s2 & 0xFF) >>> 6) + s2);
+//            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3));
+//            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
 //            s1 = (byte)((s1 << (stateC & 7) | (s1 & 0xFF) >>> (-stateC & 7)));
-            s1 += stateC;
+//            s1 += stateC;
 //            s1 *= 0x9D;
 //            s1 ^= (s1&0xFF) >>> 3;
 
@@ -316,19 +326,33 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
 //            state = ((stateC << (s1 & 7) | (stateC & 0xFF) >>> (-s1 & 7))) << 8 & 0xFFFF;
 //            state = ((s0 << (stateC & 7) | (s0 & 0xFF) >>> (-stateC & 7)) ^ result) << 8 & 0xFFFF;
             s0 = stateA;
-            s1 = stateB;
+            s1 = (byte)((stateB ^ s0));
+            s2 = (stateC = (byte)((stateC ^ 0x9D) * 3));
 //            result = s1;
-            s1 ^= s0;
+//            s1 ^= s0;
             stateA = (byte)((s0 << 4 | (s0&0xFF) >>> 4) ^ s1 ^ (s1 << 7)); // a, b
             stateB = (byte)(s1 << 3 | (s1&0xFF) >>> 5); // c
             //state |= result & 0xFF;
 //            stateC+= 0x65;
 //            s1 ^= (stateC);
 
-            stateC += 0x65;
+//            stateC += 0x9D;
 //            s1 = (byte)((s1 << (stateC & 7) | (s1 & 0xFF) >>> (-stateC & 7)));
-            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
-            s1 += stateC;
+//            s1 = (byte)(stateA + stateB);
+//            s1 ^= stateC;
+//            stateC += 0x9D;
+            s2 ^= (s2 & 0xFF) >>> 2;
+            s1 += (byte)((s2 ^ (s2 & 0xFF) >>> 3));
+//            s1 = (byte)((s1 << 5 | (s1 & 0xFF) >>> 3) + (s2 ^ (s2 & 0xFF) >>> 3));
+//            s1 += (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) ^ (s2 << 2 | (s2 & 0xFF) >>> 6) ^ s2);
+//            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) + (s2 << 2 | (s2 & 0xFF) >>> 6) + s2);
+//            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3) ^ (s2 << 2 | (s2 & 0xFF) >>> 6) ^ s2);
+//            s1 ^= (byte)((s2 << 5 | (s2 & 0xFF) >>> 3));
+//            s1 = (byte)((s2 << 5 | (s2 & 0xFF) >>> 3));
+
+//            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4) + stateC);
+//            s1 = (byte)((s1 << 4 | (s1 & 0xFF) >>> 4));
+//            s1 += stateC;
 //            s1 *= 0x9D;
 //            s1 ^= (s1&0xFF) >>> 3;
             state |= s1 & 0xFF;
@@ -359,7 +383,7 @@ public class Lunge32RNG implements StatefulRandomness, Serializable {
         }
         for (int i = 0; i < 65536; i++) {
             if(counts[i] >= 0x8000)
-                System.out.println(i + " occurs with frequency: " + (int)counts[i]);
+                System.out.printf("0x%04X occurs with frequency: %d\n", i, (int)counts[i]);
         }
         Arrays.sort(counts);
         char prev = counts[0];

@@ -1819,6 +1819,32 @@ public class RNGBenchmark {
     }
 
 
+    private Churro32RNG Churro32 = new Churro32RNG(9999, 999, 99);
+    private RNG Churro32R = new RNG(Churro32);
+    @Benchmark
+    public long measureChurro32()
+    {
+        return Churro32.nextLong();
+    }
+
+    @Benchmark
+    public long measureChurro32Int()
+    {
+        return Churro32.next(32);
+    }
+    @Benchmark
+    public long measureChurro32R()
+    {
+        return Churro32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureChurro32IntR()
+    {
+        return Churro32R.nextInt();
+    }
+
+
     private DervishRNG Dervish = new DervishRNG(9999L);
     private RNG DervishR = new RNG(Dervish);
     @Benchmark

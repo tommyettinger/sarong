@@ -15,21 +15,17 @@ import java.io.Serializable;
 /**
  * A modification of Blackman and Vigna's xoroshiro128 generator using 32-bit math and 3 states instead of 64-bit math
  * and two states; it is close to being two-dimensionally equidistributed where xoroshiro128+ is close to being
- * one-dimensionally equidistributed.
- * In statistical testing, xoroshiro128 (which returns one state unchanged) and xoroshiro128+ (which returns the sum of
- * both states) always fail some binary matrix rank tests, but smaller-state versions fail other tests as well. The
- * changes Churro makes apply only to the output of xoroshiro, not its well-tested state transition for the "xoroshiro
- * state" part of this generator, and these changes eliminate all statistical failures on 32TB of tested data, avoiding
- * the failures the small-state variant of xoroshiro suffers on BCFN, DC6, and FPF. It avoids multiplication, like
- * xoroshiro and much of the xorshift family of generators, and any arithmetic it performs is safe for GWT. Churro works
- * by running a "Weyl sequence," essentially a large-increment counter that overflows and wraps frequently, in tandem to
- * the xoroshiro state transition, and the result is obtained by XORing the two xoroshiro states, rotating that by the
- * random-like upper-five bits of the Weyl counter, then XORing that with the full Weyl counter. The period is also
- * improved by incorporating the Weyl sequence, up to 0xFFFFFFFFFFFFFFFF00000000 .
+ * one-dimensionally equidistributed. This is a modified version of {@link Churro32RNG} that uses an XLCG instead of a
+ * Weyl sequence, and even though XLCGs and xoroshiro128 have the same weakness to binary rank tests, simply xorshifting
+ * the XLCG twice and adding that to the XOR of the two xoroshiro states is enough to pass at least 2TB of PractRand
+ * with only one (minor) anomaly. Strangely, the XLCG used doesn't seem to matter very much to the statistical quality;
+ * the one used is {@code x = (x ^ 0x9E3779BD) * 3;}, and multiplying by 3 can be optimized by HotSpot into a shift and
+ * add. Testing may reveal flaws in the days ahead, and it is unclear if this will fail tests when they are run on the
+ * reversed output of DizzyRNG. The period of Dizzy32RNG is the product of the periods of the 32-bit variant of
+ * xoroshiro and the period of a 32-bit XLCG, 0xFFFFFFFFFFFFFFFF00000000 .
  * <br>
- * The name comes from the dessert foods called churros that rotate in frying oil and combine the separate flavors of
- * oil and cinnamon-sugar, akin to how this combines two different state transitions with different periods. It also
- * sounds like "xoro."
+ * The name comes from the rotations xoroshiro uses, the di- prefix referring to the two types of generator, and how
+ * bewildered I am at what passes and what doesn't pass PractRand with even minor tweaks. 
  * <br>
  * <a href="http://xoroshiro.di.unimi.it/xoroshiro128plus.c">Original version here for xorshiro128+</a>; this version
  * uses <a href="https://groups.google.com/d/msg/prng/Ll-KDIbpO8k/bfHK4FlUCwAJ">different constants</a> by the same
@@ -44,7 +40,7 @@ import java.io.Serializable;
  * @author David Blackman
  * @author Tommy Ettinger (if there's a flaw, use SquidLib's or Sarong's issues and don't bother Vigna or Blackman, it's probably a mistake in SquidLib's implementation)
  */
-public final class Churro32RNG implements RandomnessSource, Serializable {
+public final class Dizzy32RNG implements RandomnessSource, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,7 +49,7 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
     /**
      * Creates a new generator seeded using three calls to Math.random().
      */
-    public Churro32RNG() {
+    public Dizzy32RNG() {
         setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000), (int)((Math.random() * 2.0 - 1.0) * 0x80000000),
                 (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
@@ -62,7 +58,7 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
      * this has.
      * @param seed an int that won't be used exactly, but will affect both components of state
      */
-    public Churro32RNG(final int seed) {
+    public Dizzy32RNG(final int seed) {
         setSeed(seed);
     }
     /**
@@ -72,7 +68,7 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
      * @param stateA the number to use as the first part of the state; this will be 1 instead if both seeds are 0
      * @param stateB the number to use as the second part of the state
      */
-    public Churro32RNG(final int stateA, final int stateB) {
+    public Dizzy32RNG(final int stateA, final int stateB) {
         setState(stateA, stateB, stateA ^ stateB);
     }
 
@@ -83,19 +79,19 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
      * @param stateB the number to use as the second part of the state
      * @param stateC the number to use as the counter part of the state (third part)
      */
-    public Churro32RNG(final int stateA, final int stateB, final int stateC) {
+    public Dizzy32RNG(final int stateA, final int stateB, final int stateC) {
         setState(stateA, stateB, stateC);
     }
 
     @Override
     public final int next(int bits) {
-        int s0 = stateA;
-        int s1 = stateB ^ s0;
-        final int s2 = (stateC = stateC + 0x9E3779BD | 0);
+        final int s0 = stateA;
+        final int s1 = stateB ^ s0;
         stateA = (s0 << 26 | s0 >>>  6) ^ s1 ^ (s1 << 9);
         stateB = (s1 << 13 | s1 >>> 19);
-        s0 = s2 >>> 27;
-        return ((s1 << s0 | s1 >>> -s0) ^ s2) >>> (32 - bits);
+        int s2 = (stateC = (stateC ^ 0x9E3779BD) * 3 | 0);
+        s2 ^= s2 >>> 16;
+        return ((s2 ^ s2 >>> 15) + s1) >>> (32 - bits);
     }
 
     /**
@@ -103,29 +99,29 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        int s0 = stateA;
-        int s1 = stateB ^ s0;
-        final int s2 =  (stateC = stateC + 0x9E3779BD | 0);
+        final int s0 = stateA;
+        final int s1 = stateB ^ s0;
         stateA = (s0 << 26 | s0 >>>  6) ^ s1 ^ (s1 << 9);
         stateB = (s1 << 13 | s1 >>> 19);
-        s0 = s2 >>> 27;
-        return ((s1 << s0 | s1 >>> -s0) ^ s2);
+        int s2 = (stateC = (stateC ^ 0x9E3779BD) * 3 | 0);
+        s2 ^= s2 >>> 16;
+        return ((s2 ^ s2 >>> 15) + s1);
     }
 
     @Override
     public final long nextLong() {
         int s0 = stateA;
         int s1 = stateB ^ s0;
-        final int s2 =  (stateC + 0x9E3779BD | 0);
+        int s2 = (stateC = (stateC ^ 0x9E3779BD) * 3 | 0);
+        s2 ^= s2 >>> 16;
         final int t0 = (s0 << 26 | s0 >>>  6) ^ s1 ^ (s1 << 9);
         final int t1 = (s1 << 13 | s1 >>> 19) ^ t0;
-        s0 = s2 >>> 27;
-        final long result = ((s1 << s0 | s1 >>> -s0) ^ s2);
-        final int t2 =  (stateC = stateC + 0x3C6EF37A | 0);
+        final long result = ((s2 ^ s2 >>> 15) + s1);
         stateA = (t0 << 26 | t0 >>>  6) ^ t1 ^ (t1 << 9);
         stateB = (t1 << 13 | t1 >>> 19);
-        s0 = t2 >>> 27;
-        return result << 32 ^ ((t1 << s0 | t1 >>> -t0) ^ t2);
+        s2 = (stateC = (stateC ^ 0x9E3779BD) * 3 | 0);
+        s2 ^= s2 >>> 16;
+        return result << 32 ^ ((s2 ^ s2 >>> 15) + t1);
 
     }
 
@@ -137,8 +133,8 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public Churro32RNG copy() {
-        return new Churro32RNG(stateA, stateB, stateC);
+    public Dizzy32RNG copy() {
+        return new Dizzy32RNG(stateA, stateB, stateC);
     }
 
     /**
@@ -189,7 +185,7 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
     }
 
     /**
-     * Sets the current internal state of this Churro32RNG with three ints, where stateA and stateB can each be any int
+     * Sets the current internal state of this Dizzy32RNG with three ints, where stateA and stateB can each be any int
      * unless they are both 0, and stateC can be any int without restrictions.
      * @param stateA any int; if stateA and stateB are both 0 this will be treated as 1
      * @param stateB any int
@@ -203,7 +199,7 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
     }
     @Override
     public String toString() {
-        return "Churro32RNG with stateA 0x" + StringKit.hex(stateA) + ", stateB 0x" + StringKit.hex(stateB) + ", and stateC 0x" + StringKit.hex(stateC);
+        return "Dizzy32RNG with stateA 0x" + StringKit.hex(stateA) + ", stateB 0x" + StringKit.hex(stateB) + ", and stateC 0x" + StringKit.hex(stateC);
     }
 
     @Override
@@ -211,9 +207,9 @@ public final class Churro32RNG implements RandomnessSource, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Churro32RNG churro32RNG = (Churro32RNG) o;
+        Dizzy32RNG dizzy32RNG = (Dizzy32RNG) o;
 
-        return stateA == churro32RNG.stateA && stateB == churro32RNG.stateB && stateC == churro32RNG.stateC;
+        return stateA == dizzy32RNG.stateA && stateB == dizzy32RNG.stateB && stateC == dizzy32RNG.stateC;
     }
 
     @Override
