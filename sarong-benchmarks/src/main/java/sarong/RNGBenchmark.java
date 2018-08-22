@@ -1880,6 +1880,58 @@ public class RNGBenchmark {
     }
 
 
+    private XoshiroStarStar32RNG XoshiroStarStar32 = new XoshiroStarStar32RNG(9999);
+    private RNG XoshiroStarStar32R = new RNG(XoshiroStarStar32);
+
+    @Benchmark
+    public long measureXoshiroStarStar32()
+    {
+        return XoshiroStarStar32.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroStarStar32Int()
+    {
+        return XoshiroStarStar32.next(32);
+    }
+    @Benchmark
+    public long measureXoshiroStarStar32R()
+    {
+        return XoshiroStarStar32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroStarStar32IntR()
+    {
+        return XoshiroStarStar32R.nextInt();
+    }
+
+
+    private XoshiroStarPhi32RNG XoshiroStarPhi32 = new XoshiroStarPhi32RNG(9999);
+    private RNG XoshiroStarPhi32R = new RNG(XoshiroStarPhi32);
+
+    @Benchmark
+    public long measureXoshiroStarPhi32()
+    {
+        return XoshiroStarPhi32.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroStarPhi32Int()
+    {
+        return XoshiroStarPhi32.next(32);
+    }
+    @Benchmark
+    public long measureXoshiroStarPhi32R()
+    {
+        return XoshiroStarPhi32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroStarPhi32IntR()
+    {
+        return XoshiroStarPhi32R.nextInt();
+    }
 
     private DervishRNG Dervish = new DervishRNG(9999L);
     private RNG DervishR = new RNG(Dervish);
