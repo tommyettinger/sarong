@@ -153,8 +153,8 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureZog32R        avgt   10  7.586 ± 0.065  ns/op
  * </pre>
  * <br>
- * Testing the top 3 contenders among equidistributed generators (LightRNG and the new LinnormRNG pass 32TB on PractRand
- * but XoRoRNG reliably fails one group of tests and sometimes fails others):
+ * Testing the top 3 contenders among one-dimensionally equidistributed generators (LightRNG and LinnormRNG pass 32TB on
+ * PractRand but XoRoRNG reliably fails one group of tests and sometimes fails others):
  * <pre>
  * Benchmark                       Mode  Cnt  Score   Error  Units
  * RNGBenchmark.measureLight       avgt    5  3.763 ± 0.204  ns/op
@@ -169,7 +169,32 @@ import java.util.concurrent.TimeUnit;
  * Linnorm is the new best generator we have, except that it isn't a SkippingRandomness and its period is "just" 2 to
  * the 64. Every other need seems to be met by its high speed, easily-stored state, unsurpassed statistical quality, and
  * ability to produce all long values. ThrustAltRNG may be faster, but since it isn't known how many numbers it is
- * incapable of producing, it probably shouldn't be used for procedural generation.
+ * incapable of producing, it probably shouldn't be used for procedural generation. If you need to target GWT, though,
+ * your needs are suddenly completely different...
+ * <br>
+ * GWT-compatible generators need to work with an "int" type that isn't equivalent to Java's "int" and is closer to a
+ * Java "double" that gets cast to an int when bitwise operations are used on it. This JS int is about 10x-20x faster to
+ * do math operations on than GWT's "long" type, which is emulated using three JS numbers internally, but you need to be
+ * vigilant about the possibility of exceeding the limits of Integer.MAX_VALUE and Integer.MIN_VALUE, since math won't
+ * overflow, and about precision loss if you do exceed those limits severely, since JS numbers are floating-point. So,
+ * you can't safely multiply by too large of an int (I limit my multipliers to 20 bits), you need to follow up normal
+ * math with bitwise math to bring any overflowing numbers back to the 32-bit range, and you should avoid longs and math
+ * on them whenever possible. So here's some GWT-safe generators, measured on a desktop JDK (under high load):
+ * <pre>
+ * Benchmark                                 Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDizzy32Int            avgt    3  6.833 ± 1.111  ns/op // 2D equidistribution 
+ * RNGBenchmark.measureLathe32Int            avgt    3  5.781 ± 0.481  ns/op // 1D equidistribution
+ * RNGBenchmark.measureOriole32Int           avgt    3  6.217 ± 1.659  ns/op // 1D equidistribution
+ * RNGBenchmark.measureXoshiroStarPhi32Int   avgt    3  7.049 ± 1.226  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroStarStar32Int  avgt    3  7.241 ± 0.325  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroXara32Int      avgt    3  6.411 ± 0.486  ns/op // 4D equidistribution
+ * </pre>
+ * You can benchmark most of these in GWT for yourself on
+ * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
+ * where higher is better is a good way of estimating how fast a generator is. Each "run" is 10,000 generated numbers.
+ * Lathe32RNG is by far the best on speed if you consider both desktop and GWT, but it can't generate all possible
+ * "long" values, while XoshiroXara can generate all possible "long" values with equal frequency, and even all possible
+ * pairs of "long" values (less one).
  */
 
 @State(Scope.Thread)
@@ -1931,6 +1956,32 @@ public class RNGBenchmark {
     public long measureXoshiroStarPhi32IntR()
     {
         return XoshiroStarPhi32R.nextInt();
+    }
+
+    private XoshiroXara32RNG XoshiroXara32 = new XoshiroXara32RNG(9999);
+    private RNG XoshiroXara32R = new RNG(XoshiroXara32);
+
+    @Benchmark
+    public long measureXoshiroXara32()
+    {
+        return XoshiroXara32.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroXara32Int()
+    {
+        return XoshiroXara32.next(32);
+    }
+    @Benchmark
+    public long measureXoshiroXara32R()
+    {
+        return XoshiroXara32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureXoshiroXara32IntR()
+    {
+        return XoshiroXara32R.nextInt();
     }
 
     private DervishRNG Dervish = new DervishRNG(9999L);

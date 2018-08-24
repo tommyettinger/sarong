@@ -12,21 +12,19 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A modification of Blackman and Vigna's xoshiro128 generator with a different "scrambler" than the default; this
- * generator has four 32-bit states and passes at least 32TB of PractRand (with one "unusual" anomaly at 4TB). It is
- * four-dimensionally equidistributed, which is an uncommon feature of a PRNG, and means every output is equally likely
- * not just when one value is generated with {@link #nextInt()}, but also that when up to four 32-bit values are
- * generated and treated as up to a 128-bit output, then all possible 128-bit outputs are equally likely (with the
- * exception of the 128-bit value 0x9E3779BD9E3779BD9E3779BD9E3779BD). The scrambler simply multiplies a state variable
- * by 31, rotates that value left by 23, and adds a number obtained from the golden ratio, phi. It may have all sorts of
- * issues since this scrambler hasn't been analyzed much, but 128 bits of state help make most issues less severe. A
- * clear known flaw is that if you subtract the same golden-ratio-based number from each result, the resulting modified 
- * generator will quickly fail binary matrix rank tests. This could be ameliorated by employing a fifth state variable
- * that increments in a Weyl sequence, which is what {@link Oriole32RNG} does, and adding that instead of the golden
- * ratio, though this would have an unclear effect on the 4-dimensional equidistribution. XoshiroStarPhi32RNG is
- * optimized for GWT, like {@link Lathe32RNG} and {@link XoshiroStarStar32RNG}, which means any non-bitwise math in the
- * source is followed by bitwise math later, and this sometimes can result in obtuse-looking code along the lines of
- * {@code int foo = bar + 0x9E3779BD | 0;}.
+ * A modification of Blackman and Vigna's xoshiro128 generator with a very different "scrambler" than the default; this
+ * generator has four 32-bit states and passes at least 4TB of PractRand (tests are ongoing, but results are very good
+ * so far). It is  four-dimensionally equidistributed, which is an uncommon feature of a PRNG, and means every output is
+ * equally likely not just when one value is generated with {@link #nextInt()}, but also that when up to four 32-bit
+ * values are generated and treated as up to a 128-bit output, then all possible 128-bit outputs are equally likely (with the
+ * exception of a single 128-bit value that is never produced). The scrambler simply XORs a state variable with an
+ * arbitrarily-chosen 32-bit number (0xAEF1F2D9, used as a multiplier in PCG-Random), adds another arbitrary 31-bit
+ * number to that (0x41C64E6D, used as an LCG multiplier by PractRand), rotates that value left by 23, and adds a number
+ * obtained from the golden ratio, phi (0x9E3779B9). This is where it gets the Xara in the name, Xor-Add-Rotate-Add. It
+ * may have all sorts of issues since this scrambler hasn't been analyzed much, but 128 bits of state help make most
+ * issues less severe. XoshiroXara32RNG is optimized for GWT, like {@link Lathe32RNG} and {@link XoshiroStarStar32RNG},
+ * which means any non-bitwise math in the source is followed by bitwise math later, and this sometimes can result in
+ * obtuse-looking code along the lines of {@code int foo = bar + 0x9E3779B9 | 0;}.
  * <br>
  * This generator seems to be a little faster than {@link XoshiroStarStar32RNG} while offering the same period and
  * distribution. It does not have one group of vulnerabilities held by the "StarStar" scrambler, where multiplying the
@@ -37,20 +35,20 @@ import java.io.Serializable;
  * bits equal to 0b0111001 (the same as in 0x39 before, but requiring only 7 bits to be equivalent), and this seems to
  * be related to the choice of rotation amount (the StarStar scrambler rotates by 7 places). This generator does have a
  * different vulnerability when a specific number is subtracted from the output each time (for the purpose of
- * transparency, 0x9E3779BD). This flaw may occur with similar subtracted numbers as well, probably affecting any
- * subtrahends with a low Hamming distance from 0x9E3779BD, considering less-significant bits as more relevant to the
+ * transparency, 0x9E3779B9). This flaw may occur with similar subtracted numbers as well, probably affecting any
+ * subtrahends with a low Hamming distance from 0x9E3779B9, considering less-significant bits as more relevant to the
  * distance than more-significant bits.
  * <br>
  * <a href="http://xoshiro.di.unimi.it/xoshiro128starstar.c">Original version here for xoshiro128**</a>, by Sebastiano
  * Vigna and David Blackman.
  * <br>
  * Written in 2018 by David Blackman and Sebastiano Vigna (vigna@acm.org)
- * StarPhi scrambler written in 2018 by Tommy Ettinger
+ * Xara scrambler written in 2018 by Tommy Ettinger
  * @author Sebastiano Vigna
  * @author David Blackman
  * @author Tommy Ettinger (if there's a flaw, use SquidLib's or Sarong's issues and don't bother Vigna or Blackman, it's probably a mistake in SquidLib's implementation)
  */
-public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable {
+public final class XoshiroXara32RNG implements RandomnessSource, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,41 +57,41 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
     /**
      * Creates a new generator seeded using four calls to Math.random().
      */
-    public XoshiroStarPhi32RNG() {
+    public XoshiroXara32RNG() {
         setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000), (int)((Math.random() * 2.0 - 1.0) * 0x80000000),
                 (int)((Math.random() * 2.0 - 1.0) * 0x80000000), (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
     /**
-     * Constructs this XoshiroStarPhi32RNG by dispersing the bits of seed using {@link #setSeed(int)} across the four
+     * Constructs this XoshiroXara32RNG by dispersing the bits of seed using {@link #setSeed(int)} across the four
      * parts of state this has.
      * @param seed an int that won't be used exactly, but will affect all components of state
      */
-    public XoshiroStarPhi32RNG(final int seed) {
+    public XoshiroXara32RNG(final int seed) {
         setSeed(seed);
     }
     /**
-     * Constructs this XoshiroStarPhi32RNG by dispersing the bits of seed using {@link #setSeed(long)} across the four
+     * Constructs this XoshiroXara32RNG by dispersing the bits of seed using {@link #setSeed(long)} across the four
      * parts of state this has.
      * @param seed a long that will be split across all components of state
      */
-    public XoshiroStarPhi32RNG(final long seed) {
+    public XoshiroXara32RNG(final long seed) {
         setSeed(seed);
     }
     /**
-     * Constructs this XoshiroStarPhi32RNG by calling {@link #setState(int, int, int, int)} on stateA and stateB as
+     * Constructs this XoshiroXara32RNG by calling {@link #setState(int, int, int, int)} on stateA and stateB as
      * given; see that method for the specific details (the states are kept as-is unless they are all 0).
      * @param stateA the number to use as the first part of the state; this will be 1 instead if both seeds are 0
      * @param stateB the number to use as the second part of the state
      * @param stateC the number to use as the third part of the state
      * @param stateD the number to use as the fourth part of the state
      */
-    public XoshiroStarPhi32RNG(final int stateA, final int stateB, final int stateC, final int stateD) {
+    public XoshiroXara32RNG(final int stateA, final int stateB, final int stateC, final int stateD) {
         setState(stateA, stateB, stateC, stateD);
     }
 
     @Override
     public final int next(int bits) {
-        final int result = stateB * 31;	        
+        final int result = (stateB ^ 0xAEF1F2D9) + 0x41C64E6D;	        
         final int t = stateB << 9;
         stateC ^= stateA;
         stateD ^= stateB;
@@ -102,7 +100,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return (result ^ result >>> 17) * 3 >>> (32 - bits);
-        return (result << 23 | result >>> 9) + 0x9E3779BD >>> (32 - bits);
+        return (result << 23 | result >>> 9) + 0x9E3779B9 >>> (32 - bits);
     }
 
     /**
@@ -110,7 +108,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        final int result = stateB * 31;
+        final int result = (stateB ^ 0xAEF1F2D9) + 0x41C64E6D;
         final int t = stateB << 9;
         stateC ^= stateA;
         stateD ^= stateB;
@@ -119,12 +117,12 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return (result ^ result >>> 17) * 3 | 0;
-        return (result << 23 | result >>> 9) + 0x9E3779BD | 0;
+        return (result << 23 | result >>> 9) + 0x9E3779B9 | 0;
     }
 
     @Override
     public final long nextLong() {
-        int result = stateB * 31;
+        int result = (stateB ^ 0xAEF1F2D9) + 0x41C64E6D;
         int t = stateB << 9;
         stateC ^= stateA;
         stateD ^= stateB;
@@ -132,9 +130,9 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateA ^= stateD;
         stateC ^= t;
 //        long high = (result ^ result >>> 17) * 3;
-        long high = (result << 23 | result >>> 9) + 0x9E3779BD;
+        long high = (result << 23 | result >>> 9) + 0x9E3779B9;
         stateD = (stateD << 11 | stateD >>> 21);
-        result = stateB * 31;
+        result = (stateB ^ 0xAEF1F2D9) + 0x41C64E6D;
         t = stateB << 9;
         stateC ^= stateA;
         stateD ^= stateB;
@@ -143,7 +141,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return high << 32 ^ ((result ^ result >>> 17) * 3);
-        return high << 32 ^ ((result << 23 | result >>> 9) + 0x9E3779BD);
+        return high << 32 ^ ((result << 23 | result >>> 9) + 0x9E3779B9);
     }
 
     /**
@@ -154,8 +152,8 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
      * @return a copy of this RandomnessSource
      */
     @Override
-    public XoshiroStarPhi32RNG copy() {
-        return new XoshiroStarPhi32RNG(stateA, stateB, stateC, stateD);
+    public XoshiroXara32RNG copy() {
+        return new XoshiroXara32RNG(stateA, stateB, stateC, stateD);
     }
 
     /**
@@ -275,7 +273,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
     }
 
     /**
-     * Sets the current internal state of this XoshiroStarPhi32RNG with four ints, where each can be any int unless
+     * Sets the current internal state of this XoshiroXara32RNG with four ints, where each can be any int unless
      * they are all 0 (which will be treated as if stateA is 1 and the rest are 0).
      * @param stateA any int (if all parameters are both 0, this will be treated as 1)
      * @param stateB any int
@@ -292,7 +290,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
     
     @Override
     public String toString() {
-        return "XoshiroStarPhi32RNG with stateA 0x" + StringKit.hex(stateA) + ", stateB 0x" + StringKit.hex(stateB)
+        return "XoshiroXara32RNG with stateA 0x" + StringKit.hex(stateA) + ", stateB 0x" + StringKit.hex(stateB)
                 + ", stateC 0x" + StringKit.hex(stateC) + ", and stateD 0x" + StringKit.hex(stateD);
     }
 
@@ -301,28 +299,14 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        XoshiroStarPhi32RNG xoshiroStarPhi32RNG = (XoshiroStarPhi32RNG) o;
+        XoshiroXara32RNG xoshiroXara32RNG = (XoshiroXara32RNG) o;
 
-        return stateA == xoshiroStarPhi32RNG.stateA && stateB == xoshiroStarPhi32RNG.stateB &&
-                stateC == xoshiroStarPhi32RNG.stateC && stateD == xoshiroStarPhi32RNG.stateD;
+        return stateA == xoshiroXara32RNG.stateA && stateB == xoshiroXara32RNG.stateB &&
+                stateC == xoshiroXara32RNG.stateC && stateD == xoshiroXara32RNG.stateD;
     }
 
     @Override
     public int hashCode() {
         return 31 * (31 * (31 * stateA + stateB) + stateC) + stateD | 0;
     }
-    
-//    public static void main(String[] args)
-//    {
-//        int sum = 0, xs = 0, run = Integer.MIN_VALUE, t;
-//        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 0x40000000; j++) {
-//                t = Integer.rotateLeft(run * 31, 23) + 0x9E3779BD;
-//                sum += t;
-//                xs ^= t;
-//                ++run;
-//            }
-//        }
-//        System.out.printf("sum: 0x%08X, xs: 0x%08X\n", sum, xs);
-//    }
 }

@@ -280,6 +280,6 @@ public final class XoshiroStarStar32RNG implements RandomnessSource, Serializabl
 
     @Override
     public int hashCode() {
-        return 31 * (31 * (31 * stateA + stateB) + stateC) + stateD;
+        return 31 * (31 * (31 * stateA + stateB) + stateC) + stateD | 0;
     }
 }
