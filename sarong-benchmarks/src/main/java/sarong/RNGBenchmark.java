@@ -179,22 +179,50 @@ import java.util.concurrent.TimeUnit;
  * overflow, and about precision loss if you do exceed those limits severely, since JS numbers are floating-point. So,
  * you can't safely multiply by too large of an int (I limit my multipliers to 20 bits), you need to follow up normal
  * math with bitwise math to bring any overflowing numbers back to the 32-bit range, and you should avoid longs and math
- * on them whenever possible. So here's some GWT-safe generators, measured on a desktop JDK (under high load):
+ * on them whenever possible. So here's some GWT-safe generators, measured on a desktop JDK:
  * <pre>
- * Benchmark                                 Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureDizzy32Int            avgt    3  6.833 ± 1.111  ns/op // 2D equidistribution 
- * RNGBenchmark.measureLathe32Int            avgt    3  5.781 ± 0.481  ns/op // 1D equidistribution
- * RNGBenchmark.measureOriole32Int           avgt    3  6.217 ± 1.659  ns/op // 1D equidistribution
- * RNGBenchmark.measureXoshiroStarPhi32Int   avgt    3  7.049 ± 1.226  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroStarStar32Int  avgt    3  7.241 ± 0.325  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroXara32Int      avgt    3  6.411 ± 0.486  ns/op // 4D equidistribution
+ * Benchmark                                  Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDizzy32                avgt    3  7.742 ± 0.144  ns/op // 1D equidistribution
+ * RNGBenchmark.measureDizzy32Int             avgt    3  5.094 ± 0.084  ns/op // 2D equidistribution
+ * RNGBenchmark.measureDizzy32IntR            avgt    3  5.826 ± 0.113  ns/op // 2D equidistribution
+ * RNGBenchmark.measureDizzy32R               avgt    3  8.636 ± 0.079  ns/op // 1D equidistribution
+ * RNGBenchmark.measureLathe32                avgt    3  6.181 ± 0.159  ns/op // no equidistribution
+ * RNGBenchmark.measureLathe32Int             avgt    3  4.409 ± 0.024  ns/op // 1D equidistribution
+ * RNGBenchmark.measureLathe32IntR            avgt    3  4.791 ± 0.242  ns/op // 1D equidistribution
+ * RNGBenchmark.measureLathe32R               avgt    3  7.147 ± 0.013  ns/op // no equidistribution
+ * RNGBenchmark.measureOriole32               avgt    3  6.578 ± 0.058  ns/op // no equidstribution
+ * RNGBenchmark.measureOriole32Int            avgt    3  4.640 ± 0.118  ns/op // 1D equidistribution
+ * RNGBenchmark.measureOriole32IntR           avgt    3  5.352 ± 0.098  ns/op // 1D equidistribution
+ * RNGBenchmark.measureOriole32R              avgt    3  7.729 ± 0.127  ns/op // no equidistribution
+ * RNGBenchmark.measureXoshiroAra32           avgt    3  7.175 ± 0.696  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroAra32Int        avgt    3  4.953 ± 0.132  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroAra32IntR       avgt    3  5.513 ± 0.227  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroAra32R          avgt    3  7.770 ± 0.215  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroStarPhi32       avgt    3  7.294 ± 0.386  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroStarPhi32Int    avgt    3  5.032 ± 0.045  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroStarPhi32IntR   avgt    3  5.618 ± 0.064  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroStarPhi32R      avgt    3  8.017 ± 0.202  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroStarStar32      avgt    3  7.690 ± 0.127  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroStarStar32Int   avgt    3  5.210 ± 0.102  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroStarStar32IntR  avgt    3  5.856 ± 0.291  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroStarStar32R     avgt    3  8.475 ± 0.266  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroXara32          avgt    3  7.309 ± 0.083  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroXara32Int       avgt    3  5.027 ± 0.139  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroXara32IntR      avgt    3  5.567 ± 0.186  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroXara32R         avgt    3  8.075 ± 0.131  ns/op // 2D equidistribution
  * </pre>
  * You can benchmark most of these in GWT for yourself on
  * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
  * where higher is better is a good way of estimating how fast a generator is. Each "run" is 10,000 generated numbers.
  * Lathe32RNG is by far the best on speed if you consider both desktop and GWT, but it can't generate all possible
- * "long" values, while XoshiroXara can generate all possible "long" values with equal frequency, and even all possible
- * pairs of "long" values (less one).
+ * "long" values, while XoshiroAra can generate all possible "long" values with equal frequency, and even all possible
+ * pairs of "long" values (less one). XoshiroAra is also surprisingly fast compared to similar Xoshiro-based generators,
+ * especially since it does just as well in PractRand testing. The equidistribution comment at the end of each line
+ * refers to that specific method; calling {@code myOriole32RNG.next(32)} repeatedly will produce all ints with equal
+ * frequency over the full period of that generator, ((2 to the 64) - 1) * (2 to the 32), but the same is not true of
+ * calling {@code myOriole32RNG.nextLong()}, which would produce some longs more frequently than others (and probably
+ * would not produce some longs at all). The Xoshiro-based generators have the best period and equidistribution
+ * qualities, with XoshiroAra having the best performance (all of them pass 32TB of PractRand).
  */
 
 @State(Scope.Thread)

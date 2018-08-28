@@ -13,13 +13,14 @@ import java.io.Serializable;
 
 /**
  * A modification of Blackman and Vigna's xoshiro128 generator with a very different "scrambler" than the default; this
- * generator has four 32-bit states and passes at least 2TB of PractRand (tests are ongoing, but results are very good
- * so far). It is four-dimensionally equidistributed, which is an uncommon feature of a PRNG, and means every output is
- * equally likely not just when one value is generated with {@link #nextInt()}, but also that when up to four 32-bit
- * values are generated and treated as up to a 128-bit output, then all possible 128-bit outputs are equally likely (with the
- * exception of a single 128-bit value that is never produced). The scrambler simply takes a state variable, adds an
- * arbitrary 31-bit number to that (0x41C64E6D, used as an LCG multiplier by PractRand), rotates that value left by 17,
- * and adds a number obtained from the golden ratio, phi (0x9E3779B9). This is where it gets the Ara in the name, 
+ * generator has four 32-bit states and passes 32 TB of PractRand (with one anomaly, rated "unusual;" some seeds have
+ * more anomalies but no seeds have been found that fail any part of testing so far). It is
+ * four-dimensionally equidistributed, which is an uncommon feature of a PRNG, and means every output is equally likely
+ * not just when one value is generated with {@link #nextInt()}, but also that when up to four 32-bit values are
+ * generated and treated as up to a 128-bit output, then all possible 128-bit outputs are equally likely (with the
+ * exception of a single 128-bit value that is never produced). The scrambler simply takes the second state variable,
+ * adds an arbitrary 31-bit number to that (0x41C64E6D, used as an LCG multiplier by PractRand), rotates that value left
+ * by 17, and adds a number obtained from the golden ratio, phi (0x9E3779B9). This is where it gets the Ara in the name, 
  * Add-Rotate-Add. It may have all sorts of issues since this scrambler hasn't been analyzed much, but 128 bits of state
  * help make most issues less severe. XoshiroAra32RNG is optimized for GWT, like {@link Lathe32RNG} and
  * {@link XoshiroStarStar32RNG}, which means any non-bitwise math in the source is followed by bitwise math later, and
