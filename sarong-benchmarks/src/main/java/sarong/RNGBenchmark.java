@@ -211,6 +211,23 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureXoshiroXara32IntR      avgt    3  5.567 ± 0.186  ns/op // 4D equidistribution
  * RNGBenchmark.measureXoshiroXara32R         avgt    3  8.075 ± 0.131  ns/op // 2D equidistribution
  * </pre>
+ * And here's some of the best GWT-safe generators compared against each other, including the new Starfish generator
+ * (these benchmarks were performed while a multi-threaded test was also running, so they are slower):
+ * <pre>
+ * Benchmark                             Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLathe32           avgt    3  8.073 ± 0.388  ns/op // no equidistribution
+ * RNGBenchmark.measureLathe32Int        avgt    3  5.780 ± 0.976  ns/op // 1D equidistribution
+ * RNGBenchmark.measureLathe32IntR       avgt    3  6.358 ± 0.823  ns/op // 1D equidistribution
+ * RNGBenchmark.measureLathe32R          avgt    3  9.102 ± 1.079  ns/op // no equidistribution
+ * RNGBenchmark.measureStarfish32        avgt    3  8.285 ± 0.439  ns/op // 1D equidistribution
+ * RNGBenchmark.measureStarfish32Int     avgt    3  5.866 ± 0.699  ns/op // 2D equidistribution
+ * RNGBenchmark.measureStarfish32IntR    avgt    3  6.448 ± 1.158  ns/op // 2D equidistribution
+ * RNGBenchmark.measureStarfish32R       avgt    3  9.297 ± 1.122  ns/op // 1D equidistribution
+ * RNGBenchmark.measureXoshiroAra32      avgt    3  9.048 ± 1.296  ns/op // 2D equidistribution
+ * RNGBenchmark.measureXoshiroAra32Int   avgt    3  6.440 ± 0.188  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroAra32IntR  avgt    3  7.181 ± 0.497  ns/op // 4D equidistribution
+ * RNGBenchmark.measureXoshiroAra32R     avgt    3  9.879 ± 1.205  ns/op // 2D equidistribution
+ * </pre>
  * You can benchmark most of these in GWT for yourself on
  * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
  * where higher is better is a good way of estimating how fast a generator is. Each "run" is 10,000 generated numbers.
@@ -222,7 +239,11 @@ import java.util.concurrent.TimeUnit;
  * frequency over the full period of that generator, ((2 to the 64) - 1) * (2 to the 32), but the same is not true of
  * calling {@code myOriole32RNG.nextLong()}, which would produce some longs more frequently than others (and probably
  * would not produce some longs at all). The Xoshiro-based generators have the best period and equidistribution
- * qualities, with XoshiroAra having the best performance (all of them pass 32TB of PractRand).
+ * qualities, with XoshiroAra having the best performance (all of them pass 32TB of PractRand). The Xoroshiro-based
+ * generators tend to be faster, but only Starfish has better equidistribution of the bunch (it can produce all longs
+ * except one, while Lathe can't and Oriole won't with equal frequency). Starfish seems to have comparable quality and
+ * speed relative to Oriole (excellent and pretty good, respectively), but improves on its distribution at the expense
+ * of its period, and has a smaller state.
  */
 
 @State(Scope.Thread)
@@ -1871,6 +1892,30 @@ public class RNGBenchmark {
         return Lathe32R.nextInt();
     }
 
+    private Starfish32RNG Starfish32 = new Starfish32RNG(9999, 999);
+    private RNG Starfish32R = new RNG(Starfish32);
+    @Benchmark
+    public long measureStarfish32()
+    {
+        return Starfish32.nextLong();
+    }
+
+    @Benchmark
+    public long measureStarfish32Int()
+    {
+        return Starfish32.next(32);
+    }
+    @Benchmark
+    public long measureStarfish32R()
+    {
+        return Starfish32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureStarfish32IntR()
+    {
+        return Starfish32R.nextInt();
+    }
 
     private Churro32RNG Churro32 = new Churro32RNG(9999, 999, 99);
     private RNG Churro32R = new RNG(Churro32);

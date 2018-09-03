@@ -282,4 +282,26 @@ public final class XoshiroStarStar32RNG implements RandomnessSource, Serializabl
     public int hashCode() {
         return 31 * (31 * (31 * stateA + stateB) + stateC) + stateD | 0;
     }
+
+//    public static void main(String[] args)
+//    {
+//        for (int a = 1; a < 8; a++) { // can only be 3
+//            EACH:
+//            for (int b = 1; b < 8; b++) { // can be 1 or 7
+//                byte stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+//                for (int i = 0x80000000; i < 0x7FFFFFFE; i++) {
+//                    final byte t = (byte)((stateB & 0xFF) >>> a);
+//                    stateC ^= stateA;
+//                    stateD ^= stateB;
+//                    stateB ^= stateC;
+//                    stateA ^= stateD;
+//                    stateC ^= t;
+//                    stateD = (byte)(stateD << b | (stateD & 0xFF) >>> (8 - b));
+//                    if(stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1)
+//                        continue EACH;
+//                }
+//                System.out.printf("a=%d,b=%d,full period\n", a, b);
+//            }
+//        }
+//    }
 }
