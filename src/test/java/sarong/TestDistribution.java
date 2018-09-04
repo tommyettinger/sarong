@@ -1,12 +1,15 @@
 package sarong;
 
 import org.huldra.math.BigInt;
+import org.junit.Test;
+import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 /**
  * Created by Tommy Ettinger on 8/31/2018.
  */
 public class TestDistribution {
-    public static void main(String[] args)
+    @Test
+    public void test8Bit()
     {
         byte stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 0, t;
         int result, xor = 0;
@@ -56,6 +59,63 @@ public class TestDistribution {
         System.out.println(sum.toBinaryString() + ", should be " + Long.toBinaryString(0x80000000L * 0xFFFFFFFFL));
         System.out.println(sum.toString() + ", should be " + (0x80000000L * 0xFFFFFFFFL));
         System.out.println(Integer.toBinaryString(xor) + " " + xor);
+//        int b = -1;
+//        for (int i = 0; i < 32; i++) {
+//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
+//        }
+    }
+
+    @Test
+    public void test32Bit()
+    {
+        int result, xor = 0;
+        BigInt sum = new BigInt(0);
+        Roaring64NavigableMap all = new Roaring64NavigableMap();
+        for (int i = 0x80000000; i < 0x7FFFFFFF; i++) {
+            result = (i ^ i >>> 16) + (i << 24);
+            xor ^= result;
+            sum.add(result);
+            all.addInt(result);
+        }
+//        t = 0x7FFFFFFF + 0x9E3779B9;
+//        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
+        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 16) + (0x7FFFFFF << 24);
+        xor ^= result;
+        sum.add(result);
+        all.addInt(result);
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
+        System.out.println(sum.toString() + ", should be -" + (0x80000000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
+//        int b = -1;
+//        for (int i = 0; i < 32; i++) {
+//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
+//        }
+    }
+
+    @Test
+    public void test16Bit()
+    {
+        short t, result, xor = 0;
+        BigInt sum = new BigInt(0);
+        //long[] counts = new long[256];
+        Roaring64NavigableMap all = new Roaring64NavigableMap();
+        for (int i = 0; i < 0x10000; i++) {
+            //t = (short)(i + 0x9E37);
+            //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
+            result = (short) ((i ^ (i & 0xFFFF) >>> 6) + (i << 13));
+            xor ^= result;
+            sum.add(result);
+            all.flip(result & 0xFFFF);
+        }
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+        System.out.println(sum.toString() + ", should be -" + (0x8000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
 //        int b = -1;
 //        for (int i = 0; i < 32; i++) {
 //            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",

@@ -5,7 +5,7 @@ import org.roaringbitmap.longlong.Roaring64NavigableMap;
 /**
  * Created by Tommy Ettinger on 1/12/2018.
  */
-public class DistributionTest {
+public class BirthdayTest {
     public static void main(String[] args)
     {
         Roaring64NavigableMap r = new Roaring64NavigableMap();

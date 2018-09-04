@@ -284,6 +284,41 @@ public final class XoshiroStarStar32RNG implements RandomnessSource, Serializabl
     }
 
 //    public static void main(String[] args)
+//    {         
+//        int state = 1;
+//        //state = (state << 1 | state >>> 31);
+//        //state ^= (state >>> 31) - 1 & 0x9E3779B9;
+//        //0xC0000401 0x80200003
+//        //works, full-period:
+//        //state = state << 1 ^ ((state >> 31) & 0xC0808449);
+//        
+////        state = (state << 1) ^ ((state >> 31) & 0xC0808449); 
+//        final int initial = state;
+//        for (int i = 0x80000000; i < 0x7FFFFFFE; i++) {
+//            //state = (state ^ 0x9E3779B9) * 0x9E377;
+//            //state = (state << 1 | state >>> 31);
+//            state = (state << 1) ^ ((state >> 31) & 0xC0808449);
+////            if(state == initial)
+////            {
+////                System.out.printf("Repeated initial %d, period is %08X", initial, 0x80000000L + i);
+////                return;
+////            }
+////            else 
+//                if(state == 1)
+//            {
+//                System.out.printf("Repeated 1, period is %08X", 0x80000001L + i);
+//                return;
+//            }
+//        }
+//        //state = (state << 1 | state >>> 31);
+//        state = (state << 1) ^ ((state >> 31) & 0xC0808449);
+//        System.out.println("full period, final state is " + state + ", initial is " + initial);
+//        //state = (state << 1 | state >>> 31);
+//        state = (state << 1) ^ ((state >> 31) & 0xC0808449);
+//        System.out.println("full period, after state is " + state);
+//    }
+
+//    public static void main(String[] args)
 //    {
 //        for (int a = 1; a < 8; a++) { // can only be 3
 //            EACH:
