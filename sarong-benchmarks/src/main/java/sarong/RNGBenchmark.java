@@ -228,6 +228,24 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureXoshiroAra32IntR  avgt    3  7.181 ± 0.497  ns/op // 4D equidistribution
  * RNGBenchmark.measureXoshiroAra32R     avgt    3  9.879 ± 1.205  ns/op // 2D equidistribution
  * </pre>
+ * And testing (under load, again) Starfish vs. the newer Otter generator; Otter tends to be faster on GWT because
+ * multiplication isn't as fast in browsers, but it is a little slower on desktop.
+ * <pre>
+ * Benchmark                            Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLathe32Int       avgt    3  5.798 ± 1.420  ns/op
+ * RNGBenchmark.measureOtter32Int       avgt    3  6.119 ± 0.132  ns/op
+ * RNGBenchmark.measureStarfish32Int    avgt    3  5.829 ± 1.262  ns/op
+ * RNGBenchmark.measureXoshiroAra32Int  avgt    3  6.448 ± 0.495  ns/op
+ * </pre>
+ * And the above benchmark, but for generating long values. Here Otter is definitely losing ground, but Starfish is
+ * holding up well relative to Lathe, and that's impressive considering Lathe can't produce all long values.
+ * <pre>
+ * Benchmark                         Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLathe32       avgt    3  8.022 ± 0.623  ns/op
+ * RNGBenchmark.measureOtter32       avgt    3  9.110 ± 1.093  ns/op
+ * RNGBenchmark.measureStarfish32    avgt    3  8.351 ± 0.922  ns/op
+ * RNGBenchmark.measureXoshiroAra32  avgt    3  9.137 ± 1.784  ns/op
+ * </pre>
  * You can benchmark most of these in GWT for yourself on
  * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
  * where higher is better is a good way of estimating how fast a generator is. Each "run" is 10,000 generated numbers.
@@ -1916,6 +1934,33 @@ public class RNGBenchmark {
     {
         return Starfish32R.nextInt();
     }
+
+
+    private Otter32RNG Otter32 = new Otter32RNG(9999, 999);
+    private RNG Otter32R = new RNG(Otter32);
+    @Benchmark
+    public long measureOtter32()
+    {
+        return Otter32.nextLong();
+    }
+
+    @Benchmark
+    public long measureOtter32Int()
+    {
+        return Otter32.next(32);
+    }
+    @Benchmark
+    public long measureOtter32R()
+    {
+        return Otter32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureOtter32IntR()
+    {
+        return Otter32R.nextInt();
+    }
+
 
     private Churro32RNG Churro32 = new Churro32RNG(9999, 999, 99);
     private RNG Churro32R = new RNG(Churro32);

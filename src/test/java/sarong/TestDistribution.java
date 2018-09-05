@@ -70,24 +70,30 @@ public class TestDistribution {
     @Test
     public void test32Bit()
     {
-        int result, xor = 0;
-        BigInt sum = new BigInt(0);
+//        int result, xor = 0;
+//        BigInt sum = new BigInt(0);
         Roaring64NavigableMap all = new Roaring64NavigableMap();
         for (int i = 0x80000000; i < 0x7FFFFFFF; i++) {
-            result = (i ^ i >>> 16) + (i << 24);
-            xor ^= result;
-            sum.add(result);
-            all.addInt(result);
+//            result = (i << 6) + (i << 28 | i >>> 4);
+//            result = i - (i << 11 | i >>> 21);
+//            result = (result << 28 | result >>> 4);
+//            result = (i ^ i >>> 15) + (i << 23);
+//            xor ^= result;
+//            sum.add(result);
+            all.addInt((i >>> 6) ^ (i << 28 | i >>> 4));
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
-        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 16) + (0x7FFFFFF << 24);
-        xor ^= result;
-        sum.add(result);
-        all.addInt(result);
-        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
-        System.out.println(sum.toString() + ", should be -" + (0x80000000L));
-        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+//        result = (0x7FFFFFFF << 6) + (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4);
+//        result = 0x7FFFFFFF - (0x7FFFFFFF << 11 | 0x7FFFFFFF >>> 21);
+//        result = (result << 28 | result >>> 4);
+//        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
+//        xor ^= result;
+        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
+//        sum.add(result);
+//        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
+//        System.out.println(sum.toString() + ", should be -" + (0x80000000L));
+//        System.out.println(Integer.toBinaryString(xor) + " " + xor);
         System.out.println(all.getLongCardinality());
 //        int b = -1;
 //        for (int i = 0; i < 32; i++) {
