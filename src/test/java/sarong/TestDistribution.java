@@ -66,7 +66,20 @@ public class TestDistribution {
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
 //        }
     }
-
+    
+    //<< 5 , rotl 3
+    //<< 6 , rotl 4
+    //<< 9 , rotl 5
+    //<< 9 , rotl 7
+    //<< 10, rotl 6
+    //<< 11, rotl 5
+    //<< 11, rotl 6
+    //<< 11, rotl 9
+    //<< 12, rotl 6
+    //<< 12, rotl 8
+    //<< 12, rotl 10
+    //<< 15, rotl 11
+    //<< 17, rotl 13
     @Test
     public void test32Bit()
     {
@@ -80,7 +93,7 @@ public class TestDistribution {
 //            result = (i ^ i >>> 15) + (i << 23);
 //            xor ^= result;
 //            sum.add(result);
-            all.addInt((i >>> 6) ^ (i << 28 | i >>> 4));
+            all.addInt((i << 11) - (i << 6 | i >>> 26));
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
@@ -89,7 +102,8 @@ public class TestDistribution {
 //        result = (result << 28 | result >>> 4);
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
-        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
+        all.addInt((0x7FFFFFFF << 11) - (0x7FFFFFFF << 6 | 0x7FFFFFFF >>> 26));
+//        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
 //        System.out.println(sum.toString() + ", should be -" + (0x80000000L));
@@ -128,6 +142,31 @@ public class TestDistribution {
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
 //        }
+    }
+    @Test
+    public void test64Bit()
+    {
+//        int result, xor = 0;
+//        BigInt sum = new BigInt(0);
+        Roaring64NavigableMap all = new Roaring64NavigableMap();
+        long s = -0x200000000L, t;
+        for (int j = 0; j < 512; j++) {
+            for (int i = 0x80000000; i < 0; i++) {
+                t = (s << 12) - (s << 10 | s >>> 54);
+                if((t & 0xFFFFFFFF00000000L) == 0L)
+                {
+                    if(all.contains(t))
+                    {
+                        System.out.println(s + 0x200000000L);
+                        return;
+                    }
+                    all.addLong(t);
+                }
+                s++;
+            }
+            System.out.print((j & 7));
+        }
+        System.out.println("No 32-bit collisions in 2 to the 40 generated longs");
     }
 
 }
