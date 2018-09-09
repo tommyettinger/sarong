@@ -93,7 +93,7 @@ public class TestDistribution {
 //            result = (i ^ i >>> 15) + (i << 23);
 //            xor ^= result;
 //            sum.add(result);
-            all.addInt((i << 11) - (i << 6 | i >>> 26));
+            all.addInt((i << 12) - (i << 11 | i >>> 21));
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
@@ -102,7 +102,7 @@ public class TestDistribution {
 //        result = (result << 28 | result >>> 4);
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
-        all.addInt((0x7FFFFFFF << 11) - (0x7FFFFFFF << 6 | 0x7FFFFFFF >>> 26));
+        all.addInt((0x7FFFFFFF << 12) - (0x7FFFFFFF << 11 | 0x7FFFFFFF >>> 21));
 //        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
@@ -143,16 +143,16 @@ public class TestDistribution {
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
 //        }
     }
+    //<< 12, rotl 10
+    //<< 23, rotl 19
     @Test
     public void test64Bit()
     {
-//        int result, xor = 0;
-//        BigInt sum = new BigInt(0);
         Roaring64NavigableMap all = new Roaring64NavigableMap();
         long s = -0x200000000L, t;
         for (int j = 0; j < 512; j++) {
             for (int i = 0x80000000; i < 0; i++) {
-                t = (s << 12) - (s << 10 | s >>> 54);
+                t = (s << 15) - (s << 19 | s >>> 45);
                 if((t & 0xFFFFFFFF00000000L) == 0L)
                 {
                     if(all.contains(t))
