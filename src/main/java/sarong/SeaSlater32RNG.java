@@ -1,4 +1,4 @@
-/*  Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
+/*  Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org), ported in 2018 by Tommy Ettinger
 
 To the extent possible under law, the author has dedicated all copyright
 and related and neighboring rights to this software to the public domain
@@ -12,39 +12,32 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A modification of Blackman and Vigna's xoroshiro64** generator; behaves like {@link Starfish32RNG}, but is designed
- * to make it less likely that users can reduce the quality by simple arithmetic on the result. Lobster (and Starfish)
- * are 2-dimensionally equidistributed, so it can return all long values except for one, while Lathe is 1-dimensionally
- * equidistributed so it can return all int values but not all longs. Lobster passes all 32TB of PractRand's statistical
- * tests, and does so with only one anomaly (considered "unusual") and no failures. In statistical testing,
- * xoroshiro128+ always fails some binary matrix rank tests, but that uses a pair of 64-bit states, and when the states
- * are reduced to 32-bits, these small-word versions fail other tests as well. Lobster uses a variant on xoroshiro64**
- * that reduces some issues with that generator and tries to "harden the defenses" on the generator's quality. Lobster
- * does not change xoroshiro's well-tested state transition, but it doesn't base the output on the sum of the two states
- * (like xoroshiro128+), instead using the first state only for output (exactly like xoroshiro64** and similar to
- * xoshiro256**). Any arithmetic it performs is safe for GWT. Lobster adds an extremely small amount of extra code to
- * xoroshiro, running xoroshiro's state transition as normal, using stateA (or s[0] in the original xoroshiro code)
- * multiplied by 31 as the initial result, then returning after a somewhat-unusual operation on that initial result that
- * isn't common in most RNGs. This last operation is {@code (result << 11) - Integer.rotateLeft(result, 5)}, and this is
- * one of a group of similar scrambling operations with varying effects on quality. It is a random reversible mapping, a
- * one-to-one operation from int to int, but it seems to be a challenge to actually reverse it without creating a lookup
- * table from all int inputs to their outputs. The period is identical to xoroshiro with two 32-bit states, at
- * 0xFFFFFFFFFFFFFFFF or 2 to the 64 minus 1. This generator is a little slower than xoroshiro64+ or Lathe, but has
- * better distribution than either; it can be contrasted with {@link Starfish32RNG} or {@link XoshiroAra32RNG} the
- * former of which is faster than this and the latter of which has a longer period, but both are fragile if users can
- * add integers of their choice.
+ * A modification of Blackman and Vigna's xoroshiro64** generator; like {@link Starfish32RNG}, but doesn't use any
+ * multiplication and instead uses a pair of hard-to-reverse operations (what I'm calling lerosu, left-rotate-subtract;
+ * a left shift and a left rotation of a variable, with the latter subtracted from the former). These lerosu operations
+ * are arranged so no bits of the state should be directly accessible from the output without serious effort, though it
+ * is possible if you have a large enough table of outputs to inputs. It's doing very well in statistical testing (1TB
+ * of PractRand with no anomalies; ongoing), but benchmarks in the browser give varied results -- fast in Firefox,
+ * but a little slower than similar generators that do use multiplication in recent Chrome. In older Chrome/Chromium,
+ * it's totally different, and this generator performs almost twice as quickly as Starfish; if whatever regression in
+ * the V8 JavaScript engine causes this can be addressed, SeaSlater could be very fast again in the most common browser.
+ * It's slower than Starfish32RNG on desktop platforms, but not by a whole lot, and is comparable in speed to
+ * {@link XoshiroAra32RNG} (sometimes a little faster, sometimes a little slower). The main reasons to use SeaSlater are
+ * that it offers slightly better security against low-skilled intentional efforts to predict future outputs given past
+ * outputs, and that it offers much better promises of keeping its high statistical quality regardless of what simple
+ * math operations are applied to its output. Referring to the second reason, generators like {@link XoshiroAra32RNG}
+ * fail tests if a specific number is subtracted from every output, while its precursor {@link XoshiroStarStar32RNG}
+ * fails tests when every output is multiplied by one of an extremely large group of numbers (2 to the 57 multipliers
+ * seem to all be able to break it). As for the first reason, {@link Lobster32RNG} uses the same lerosu operation but
+ * only once, yielding roughly 11 bits of its current 64-bit state unchanged in the output (just rotated), so it should
+ * be fairly easy to figure out the full state given a small number of full outputs (at least 2, in the worst case that
+ * every output can be reversed fully, but more likely 4 to 24).
  * <br>
- * This avoids an issue in xoroshiro** generators where many multipliers, when applied to the output of a xoroshiro**
- * generator, will cause the modified output to rapidly fail binary matrix rank tests. It also is immune to the "attack"
- * possible on Starfish and XoshiroAra, where the quality can be wrecked by subtracting a specific number or some number
- * similar to it. It's absolutely possible to make a table of inputs to outputs, run the scrambler through that table
- * (which would only take seconds, but would use 16GB of RAM), and multiply by the multiplicative inverse of 31 modulo
- * 2 to the 32, which would give you half of the state from one full output. It should be clear that this is not a
- * cryptographic generator, but I am not claiming this is a rock-solid or all-purpose generator either; if a hostile
- * user is trying to subvert a Lobster generator and can access full outputs, they can absolutely do so, but it's much
- * less likely that a non-hostile user could accidentally find an issue with this than with Starfish.
- * <br>
- * The name comes from the sea creature theme I'm using for this family of generators and the hard shell on a lobster.
+ * The name comes from the sea creature theme I'm using for this family of generators and the heavily-armored shoreline
+ * crustacean called a sea slater or rock louse, which is nicer-looking than its name suggests and 
+ * <a href="https://upload.wikimedia.org/wikipedia/commons/4/42/Ligia_oceanica_Flickr.jpg">looks like this</a>. Some of
+ * their relatives can roll up into a ball and rotate to escape prey, much like how this generator rotates to escape
+ * various issues.
  * <br>
  * <a href="http://xoshiro.di.unimi.it/xoroshiro64starstar.c">Original version here for xoroshiro64**</a>.
  * <br>
@@ -54,7 +47,7 @@ import java.io.Serializable;
  * @author David Blackman
  * @author Tommy Ettinger (if there's a flaw, use SquidLib's or Sarong's issues and don't bother Vigna or Blackman, it's probably a mistake in SquidLib's implementation)
  */
-public final class Lobster32RNG implements StatefulRandomness, Serializable {
+public final class SeaSlater32RNG implements StatefulRandomness, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,7 +56,7 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
     /**
      * Creates a new generator seeded using two calls to Math.random().
      */
-    public Lobster32RNG() {
+    public SeaSlater32RNG() {
         setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000), (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
     /**
@@ -71,7 +64,7 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
      * this has.
      * @param seed an int that won't be used exactly, but will affect both components of state
      */
-    public Lobster32RNG(final int seed) {
+    public SeaSlater32RNG(final int seed) {
         setSeed(seed);
     }
     /**
@@ -79,7 +72,7 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
      * {@link #setState(long)}.
      * @param seed a long that will be split across both components of state
      */
-    public Lobster32RNG(final long seed) {
+    public SeaSlater32RNG(final long seed) {
         setState(seed);
     }
     /**
@@ -88,7 +81,7 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
      * @param stateA the number to use as the first part of the state; this will be 1 instead if both seeds are 0
      * @param stateB the number to use as the second part of the state
      */
-    public Lobster32RNG(final int stateA, final int stateB) {
+    public SeaSlater32RNG(final int stateA, final int stateB) {
         setState(stateA, stateB);
     }
     
@@ -96,10 +89,10 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
     public final int next(int bits) {
         final int s0 = stateA;
         final int s1 = stateB ^ s0;
-        final int result = s0 * 31;
-        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9); // a, b
-        stateB = (s1 << 13 | s1 >>> 19); // c
-        return (result << 11) - (result << 5 | result >>> 27) >>> (32 - bits);
+        final int result = (s0 << 5) - (s0 << 3 | s0 >>> 29);
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (result << 10) - (result << 7 | result >>> 25) >>> (32 - bits);
     }
 
     /**
@@ -109,24 +102,24 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
     public final int nextInt() {
         final int s0 = stateA;
         final int s1 = stateB ^ s0;
-        final int result = s0 * 31;
-        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9); // a, b
-        stateB = (s1 << 13 | s1 >>> 19); // c
-        return (result << 11) - (result << 5 | result >>> 27) | 0;
+        final int result = (s0 << 5) - (s0 << 3 | s0 >>> 29);
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (result << 10) - (result << 7 | result >>> 25) | 0;
     }
 
     @Override
     public final long nextLong() {
         int s0 = stateA;
         int s1 = stateB ^ s0;
-        final int high = s0 * 31;
+        final int high = (s0 << 5) - (s0 << 3 | s0 >>> 29);
         s0 = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
         s1 = (s1 << 13 | s1 >>> 19) ^ s0;
-        final int low = s0 * 31;
+        final int low = (s0 << 5) - (s0 << 3 | s0 >>> 29);
         stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
         stateB = (s1 << 13 | s1 >>> 19);
-        final long result = (high << 11) - (high << 5 | high >>> 27);
-        return result << 32 ^ ((low << 11) - (low << 5 | low >>> 27));
+        final long result = (high << 10) - (high << 7 | high >>> 25);
+        return result << 32 ^ ((low << 10) - (low << 7 | low >>> 25));
     }
 
     /**
@@ -137,8 +130,8 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
      * @return a copy of this RandomnessSource
      */
     @Override
-    public Lobster32RNG copy() {
-        return new Lobster32RNG(stateA, stateB);
+    public SeaSlater32RNG copy() {
+        return new SeaSlater32RNG(stateA, stateB);
     }
 
     /**
@@ -230,7 +223,7 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "Lobster32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
+        return "SeaSlater32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
     }
 
     @Override
@@ -238,10 +231,10 @@ public final class Lobster32RNG implements StatefulRandomness, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Lobster32RNG lobster32RNG = (Lobster32RNG) o;
+        SeaSlater32RNG seaSlater32RNG = (SeaSlater32RNG) o;
 
-        if (stateA != lobster32RNG.stateA) return false;
-        return stateB == lobster32RNG.stateB;
+        if (stateA != seaSlater32RNG.stateA) return false;
+        return stateB == seaSlater32RNG.stateB;
     }
 
     @Override

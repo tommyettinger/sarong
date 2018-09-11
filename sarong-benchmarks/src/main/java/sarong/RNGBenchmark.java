@@ -231,20 +231,13 @@ import java.util.concurrent.TimeUnit;
  * And testing (under load, again) Starfish vs. the newer Otter generator; Otter tends to be faster on GWT because
  * multiplication isn't as fast in browsers, but it is a little slower on desktop.
  * <pre>
- * Benchmark                            Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLathe32Int       avgt    3  5.798 ± 1.420  ns/op
- * RNGBenchmark.measureOtter32Int       avgt    3  6.119 ± 0.132  ns/op
- * RNGBenchmark.measureStarfish32Int    avgt    3  5.829 ± 1.262  ns/op
- * RNGBenchmark.measureXoshiroAra32Int  avgt    3  6.448 ± 0.495  ns/op
- * </pre>
- * And the above benchmark, but for generating long values. Here Otter is definitely losing ground, but Starfish is
- * holding up well relative to Lathe, and that's impressive considering Lathe can't produce all long values.
- * <pre>
- * Benchmark                         Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLathe32       avgt    3  8.022 ± 0.623  ns/op
- * RNGBenchmark.measureOtter32       avgt    3  9.110 ± 1.093  ns/op
- * RNGBenchmark.measureStarfish32    avgt    3  8.351 ± 0.922  ns/op
- * RNGBenchmark.measureXoshiroAra32  avgt    3  9.137 ± 1.784  ns/op
+ * Benchmark                          Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureLathe32        avgt    3  6.328 ± 0.568  ns/op
+ * RNGBenchmark.measureLathe32Int     avgt    3  4.455 ± 0.165  ns/op
+ * RNGBenchmark.measureLobster32      avgt    3  6.793 ± 0.461  ns/op
+ * RNGBenchmark.measureLobster32Int   avgt    3  4.601 ± 0.056  ns/op
+ * RNGBenchmark.measureStarfish32     avgt    3  6.503 ± 0.109  ns/op
+ * RNGBenchmark.measureStarfish32Int  avgt    3  4.505 ± 1.135  ns/op
  * </pre>
  * You can benchmark most of these in GWT for yourself on
  * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
@@ -1959,6 +1952,57 @@ public class RNGBenchmark {
     public long measureOtter32IntR()
     {
         return Otter32R.nextInt();
+    }
+
+
+    private Lobster32RNG Lobster32 = new Lobster32RNG(9999, 999);
+    private RNG Lobster32R = new RNG(Lobster32);
+    @Benchmark
+    public long measureLobster32()
+    {
+        return Lobster32.nextLong();
+    }
+
+    @Benchmark
+    public long measureLobster32Int()
+    {
+        return Lobster32.next(32);
+    }
+    @Benchmark
+    public long measureLobster32R()
+    {
+        return Lobster32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureLobster32IntR()
+    {
+        return Lobster32R.nextInt();
+    }
+
+    private SeaSlater32RNG SeaSlater32 = new SeaSlater32RNG(9999, 999);
+    private RNG SeaSlater32R = new RNG(SeaSlater32);
+    @Benchmark
+    public long measureSeaSlater32()
+    {
+        return SeaSlater32.nextLong();
+    }
+
+    @Benchmark
+    public long measureSeaSlater32Int()
+    {
+        return SeaSlater32.next(32);
+    }
+    @Benchmark
+    public long measureSeaSlater32R()
+    {
+        return SeaSlater32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureSeaSlater32IntR()
+    {
+        return SeaSlater32R.nextInt();
     }
 
 

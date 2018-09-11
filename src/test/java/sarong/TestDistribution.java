@@ -84,6 +84,7 @@ public class TestDistribution {
     public void test32Bit()
     {
 //        int result, xor = 0;
+        int r;
 //        BigInt sum = new BigInt(0);
         Roaring64NavigableMap all = new Roaring64NavigableMap();
         for (int i = 0x80000000; i < 0x7FFFFFFF; i++) {
@@ -93,7 +94,10 @@ public class TestDistribution {
 //            result = (i ^ i >>> 15) + (i << 23);
 //            xor ^= result;
 //            sum.add(result);
-            all.addInt((i << 12) - (i << 11 | i >>> 21));
+            r = (i << 12) ^ (i << 7 | i >>> 25);
+            if(all.contains(r & 0xFFFFFFFFL))
+                break;
+            all.addLong(r & 0xFFFFFFFFL);
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
@@ -102,7 +106,10 @@ public class TestDistribution {
 //        result = (result << 28 | result >>> 4);
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
-        all.addInt((0x7FFFFFFF << 12) - (0x7FFFFFFF << 11 | 0x7FFFFFFF >>> 21));
+        r = (0x7FFFFFFF << 12) ^ (0x7FFFFFFF << 7 | 0x7FFFFFFF >>> 25);
+        if(all.contains(r & 0xFFFFFFFFL))
+            System.out.println("TROUBLE AT THE END!");
+        all.addLong(r & 0xFFFFFFFFL);
 //        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
