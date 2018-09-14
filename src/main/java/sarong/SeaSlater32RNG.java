@@ -12,6 +12,9 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
+ * Don't use this yet; it does very well in early testing but approaches failure at 16TB and 32TB of PractRand testing.
+ * It isn't doing enough to mitigate a failure on the DC6 test that xoroshiro suffers from with 32-bit words.
+ * <br>
  * A modification of Blackman and Vigna's xoroshiro64** generator; like {@link Starfish32RNG}, but doesn't use any
  * multiplication and instead uses a pair of hard-to-reverse operations (what I'm calling lerosu, left-rotate-subtract;
  * a left shift and a left rotation of a variable, with the latter subtracted from the former). These lerosu operations

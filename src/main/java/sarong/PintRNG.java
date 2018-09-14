@@ -56,8 +56,8 @@ public final class PintRNG implements RandomnessSource, StatefulRandomness, Seri
     public int next( int bits )
     {
         int p = (state = state * 0x2C9277B5 + 0xAC564B05);
-        p ^= p >>> (4 + (p >>> 28));
-        return (((p *= 0x108EF2D9) >>> 22) ^ p) >>> (32 - bits);
+        p = (p ^ p >>> (4 + (p >>> 28))) * 0x108EF2D9;
+        return (p >>> 22) ^ p >>> (32 - bits);
     }
 
     /**
@@ -72,8 +72,8 @@ public final class PintRNG implements RandomnessSource, StatefulRandomness, Seri
 //        p ^= p >>> (4 + (p >>> 28));
 //        state = state * 0x2C9277B5 + 0xAC564B05;
         int p = (state = state * 0x2C9277B5 + 0xAC564B05);
-        p ^= p >>> (4 + (p >>> 28));
-        return ((p *= 0x108EF2D9) >>> 22) ^ p;
+        p = (p ^ p >>> (4 + (p >>> 28))) * 0x108EF2D9;
+        return (p >>> 22) ^ p;
     }
 
     /**
@@ -84,10 +84,10 @@ public final class PintRNG implements RandomnessSource, StatefulRandomness, Seri
     @Override
     public long nextLong() {
         int p = (state = state * 0x2C9277B5 + 0xAC564B05);
-        p ^= p >>> (4 + (p >>> 28));
+        p = (p ^ p >>> (4 + (p >>> 28))) * 0x108EF2D9;
         int q = (state = state * 0x2C9277B5 + 0xAC564B05);
-        q ^= q >>> (4 + (q >>> 28));
-        return (((p *= 0x108EF2D9) >>> 22) ^ p) | ((((q *= 0x108EF2D9) >>> 22) ^ q) & 0xffffffffL) << 32;
+        q = (q ^ q >>> (4 + (q >>> 28))) * 0x108EF2D9;
+        return (p >>> 22 ^ p) ^ ((q >>> 22 ^ q) & 0xffffffffL) << 32;
     }
 
     /**

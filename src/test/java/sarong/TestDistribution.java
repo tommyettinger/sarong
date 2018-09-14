@@ -87,16 +87,20 @@ public class TestDistribution {
         int r;
 //        BigInt sum = new BigInt(0);
         Roaring64NavigableMap all = new Roaring64NavigableMap();
-        for (int i = 0x80000000; i < 0x7FFFFFFF; i++) {
+        int i = 0x80000000;
+        for (; i < 0x7FFFFFFF; i++) {
 //            result = (i << 6) + (i << 28 | i >>> 4);
 //            result = i - (i << 11 | i >>> 21);
 //            result = (result << 28 | result >>> 4);
 //            result = (i ^ i >>> 15) + (i << 23);
 //            xor ^= result;
 //            sum.add(result);
-            r = (i << 12) ^ (i << 7 | i >>> 25);
+            r = (i >>> 12) ^ (i << 19 | i >>> 13);
             if(all.contains(r & 0xFFFFFFFFL))
-                break;
+            {
+                System.out.println("UH OH, duplicate at " + (i + 0x80000000L));
+                return;
+            }
             all.addLong(r & 0xFFFFFFFFL);
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
@@ -106,7 +110,7 @@ public class TestDistribution {
 //        result = (result << 28 | result >>> 4);
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
-        r = (0x7FFFFFFF << 12) ^ (0x7FFFFFFF << 7 | 0x7FFFFFFF >>> 25);
+        r = (i >>> 12) ^ (i << 19 | i >>> 13);
         if(all.contains(r & 0xFFFFFFFFL))
             System.out.println("TROUBLE AT THE END!");
         all.addLong(r & 0xFFFFFFFFL);
