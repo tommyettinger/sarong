@@ -242,32 +242,33 @@ public class PeriodTest {
     {
         long i;
         long state = 1L;
-        LinnormRNG lin = new LinnormRNG(2L);//3676505223501568873L
-        System.out.println(lin.getState());
+//        LinnormRNG lin = new LinnormRNG(2L);//3676505223501568873L
+//        System.out.println(lin.getState());
         //Random rand = new RNG(lin).asRandom();
         //for (int c = 1; c <= 200; c++) {
             //final int r = lin.nextInt()|1;
-            final long r = 0x9E3779B97F4A7C15L;//0x41C64E6D;
+            final long r = 0x41C64E6BL;//0x41C64E6D;
             //final int r = BigInteger.probablePrime(32, rand).intValue();
             //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
         //System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
         System.out.printf("testing r = 0x%08X\n", r);
 //        for (int j = 1; j < 64; j++) {
-        int j = 47;
-                i = 0;
-                for (; ; i++) {
-                    state *= r;
-                    if ((state = (state << j | state >>> -j)) == 1) {
-                        //if (i > 0x100000000L)
-                        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
-                        break;
-                    }
-                    else if (i > 0x4000000000L) {
-                        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
-//                        state = 1L;
-                        break;
-                    }
+        int j = 28;
+        i = 0;
+        OUTER:
+        for (; i < 0x4000000000L;) {
+            for (int k = 0x80000000; k < 0; k++) {
+                state *= r;
+                if ((state = (state << j | state >>> -j)) == 1) {
+                    //if (i > 0x100000000L)
+                    System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
+                    break OUTER;
                 }
+                i++;
+            }
+            System.out.printf("Period is at least 0x%016X\n", i);
+        }
+        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
 //            }
         //}
 

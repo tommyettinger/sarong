@@ -35,6 +35,8 @@ import sarong.util.StringKit;
  * really move when it comes to speed.
  * <br>
  * Created by Tommy Ettinger on 8/6/2018.
+ * @author Mark Overton
+ * @author Tommy Ettinger
  */
 public final class Mover32RNG implements RandomnessSource {
     private int stateA, stateB;
