@@ -4,27 +4,19 @@ import sarong.util.StringKit;
 
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
- * specifically a cmr^cmr with two 32-bit states; this is the fastest 32-bit generator that still passes statistical
- * tests, plus it's optimized for GWT (sometimes). It has a period of just under 2 to the 64, 0xFFF1F6F18B2A1330, which
- * is roughly 2 to the 63.999691, and allows 2 to the 32 initial seeds.
+ * specifically a cmr^cmr with two 64-bit states.
  * <br>
  * This seems to do well in PractRand testing, but this is not one of the exact generators Overton tested. "Chaotic"
  * generators like this one tend to score well in PractRand, but it isn't clear if they will fail other tests (in
- * particular, they can't generate all possible long values, and also can't generate 0 or possibly some other ints). As
- * for speed, this is faster than {@link Lathe32RNG} (which is also high-quality) and is also faster than
- * {@link XoRo32RNG} (which is very fast but has quality issues) and {@link ThrustAlt32RNG} (which has a very small
- * period and probably isn't very useful). However, this is slower than Lathe32RNG when using GWT and viewing in
- * Firefox; for some reason {@link Starfish32RNG} optimizes well on Firefox and less well on Chrome, but Mover does very
- * well in Chrome (faster than Lathe) and rather poorly on Firefox.
+ * particular, they probably can't generate all possible long values, and maybe can't generate some ints).
  * <br>
- * Its period is 0xFFF1F6F18B2A1330 for the largest cycle, which it always initializes into if {@link #setState(int)} is
- * used. setState() only allows 2 to the 32 starting states, but less than 2 to the 64 states are in the largest cycle,
- * so using a long or two ints to set the state seems ill-advised. The generator has two similar parts, each updated
- * without needing to read from the other part. Each is a 32-bit CMR generator, which multiplies a state by a constant,
- * rotates by another constant, and stores that as the next state. The particular constants used here were found by
- * randomly picking 16-bit odd numbers as multipliers, checking the period for every non-zero rotation, and reporting
- * the multiplier and rotation amount when a period was found that was greater than 0xFF000000. Better multipliers are
- * almost guaranteed to exist, but finding them would be a challenge.
+ * Its period is unknown, but almost certainly higher than 2 to the 64. The generator has two similar parts, each
+ * updated without needing to read from the other part. Each is a 64-bit CMR generator, which multiplies a state by a
+ * constant, rotates by another constant, and stores that as the next state. The multiplier constants used here were
+ * chosen arbitrarily, since almost all odd-number multipliers produce a period for a CMR generator that is too long to
+ * iterate through and compare. One multiplier is close to the LCG multiplier used in PractRand; the other is very close
+ * to the golden ratio times 2 to the 64. Better multipliers are almost guaranteed to exist, but finding them would be a
+ * challenge. The rotation constants were chosen so they were sufficiently different, which seems to help quality.
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
  * it in a short-period subcycle. It uses two generators with different cycle lengths, and skips at most 65536 times
@@ -34,162 +26,155 @@ import sarong.util.StringKit;
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed.
  * <br>
- * Created by Tommy Ettinger on 8/6/2018.
+ * Created by Tommy Ettinger on 9/13/2018.
  */
-public final class Mover32RNG implements RandomnessSource {
-    private int stateA, stateB;
-    public Mover32RNG()
+public final class Mover64RNG implements RandomnessSource {
+    private long stateA, stateB;
+    public Mover64RNG()
     {
         setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
-    public Mover32RNG(final int state)
+    public Mover64RNG(final int state)
     {
         setState(state);
     }
 
     /**
-     * Not advised for external use; prefer {@link #Mover32RNG(int)} because it guarantees a good subcycle. This
+     * Not advised for external use; prefer {@link #Mover64RNG(int)} because it guarantees a good subcycle. This
      * constructor allows all subcycles to be produced, including ones with a shorter period.
      * @param stateA
      * @param stateB
      */
-    public Mover32RNG(final int stateA, final int stateB)
+    public Mover64RNG(final long stateA, final long stateB)
     {
-        this.stateA = stateA == 0 ? 1 : stateA;
-        this.stateB = stateB == 0 ? 1 : stateB;
+        this.stateA = stateA == 0L ? 1L : stateA;
+        this.stateB = stateB == 0L ? 1L : stateB;
     }
 
-    private static final int[] startingA = {
-            0x00000001, 0xCB2DA1A7, 0x215A5ADF, 0x2688266B, 0xEA31ECEE, 0x3F02F6A8, 0xB0833422, 0xC791ACA6,
-            0x976236C8, 0xF57961C0, 0x16EBE830, 0xCCCC2F10, 0x165D9801, 0x15E02FEA, 0xA302CC65, 0xAF68AE37,
-            0x4997CCA3, 0xF331F604, 0xF1DE5DA7, 0x07F21BA7, 0xD1752EC7, 0x308B16F2, 0x1B92D899, 0xF1A38AC8,
-            0x58F317B2, 0x1CC8EC79, 0x62588F4B, 0x975BF8FE, 0xE589C2D0, 0xB087C03D, 0x600F5DD0, 0xA32BD629,
-            0x3B52D26D, 0x0C7C18FD, 0xEB037A63, 0xE6F8BC93, 0x2CD250CF, 0x84327882, 0xA708FC6E, 0x5873EF12,
-            0x72FD78CF, 0xFFE73771, 0x18817285, 0x8EB3BC50, 0xE68597E0, 0xDF719E77, 0x35FE32C8, 0xF60532A1,
-            0xE93A1484, 0x697DF36B, 0xDFD41306, 0x37E0FADD, 0x6883EB39, 0xAF9CF955, 0xE11EB329, 0xDA951CC2,
-            0x325ECD67, 0x1DD8AC79, 0x7632669F, 0x0949BCB0, 0x965B0557, 0xB72DC0BC, 0x84448A7C, 0x6AC9B9CF,
-            0x92B7742A, 0xCFB27744, 0xFF154B26, 0xFD11E5F7, 0x5B6DE8D4, 0x59727211, 0x0A36FF7F, 0x56657899,
-            0xF9848758, 0x59415D9E, 0xE70E6901, 0x90858D00, 0x10B73995, 0x324FC7AD, 0xC62F801D, 0x4BBDA0E8,
-            0x70C8FDD5, 0xCC4376F1, 0x489AD7B7, 0xF4FB2500, 0x2279E051, 0x7840BF9E, 0x876AABF9, 0xF374F7BD,
-            0x6074B429, 0xC2EE6430, 0x238172DA, 0xFE3D050E, 0x5EF2F6B4, 0xF6359946, 0x127AAD89, 0xECA6FA56,
-            0x678B27CE, 0xDCD03A3C, 0xA45371BB, 0x5F2F422C, 0xE26B613C, 0x70DD9AF4, 0x1B0787BB, 0x0B8D2553,
-            0x3A430C3F, 0xAFF29AE2, 0x9DFAEB51, 0x1DE0F40E, 0x0467D74A, 0x85949411, 0xF8BC0358, 0x558BA744,
-            0x41A5B43A, 0x6B7E1C89, 0x9BF095BD, 0x5E2473CC, 0x4DFBF45B, 0xFB3510DC, 0xB7EC5786, 0xA99D6129,
-            0x120988F6, 0x796A7DE7, 0x9DEFD945, 0x0D2B25CE, 0xB7C1107E, 0x72E29D75, 0x85E01D79, 0x69AB992F,
+    private static final long[] startingA = {
+            0x0000000000000001L, 0x13648FBE2EEA1D43L, 0x8519AA5F58ABEA7BL, 0xAB5F39C7BCCE6B7BL, 0x5920D72FD8E767EEL, 0xD6D2BF560B4F27A2L, 0x5FC69CF0D6E3988EL, 0x8AD9DA62A8D55F45L,
+            0x4932E1B70765F664L, 0xF9EFA986048518EAL, 0x8FBEF24E98962D80L, 0x7F0EA66EBD399457L, 0xA2D3D9FB25C32227L, 0xF9A28F4270F7EA88L, 0x411A09457C23731BL, 0x687BA31E648A2F6EL,
+            0xCB2C76E554E2924FL, 0x5DCB31129339FCB0L, 0x10405FC17347023CL, 0x7C41E02D43FB1A4FL, 0x7B83FB5E07206815L, 0x10F3598A9AB08B43L, 0x47F6D61340D2A799L, 0x55CE53E14F2EC379L,
+            0x12086C91F38D43BEL, 0xE4D1CFC6CA642F5EL, 0x75E1EBBA93A95CB2L, 0x6D60802C494AB3AAL, 0x2E6B1F9D18D29864L, 0x4B6572CD6AFFBB94L, 0xA84C33DAD6523A2BL, 0x1AB5B6DAA48E1979L,
+            0x5A46E58B326F0155L, 0xCCC2E49EF97CB0F7L, 0x2A4A61F2A2867632L, 0x7BC39BEA33CB0134L, 0xFF9FC824B9BB1643L, 0xE6C8E580745B826EL, 0x85534A3D0AF6BD00L, 0x42423B139426DA44L,
+            0xFCF35CB39470DB7DL, 0x8838EF7D89FD5E75L, 0x332C2C8F9428F116L, 0xDE7ADCB6F9094020L, 0xD52A788B7A38BACDL, 0xA9F25970B7DF4C41L, 0xF1E17BA10A9B3223L, 0xE55C8215D19867DBL,
+            0xF35066C1A594D55CL, 0xE1D02F2DFA4E95A3L, 0x8368DD854F21AA89L, 0xEE463DE0B3B040FFL, 0x8809BC3D8767126AL, 0x9888B4CA0604F87CL, 0x6B23745E40C36790L, 0x5AD100BFA4EAA440L,
+            0xDDC42968F06BD5D4L, 0x0EB58AD5650FCC99L, 0xAF93EA5B745BB306L, 0x3DF9A703BA92D681L, 0xDB1FCA728CDCA1F4L, 0xC6181560563DCDF4L, 0x7D95DC5ADB730E73L, 0x5A9D65E23F4BCCB2L,
+            0xD81B4E22820410C1L, 0x74A29B95F7DAA62AL, 0xDC360353D5F6474AL, 0x51E7DAA6A40260F2L, 0x4E2EA639DF3520D3L, 0xB491ADF64736A776L, 0xD98566027CFC2548L, 0x9C756684019C1012L,
+            0xA1FEAB236BA5EC1CL, 0x3CD88B16379D7D08L, 0x707DA045C241B886L, 0xC6DB99EF129C1807L, 0x90D24EE9243A161DL, 0xA2464D58B7C421DBL, 0xA14785E5E679B721L, 0x523FB995A2B2DDA0L,
+            0xDC3FB72960467BB2L, 0xE230C7DA702BAAB3L, 0xF32719B80F2003A1L, 0x0B474378EEE5DAEEL, 0xD77FE075835C9C62L, 0x7490BD791DF171D7L, 0x01615CA67556C073L, 0x40207D2EAA38EDECL,
+            0xBDBBBF37FE31EABFL, 0xAAF6E3890ADC8902L, 0xFE2C98A350D85E8FL, 0x6EA500DFF5A0F494L, 0x2AD44DAC8806BDA4L, 0x371FF7ADC61984C4L, 0x2D67C3D55315790CL, 0xA47F164AB29EC5AAL,
+            0xBC2C63A2A5650ECAL, 0x0B2512F15EC9FDF0L, 0x518B95A30A2E3B29L, 0x58A75361DA739430L, 0x16870A3A56632EA8L, 0xE91D9F763A910910L, 0xCE08AE3825B3B9DFL, 0xCB50BE792BB0334FL,
+            0x1D8C8126FDB0E2C0L, 0x68B10E1C266B75F0L, 0xB029BCCA574BFAF4L, 0x02A9CF13E42FE100L, 0xDAAB87A6354947CEL, 0x38EDB52D09436F40L, 0x5E1ED2DB4A032BB3L, 0x732406706848B79CL,
+            0xC2C6F78E9FD659D5L, 0x4F46EA23B2A59D6FL, 0x7412D694FEA63995L, 0x2AD486306C8AC739L, 0x4C5FF9E964284F55L, 0x5D08EDE497C62505L, 0x22C72DDC681405FCL, 0x43B57E9A9CA4CDD1L,
+            0x8E09990345DFF5BAL, 0x230C6482B198C30DL, 0xE1D797CA1B480D65L, 0x0C5F958F3ACC39BBL, 0xDB6CA881AB431D02L, 0x61574A31B78B2E0EL, 0x1E30FA40D2F90D92L, 0x45D0CC5C6FDA8AEEL,
     }, startingB = {
-            0x00000001, 0xAB7EE445, 0x6FB35C9C, 0x459AB7A2, 0xEA61D065, 0x306F5E5F, 0xCE50A64A, 0x6D76B642,
-            0x11F3C6D4, 0xB3FF1D66, 0x657E6790, 0x4C62472D, 0xBEABAB16, 0xFD455176, 0xDCB98EDB, 0x1FC27360,
-            0x80C1241C, 0xC0C5BCC0, 0x6A67518B, 0xF2D69A39, 0xFA7D6C16, 0xE906A517, 0x899FFA7B, 0x2E42A99D,
-            0xBAF5B6E8, 0x3BBDC45A, 0x2497A707, 0xEA2DB138, 0x7D4ABF97, 0x552F5D4E, 0x15FE4BBD, 0xBC51DF5A,
-            0x465BDC95, 0x736A018F, 0x8A72CB63, 0x103119BE, 0x40403117, 0xA295957B, 0xCDDA9C19, 0xF0551CC6,
-            0x77CBAB76, 0xA054FD6A, 0x8974C93F, 0x8E314DC1, 0x42BC030E, 0x7F090540, 0x177998EA, 0x20457F09,
-            0xC13609D7, 0xA2683753, 0xE9F84638, 0x1BE07B83, 0x5DB36480, 0x39AE5B3A, 0xE044E164, 0x6E6B6191,
-            0x6036E5C8, 0x00703FE1, 0x53935ED8, 0x6B4443F5, 0x8FB91605, 0x146478C9, 0x2D0429BB, 0x86E8F88A,
-            0xD8DFFDB7, 0x77223F7D, 0x2B065674, 0xD80D2DD6, 0x0DFE5CEB, 0x44A495A5, 0x758EF0A9, 0x5FB55BA5,
-            0x8935A9B1, 0x84189069, 0xAA2194BC, 0x5FB95103, 0x6B60B887, 0xC63A769E, 0xA74BE357, 0x9F71B1F8,
-            0x3320B09E, 0xD369B3FC, 0xBCDB4B4E, 0xDC4DBCC9, 0x01F67CD2, 0xB3F6AA2B, 0x082CA2B3, 0xA54F168F,
-            0x0A9F82C9, 0x77DC3F93, 0x18D32D96, 0x1FC3FCE5, 0x97542B7A, 0x88CA9F81, 0x75370CE4, 0x8C2749C3,
-            0x94B63AE4, 0xC55E3BB7, 0x176BA775, 0x8C2BFEFC, 0x8C457557, 0xD8BFFD54, 0xB3D322DC, 0x072D766C,
-            0x40912BF4, 0x99CA7F36, 0xBC78BE45, 0x22F95B6B, 0xB37B05C9, 0x23493DB3, 0xCFBDC9C3, 0xB0379084,
-            0x2A2BFA20, 0x9A9DA93D, 0xCDE62486, 0x079CF8E6, 0x5B45CF64, 0xA19945A8, 0x196C1AA8, 0x9B19C771,
-            0x702CC28B, 0xFF4C5B02, 0x2FDD78D2, 0x71FFBD4E, 0xDF4C60A4, 0x143FAB0B, 0xAD9C8EB0, 0x6F35837D,
+            0x0000000000000001L, 0x455E0E109C65E5A6L, 0xEA6F8F04B363C882L, 0xA8D4871827A3D3CDL, 0xDFE1AA36B29428EBL, 0x24EDEB911B1B54BFL, 0xBEA13C7B2AD329EEL, 0xCDC764BDCB0378E7L,
+            0x279BD0A81B87C66AL, 0xFD113349159EB2F1L, 0x8AC708AC16866222L, 0xF103F79E075B8B54L, 0xC3FD4F2FBCE83B09L, 0xF0A5210661FB395FL, 0x003420A7D182336EL, 0xBACD1E99584649EAL,
+            0x61A892E4D85E682EL, 0x1BE2DADB1A7FEA69L, 0xE29A7A12A19E5904L, 0xF40C3CEA5D0D9124L, 0x29194A004AA9B7EFL, 0x3E8984574BEFA523L, 0x0561EFA21874C8E4L, 0xC6561E29E84FE115L,
+            0xE5C03A1C7C376450L, 0xB36146ABD08D33BBL, 0xB7548D3B1DDBDD04L, 0x9C76C4DACF3BA742L, 0xABF44840E3CDBD62L, 0xDE36A40D6B3AB608L, 0xB2420BB008CC3B63L, 0xCC2628370888FFA0L,
+            0xEBDBCDA6649A717FL, 0xB257532148F2B6ACL, 0xF102ED1796C40366L, 0x8AFC455AB7D634CBL, 0xD85B4DC465D2CB60L, 0x6A9DECC61F2E06F9L, 0x56F540C3C5ED5A6CL, 0xA3299800824B1431L,
+            0x397889AD3BAB24EBL, 0x9540948FE3434A59L, 0x4A1DE35BAC4F1666L, 0xC1E2B74BB6C0D8ADL, 0x7E5436FCBDCB5B71L, 0xA6788C252D3FA9AFL, 0xD187F9304317D9FDL, 0xC342F39AC826DCA7L,
+            0x4B26B0F851F2CA1FL, 0x019838CAF8B1D0ACL, 0x27313A0568002621L, 0xF2D57756F296DA76L, 0x9DE273D38F81D2CCL, 0x93F5965A7A03C939L, 0x7904CD65E3E87604L, 0x058729A0EFFA2E21L,
+            0xD99364D8FDA45655L, 0xEC6E2993A729EC95L, 0x7BA14324C0397BA5L, 0xF1A7B6945B1341A6L, 0x15C249CB81FDB967L, 0xD727098CB28C09EDL, 0xE82E98BD98479F13L, 0x403EF674EDCC14DFL,
+            0x90BC3BF2519F7811L, 0xD3DF13D2D2FB810BL, 0xB79BC3C57BBD1787L, 0xA2F77E657B1260A4L, 0xE7CFD7F878D0BA98L, 0x7B19691E0EB94011L, 0xD68E3F0995605AD5L, 0xEEA57DF59BEE051DL,
+            0xC29E0AC4FF25FE24L, 0x8325EA1E66BE52CDL, 0x9DB8B6958239896DL, 0x0717A3E610B293FEL, 0x496B7954B646B98AL, 0x732F2581700A4189L, 0x213CD01ED01FC5D5L, 0x6ADFF9DE4403408EL,
+            0x05390C907E574558L, 0xE3E399196E282167L, 0x4866D3842FC94CD9L, 0x5D09493B20CC4B37L, 0xFD7B1BDE42B449D1L, 0xEEBFEB2B45A5E232L, 0xC650AFC2D9D3E673L, 0x45DB07A2956ADDD8L,
+            0x57064975A144DB8DL, 0xADB0185B4FE803DCL, 0x724F3400AD070184L, 0xC76820BC8592A42AL, 0xC48B37945C483322L, 0x1FA560F4ABBD89CDL, 0x66CEAAA5F9DC0547L, 0x7F9B0EADC133F35FL,
+            0x57550759086478D9L, 0x09733BA3DD99CA71L, 0x368AA7716FA73C8DL, 0xC9EC5919FC3A7986L, 0x393444DBBDC22896L, 0x27CD96264EE89EF5L, 0x6D69BEE759072BDCL, 0xA17B5598B2F84070L,
+            0x2A25740C352995A9L, 0xC6E3DDBD4E9BA68AL, 0xBA0C72348F13C037L, 0xF92B9565DF441DEBL, 0xF4DC9550EB3D1FF2L, 0x63AEAD81EACCD91CL, 0x6C33B52BD273E875L, 0x94F1EAF8BD2A68C2L,
+            0xE108685A36A8E258L, 0x6C244244C12B241AL, 0xE689E3DC9D7D0610L, 0xFF6E5638B5A5B426L, 0x5AC11CB7F0D8DEAFL, 0xDEC5A4466C79CECAL, 0xC2A1567E06385BEDL, 0xBE8CE0268485F93DL,
+            0xE418ACC9398291E0L, 0x14621413FE5F97CDL, 0xC9649FEBC1C311D3L, 0x47A0337F14523B8CL, 0xB345F309CC27BCC5L, 0x0D466C7F77971649L, 0x04B2267678FBFBFDL, 0x10ACC2FC15FFD21DL,
     };
 
     public final void setState(final int s) {
         stateA = startingA[s >>> 9 & 0x7F];
         for (int i = s & 0x1FF; i > 0; i--) {
-            stateA *= 0x89A7;
-            stateA = (stateA << 13 | stateA >>> 19);
+            stateA *= 0x41C64E6BL;
+            stateA = (stateA << 18 | stateA >>> 46);
         }
         stateB = startingB[s >>> 25];
         for (int i = s >>> 16 & 0x1FF; i > 0; i--) {
-            stateB *= 0xBCFD;
-            stateB = (stateB << 17 | stateB >>> 15);
+            stateB *= 0x9E3779B97F4A7C15L;
+            stateB = (stateB << 47 | stateB >>> 17);
         }
     }
 
     public final int nextInt()
     {
-        int y = stateA * 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        final int x = stateB * 0xBCFD;
-        return (y ^ (stateB = (x << 17 | x >>> 15)));
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x9E3779B97F4A7C15L;
+        return (int)((stateA = (a << 18 | a >>> 46)) ^ (stateB = (b << 47 | b >>> 17)));
     }
     @Override
     public final int next(final int bits)
     {
-        int y = stateA * 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        final int x = stateB * 0xBCFD;
-        return (y ^ (stateB = (x << 17 | x >>> 15))) >>> (32 - bits);
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x9E3779B97F4A7C15L;
+        return (int)((stateA = (a << 18 | a >>> 46)) ^ (stateB = (b << 47 | b >>> 17))) >>> (32 - bits);
     }
     @Override
     public final long nextLong()
     {
-        int y = stateA * 0x89A7;
-        y = (y << 13 | y >>> 19);
-        int x = stateB * 0xBCFD;
-        final long t = y ^ (x = (x << 17 | x >>> 15));
-        y *= 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        x *= 0xBCFD;
-        return t << 32 ^ (y ^ (stateB = (x << 17 | x >>> 15)));
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x9E3779B97F4A7C15L;
+        return (stateA = (a << 18 | a >>> 46)) ^ (stateB = (b << 47 | b >>> 17));
     }
 
     /**
-     * Produces a copy of this Mover32RNG that, if next() and/or nextLong() are called on this object and the
+     * Produces a copy of this Mover64RNG that, if next() and/or nextLong() are called on this object and the
      * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
      * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
      *
-     * @return a copy of this Mover32RNG
+     * @return a copy of this Mover64RNG
      */
     @Override
-    public Mover32RNG copy() {
-        return new Mover32RNG(stateA, stateB);
+    public Mover64RNG copy() {
+        return new Mover64RNG(stateA, stateB);
     }
 
     /**
-     * Gets the "A" part of the state; if this generator was set with {@link #Mover32RNG()}, {@link #Mover32RNG(int)},
+     * Gets the "A" part of the state; if this generator was set with {@link #Mover64RNG()}, {@link #Mover64RNG(int)},
      * or {@link #setState(int)}, then this will be on the optimal subcycle, otherwise it may not be. 
      * @return the "A" part of the state, an int
      */
-    public int getStateA()
+    public long getStateA()
     {
         return stateA;
     }
 
     /**
-     * Gets the "B" part of the state; if this generator was set with {@link #Mover32RNG()}, {@link #Mover32RNG(int)},
+     * Gets the "B" part of the state; if this generator was set with {@link #Mover64RNG()}, {@link #Mover64RNG(int)},
      * or {@link #setState(int)}, then this will be on the optimal subcycle, otherwise it may not be. 
      * @return the "B" part of the state, an int
      */
-    public int getStateB()
+    public long getStateB()
     {
         return stateB;
     }
     /**
-     * Sets the "A" part of the state to any int, which may put the generator in a low-period subcycle.
+     * Sets the "A" part of the state to any long, which may put the generator in a low-period subcycle.
      * Use {@link #setState(int)} to guarantee a good subcycle.
      * @param stateA any int
      */
-    public void setStateA(final int stateA)
+    public void setStateA(final long stateA)
     {
         this.stateA = stateA;
     }
 
     /**
-     * Sets the "B" part of the state to any int, which may put the generator in a low-period subcycle.
+     * Sets the "B" part of the state to any long, which may put the generator in a low-period subcycle.
      * Use {@link #setState(int)} to guarantee a good subcycle.
      * @param stateB any int
      */
-    public void setStateB(final int stateB)
+    public void setStateB(final long stateB)
     {
         this.stateB = stateB;
     }
     
     @Override
     public String toString() {
-        return "Mover32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
+        return "Mover64RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
     }
 
     @Override
@@ -197,14 +182,15 @@ public final class Mover32RNG implements RandomnessSource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Mover32RNG mover32RNG = (Mover32RNG) o;
+        Mover64RNG mover64RNG = (Mover64RNG) o;
 
-        return stateA == mover32RNG.stateA && stateB == mover32RNG.stateB;
+        return stateA == mover64RNG.stateA && stateB == mover64RNG.stateB;
     }
 
     @Override
-    public int hashCode() {
-        return 31 * stateA + stateB | 0;
+    public int hashCode() { 
+        long h = 31L * stateA + stateB;
+        return (int)(h ^ h >>> 32);
     }
 
 //    public static void main(String[] args)
@@ -477,29 +463,29 @@ public final class Mover32RNG implements RandomnessSource {
 ///////// END subcycle finder code and period evaluator
     
     
-//    public static void main(String[] args)
-//    {
-//        int stateA = 1, stateB = 1;
-//        System.out.println("int[] startingA = {");
-//        for (int ctr = 0; ctr < 128; ctr++) {
-//            System.out.printf("0x%08X, ", stateA);
-//            if((ctr & 7) == 7)
-//                System.out.println();
-//            for (int i = 0; i < 512; i++) {
-//                stateA *= 0x89A7;
-//                stateA = (stateA << 13 | stateA >>> 19);
-//            }
-//        }
-//        System.out.println("}, startingB = {");
-//        for (int ctr = 0; ctr < 128; ctr++) {
-//            System.out.printf("0x%08X, ", stateB);
-//            if((ctr & 7) == 7)
-//                System.out.println();
-//            for (int i = 0; i < 512; i++) {
-//                stateB *= 0xBCFD;
-//                stateB = (stateB << 17 | stateB >>> 15);
-//            }
-//        }
-//        System.out.println("};");
-//    }
+    public static void main(String[] args)
+    {
+        long stateA = 1, stateB = 1;
+        System.out.println("long[] startingA = {");
+        for (int ctr = 0; ctr < 128; ctr++) {
+            System.out.printf("0x%016XL, ", stateA);
+            if((ctr & 7) == 7)
+                System.out.println();
+            for (int i = 0; i < 512; i++) {
+                stateA *= 0x41C64E6BL;
+                stateA = (stateA << 18 | stateA >>> 46);
+            }
+        }
+        System.out.println("}, startingB = {");
+        for (int ctr = 0; ctr < 128; ctr++) {
+            System.out.printf("0x%016XL, ", stateB);
+            if((ctr & 7) == 7)
+                System.out.println();
+            for (int i = 0; i < 512; i++) {
+                stateB *= 0x9E3779B97F4A7C15L;
+                stateB = (stateB << 47 | stateB >>> 17);
+            }
+        }
+        System.out.println("};");
+    }
 }

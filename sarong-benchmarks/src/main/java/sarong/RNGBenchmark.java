@@ -500,75 +500,31 @@ public class RNGBenchmark {
         return LightR.nextInt();
     }
     
-//    public long doFlap()
-//    {
-//        FlapRNG rng = new FlapRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureFlap() throws InterruptedException {
-//        seed = 9000;
-//        doFlap();
-//    }
-//
-//    public long doFlapInt()
-//    {
-//        FlapRNG rng = new FlapRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureFlapInt() throws InterruptedException {
-//        iseed = 9000;
-//        doFlapInt();
-//    }
-//
-//    public long doFlapR()
-//    {
-//        RNG rng = new RNG(new FlapRNG(seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureFlapR() throws InterruptedException {
-//        seed = 9000;
-//        doFlapR();
-//    }
-//
-//    public long doFlapIntR()
-//    {
-//        RNG rng = new RNG(new FlapRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureFlapIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doFlapIntR();
-//    }
-//
+    private PaperweightRNG Paperweight = new PaperweightRNG(9999L);
+    private RNG PaperweightR = new RNG(Paperweight);
+    @Benchmark
+    public long measurePaperweight()
+    {
+        return Paperweight.nextLong();
+    }
 
+    @Benchmark
+    public long measurePaperweightInt()
+    {
+        return Paperweight.next(32);
+    }
+    @Benchmark
+    public long measurePaperweightR()
+    {
+        return PaperweightR.nextLong();
+    }
+
+    @Benchmark
+    public long measurePaperweightIntR()
+    {
+        return PaperweightR.nextInt();
+    }
+    
     private FlapRNG Flap = new FlapRNG(9999L);
     private RNG FlapR = new RNG(Flap);
     @Benchmark
@@ -1253,7 +1209,6 @@ public class RNGBenchmark {
     private Jab63RNG Jab63 = new Jab63RNG(9999L);
     private RNG Jab63R = new RNG(Jab63);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureJab63()
     {
         return Jab63.nextLong();
@@ -1275,23 +1230,24 @@ public class RNGBenchmark {
     {
         return Jab63R.nextInt();
     }
-    @Benchmark
-    public long measureInlineJab63()
-    {
-        long z = (oddState += 0x3C6EF372FE94F82AL);
-        z *= (z ^ (z >>> 21));
-        return z - (z >>> 28);
-    }
 
-
-    @Benchmark
-    public long measureInlineVortex()
-    {
-        long z = (state += 0x6C8E9CF970932BD5L);
-        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
-        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
-        return z ^ (z >>> 25);
-    }
+//    @Benchmark
+//    public long measureInlineJab63()
+//    {
+//        long z = (oddState += 0x3C6EF372FE94F82AL);
+//        z *= (z ^ (z >>> 21));
+//        return z - (z >>> 28);
+//    }
+//
+//
+//    @Benchmark
+//    public long measureInlineVortex()
+//    {
+//        long z = (state += 0x6C8E9CF970932BD5L);
+//        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+//        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+//        return z ^ (z >>> 25);
+//    }
 
     private VortexRNG Vortex = new VortexRNG(9999L);
     private RNG VortexR = new RNG(Vortex);
@@ -1318,6 +1274,55 @@ public class RNGBenchmark {
         return VortexR.nextInt();
     }
 
+    private BasicRandom64 BasicRandom64 = new BasicRandom64(1L);
+    private RNG BasicRandom64R = new RNG(BasicRandom64);
+    @Benchmark
+    public long measureBasicRandom64()
+    {
+        return BasicRandom64.nextLong();
+    }
+
+    @Benchmark
+    public long measureBasicRandom64Int()
+    {
+        return BasicRandom64.next(32);
+    }
+    @Benchmark
+    public long measureBasicRandom64R()
+    {
+        return BasicRandom64R.nextLong();
+    }
+
+    @Benchmark
+    public long measureBasicRandom64IntR()
+    {
+        return BasicRandom64R.nextInt();
+    }
+
+    private BasicRandom32 BasicRandom32 = new BasicRandom32(1);
+    private RNG BasicRandom32R = new RNG(BasicRandom32);
+    @Benchmark
+    public long measureBasicRandom32()
+    {
+        return BasicRandom32.nextLong();
+    }
+
+    @Benchmark
+    public long measureBasicRandom32Int()
+    {
+        return BasicRandom32.next(32);
+    }
+    @Benchmark
+    public long measureBasicRandom32R()
+    {
+        return BasicRandom32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureBasicRandom32IntR()
+    {
+        return BasicRandom32R.nextInt();
+    }
 
     private MotorRNG Motor = new MotorRNG(9999L);
     private RNG MotorR = new RNG(Motor);
@@ -1646,6 +1651,32 @@ public class RNGBenchmark {
     public long measureMover32IntR()
     {
         return Mover32R.nextInt();
+    }
+
+    private Mover64RNG Mover64 = new Mover64RNG(9999);
+    private RNG Mover64R = new RNG(Mover64);
+
+    @Benchmark
+    public long measureMover64()
+    {
+        return Mover64.nextLong();
+    }
+
+    @Benchmark
+    public long measureMover64Int()
+    {
+        return Mover64.next(32);
+    }
+    @Benchmark
+    public long measureMover64R()
+    {
+        return Mover64R.nextLong();
+    }
+
+    @Benchmark
+    public long measureMover64IntR()
+    {
+        return Mover64R.nextInt();
     }
 
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
