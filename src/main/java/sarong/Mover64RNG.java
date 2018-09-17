@@ -7,12 +7,13 @@ import sarong.util.StringKit;
  * specifically a cmr^cmr with two 64-bit states. It is extremely fast, faster than {@link LinnormRNG} and
  * {@link TangleRNG}, but its period is unknown. The period is at the very least 2 to the 38, since each of its
  * sub-generators has been checked up to that period length without running out of period, and the total period of a
- * Mover64RNG should be greater than 2 to the 64 with a very high likelihood.
+ * Mover64RNG should be greater than 2 to the 64 with a very high likelihood. The total period is also very unlikely to
+ * be a power of two or even a number close to a power of two; it could be odd or even.
  * <br>
- * This seems to do well in PractRand testing, passing at least 8TB with one ("unusual") anomaly, but this is not one of
- * the exact generators Overton tested. "Chaotic" generators like this one tend to score well in PractRand, but it isn't
- * clear if they will fail other tests (in particular, they probably can't generate all possible long values, and maybe
- * can't generate some ints). This generator is not equidistributed.
+ * This seems to do well in PractRand testing, passing a full 32TB with two ("unusual") anomalies, but this is not one
+ * of the exact generators Overton tested. "Chaotic" generators like this one tend to score well in PractRand, but it
+ * isn't clear if they will fail other tests (in particular, they probably can't generate all possible long values, and
+ * maybe can't generate some ints). This generator is not equidistributed.
  * <br>
  * The generator has two similar parts, each updated without needing to read from the other part. Each is a 64-bit CMR
  * generator, which multiplies a state by a constant, rotates by another constant, and stores that as the next state.
@@ -21,7 +22,11 @@ import sarong.util.StringKit;
  * multiplier used in PractRand (0x41C64E6B); the other is very close to the golden ratio times 2 to the 32
  * (0x9E3779B9). Better multipliers are almost guaranteed to exist, but finding them would be a challenge. The rotation
  * constants, 28 and 37, were chosen so they were sufficiently different and so the sum of their (left or right)
- * rotation amounts is close to 64, which seems to help quality.
+ * rotation amounts is close to 64, which seems to help quality. Oddly, substituting an addition for one of the two
+ * multiplications slows this generator down reliably, and does nothing to help quality. Even though addition should be
+ * faster, the two near-identical operations performed on two states may be able to be compiled into vector operations
+ * if the compiler is clever enough, but an addition on one state and a multiplication on the other would not make sense
+ * to see SIMD optimization.
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
  * it in a short-period subcycle. It uses two generators with different cycle lengths, and skips at most 65536 times

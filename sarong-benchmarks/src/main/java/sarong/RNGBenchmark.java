@@ -284,7 +284,7 @@ public class RNGBenchmark {
 //        doThunder();
 //    }
 //
-//    public long doThunderInt()
+//    public int doThunderInt()
 //    {
 //        ThunderRNG rng = new ThunderRNG(iseed);
 //
@@ -317,7 +317,7 @@ public class RNGBenchmark {
 //        doThunderR();
 //    }
 //
-//    public long doThunderIntR()
+//    public int doThunderIntR()
 //    {
 //        RNG rng = new RNG(new ThunderRNG(iseed));
 //
@@ -343,7 +343,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoRoInt()
+    public int measureXoRoInt()
     {
         return XoRo.next(32);
     }
@@ -354,7 +354,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoRoIntR()
+    public int measureXoRoIntR()
     {
         return XoRoR.nextInt();
     }
@@ -369,7 +369,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLathe64Int()
+    public int measureLathe64Int()
     {
         return Lathe64.next(32);
     }
@@ -380,7 +380,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLathe64IntR()
+    public int measureLathe64IntR()
     {
         return Lathe64R.nextInt();
     }
@@ -402,7 +402,7 @@ public class RNGBenchmark {
         doXar();
     }
 
-    public long doXarInt()
+    public int doXarInt()
     {
         XarRNG rng = new XarRNG(iseed);
         for (int i = 0; i < 1000000007; i++) {
@@ -433,7 +433,7 @@ public class RNGBenchmark {
         doXarR();
     }
 
-    public long doXarIntR()
+    public int doXarIntR()
     {
         RNG rng = new RNG(new XarRNG(iseed));
         for (int i = 0; i < 1000000007; i++) {
@@ -458,7 +458,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLongPeriodInt()
+    public int measureLongPeriodInt()
     {
         return LongPeriod.next(32);
     }
@@ -469,7 +469,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLongPeriodIntR()
+    public int measureLongPeriodIntR()
     {
         return LongPeriodR.nextInt();
     }
@@ -484,7 +484,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLightInt()
+    public int measureLightInt()
     {
         return Light.next(32);
     }
@@ -495,7 +495,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLightIntR()
+    public int measureLightIntR()
     {
         return LightR.nextInt();
     }
@@ -509,7 +509,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measurePaperweightInt()
+    public int measurePaperweightInt()
     {
         return Paperweight.next(32);
     }
@@ -520,7 +520,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measurePaperweightIntR()
+    public int measurePaperweightIntR()
     {
         return PaperweightR.nextInt();
     }
@@ -536,7 +536,7 @@ public class RNGBenchmark {
 
     @Benchmark
     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long measureFlapInt()
+    public int measureFlapInt()
     {
         return Flap.next(32);
     }
@@ -549,7 +549,7 @@ public class RNGBenchmark {
 
     @Benchmark
     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long measureFlapIntR()
+    public int measureFlapIntR()
     {
         return FlapR.nextInt();
     }
@@ -565,7 +565,7 @@ public class RNGBenchmark {
 
     @Benchmark
     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long measureLapInt()
+    public int measureLapInt()
     {
         return Lap.next(32);
     }
@@ -578,7 +578,7 @@ public class RNGBenchmark {
 
     @Benchmark
     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public long measureLapIntR()
+    public int measureLapIntR()
     {
         return LapR.nextInt();
     }
@@ -601,7 +601,7 @@ public class RNGBenchmark {
 //        doHorde();
 //    }
 //
-//    public long doHordeInt()
+//    public int doHordeInt()
 //    {
 //        HordeRNG rng = new HordeRNG(iseed);
 //
@@ -635,7 +635,7 @@ public class RNGBenchmark {
 //        doHordeR();
 //    }
 //
-//    public long doHordeIntR()
+//    public int doHordeIntR()
 //    {
 //        RNG rng = new RNG(new HordeRNG(iseed));
 //
@@ -668,7 +668,7 @@ public class RNGBenchmark {
 //        doHerd();
 //    }
 //
-//    public long doHerdInt()
+//    public int doHerdInt()
 //    {
 //        HerdRNG rng = new HerdRNG(iseed);
 //
@@ -702,7 +702,7 @@ public class RNGBenchmark {
 //        doHerdR();
 //    }
 //
-//    public long doHerdIntR()
+//    public int doHerdIntR()
 //    {
 //        RNG rng = new RNG(new HerdRNG(iseed));
 //
@@ -736,7 +736,7 @@ public class RNGBenchmark {
 //        doBeard();
 //    }
 //
-//    public long doBeardInt()
+//    public int doBeardInt()
 //    {
 //        BeardRNG rng = new BeardRNG(iseed);
 //
@@ -770,7 +770,7 @@ public class RNGBenchmark {
 //        doBeardR();
 //    }
 //
-//    public long doBeardIntR()
+//    public int doBeardIntR()
 //    {
 //        RNG rng = new RNG(new BeardRNG(iseed));
 //
@@ -805,7 +805,7 @@ public class RNGBenchmark {
 //        doBird();
 //    }
 //
-//    public long doBirdInt()
+//    public int doBirdInt()
 //    {
 //        BirdRNG rng = new BirdRNG(iseed);
 //
@@ -839,7 +839,7 @@ public class RNGBenchmark {
 //        doBirdR();
 //    }
 //
-//    public long doBirdIntR()
+//    public int doBirdIntR()
 //    {
 //        RNG rng = new RNG(new BirdRNG(iseed));
 //
@@ -872,7 +872,7 @@ public class RNGBenchmark {
 //        doBard();
 //    }
 //
-//    public long doBardInt()
+//    public int doBardInt()
 //    {
 //        BardRNG rng = new BardRNG(iseed);
 //
@@ -906,7 +906,7 @@ public class RNGBenchmark {
 //        doBardR();
 //    }
 //
-//    public long doBardIntR()
+//    public int doBardIntR()
 //    {
 //        RNG rng = new RNG(new BardRNG(iseed));
 //
@@ -940,7 +940,7 @@ public class RNGBenchmark {
 //        doLight32();
 //    }
 //
-//    public long doLight32Int()
+//    public int doLight32Int()
 //    {
 //        Light32RNG rng = new Light32RNG(iseed);
 //
@@ -974,7 +974,7 @@ public class RNGBenchmark {
 //        doLight32R();
 //    }
 //
-//    public long doLight32IntR()
+//    public int doLight32IntR()
 //    {
 //        RNG rng = new RNG(new Light32RNG(iseed));
 //
@@ -1000,7 +1000,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustInt()
+    public int measureThrustInt()
     {
         return Thrust.next(32);
     }
@@ -1011,7 +1011,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustIntR()
+    public int measureThrustIntR()
     {
         return ThrustR.nextInt();
     }
@@ -1043,7 +1043,7 @@ public class RNGBenchmark {
         doThrust3();
     }
 
-    public long doThrust3Int()
+    public int doThrust3Int()
     {
         ThrustAltRNG rng = new ThrustAltRNG(iseed);
 
@@ -1077,7 +1077,7 @@ public class RNGBenchmark {
         doThrust2();
     }
 
-    public long doThrust2Int()
+    public int doThrust2Int()
     {
         ThrustAltRNG rng = new ThrustAltRNG(iseed);
 
@@ -1110,7 +1110,7 @@ public class RNGBenchmark {
         doThrust4();
     }
 
-    public long doThrust4Int()
+    public int doThrust4Int()
     {
         ThrustAltRNG rng = new ThrustAltRNG(iseed|1L);
         for (int i = 0; i < 1000000007; i++) {
@@ -1176,7 +1176,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustAltInt()
+    public int measureThrustAltInt()
     {
         return ThrustAlt.next(32);
     }
@@ -1187,7 +1187,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustAltIntR()
+    public int measureThrustAltIntR()
     {
         return ThrustAltR.nextInt();
     }
@@ -1215,7 +1215,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureJab63Int()
+    public int measureJab63Int()
     {
         return Jab63.next(32);
     }
@@ -1226,7 +1226,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureJab63IntR()
+    public int measureJab63IntR()
     {
         return Jab63R.nextInt();
     }
@@ -1258,7 +1258,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureVortexInt()
+    public int measureVortexInt()
     {
         return Vortex.next(32);
     }
@@ -1269,7 +1269,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureVortexIntR()
+    public int measureVortexIntR()
     {
         return VortexR.nextInt();
     }
@@ -1283,7 +1283,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureBasicRandom64Int()
+    public int measureBasicRandom64Int()
     {
         return BasicRandom64.next(32);
     }
@@ -1294,7 +1294,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureBasicRandom64IntR()
+    public int measureBasicRandom64IntR()
     {
         return BasicRandom64R.nextInt();
     }
@@ -1308,7 +1308,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureBasicRandom32Int()
+    public int measureBasicRandom32Int()
     {
         return BasicRandom32.next(32);
     }
@@ -1319,7 +1319,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureBasicRandom32IntR()
+    public int measureBasicRandom32IntR()
     {
         return BasicRandom32R.nextInt();
     }
@@ -1333,7 +1333,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMotorInt()
+    public int measureMotorInt()
     {
         return Motor.next(32);
     }
@@ -1344,7 +1344,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMotorIntR()
+    public int measureMotorIntR()
     {
         return MotorR.nextInt();
     }
@@ -1359,7 +1359,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMeshInt()
+    public int measureMeshInt()
     {
         return Mesh.next(32);
     }
@@ -1370,7 +1370,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMeshIntR()
+    public int measureMeshIntR()
     {
         return MeshR.nextInt();
     }
@@ -1385,7 +1385,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSpiralInt()
+    public int measureSpiralInt()
     {
         return Spiral.next(32);
     }
@@ -1396,7 +1396,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSpiralIntR()
+    public int measureSpiralIntR()
     {
         return SpiralR.nextInt();
     }
@@ -1466,7 +1466,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOrbitInt()
+    public int measureOrbitInt()
     {
         return Orbit.next(32);
     }
@@ -1477,7 +1477,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOrbitIntR()
+    public int measureOrbitIntR()
     {
         return OrbitR.nextInt();
     }
@@ -1492,7 +1492,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureTangleInt()
+    public int measureTangleInt()
     {
         return Tangle.next(32);
     }
@@ -1503,7 +1503,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureTangleIntR()
+    public int measureTangleIntR()
     {
         return TangleR.nextInt();
     }
@@ -1627,7 +1627,7 @@ public class RNGBenchmark {
     }
 
 
-    private Mover32RNG Mover32 = new Mover32RNG(9999, 1337);
+    private Mover32RNG Mover32 = new Mover32RNG(0);
     private RNG Mover32R = new RNG(Mover32);
 
     @Benchmark
@@ -1637,7 +1637,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMover32Int()
+    public int measureMover32Int()
     {
         return Mover32.next(32);
     }
@@ -1648,12 +1648,12 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMover32IntR()
+    public int measureMover32IntR()
     {
         return Mover32R.nextInt();
     }
 
-    private Mover64RNG Mover64 = new Mover64RNG(9999);
+    private Mover64RNG Mover64 = new Mover64RNG(0);
     private RNG Mover64R = new RNG(Mover64);
 
     @Benchmark
@@ -1663,7 +1663,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMover64Int()
+    public int measureMover64Int()
     {
         return Mover64.next(32);
     }
@@ -1674,7 +1674,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMover64IntR()
+    public int measureMover64IntR()
     {
         return Mover64R.nextInt();
     }
@@ -1688,7 +1688,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSFC64Int()
+    public int measureSFC64Int()
     {
         return SFC64.next(32);
     }
@@ -1699,12 +1699,39 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSFC64IntR()
+    public int measureSFC64IntR()
     {
         return SFC64R.nextInt();
     }
+    
+    private Overdrive64RNG Overdrive64 = new Overdrive64RNG(0);
+    private RNG Overdrive64R = new RNG(Overdrive64);
 
-//    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
+    @Benchmark
+    public long measureOverdrive64()
+    {
+        return Overdrive64.nextLong();
+    }
+
+    @Benchmark
+    public int measureOverdrive64Int()
+    {
+        return Overdrive64.next(32);
+    }
+    @Benchmark
+    public long measureOverdrive64R()
+    {
+        return Overdrive64R.nextLong();
+    }
+
+    @Benchmark
+    public int measureOverdrive64IntR()
+    {
+        return Overdrive64R.nextInt();
+    }
+
+
+    //    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
 //    private RNG Thrust32R = new RNG(Thrust32);
 //
 //    @Benchmark
@@ -1714,7 +1741,7 @@ public class RNGBenchmark {
 //    }
 //
 //    @Benchmark
-//    public long measureThrust32Int()
+//    public int measureThrust32Int()
 //    {
 //        return Thrust32.next(32);
 //    }
@@ -1725,7 +1752,7 @@ public class RNGBenchmark {
 //    }
 //
 //    @Benchmark
-//    public long measureThrust32IntR()
+//    public int measureThrust32IntR()
 //    {
 //        return Thrust32R.nextInt();
 //    }
@@ -1741,7 +1768,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustAlt32Int()
+    public int measureThrustAlt32Int()
     {
         return ThrustAlt32.next(32);
     }
@@ -1752,7 +1779,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureThrustAlt32IntR()
+    public int measureThrustAlt32IntR()
     {
         return ThrustAlt32R.nextInt();
     }
@@ -1767,7 +1794,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLight32Int()
+    public int measureLight32Int()
     {
         return Light32.next(32);
     }
@@ -1778,7 +1805,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLight32IntR()
+    public int measureLight32IntR()
     {
         return Light32R.nextInt();
     }
@@ -1791,7 +1818,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZig32Int()
+    public int measureZig32Int()
     {
         return Zig32.next(32);
     }
@@ -1802,7 +1829,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZig32IntR()
+    public int measureZig32IntR()
     {
         return Zig32R.nextInt();
     }
@@ -1816,7 +1843,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZag32Int()
+    public int measureZag32Int()
     {
         return Zag32.next(32);
     }
@@ -1827,7 +1854,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZag32IntR()
+    public int measureZag32IntR()
     {
         return Zag32R.nextInt();
     }
@@ -1841,7 +1868,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZog32Int()
+    public int measureZog32Int()
     {
         return Zog32.next(32);
     }
@@ -1852,7 +1879,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureZog32IntR()
+    public int measureZog32IntR()
     {
         return Zog32R.nextInt();
     }
@@ -1866,7 +1893,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoRo32Int()
+    public int measureXoRo32Int()
     {
         return XoRo32.next(32);
     }
@@ -1877,7 +1904,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoRo32IntR()
+    public int measureXoRo32IntR()
     {
         return XoRo32R.nextInt();
     }
@@ -1893,7 +1920,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOriole32Int()
+    public int measureOriole32Int()
     {
         return Oriole32.next(32);
     }
@@ -1904,7 +1931,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOriole32IntR()
+    public int measureOriole32IntR()
     {
         return Oriole32R.nextInt();
     }
@@ -1918,7 +1945,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLathe32Int()
+    public int measureLathe32Int()
     {
         return Lathe32.next(32);
     }
@@ -1929,7 +1956,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLathe32IntR()
+    public int measureLathe32IntR()
     {
         return Lathe32R.nextInt();
     }
@@ -1943,7 +1970,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureStarfish32Int()
+    public int measureStarfish32Int()
     {
         return Starfish32.next(32);
     }
@@ -1954,7 +1981,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureStarfish32IntR()
+    public int measureStarfish32IntR()
     {
         return Starfish32R.nextInt();
     }
@@ -1969,7 +1996,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOtter32Int()
+    public int measureOtter32Int()
     {
         return Otter32.next(32);
     }
@@ -1980,7 +2007,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureOtter32IntR()
+    public int measureOtter32IntR()
     {
         return Otter32R.nextInt();
     }
@@ -1995,7 +2022,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLobster32Int()
+    public int measureLobster32Int()
     {
         return Lobster32.next(32);
     }
@@ -2006,7 +2033,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLobster32IntR()
+    public int measureLobster32IntR()
     {
         return Lobster32R.nextInt();
     }
@@ -2020,7 +2047,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSeaSlater32Int()
+    public int measureSeaSlater32Int()
     {
         return SeaSlater32.next(32);
     }
@@ -2031,7 +2058,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureSeaSlater32IntR()
+    public int measureSeaSlater32IntR()
     {
         return SeaSlater32R.nextInt();
     }
@@ -2046,7 +2073,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureChurro32Int()
+    public int measureChurro32Int()
     {
         return Churro32.next(32);
     }
@@ -2057,7 +2084,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureChurro32IntR()
+    public int measureChurro32IntR()
     {
         return Churro32R.nextInt();
     }
@@ -2070,7 +2097,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureDizzy32Int()
+    public int measureDizzy32Int()
     {
         return Dizzy32.next(32);
     }
@@ -2081,7 +2108,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureDizzy32IntR()
+    public int measureDizzy32IntR()
     {
         return Dizzy32R.nextInt();
     }
@@ -2108,7 +2135,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroStarStar32Int()
+    public int measureXoshiroStarStar32Int()
     {
         return XoshiroStarStar32.next(32);
     }
@@ -2119,7 +2146,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroStarStar32IntR()
+    public int measureXoshiroStarStar32IntR()
     {
         return XoshiroStarStar32R.nextInt();
     }
@@ -2135,7 +2162,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroStarPhi32Int()
+    public int measureXoshiroStarPhi32Int()
     {
         return XoshiroStarPhi32.next(32);
     }
@@ -2146,7 +2173,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroStarPhi32IntR()
+    public int measureXoshiroStarPhi32IntR()
     {
         return XoshiroStarPhi32R.nextInt();
     }
@@ -2161,7 +2188,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroXara32Int()
+    public int measureXoshiroXara32Int()
     {
         return XoshiroXara32.next(32);
     }
@@ -2172,7 +2199,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroXara32IntR()
+    public int measureXoshiroXara32IntR()
     {
         return XoshiroXara32R.nextInt();
     }
@@ -2187,7 +2214,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroAra32Int()
+    public int measureXoshiroAra32Int()
     {
         return XoshiroAra32.next(32);
     }
@@ -2198,7 +2225,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureXoshiroAra32IntR()
+    public int measureXoshiroAra32IntR()
     {
         return XoshiroAra32R.nextInt();
     }
@@ -2212,7 +2239,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureDervishInt()
+    public int measureDervishInt()
     {
         return Dervish.next(32);
     }
@@ -2223,7 +2250,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureDervishIntR()
+    public int measureDervishIntR()
     {
         return DervishR.nextInt();
     }
@@ -2238,7 +2265,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLinnormInt()
+    public int measureLinnormInt()
     {
         return Linnorm.next(32);
     }
@@ -2249,7 +2276,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureLinnormIntR()
+    public int measureLinnormIntR()
     {
         return LinnormR.nextInt();
     }
@@ -2263,7 +2290,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMizuchiInt()
+    public int measureMizuchiInt()
     {
         return Mizuchi.next(32);
     }
@@ -2274,7 +2301,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureMizuchiIntR()
+    public int measureMizuchiIntR()
     {
         return MizuchiR.nextInt();
     }
@@ -2288,7 +2315,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureQuixoticInt()
+    public int measureQuixoticInt()
     {
         return Quixotic.next(32);
     }
@@ -2299,7 +2326,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureQuixoticIntR()
+    public int measureQuixoticIntR()
     {
         return QuixoticR.nextInt();
     }
@@ -2323,7 +2350,7 @@ public class RNGBenchmark {
         doJet();
     }
 
-    public long doJetInt()
+    public int doJetInt()
     {
         JetRNG rng = new JetRNG(iseed);
 
@@ -2357,7 +2384,7 @@ public class RNGBenchmark {
         doJetR();
     }
 
-    public long doJetIntR()
+    public int doJetIntR()
     {
         RNG rng = new RNG(new JetRNG(iseed));
 
@@ -2391,7 +2418,7 @@ public class RNGBenchmark {
         doLunge32();
     }
 
-    public long doLunge32Int()
+    public int doLunge32Int()
     {
         Lunge32RNG rng = new Lunge32RNG(iseed);
 
@@ -2425,7 +2452,7 @@ public class RNGBenchmark {
         doLunge32R();
     }
 
-    public long doLunge32IntR()
+    public int doLunge32IntR()
     {
         RNG rng = new RNG(new Lunge32RNG(iseed));
 
@@ -2498,7 +2525,7 @@ public class RNGBenchmark {
 //        doVortex();
 //    }
 //
-//    public long doVortexInt()
+//    public int doVortexInt()
 //    {
 //        VortexRNG rng = new VortexRNG(iseed);
 //        for (int i = 0; i < 1000000007; i++) {
@@ -2530,7 +2557,7 @@ public class RNGBenchmark {
 //        doVortexR();
 //    }
 //
-//    public long doVortexIntR()
+//    public int doVortexIntR()
 //    {
 //        RNG rng = new RNG(new VortexRNG(iseed));
 //
@@ -2566,7 +2593,7 @@ public class RNGBenchmark {
 //        doSquirrel();
 //    }
 //
-//    public long doSquirrelInt()
+//    public int doSquirrelInt()
 //    {
 //        SquirrelRNG rng = new SquirrelRNG(iseed);
 //
@@ -2600,7 +2627,7 @@ public class RNGBenchmark {
 //        doSquirrelR();
 //    }
 //
-//    public long doSquirrelIntR()
+//    public int doSquirrelIntR()
 //    {
 //        RNG rng = new RNG(new SquirrelRNG(iseed));
 //
@@ -2635,7 +2662,7 @@ public class RNGBenchmark {
 //        doRule90();
 //    }
 //
-//    public long doRule90Int()
+//    public int doRule90Int()
 //    {
 //        Rule90RNG rng = new Rule90RNG(iseed);
 //
@@ -2669,7 +2696,7 @@ public class RNGBenchmark {
 //        doRule90R();
 //    }
 //
-//    public long doRule90IntR()
+//    public int doRule90IntR()
 //    {
 //        RNG rng = new RNG(new Rule90RNG(iseed));
 //
@@ -2705,7 +2732,7 @@ public class RNGBenchmark {
         doZap();
     }
 
-    public long doZapInt()
+    public int doZapInt()
     {
         ZapRNG rng = new ZapRNG(iseed);
 
@@ -2739,7 +2766,7 @@ public class RNGBenchmark {
         doZapR();
     }
 
-    public long doZapIntR()
+    public int doZapIntR()
     {
         RNG rng = new RNG(new ZapRNG(iseed));
 
@@ -2776,7 +2803,7 @@ public class RNGBenchmark {
         doSlap();
     }
 
-    public long doSlapInt()
+    public int doSlapInt()
     {
         SlapRNG rng = new SlapRNG(iseed);
 
@@ -2810,7 +2837,7 @@ public class RNGBenchmark {
         doSlapR();
     }
 
-    public long doSlapIntR()
+    public int doSlapIntR()
     {
         RNG rng = new RNG(new SlapRNG(iseed));
 
@@ -2854,7 +2881,7 @@ public class RNGBenchmark {
         doPlaceholder();
     }
 
-    public long doPlaceholderInt()
+    public int doPlaceholderInt()
     {
         PlaceholderRNG rng = new PlaceholderRNG(iseed);
 
@@ -2888,7 +2915,7 @@ public class RNGBenchmark {
         doPlaceholderR();
     }
 
-    public long doPlaceholderIntR()
+    public int doPlaceholderIntR()
     {
         RNG rng = new RNG(new PlaceholderRNG(iseed));
 
@@ -2914,7 +2941,7 @@ public class RNGBenchmark {
     }
 
     @Benchmark
-    public long measureJDKInt()
+    public int measureJDKInt()
     {
         return JDK.nextInt();
     }
