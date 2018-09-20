@@ -8,7 +8,7 @@ import sarong.util.StringKit;
  * tests, plus it's optimized for GWT (sometimes). It has a period of just under 2 to the 64, 0xFFF1F6F18B2A1330, which
  * is roughly 2 to the 63.999691, and allows 2 to the 32 initial seeds.
  * <br>
- * This seems to do well in PractRand testing, but this is not one of the exact generators Overton tested. "Chaotic"
+ * This seems to do well in PractRand testing (32 TB passed), but this is not a generator Overton tested. "Chaotic"
  * generators like this one tend to score well in PractRand, but it isn't clear if they will fail other tests (in
  * particular, they can't generate all possible long values, and also can't generate 0 or possibly some other ints). As
  * for desktop/server speed, this is faster than {@link Lathe32RNG} (which is also high-quality) and is also faster than
@@ -331,6 +331,7 @@ public final class Mover32RNG implements RandomnessSource {
 //        // rotation 09: 0xFF7E3277 // seems to be very composite
 //        // 0xCB7F
 //        // rotation 01: 0xFF7F28FE
+//        // this range of 4: {
 //        // 0x89A7
 //        // rotation 13: 0xFFFDBF50 // wow! note that this is a multiple of 16
 //        // 0xBCFD
@@ -339,7 +340,17 @@ public final class Mover32RNG implements RandomnessSource {
 //        // rotation 28: 0xFFEDA0B5
 //        // 0xC2B9
 //        // rotation 16: 0xFFEA9001
-//        
+//        // } are all relatively coprime, total period is
+//        // 0xFFCA2B600EECB96802194A31711490F0, or 2 to the 127.998814
+//        // 
+//        // const Uint32 p = a * 0x89A7;
+//        // const Uint32 q = b * 0xBCFD;
+//        // const Uint32 r = c * 0xA01B;
+//        // const Uint32 s = d * 0xC2B9;
+//        // a = rotate32(p, 13);
+//        // b = rotate32(q, 17);
+//        // c = rotate32(r, 28);
+//        // d = rotate32(s, 16);
 //        
 //        // adding
 //        // 0x9E3779B9

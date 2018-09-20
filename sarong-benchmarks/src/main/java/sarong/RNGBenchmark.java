@@ -1730,6 +1730,25 @@ public class RNGBenchmark {
         return Overdrive64R.nextInt();
     }
 
+    private Overdrive64RNG Overdrive2 = new Overdrive64RNG(0);
+    private Overdrive64RNG Overdrive3 = new Overdrive64RNG(0);
+    private Overdrive64RNG Overdrive4 = new Overdrive64RNG(0);
+
+    @Benchmark
+    public long measureOverdrive2()
+    {
+        return Overdrive2.nextLong2();
+    }
+    @Benchmark
+    public long measureOverdrive3()
+    {
+        return Overdrive3.nextLong3();
+    }
+    @Benchmark
+    public long measureOverdrive4()
+    {
+        return Overdrive4.nextLong4();
+    }
 
     //    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
 //    private RNG Thrust32R = new RNG(Thrust32);

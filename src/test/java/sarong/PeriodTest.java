@@ -230,7 +230,9 @@ public class PeriodTest {
     {
         BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFF43787L);
         result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFFEDA0B5L);
+        tmp = BigInteger.valueOf(0xFFEA9001L); //mul 0xFFEDA0B5L //add 0xFFF8A98DL
+        result = tmp.divide(result.gcd(tmp)).multiply(result);
+        tmp = BigInteger.valueOf(0xFFEDA0B5L); //add 0xFFF8A98DL
         result = tmp.divide(result.gcd(tmp)).multiply(result);
         System.out.printf("\n0x%s, %2.6f\n", result.toString(16).toUpperCase(), Math.log(result.doubleValue()) / Math.log(2));
 //        tmp = BigInteger.valueOf(0xFFABD755L);

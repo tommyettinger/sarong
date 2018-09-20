@@ -98,9 +98,31 @@ public final class Overdrive64RNG implements RandomnessSource {
     @Override
     public final long nextLong()
     {
+        //0x9E3779B97F4A7C15L
         final long a = stateA * 0x41C64E6BL;
         final long b = stateB * 0x9E3779B9L;
         return (stateA = (a << 26 | a >>> 38)) ^ (stateB = (b << 37 | b >>> 27));
+    }
+    public final long nextLong2()
+    {
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x9E3779B9L;
+        return (stateA = (a << 23 | a >>> 41)) ^ (stateB = (b << 42 | b >>> 22));
+    }
+
+    public final long nextLong3()
+    {
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x9E3779B9L;
+        return (stateA = (a << 26 | a >>> 38)) ^ (stateB = (b << 37 | b >>> 27));
+//        return (stateA = (a << 23 | a >>> 41)) ^ (stateB = (b << 42 | b >>> 22));
+    }
+
+    public final long nextLong4()
+    {
+        final long a = stateA * 0x41C64E6BL;
+        final long b = stateB * 0x7FFFFFFFL;
+        return (stateA = (a << 23 | a >>> 41)) ^ (stateB = (b << 42 | b >>> 22));
     }
 
     /**
