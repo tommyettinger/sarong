@@ -173,7 +173,7 @@ public final class Mover64RNG implements RandomnessSource {
      */
     public void setStateA(final long stateA)
     {
-        this.stateA = stateA;
+        this.stateA = stateA == 0L ? 1L : stateA;
     }
 
     /**
@@ -183,7 +183,7 @@ public final class Mover64RNG implements RandomnessSource {
      */
     public void setStateB(final long stateB)
     {
-        this.stateB = stateB;
+        this.stateB = stateB == 0L ? 1L : stateB;
     }
     
     @Override

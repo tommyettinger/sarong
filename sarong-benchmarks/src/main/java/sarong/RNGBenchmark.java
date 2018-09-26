@@ -359,7 +359,7 @@ public class RNGBenchmark {
         return XoRoR.nextInt();
     }
 
-    
+
     private Lathe64RNG Lathe64 = new Lathe64RNG(9999L);
     private RNG Lathe64R = new RNG(Lathe64);
     @Benchmark
@@ -583,413 +583,31 @@ public class RNGBenchmark {
         return LapR.nextInt();
     }
 
-//
-//    public long doHorde()
-//    {
-//        HordeRNG rng = new HordeRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHorde() throws InterruptedException {
-//        seed = 9000;
-//        doHorde();
-//    }
-//
-//    public int doHordeInt()
-//    {
-//        HordeRNG rng = new HordeRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHordeInt() throws InterruptedException {
-//        iseed = 9000;
-//        doHordeInt();
-//    }
-//
-//    public long doHordeR()
-//    {
-//        RNG rng = new RNG(new HordeRNG(seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHordeR() throws InterruptedException {
-//        seed = 9000;
-//        doHordeR();
-//    }
-//
-//    public int doHordeIntR()
-//    {
-//        RNG rng = new RNG(new HordeRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHordeIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doHordeIntR();
-//    }
-//    public long doHerd()
-//    {
-//        HerdRNG rng = new HerdRNG((int)seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHerd() throws InterruptedException {
-//        seed = 9000;
-//        doHerd();
-//    }
-//
-//    public int doHerdInt()
-//    {
-//        HerdRNG rng = new HerdRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHerdInt() throws InterruptedException {
-//        iseed = 9000;
-//        doHerdInt();
-//    }
-//
-//    public long doHerdR()
-//    {
-//        RNG rng = new RNG(new HerdRNG((int)seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHerdR() throws InterruptedException {
-//        seed = 9000;
-//        doHerdR();
-//    }
-//
-//    public int doHerdIntR()
-//    {
-//        RNG rng = new RNG(new HerdRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureHerdIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doHerdIntR();
-//    }
-//
-//    public long doBeard()
-//    {
-//        BeardRNG rng = new BeardRNG((int)seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBeard() throws InterruptedException {
-//        seed = 9000;
-//        doBeard();
-//    }
-//
-//    public int doBeardInt()
-//    {
-//        BeardRNG rng = new BeardRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBeardInt() throws InterruptedException {
-//        iseed = 9000;
-//        doBeardInt();
-//    }
-//
-//    public long doBeardR()
-//    {
-//        RNG rng = new RNG(new BeardRNG((int)seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBeardR() throws InterruptedException {
-//        seed = 9000;
-//        doBeardR();
-//    }
-//
-//    public int doBeardIntR()
-//    {
-//        RNG rng = new RNG(new BeardRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBeardIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doBeardIntR();
-//    }
-//
-//
-//    public long doBird()
-//    {
-//        BirdRNG rng = new BirdRNG((int)seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBird() throws InterruptedException {
-//        seed = 9000;
-//        doBird();
-//    }
-//
-//    public int doBirdInt()
-//    {
-//        BirdRNG rng = new BirdRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBirdInt() throws InterruptedException {
-//        iseed = 9000;
-//        doBirdInt();
-//    }
-//
-//    public long doBirdR()
-//    {
-//        RNG rng = new RNG(new BirdRNG((int)seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBirdR() throws InterruptedException {
-//        seed = 9000;
-//        doBirdR();
-//    }
-//
-//    public int doBirdIntR()
-//    {
-//        RNG rng = new RNG(new BirdRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBirdIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doBirdIntR();
-//    }
-//    public long doBard()
-//    {
-//        BardRNG rng = new BardRNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBard() throws InterruptedException {
-//        seed = 9000;
-//        doBard();
-//    }
-//
-//    public int doBardInt()
-//    {
-//        BardRNG rng = new BardRNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBardInt() throws InterruptedException {
-//        iseed = 9000;
-//        doBardInt();
-//    }
-//
-//    public long doBardR()
-//    {
-//        RNG rng = new RNG(new BardRNG(seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBardR() throws InterruptedException {
-//        seed = 9000;
-//        doBardR();
-//    }
-//
-//    public int doBardIntR()
-//    {
-//        RNG rng = new RNG(new BardRNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void measureBardIntR() throws InterruptedException {
-//        iseed = 9000;
-//        doBardIntR();
-//    }
-//
-//    public long doLight32()
-//    {
-//        Light32RNG rng = new Light32RNG(seed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void a_measureLight32() throws InterruptedException {
-//        seed = 9000;
-//        doLight32();
-//    }
-//
-//    public int doLight32Int()
-//    {
-//        Light32RNG rng = new Light32RNG(iseed);
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.next(32);
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void a_measureLight32Int() throws InterruptedException {
-//        iseed = 9000;
-//        doLight32Int();
-//    }
-//
-//    public long doLight32R()
-//    {
-//        RNG rng = new RNG(new Light32RNG(seed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            seed += rng.nextLong();
-//        }
-//        return seed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void a_measureLight32R() throws InterruptedException {
-//        seed = 9000;
-//        doLight32R();
-//    }
-//
-//    public int doLight32IntR()
-//    {
-//        RNG rng = new RNG(new Light32RNG(iseed));
-//
-//        for (int i = 0; i < 1000000007; i++) {
-//            iseed += rng.nextInt();
-//        }
-//        return iseed;
-//    }
-//
-//    @Benchmark
-//     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-//    public void a_measureLight32IntR() throws InterruptedException {
-//        iseed = 9000;
-//        doLight32IntR();
-//    }
+    private SeaSlater64RNG SeaSlater64 = new SeaSlater64RNG(9999L);
+    private RNG SeaSlater64R = new RNG(SeaSlater64);
+    @Benchmark
+    public long measureSeaSlater64()
+    {
+        return SeaSlater64.nextLong();
+    }
+
+    @Benchmark
+    public int measureSeaSlater64Int()
+    {
+        return SeaSlater64.next(32);
+    }
+    @Benchmark
+    public long measureSeaSlater64R()
+    {
+        return SeaSlater64R.nextLong();
+    }
+
+    @Benchmark
+    public int measureSeaSlater64IntR()
+    {
+        return SeaSlater64R.nextInt();
+    }
+
 
     private ThrustRNG Thrust = new ThrustRNG(9999L);
     private RNG ThrustR = new RNG(Thrust);
@@ -1653,6 +1271,26 @@ public class RNGBenchmark {
         return Mover32R.nextInt();
     }
 
+//    private Mover32RNG Mover32A = new Mover32RNG(0);
+//    @Benchmark
+//    public long measureMover32A()
+//    {
+//        return Mover32A.nextIntA();
+//    }
+//
+//    private Mover32RNG Mover32B = new Mover32RNG(0);
+//    @Benchmark
+//    public long measureMover32B()
+//    {
+//        return Mover32B.nextIntB();
+//    }
+//    private Mover32RNG Mover32C = new Mover32RNG(0);
+//    @Benchmark
+//    public long measureMover32C()
+//    {
+//        return Mover32C.nextIntC();
+//    }
+
     private Mover64RNG Mover64 = new Mover64RNG(0);
     private RNG Mover64R = new RNG(Mover64);
 
@@ -1730,25 +1368,31 @@ public class RNGBenchmark {
         return Overdrive64R.nextInt();
     }
 
-    private Overdrive64RNG Overdrive2 = new Overdrive64RNG(0);
-    private Overdrive64RNG Overdrive3 = new Overdrive64RNG(0);
-    private Overdrive64RNG Overdrive4 = new Overdrive64RNG(0);
-
-    @Benchmark
-    public long measureOverdrive2()
-    {
-        return Overdrive2.nextLong2();
-    }
-    @Benchmark
-    public long measureOverdrive3()
-    {
-        return Overdrive3.nextLong3();
-    }
-    @Benchmark
-    public long measureOverdrive4()
-    {
-        return Overdrive4.nextLong4();
-    }
+//    private Overdrive64RNG Overdrive1 = new Overdrive64RNG(0);
+//    private Overdrive64RNG Overdrive2 = new Overdrive64RNG(0);
+//    private Overdrive64RNG Overdrive3 = new Overdrive64RNG(0);
+//    private Overdrive64RNG Overdrive4 = new Overdrive64RNG(0);
+//
+//    @Benchmark
+//    public long measureOverdrive1()
+//    {
+//        return Overdrive1.nextLong1();
+//    }
+//    @Benchmark
+//    public long measureOverdrive2()
+//    {
+//        return Overdrive2.nextLong2();
+//    }
+//    @Benchmark
+//    public long measureOverdrive3()
+//    {
+//        return Overdrive3.nextLong3();
+//    }
+//    @Benchmark
+//    public long measureOverdrive4()
+//    {
+//        return Overdrive4.nextLong4();
+//    }
 
     //    private Thrust32RNG Thrust32 = new Thrust32RNG(9999);
 //    private RNG Thrust32R = new RNG(Thrust32);

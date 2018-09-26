@@ -176,21 +176,21 @@ public final class Mover32RNG implements RandomnessSource {
     /**
      * Sets the "A" part of the state to any int, which may put the generator in a low-period subcycle.
      * Use {@link #setState(int)} to guarantee a good subcycle.
-     * @param stateA any int
+     * @param stateA any int except 0, which this changes to 1
      */
     public void setStateA(final int stateA)
     {
-        this.stateA = stateA;
+        this.stateA = stateA == 0 ? 1 : stateA;
     }
 
     /**
      * Sets the "B" part of the state to any int, which may put the generator in a low-period subcycle.
      * Use {@link #setState(int)} to guarantee a good subcycle.
-     * @param stateB any int
+     * @param stateB any int except 0, which this changes to 1
      */
     public void setStateB(final int stateB)
     {
-        this.stateB = stateB;
+        this.stateB = stateB == 0 ? 1 : stateB;
     }
     
     @Override
@@ -213,6 +213,28 @@ public final class Mover32RNG implements RandomnessSource {
         return 31 * stateA + stateB | 0;
     }
 
+
+//    public final int nextIntA()
+//    {
+//        int y = stateA * 0x89A7;
+//        stateA = (y = (y << 13 | y >>> 19));
+//        final int x = stateB * 0xBCFD;
+//        return (y ^ (stateB = (x << 17 | x >>> 15)));
+//    }
+//    // valid, but needs different startingA and startingB
+//    public final int nextIntB()
+//    {
+//        int y = stateA;
+//        stateA = (y = (y << 13 | y >>> 19) * 0x89A7);
+//        final int x = stateB;
+//        return (y ^ (stateB = (x << 17 | x >>> 15) * 0xBCFD));
+//    }
+//    // valid, but needs different startingA and startingB
+//    public final int nextIntC()
+//    {
+//        return ((stateA = (stateA << 13 | stateA >>> 19) * 0x89A7)
+//                ^ (stateB = (stateB << 17 | stateB >>> 15) * 0xBCFD));
+//    }
 //    public static void main(String[] args)
 //    {
 //        // A 10 0xC010AEB4

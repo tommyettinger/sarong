@@ -10,20 +10,116 @@ import java.util.Random;
  */
 public class PeriodTest {
     @Test
-    public void checkPeriod() {
+    public void checkPeriod32(){
+        int stateA = 1, i = 0;
+        //final int r = 13, m = 0x89A7;
+        final int r = 17, m = 0xBCFD;
+        for (; i != -1; i++) {
+            if ((stateA = Integer.rotateLeft(stateA, r) * m) == 1) {
+                //if (i >>> 24 == 0xFF)
+                System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", m, r, i);
+                break;
+            }
+        }
+
+    }
+
+    @Test
+    public void checkPeriod64() {
         long i = 1L, state = 1L, m;
         OUTER:
         for (int outer = 0; outer < 0x10000; outer++) {
             for (int inner = 0x80000000; inner < 0; inner++) {
-                m = state * 8997361904524633241L; //0xCE8B0105AF585193L
-                if ((state -= (m << 35 | m >>> 29)) == 1L) {
+                //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                //m = state * 8997361904524633241L; //0xCE8B0105AF585193L
+                //state += state >>> 48;
+                if ((
+                        //state -= (m << 35 | m >>> 29)
+                        state = 0xC6BC279692B5CC8BL - (state << 45 | state >>> 19)
+                        //state += state << 16
+                ) == 1L) {
                     break OUTER;
                 }
                 i++;
             }
             System.out.printf("0x80000000L * %03d completed, state is 0x%016X\n", (outer+1), state);
         }
-        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
+//        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
+        System.out.printf("(state = 0xC6BC279692B5CC8BL - (state << 45 | state >>> 19)): 0x%08X\n", i);
+//        System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
+    }
+
+    @Test
+    public void checkPeriod64_cers() {
+        long i = 1L, state = 1L, m;
+        OUTER:
+        for (int outer = 0; outer < 0x10000; outer++) {
+            for (int inner = 0x80000000; inner < 0; inner++) {
+                //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                //m = state * 8997361904524633241L; //0xCE8B0105AF585193L
+                //state += state >>> 48;
+                if ((
+                        //state -= (m << 35 | m >>> 29)
+                        state = 0x5320B74ECA44ADADL - (state << 23 | state >>> 41)
+                        //state += state << 16
+                ) == 1L) {
+                    break OUTER;
+                }
+                i++;
+            }
+            System.out.printf("0x80000000L * %03d completed, state is 0x%016X\n", (outer+1), state);
+        }
+//        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
+        System.out.printf("(state = 0x5320B74ECA44ADADL - (state << 23 | state >>> 41)): 0x%08X\n", i);
+//        System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
+    }
+    @Test
+    public void checkPeriod64_iadla() {
+        long i = 1L, state = 1L, m;
+        OUTER:
+        for (int outer = 0; outer < 0x10000; outer++) {
+            for (int inner = 0x80000000; inner < 0; inner++) {
+                //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                //m = state * 8997361904524633241L; //0xCE8B0105AF585193L
+                state += state >>> 47;
+                if ((
+                        //state -= (m << 35 | m >>> 29)
+                        //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                        state += state << 16
+                ) == 1L) {
+                    break OUTER;
+                }
+                i++;
+            }
+            System.out.printf("0x80000000L * %03d completed, state is 0x%016X\n", (outer+1), state);
+        }
+//        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
+//        System.out.printf("(state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)): 0x%08X\n", i);
+        System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
+    }
+    @Test
+    public void checkPeriod64_cmr() {
+        long i = 1L, state = 1L, m;
+        OUTER:
+        for (int outer = 0; outer < 0x10000; outer++) {
+            for (int inner = 0x80000000; inner < 0; inner++) {
+                //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                //m = state * 8997361904524633241L; //0xCE8B0105AF585193L
+                state *= 0x41C64E6BL;
+                if ((
+                        //state -= (m << 35 | m >>> 29)
+                        //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
+                        state = (state << 28 | state >>> 36)
+                ) == 1L) {
+                    break OUTER;
+                }
+                i++;
+            }
+            System.out.printf("0x80000000L * %03d completed, state is 0x%016X\n", (outer+1), state);
+        }
+//        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
+//        System.out.printf("(state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)): 0x%08X\n", i);
+        System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
     }
     ///////// BEGIN subcycle finder code and period evaluator
     @Test
@@ -228,12 +324,13 @@ public class PeriodTest {
     @Test
     public void showCombined()
     {
-        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFF43787L);
+        // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
+        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFFD3B83L);
         result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFFEA9001L); //mul 0xFFEDA0B5L //add 0xFFF8A98DL
-        result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFFEDA0B5L); //add 0xFFF8A98DL
-        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        tmp = BigInteger.valueOf(0xFFFD3B83L); //mul 0xFFEDA0B5L //add 0xFFF8A98DL
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        tmp = BigInteger.valueOf(0xFFF60EDDL); //add 0xFFF8A98DL
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
         System.out.printf("\n0x%s, %2.6f\n", result.toString(16).toUpperCase(), Math.log(result.doubleValue()) / Math.log(2));
 //        tmp = BigInteger.valueOf(0xFFABD755L);
 //        result = tmp.divide(result.gcd(tmp)).multiply(result);
