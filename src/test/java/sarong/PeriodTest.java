@@ -35,7 +35,8 @@ public class PeriodTest {
                 //state += state >>> 48;
                 if ((
                         //state -= (m << 35 | m >>> 29)
-                        state = 0xC6BC279692B5CC8BL - (state << 45 | state >>> 19)
+//                        state = 0xC6BC279692B5CC8BL - (state << 45 | state >>> 19) // gets to 10438 iterations
+                        state =   0xC6BC279692B5CC8BL - (state << 35 | state >>> 29) // gets past all 65536 iterations
                         //state += state << 16
                 ) == 1L) {
                     break OUTER;
@@ -109,7 +110,7 @@ public class PeriodTest {
                 if ((
                         //state -= (m << 35 | m >>> 29)
                         //state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)
-                        state = (state << 28 | state >>> 36)
+                        state = (state << 28 | state >>> 36) // gets to at least 58320 iterations
                 ) == 1L) {
                     break OUTER;
                 }

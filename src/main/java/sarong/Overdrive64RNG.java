@@ -3,18 +3,23 @@ package sarong;
 import sarong.util.StringKit;
 
 /**
- * A slightly-faster variant on {@link Mover64RNG}; replaces one of Mover64RNG's two "CMR" generators with a "CERS"
+ * The fastest generator here that still passes statistical quality tests (and does so extremely well, to boot). This is
+ * a slightly-faster variant on {@link Mover64RNG}; it replaces one of Mover64RNG's two "CMR" generators with a "CERS"
  * generator, which doesn't require multiplication and may have a longer period than an arbitrary "CMR" generator. The
  * speed difference is very small (3.8 ns per long for Mover64, 3.7 ns for Overdrive64), and likely varies between
- * platforms and architectures, but the quality on Overdrive64RNG is actually rather good as well. It passes at least
- * 1TB of PractRand with no anomalies (tests are ongoing), and there's lots of room for modifications if issues are
- * found. The period on this is unknown, but at least 2 to the 40 at the bare minimum, and probably higher than 2 to the
- * 64 (by a substantial factor). An Overdrive64RNG has two states, each updated independently. One is a CMR generator,
- * which multiplies its state by a constant and then bitwise-rotates it by a fixed amount; this has a known period of
- * less than 2 to the 64 but more than 2 to the 41. The other is a CERS generator, which sets its state to a constant
- * minus a bitwise rotation of its previous state; this has a known period of less than 2 to the 64 but more than 2 to
- * the 42. It is unknown what the longest cycle's period is for either component generator, so it can't be known if the 
- * two generators' periods share common factors (reducing the total). They probably share at least some.
+ * platforms and architectures, but the quality on Overdrive64RNG is actually rather good as well. It passes all 32TB
+ * of PractRand with no anomalies (a rare feat). The period on this is unknown, but at least 2 to the 47 at the bare
+ * minimum, and probably higher than 2 to the 64 (by a substantial factor). An Overdrive64RNG has two states, each
+ * updated independently. One is a CMR generator, which multiplies its state by a constant and then bitwise-rotates it
+ * by a fixed amount; this has a known period of less than 2 to the 64 but more than 2 to the 46. The other is a CERS
+ * generator, which sets its state to a constant minus a bitwise rotation of its previous state; this has a known period
+ * of less than 2 to the 64 but more than 2 to the 47. CMR is considered to have very random output, while CERS is not
+ * considered to have especially random output, and coupling the two seems to yield a high-quality generator. It is 
+ * unknown what the longest cycle's period is for either component generator, so it can't be known if the two
+ * generators' periods share common factors (reducing the total). They probably share at least some. It is possible with
+ * some constructors and state-setting methods that you can cause one or both component generators to enter a low-period
+ * cycle; to avoid such cycles, you should use {@link #Overdrive64RNG()} or {@link #Overdrive64RNG(int)} to construct,
+ * or {@link #setState(int)} to set the state (although you can't retrieve it in the same format).
  * <br>
  * The CMR and CERS generators, among many other useful and efficient subcycle generators, were discovered and described
  * by Mark Overton, hence the name Overdrive here. See <a href="http://www.drdobbs.com/tools/229625477">this article</a>
@@ -65,22 +70,22 @@ public final class Overdrive64RNG implements RandomnessSource {
             0x68A0537869364FE2L, 0x32BA732DEC14AE42L, 0x3AAF6CDE0CE8DB48L, 0x552C1D9594CE212AL, 0x8BC1A33AE250B2E9L, 0xC02FCB678B465D00L, 0x496F580658AFD50AL, 0x6D0D982E45AD15A9L,
             0xC8E87307F336E8D0L, 0x257E726598418548L, 0xFADF2ED10B13D148L, 0x46FA6CC74F293535L, 0xF03227995C268856L, 0x46087E39622EA4CDL, 0x17EE09D3D2181207L, 0x9C7518A1E5AD4544L,
     }, startingB = {
-            0x0000000000000001L, 0x481693B00042FFE5L, 0x632C899FFF5DFFE5L, 0xF5B98965A06CFFE5L, 0x639A896599B1E0A6L, 0x639B895961B9E0A6L, 0x603889684F11E0A6L, 0xB1B3C1BF8B19E0A6L,
-            0x6E57E1BF8B45AEB3L, 0xAE54C1BAD171C34DL, 0xEE57A9C2DDF946DBL, 0x2E57D946DDF8E52DL, 0x6E57C5FAD59D7424L, 0xAE57CAFAD6CD2C64L, 0xEE2113FAD3A0FF60L, 0x054113E7B3A2524AL,
-            0xC4E113E7B4404A7AL, 0xC28113E7B456227AL, 0x48A113E7B527FABCL, 0x9AC113C1F396867AL, 0x9295D0A1F487B7EFL, 0xBBC1F0A2B9FEAEDDL, 0x80F04CFE429EC37FL, 0x021C4B3E3EFEC37EL,
-            0x4361E57BB99EC2E9L, 0x40667DC2CCB0BAE9L, 0x4066460B2FB712E9L, 0x40AE45EAE2C50AE9L, 0x3EF165332C0EA2E9L, 0x3B9F79133CB1A7E5L, 0xFD9D7CD24987D5D9L, 0x463612DFDB708738L,
-            0x465612DCD9407769L, 0x20F612DCEAE30F69L, 0x21827645F6E32769L, 0x23169DF822E31F69L, 0x214A55085C9E9769L, 0x214A46012479AF69L, 0x2149B55044780769L, 0x25352543E47AFF69L,
-            0x2E75EB0E2A8B63F5L, 0x20F1F6F02A8F6331L, 0x2221F75A20028E31L, 0x2121977E74F00D31L, 0xC6FB977B74E1D6A3L, 0x323377C4F7A7B041L, 0x569CD7C4F888C0BCL, 0x568D37C4FD6CC0BCL,
-            0x567E18B89240C0BCL, 0x727FAD189584C0BCL, 0xA67FACF3C218C0BCL, 0xA27FACF3C27CC0BCL, 0x767F897E7130C0BCL, 0x7A8489860634C078L, 0x7AEED8E86AB5D673L, 0xAEEEAAC25D2AA552L,
-            0xB28EF3CABC7BF552L, 0xDE8EF2887F2C6553L, 0xE28EF2C1D02C6573L, 0x6E8EF33DE12C6574L, 0x528EF4473A2C6570L, 0x7E8EF447332C6330L, 0x828EF33B6F2C616BL, 0x4E8EF033A32C37FAL,
-            0x91016C7BA33DB91FL, 0x38788703A492486CL, 0x6B031C2742FF8A60L, 0x69EF01274D606160L, 0x696701272D604860L, 0x5D3E99808D604A10L, 0x173E99806D60466BL, 0x0473017FCD60494EL,
-            0x32233235E111071DL, 0x2842B077C2C2EDA5L, 0x2890A47664CF8DA5L, 0x5C90D0830ACFAD97L, 0x7090D3A1ECCFAD8AL, 0xC490DDB492CFAD8AL, 0xBAD8DA31B4CFAD70L, 0xEED831A21B16F5C8L,
-            0xB439340A368F234DL, 0xB438B40A38872389L, 0xB5B24CD4EEF8779DL, 0x2D3F3BF3B5B27770L, 0xEE85B613AF3C76EEL, 0xC685B65AB179F96BL, 0x5E85B69D2195D5DEL, 0xB685CC578E044EABL,
-            0xCE85CC5EC652E246L, 0x7B4EF89AD9C384B4L, 0xE80F989AD9E74E07L, 0xE7FDB8A754E74E01L, 0x06ADB52103E74E08L, 0x969D49F06A81BE0DL, 0xA9FC2EEE27C0FE0DL, 0xAA0E60415ADDBE0DL,
-            0xD96744762A3CFE0DL, 0x665D444E2A489865L, 0x9B5D43E62A4F07EEL, 0x2EAEBA9E2A4797ABL, 0x049EBA562A20B4B4L, 0x5571D3FA823C10B2L, 0x5571A85DAE4ED074L, 0xF66BEC5B5C4ED089L,
-            0x966B7C233C8A4005L, 0x75C6F89FC1803461L, 0x35C5209FD330EC76L, 0x95C994C42E8E07FBL, 0x75C994C6E92E095EL, 0x55C925EFF64E0A25L, 0x05CED909FA44C825L, 0xB5CED0B20619CF17L,
-            0xE2B09F1A064A4EEFL, 0x4B709F2D4249A198L, 0x0AB09F2D42416671L, 0xC3709F2C30816663L, 0xA2B09F9FAD120ACFL, 0x8C00D5A3AD10EE56L, 0x8E688E47AD126CB6L, 0x8DA5CA13AD17F816L,
-            0x5296A7CFAD17DD0AL, 0x9297C7CBAD17E2F1L, 0xD297C7D628821414L, 0x1297B799A9704862L, 0xCF475DFBDC65C9A1L, 0xFC4E7831DC418B21L, 0xFB1D3672E46018FDL, 0x3F0D0E42E4601661L,
+            0x0000000000000001L, 0xE400A8A8DFFCDBB8L, 0xD48F52BDA014F338L, 0x1B348EF2FB81A072L, 0x52953C3D77622AFCL, 0x22CEA1428F6FAAAAL, 0x11C4D45E3F37ACCDL, 0x709F5A366A542F61L,
+            0xD093E219F7E32762L, 0xC2986214F61E4935L, 0x9841F301821A420DL, 0x8BC8F2F2B2D421DAL, 0x8819E1ED2169B636L, 0x019D281DB10747F3L, 0x018E1EA12FD10EFFL, 0xB5EDD9A1AF9852C8L,
+            0x606393B52FB4FE4BL, 0xDD1AC582299E7B24L, 0xD6AAB23FC69E967AL, 0x594E61948FAB7E27L, 0x474EF8B0F7AB6E45L, 0x494D82A15FB1A8F5L, 0xFE4DC58A2A26636DL, 0x1CE41B69F88A436CL,
+            0x1CDBAD85DF9D8DC8L, 0x268187ADA0F9843EL, 0xA6A9FD24B5F20971L, 0x43BD3DE92518DE85L, 0x08693D533C9E0253L, 0x39294885073F9B25L, 0x34694C33DC7B5E4DL, 0x2A9B79A87C7058FFL,
+            0x8C8D0152100D5921L, 0xF19FAB4D1E387EE0L, 0xDBC2D53FDEC850E2L, 0x5BCA216BC9B1C99AL, 0xC409048CF9E1CC8BL, 0x025105B820B1CDBFL, 0xE0C57B5A27453EF5L, 0xE0E91F20508585E9L,
+            0x928C7D3A4FD7C7A7L, 0xA562A6BDF1015D80L, 0x016294BA8883E09AL, 0xBFAB35783CC3DA97L, 0xBA4305AEBE03D91BL, 0xC6E306B12006310CL, 0x2F8305B416C912CEL, 0x1EC26EB303D9BDF2L,
+            0x2EBF2DB4B3DAE292L, 0xDA532E18FA229293L, 0x053F869333A352B7L, 0x653FD7FF33D3171EL, 0x85A9E9FFDD180311L, 0xCB43C7B03489D26CL, 0x9F10A148350AD2CFL, 0xA71FF57039ABD697L,
+            0x62A6809DC83FEE89L, 0x3BFE4C425850BA89L, 0x62D2B0C0AC1424A6L, 0x720F1FF7AD159B39L, 0x620FC06702156F39L, 0x69175E436E54D339L, 0x6A535CF4A6645739L, 0x272DAE2591C17FEFL,
+            0xB5E32375F56F1FF7L, 0x15B3265CD7A0EE6EL, 0x426D4A9BADB7BC05L, 0xCF169B92AD877067L, 0xB212C6FE7575A4EDL, 0xCE42C49D2D7C7AEEL, 0x8492C339B59939DFL, 0x04DA5E053365C9B3L,
+            0x6D2241057E3E7383L, 0x00C1286E2E3B37EFL, 0x00CB78687D54DF4BL, 0xFF29D9EAB6771277L, 0xF4B489E676CF73DFL, 0x1FC3C899124F900EL, 0x42A30B587EDD30D3L, 0xA6CC47B8042A6DF5L,
+            0x6230D76E4D065860L, 0x1B6C922EA7A2583AL, 0xFFD35FAA261D09F9L, 0xD608602F4DC9A277L, 0x140C2A804A58DE38L, 0xB5EC5505D402DE8AL, 0x15B309B8FFAA896FL, 0x9A87391F605087B3L,
+            0xA9CBB441389237B4L, 0x484BDC4B4E9CA56AL, 0xFE31344AA267873CL, 0x14F8333096E7A879L, 0x09F7505F5A67C77FL, 0x4CF79EE399E5073FL, 0x611EC9D57F153234L, 0xFC37D35F7CEC1FA1L,
+            0xF54EBD813E05D901L, 0xA97E15B924E7500DL, 0x1581AA01C467A6AEL, 0xBDADD62D68E7A1C8L, 0x45AF8A8FAAC02002L, 0x5A517A8AAAC6A6ACL, 0x4E710A9437BA1F46L, 0x5541D562BF1294D9L,
+            0x269D548125D1B97AL, 0xD056D48B6F668605L, 0x45E64E1AA85D7B43L, 0x354FD09228C67B24L, 0x5E8FC612828FB3BAL, 0x69CFCB52C50BC09AL, 0xBA2DD0CD530A2A8FL, 0x0854F25414696819L,
+            0x9F4578D0D43735CCL, 0x5F5FE60CFA3EE2F4L, 0x0B4BE5B17A413AF7L, 0x5B3FE34D820740A7L, 0x8D977D1830B404A6L, 0xD1FCA3BAD54E3953L, 0x0F69F02CE2902FA4L, 0x0849A89D71201C15L,
+            0x44F39E5C979007F3L, 0x7E8D24FF09FE44F3L, 0x4160C07D0F111A35L, 0x76718DD168041ACFL, 0xAF5D3F916FE3CC23L, 0x24B3DDF4EFBF834AL, 0x5E1689A56F9F58D0L, 0x3251CFCB89D7BF0AL,
     };
     
     public final void setState(final int s) {
@@ -93,7 +98,7 @@ public final class Overdrive64RNG implements RandomnessSource {
         for (int i = s >>> 16 & 0x1FF; i > 0; i--) {
 //            stateB *= 0x9E3779B9L;
 //            stateB = (stateB << 37 | stateB >>> 27);
-            stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19);
+            stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29);
         }
     }
 
@@ -103,7 +108,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 //        final long b = stateB * 0x9E3779B9L;
 //        return (int)((stateA = (a << 26 | a >>> 38)) + (stateB = (b << 37 | b >>> 27)));
         final long a = stateA * 0x41C64E6BL;
-        return (int)((stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19)) ^ (stateA = (a << 28 | a >>> 36)));
+        return (int)((stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29)) ^ (stateA = (a << 28 | a >>> 36)));
     }
     @Override
     public final int next(final int bits)
@@ -112,7 +117,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 //        final long b = stateB * 0x9E3779B9L;
 //        return (int)((stateA = (a << 26 | a >>> 38)) + (stateB = (b << 37 | b >>> 27))) >>> (32 - bits);
         final long a = stateA * 0x41C64E6BL;
-        return (int)((stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19)) ^ (stateA = (a << 28 | a >>> 36))) >>> (32 - bits);
+        return (int)((stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29)) ^ (stateA = (a << 28 | a >>> 36))) >>> (32 - bits);
     }
     @Override
     public final long nextLong()
@@ -122,7 +127,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 //        final long b = stateB * 0x9E3779B9L;
 //        return (stateA = (a << 26 | a >>> 38)) ^ (stateB = (b << 37 | b >>> 27));
         final long a = stateA * 0x41C64E6BL;
-        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19)) ^ (stateA = (a << 28 | a >>> 36));
+        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29)) ^ (stateA = (a << 28 | a >>> 36));
     }
 
 //    public final long nextLong1()
@@ -136,7 +141,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 //    {
 ////        return (stateA = (stateA << 26 | stateA >>> 38) * 0x41C64E6BL)
 ////                ^ (stateB = (stateB << 37 | stateB >>> 27) * 0x9E3779B9L);
-////        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19))
+////        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29))
 ////                ^ (stateA = (stateA << 28 | stateA >>> 36) * 0x41C64E6BL);
 //        final long a = stateA * 0x41C64E6BL;
 //        final long b = stateB;
@@ -153,7 +158,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 ////        return (stateA = (a << 43 | a >>> 21) - a)
 ////                ^ (stateB = 0xC6BC279692B5CC8BL - (b << 45 | b >>> 19));
 //        final long a = stateA * 0x41C64E6BL;
-//        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19)) ^ (stateA = (a << 28 | a >>> 36));
+//        return (stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29)) ^ (stateA = (a << 28 | a >>> 36));
 //
 //        //return stateA ^ stateB;
 //
@@ -505,8 +510,8 @@ public final class Overdrive64RNG implements RandomnessSource {
 //
 //    }
 ///////// END subcycle finder code and period evaluator
-    
-    
+
+
 //    public static void main(String[] args)
 //    {
 //        long stateA = 1, stateB = 1;
@@ -529,7 +534,7 @@ public final class Overdrive64RNG implements RandomnessSource {
 ////                stateB += 0x9E3779B97F4A7C15L;
 ////                stateB *= 0x9E3779B9L;
 ////                stateB = (stateB << 37 | stateB >>> 27);
-//                stateB = 0xC6BC279692B5CC8BL - (stateB << 45 | stateB >>> 19);
+//                stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29);
 //            }
 //        }
 //        System.out.println("};");
