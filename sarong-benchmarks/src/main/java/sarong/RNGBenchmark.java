@@ -746,48 +746,47 @@ public class RNGBenchmark {
 */
 
 
-    @Benchmark
-    public long measureAltThrustDetermine() {
-        return ThrustAltRNG.determine(state++);
-    }
-
-    @Benchmark
-    public long measureLightDetermine() {
-        return LightRNG.determine(state++);
-    }
-
-    @Benchmark
-    public long measureDervishDetermine() {
-        return DervishRNG.determine(state++);
-    }
-
-    @Benchmark
-    public long measureLinnormDetermine() {
-        return LinnormRNG.determine(state++);
-    }
-
-    //@Benchmark
-    public long measureVortexDetermine() {
-        return VortexRNG.determine(state++);
-    }
-
-    //@Benchmark
-    public long measureVortexDetermineBare() {
-        return VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L);
-    }
-
-    @Benchmark
-    public long measureAltThrustRandomize() {
-        return ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L);
-    }
-    
-    @Benchmark
-    public long measureLinnormRandomize() { return LinnormRNG.randomize(state += 0x632BE59BD9B4E019L); }
+//    @Benchmark
+//    public long measureAltThrustDetermine() {
+//        return ThrustAltRNG.determine(state++);
+//    }
+//
+//    @Benchmark
+//    public long measureLightDetermine() {
+//        return LightRNG.determine(state++);
+//    }
+//
+//    @Benchmark
+//    public long measureDervishDetermine() {
+//        return DervishRNG.determine(state++);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormDetermine() {
+//        return LinnormRNG.determine(state++);
+//    }
+//
+//    //@Benchmark
+//    public long measureVortexDetermine() {
+//        return VortexRNG.determine(state++);
+//    }
+//
+//    //@Benchmark
+//    public long measureVortexDetermineBare() {
+//        return VortexRNG.determineBare(state += 0x6C8E9CF570932BD5L);
+//    }
+//
+//    @Benchmark
+//    public long measureAltThrustRandomize() {
+//        return ThrustAltRNG.randomize(state += 0x6C8E9CF570932BD5L);
+//    }
+//    
+//    @Benchmark
+//    public long measureLinnormRandomize() { return LinnormRNG.randomize(state += 0x632BE59BD9B4E019L); }
 
     private ThrustAltRNG ThrustAlt = new ThrustAltRNG(9999L);
     private RNG ThrustAltR = new RNG(ThrustAlt);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureThrustAlt()
     {
         return ThrustAlt.nextLong();
@@ -809,20 +808,20 @@ public class RNGBenchmark {
     {
         return ThrustAltR.nextInt();
     }
-    @Benchmark
-    public long measureInlineThrustAlt()
-    {
-        final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
-        return z ^ (z >>> 22);
-    }
-    @Benchmark
-    public long measureInlineThrustAltOther()
-    {
-        long z = (state += 0x6C8E9CF570932BD5L);
-        z = (z ^ (z >>> 25)) * (z | 0xA529L);
-        return z ^ (z >>> 22);
-    }
+//    @Benchmark
+//    public long measureThrustAltInline()
+//    {
+//        final long s = (state += 0x6C8E9CF570932BD5L);
+//        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
+//        return z ^ (z >>> 22);
+//    }
+//    @Benchmark
+//    public long measureInlineThrustAltOther()
+//    {
+//        long z = (state += 0x6C8E9CF570932BD5L);
+//        z = (z ^ (z >>> 25)) * (z | 0xA529L);
+//        return z ^ (z >>> 22);
+//    }
 
     private Jab63RNG Jab63 = new Jab63RNG(9999L);
     private RNG Jab63R = new RNG(Jab63);
@@ -1366,6 +1365,31 @@ public class RNGBenchmark {
     public int measureOverdrive64IntR()
     {
         return Overdrive64R.nextInt();
+    }
+    
+    private DirkRNG Dirk = new DirkRNG(9999L);
+    private RNG DirkR = new RNG(Dirk);
+    @Benchmark
+    public long measureDirk()
+    {
+        return Dirk.nextLong();
+    }
+
+    @Benchmark
+    public int measureDirkInt()
+    {
+        return Dirk.next(32);
+    }
+    @Benchmark
+    public long measureDirkR()
+    {
+        return DirkR.nextLong();
+    }
+
+    @Benchmark
+    public int measureDirkIntR()
+    {
+        return DirkR.nextInt();
     }
 
 //    private Overdrive64RNG Overdrive1 = new Overdrive64RNG(0);

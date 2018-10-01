@@ -11,7 +11,7 @@ import sarong.util.StringKit;
  * of PractRand with no anomalies (a rare feat). The period on this is unknown, but at least 2 to the 47 at the bare
  * minimum, and probably higher than 2 to the 64 (by a substantial factor). An Overdrive64RNG has two states, each
  * updated independently. One is a CMR generator, which multiplies its state by a constant and then bitwise-rotates it
- * by a fixed amount; this has a known period of less than 2 to the 64 but more than 2 to the 46. The other is a CERS
+ * by a fixed amount; this has a known period of less than 2 to the 64 but more than 2 to the 47. The other is a CERS
  * generator, which sets its state to a constant minus a bitwise rotation of its previous state; this has a known period
  * of less than 2 to the 64 but more than 2 to the 47. CMR is considered to have very random output, while CERS is not
  * considered to have especially random output, and coupling the two seems to yield a high-quality generator. It is 
@@ -128,6 +128,11 @@ public final class Overdrive64RNG implements RandomnessSource {
 //        return (stateA = (a << 26 | a >>> 38)) ^ (stateB = (b << 37 | b >>> 27));
         final long a = stateA * 0x41C64E6BL;
         return (stateB = 0xC6BC279692B5CC8BL - (stateB << 35 | stateB >>> 29)) ^ (stateA = (a << 28 | a >>> 36));
+//        final long a = stateA * 0x41C64E6BL;
+//        final long b = stateB;
+//        stateA = (a << 28 | a >>> 36);
+//        stateB = 0xC6BC279692B5CC8BL - (b << 35 | b >>> 29);
+//        return a ^ b;
     }
 
 //    public final long nextLong1()

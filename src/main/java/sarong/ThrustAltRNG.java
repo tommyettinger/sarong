@@ -5,38 +5,44 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A variant on {@link ThrustRNG} that gives up a small amount of speed to attain better quality. ThrustAltRNG is
- * expected to pass BigCrush, which is a difficult statistical quality test that is part of TestU01, because it does so
- * well on other statistical tests. On <a href="http://gjrand.sourceforge.net/">gjrand</a>'s "testunif" checks, this
- * does very well on 100GB of tested data, with the "Overall summary one sided P-value P = 0.981", where 1 is perfect
- * and 0.1 or less is a failure. On <a href="http://pracrand.sourceforge.net/">PractRand</a>, this runs past 32TB of
- * generated numbers without finding any failures, and this version avoids issues with Gap-16 tests that cause ThrustRNG
- * to fail at 32GB and can cause slight variations on the code here to fail at 256GB. Like ThrustRNG and LightRNG, this
- * changes its state with a steady fixed increment, and does cipher-like adjustments to the current state to randomize
- * it. The period on ThrustAltRNG is 2 to the 64. ThrustAltRNG is a bit slower than ThrustRNG (but seems to have better
- * quality), while it is faster than LightRNG, XoRoRNG, and most other very-high-quality generators (not counting
- * ThrustRNG). Similarly to other cipher-like PRNGs, ThrustAltRNG has a {@link #determine(long)} method that takes a
- * state as a long and returns a deterministic random number (each input has one output). Unlike some generators (like
- * PermutedRNG), changing the seed even slightly generally produces completely different results, which applies
- * primarily to determine() but also the first number generated in a series of nextLong() calls.
+ * A variant on {@link ThrustRNG} that gives up a small amount of speed to attain better quality. ThrustAltRNG passes
+ * BigCrush, which is a difficult statistical quality test that is part of TestU01, passes all 32TB of PractRand tests,
+ * and does very well on <a href="http://gjrand.sourceforge.net/">gjrand</a>'s "testunif" checks (with 100GB of tested
+ * data, it gets "Overall summary one sided P-value P = 0.981", where 1 is perfect and 0.1 or less is a failure).
+ * It doesn't have the flaws that ThrustRNG has (ThrustRNG fails PractRand at 32GB or less with Gap-16 issues), nor does
+ * it have the problems {@link XorRNG} or {@link XoRoRNG} have with binary rank tests (although, later variants on
+ * XoRoRNG's xoroshiro algorithm here don't have the same binary rank issues). Like ThrustRNG and {@link LightRNG}, this
+ * changes its state with a steady fixed increment, adjusts the current state to randomize it. Unlike ThrustRNG and
+ * LightRNG, the adjustment used here is irreversible, so more than one state may return the same output. The period on
+ * ThrustAltRNG is 2 to the 64. Because there are 2 to the 64 possible states and, for {@link #nextLong()}, 2 to the 64
+ * possible outputs, but multiple states may produce the same output, this means some outputs are not possible for this
+ * to produce, and others will be produced more often. ThrustAltRNG is a bit slower than ThrustRNG, but since ThrustRNG
+ * has such poor quality, it usually shouldn't be considered. When ThrustAltRNG is compared to any other generator in
+ * this library that passes PractRand, ThrustAltRNG is faster; second-place at the moment goes to {@link Overdrive64RNG}
+ * (which also probably has a longer period, but lacks some features like {@link #skip(long)} and {@link #getState()}).
+ * Like other hash-type PRNGs here, ThrustAltRNG has a {@link #determine(long)} method that takes a state as a long and
+ * returns a deterministic random number (each input has one output). Unlike some generators (mostly ones that don't use
+ * hash-type adjustments to a state, such as XoRoRNG), changing the seed even slightly generally produces completely
+ * different results, which applies primarily to determine() but also the first number generated in a series of
+ * {@link #nextLong()} calls.
  * <br>
- * As an aside, this generator has probably been adjusted more by me than any other generator in the library, and if
- * quality is only somewhat more important than speed, this should be ideal, though it isn't the fastest and doesn't
- * have the highest quality. For some purposes, ThrustRNG will be better because it is faster. For others, XoRoRNG or
- * IsaacRNG may be better because they may have more-provably-good quality. Note than XoRoRNG fails binary rank tests,
- * which may be important for some usage, while LightRNG and ThrustAltRNG don't. ThrustAltRNG actually does better than
- * LightRNG on gjrand's tests despite LightRNG using significantly more operations (LightRNG has "P = 0.305" on gjrand
- * with 100GB tested and fails 2 of 13 tests with grade 1 failures, while ThrustAltRNG fails none). IsaacRNG is also
- * substantially slower than most other generators, though it offers better promise of security.
+ * If you're choosing a generator based on speed and don't want to accept severe quality issues, then ThrustAltRNG is
+ * one of your best options, along with {@link Overdrive64RNG}. If you need it to be possible to produce all long
+ * values, then {@link LightRNG} implements the same interfaces, and {@link LinnormRNG} is faster than LightRNG but
+ * isn't a SkippingRandomness. {@link TangleRNG} is similar in structure to this generator, but has two states with
+ * non-coprime periods, allowing 2 to the 63 possible versions of the generator to be produced, each with a different
+ * sequence and a different set of numbers it can and can't produce. {@link OrbitRNG} is a little slower than TangleRNG,
+ * but it updates its states at a slightly different rate, and with some other tweaks this allows it to produce all
+ * possible longs over a period of 2 to the 128.
  * <br>
  * This generator has changed since its introduction; the initial version used both the current and subsequent states
  * during each calculation, while this version only uses the current state (which it updates as it reads it). This makes
  * the {@link #skip(long)} method much simpler and (because it requires less operations in general) probably faster as
  * well, while it seems to have no performance impact on the normal {@link #nextLong()} and {@link #next(int)} methods.
  * Quality is very high, actually better than the first version according to gjrand (the earlier one had a P-value of
- * 0.904, while this has 0.981), but this goes even further on PractRand tests than the previous one (passing 8TB after
- * over a day of testing), while the earlier version was showing signs of imminent failure around 2TB. This generator
- * is closely related to {@link Jab63RNG}, and findings for that generator proved applicable during development.
+ * 0.904, while this has 0.981), but this goes even further on PractRand tests than the previous one (passing the full
+ * 32TB), while the earlier version was showing signs of imminent failure around 2TB. This generator is closely related
+ * to {@link Jab63RNG}, and findings for that generator proved applicable during development.
  * <br>
  * Created by Tommy Ettinger on 10/18/2017.
  */
