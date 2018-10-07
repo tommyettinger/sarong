@@ -38,7 +38,6 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -97,6 +96,43 @@ import java.util.concurrent.TimeUnit;
  * PI). See <a href="https://www.desmos.com/calculator/g0ebg0fjmr">this graph, using the Desmos graphing calculator</a>
  * for a comparison of how closely the approximation matches; Math.sin() is in green and the approximation is in black.
  * The green and black lines should almost overlap except at extremely high zoom levels.
+ * <br>
+ * Shuffling distinct int sequences:
+ * <br>
+ * <pre>
+ * Benchmark                                  Mode  Cnt   Score   Error  Units
+ * UncommonBenchmark.measureSIS_1024_Bound    avgt    5  11.627 ± 0.046  ns/op
+ * UncommonBenchmark.measureSIS_1025_Bound    avgt    5  33.014 ± 0.393  ns/op
+ * UncommonBenchmark.measureSIS_16_Bound      avgt    5  12.873 ± 0.050  ns/op
+ * UncommonBenchmark.measureSIS_17_Bound      avgt    5  45.768 ± 0.201  ns/op
+ * UncommonBenchmark.measureSIS_256_Bound     avgt    5  11.300 ± 0.135  ns/op
+ * UncommonBenchmark.measureSIS_257_Bound     avgt    5  37.772 ± 0.186  ns/op
+ * UncommonBenchmark.measureSNSIS_1024_Bound  avgt    5  25.618 ± 0.417  ns/op
+ * UncommonBenchmark.measureSNSIS_1025_Bound  avgt    5  25.309 ± 0.134  ns/op
+ * UncommonBenchmark.measureSNSIS_16_Bound    avgt    5  26.337 ± 0.182  ns/op
+ * UncommonBenchmark.measureSNSIS_17_Bound    avgt    5  26.449 ± 0.483  ns/op
+ * UncommonBenchmark.measureSNSIS_256_Bound   avgt    5  25.116 ± 0.209  ns/op
+ * UncommonBenchmark.measureSNSIS_257_Bound   avgt    5  25.417 ± 0.131  ns/op
+ * </pre>
+ * This is with 2 rounds for SIS (ShuffledIntSequence) and 7 rounds for SNSIS (SNShuffledIntSequence).
+ * If you instead use 3 rounds for SNSIS, you get the following:
+ * <pre>
+ * Benchmark                                  Mode  Cnt   Score   Error  Units
+ * UncommonBenchmark.measureSIS_1024_Bound    avgt    5  11.575 ± 0.259  ns/op
+ * UncommonBenchmark.measureSIS_1025_Bound    avgt    5  33.425 ± 0.694  ns/op
+ * UncommonBenchmark.measureSIS_16_Bound      avgt    5  12.753 ± 0.064  ns/op
+ * UncommonBenchmark.measureSIS_17_Bound      avgt    5  45.023 ± 0.786  ns/op
+ * UncommonBenchmark.measureSIS_256_Bound     avgt    5  11.366 ± 0.465  ns/op
+ * UncommonBenchmark.measureSIS_257_Bound     avgt    5  36.702 ± 0.158  ns/op
+ * UncommonBenchmark.measureSNSIS_1024_Bound  avgt    5  11.664 ± 0.061  ns/op
+ * UncommonBenchmark.measureSNSIS_1025_Bound  avgt    5  11.631 ± 0.291  ns/op
+ * UncommonBenchmark.measureSNSIS_16_Bound    avgt    5  12.442 ± 0.551  ns/op
+ * UncommonBenchmark.measureSNSIS_17_Bound    avgt    5  12.373 ± 0.250  ns/op
+ * UncommonBenchmark.measureSNSIS_256_Bound   avgt    5  12.010 ± 0.170  ns/op
+ * UncommonBenchmark.measureSNSIS_257_Bound   avgt    5  11.999 ± 0.031  ns/op
+ * </pre>
+ * But, the rounds for SNSIS are very simple, so it needs more to be suitably random.
+ * It seems like 3 rounds is enough for very small bounds, but even at a bound of 30 it's not even close to enough.
  */
 
 @State(Scope.Thread)
@@ -116,56 +152,6 @@ public class UncommonBenchmark {
         }
     }
 
-    private LongPeriodRNG LongPeriod = new LongPeriodRNG(9999L);
-    private RNG LongPeriodR = new RNG(LongPeriod);
-    @Benchmark
-    public long measureLongPeriod()
-    {
-        return LongPeriod.nextLong();
-    }
-
-    @Benchmark
-    public long measureLongPeriodInt()
-    {
-        return LongPeriod.next(32);
-    }
-    @Benchmark
-    public long measureLongPeriodR()
-    {
-        return LongPeriodR.nextLong();
-    }
-
-    @Benchmark
-    public long measureLongPeriodIntR()
-    {
-        return LongPeriodR.nextInt();
-    }
-
-//    private LightRNG Light = new LightRNG(9999L);
-//    private RNG LightR = new RNG(Light);
-//    @Benchmark
-//    public long measureLight()
-//    {
-//        return Light.nextLong();
-//    }
-//
-//    @Benchmark
-//    public long measureLightInt()
-//    {
-//        return Light.next(32);
-//    }
-//    @Benchmark
-//    public long measureLightR()
-//    {
-//        return LightR.nextLong();
-//    }
-//
-//    @Benchmark
-//    public long measureLightIntR()
-//    {
-//        return LightR.nextInt();
-//    }
-//
 
     public static double determineB(final int base, final int index) {
         if (base <= 2) {
@@ -223,137 +209,7 @@ public class UncommonBenchmark {
     {
         return determineB(0xDE4D, VDC0xDE4D_B++);
     }
-
-    private IsaacRNG Isaac = new IsaacRNG(9999L);
-    private RNG IsaacR = new RNG(Isaac);
-    @Benchmark
-    public long measureIsaac()
-    {
-        return Isaac.nextLong();
-    }
-
-    @Benchmark
-    public long measureIsaacInt()
-    {
-        return Isaac.next(32);
-    }
-    @Benchmark
-    public long measureIsaacR()
-    {
-        return IsaacR.nextLong();
-    }
-
-    @Benchmark
-    public long measureIsaacIntR()
-    {
-        return IsaacR.nextInt();
-    }
-
-
-
-
-
-
-
-    private Isaac32RNG Isaac32 = new Isaac32RNG(9999L);
-    private RNG Isaac32R = new RNG(Isaac32);
-    @Benchmark
-    public long measureIsaac32()
-    {
-        return Isaac32.nextLong();
-    }
-
-    @Benchmark
-    public long measureIsaac32Int()
-    {
-        return Isaac32.next(32);
-    }
-    @Benchmark
-    public long measureIsaac32R()
-    {
-        return Isaac32R.nextLong();
-    }
-
-    @Benchmark
-    public long measureIsaac32IntR()
-    {
-        return Isaac32R.nextInt();
-    }
     
-    
-    
-    
-    
-/*
-    public long doPlaceholder()
-    {
-        PlaceholderRNG rng = new PlaceholderRNG(seed);
-
-        for (int i = 0; i < 1000000000; i++) {
-            seed += rng.nextLong();
-        }
-        return seed;
-    }
-
-    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measurePlaceholder() throws InterruptedException {
-        seed = 9000;
-        doPlaceholder();
-    }
-
-    public long doPlaceholderInt()
-    {
-        PlaceholderRNG rng = new PlaceholderRNG(iseed);
-
-        for (int i = 0; i < 1000000000; i++) {
-            iseed += rng.next(32);
-        }
-        return iseed;
-    }
-
-    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measurePlaceholderInt() throws InterruptedException {
-        iseed = 9000;
-        doPlaceholderInt();
-    }
-
-    public long doPlaceholderR()
-    {
-        RNG rng = new RNG(new PlaceholderRNG(seed));
-
-        for (int i = 0; i < 1000000000; i++) {
-            seed += rng.nextLong();
-        }
-        return seed;
-    }
-
-    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measurePlaceholderR() throws InterruptedException {
-        seed = 9000;
-        doPlaceholderR();
-    }
-
-    public long doPlaceholderIntR()
-    {
-        RNG rng = new RNG(new PlaceholderRNG(iseed));
-
-        for (int i = 0; i < 1000000000; i++) {
-            iseed += rng.nextInt();
-        }
-        return iseed;
-    }
-
-    @Benchmark @BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
-    public void aa_measurePlaceholderIntR() throws InterruptedException {
-        iseed = 9000;
-        doPlaceholderIntR();
-    }
-*/
-
 
     private LFSR lfsr = new LFSR(9999L);
     private RNG LFSRR = new RNG(lfsr);
@@ -451,122 +307,174 @@ public class UncommonBenchmark {
         return NLFSR25R.nextInt();
     }
 
-
-
-    private Random JDK = new Random(9999L);
-    @Benchmark
-    public long measureJDK()
-    {
-        return JDK.nextLong();
-    }
-
-    @Benchmark
-    public long measureJDKInt()
-    {
-        return JDK.nextInt();
-    }
-
-    private final Jab63RNG jab = new Jab63RNG(9999L);
-
-    private final LinnormRNG Linnorm1 = new LinnormRNG(9999L);
-    @Benchmark
-    public long measureLinnormRangedLong65537()
-    {
-        return Linnorm1.nextLongOld(65537L);
-    }
+    private final ShuffledIntSequence
+            sis17 = new ShuffledIntSequence(17, 31337),
+            sis257 = new ShuffledIntSequence(257, 31337),
+            sis1025 = new ShuffledIntSequence(1025, 31337),
+            sis16 = new ShuffledIntSequence(16, 31337),
+            sis256 = new ShuffledIntSequence(256, 31337),
+            sis1024 = new ShuffledIntSequence(1024, 31337);
 
     @Benchmark
-    public long measureLinnormRangedLong655537655537()
-    {
-        return Linnorm1.nextLongOld(655537655537L);
+    public int measureSIS_17_Bound(){
+        return sis17.next();
+    }
+    @Benchmark
+    public int measureSIS_257_Bound(){
+        return sis257.next();
+    }
+    @Benchmark
+    public int measureSIS_1025_Bound(){
+        return sis1025.next();
+    }
+    @Benchmark
+    public int measureSIS_16_Bound(){
+        return sis16.next();
+    }
+    @Benchmark
+    public int measureSIS_256_Bound(){
+        return sis256.next();
+    }
+    @Benchmark
+    public int measureSIS_1024_Bound(){
+        return sis1024.next();
     }
 
-    @Benchmark
-    public long measureLinnormRangedLong7()
-    {
-        return Linnorm1.nextLongOld(7L);
-    }
+    private final SNShuffledIntSequence
+            snsis17 = new SNShuffledIntSequence(17, 31337L),
+            snsis257 = new SNShuffledIntSequence(257, 31337L),
+            snsis1025 = new SNShuffledIntSequence(1025, 31337L),
+            snsis16 = new SNShuffledIntSequence(16, 31337L),
+            snsis256 = new SNShuffledIntSequence(256, 31337L),
+            snsis1024 = new SNShuffledIntSequence(1024, 31337L);
 
     @Benchmark
-    public long measureLinnormRangedLongUnknown()
-    {
-        return Linnorm1.nextLongOld(jab.nextLong() >>> 1);
+    public int measureSNSIS_17_Bound(){
+        return snsis17.next();
+    }
+    @Benchmark
+    public int measureSNSIS_257_Bound(){
+        return snsis257.next();
+    }
+    @Benchmark
+    public int measureSNSIS_1025_Bound(){
+        return snsis1025.next();
+    }
+    @Benchmark
+    public int measureSNSIS_16_Bound(){
+        return snsis16.next();
+    }
+    @Benchmark
+    public int measureSNSIS_256_Bound(){
+        return snsis256.next();
+    }
+    @Benchmark
+    public int measureSNSIS_1024_Bound(){
+        return snsis1024.next();
     }
 
-    private LinnormRNG Linnorm2 = new LinnormRNG(9999L);
-    @Benchmark
-    public long measureLinnormRangedLongOther65537()
-    {
-        return Linnorm2.nextLongOther(65537L);
-    }
 
-    @Benchmark
-    public long measureLinnormRangedLongOther655537655537()
-    {
-        return Linnorm2.nextLongOther(655537655537L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOther7()
-    {
-        return Linnorm2.nextLongOther(7L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOtherUnknown()
-    {
-        return Linnorm2.nextLongOther(jab.nextLong() >>> 1);
-    }
-
-    private LinnormRNG Linnorm3 = new LinnormRNG(9999L);
-    @Benchmark
-    public long measureLinnormRangedLongOriginal65537()
-    {
-        return Linnorm3.nextLongOriginal(65537L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOriginal655537655537()
-    {
-        return Linnorm3.nextLongOriginal(655537655537L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOriginal7()
-    {
-        return Linnorm3.nextLongOriginal(7L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOriginalUnknown()
-    {
-        return Linnorm3.nextLongOriginal(jab.nextLong() >>> 1);
-    }
-
-    private LinnormRNG Linnorm4 = new LinnormRNG(9999L);
-    @Benchmark
-    public long measureLinnormRangedLongOroboro65537()
-    {
-        return Linnorm4.nextLong(65537L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOroboro655537655537()
-    {
-        return Linnorm4.nextLong(655537655537L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOroboro7()
-    {
-        return Linnorm4.nextLong(7L);
-    }
-
-    @Benchmark
-    public long measureLinnormRangedLongOroboroUnknown()
-    {
-        return Linnorm4.nextLong(jab.nextLong() >>> 1);
-    }
+//    private final Jab63RNG jab = new Jab63RNG(9999L);
+//
+//    private final LinnormRNG Linnorm1 = new LinnormRNG(9999L);
+//    @Benchmark
+//    public long measureLinnormRangedLong65537()
+//    {
+//        return Linnorm1.nextLongOld(65537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLong655537655537()
+//    {
+//        return Linnorm1.nextLongOld(655537655537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLong7()
+//    {
+//        return Linnorm1.nextLongOld(7L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongUnknown()
+//    {
+//        return Linnorm1.nextLongOld(jab.nextLong() >>> 1);
+//    }
+//
+//    private LinnormRNG Linnorm2 = new LinnormRNG(9999L);
+//    @Benchmark
+//    public long measureLinnormRangedLongOther65537()
+//    {
+//        return Linnorm2.nextLongOther(65537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOther655537655537()
+//    {
+//        return Linnorm2.nextLongOther(655537655537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOther7()
+//    {
+//        return Linnorm2.nextLongOther(7L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOtherUnknown()
+//    {
+//        return Linnorm2.nextLongOther(jab.nextLong() >>> 1);
+//    }
+//
+//    private LinnormRNG Linnorm3 = new LinnormRNG(9999L);
+//    @Benchmark
+//    public long measureLinnormRangedLongOriginal65537()
+//    {
+//        return Linnorm3.nextLongOriginal(65537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOriginal655537655537()
+//    {
+//        return Linnorm3.nextLongOriginal(655537655537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOriginal7()
+//    {
+//        return Linnorm3.nextLongOriginal(7L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOriginalUnknown()
+//    {
+//        return Linnorm3.nextLongOriginal(jab.nextLong() >>> 1);
+//    }
+//
+//    private LinnormRNG Linnorm4 = new LinnormRNG(9999L);
+//    @Benchmark
+//    public long measureLinnormRangedLongOroboro65537()
+//    {
+//        return Linnorm4.nextLong(65537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOroboro655537655537()
+//    {
+//        return Linnorm4.nextLong(655537655537L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOroboro7()
+//    {
+//        return Linnorm4.nextLong(7L);
+//    }
+//
+//    @Benchmark
+//    public long measureLinnormRangedLongOroboroUnknown()
+//    {
+//        return Linnorm4.nextLong(jab.nextLong() >>> 1);
+//    }
 
 
 
@@ -744,13 +652,13 @@ public class UncommonBenchmark {
         return cosBit(floatInputs[cosBitF++ & 0xFFFF]);
     }
     /**
-     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (between 4x and 40x
+     * A fairly-close approximation of Math.sin() that can be significantly faster (between 4x and 40x
      * faster sin() calls in benchmarking, depending on whether HotSpot deoptimizes Math.sin() for its own inscrutable
      * reasons), and both takes and returns doubles. Takes the same arguments Math.sin() does, so one angle in radians,
      * which may technically be any double (but this will lose precision on fairly large doubles, such as those that
      * are larger than about 65536.0). This is closely related to {@link NumberTools#sway(float)}, but the shape of the output when
      * graphed is almost identical to sin().  The difference between the result of this method and
-     * {@link Math#sin(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * Math.sin() should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though. Coercion between float and
      * double takes about as long as this method normally takes to run, so if you have floats you should usually use
      * methods that take floats (or return floats, if assigning the result to a float), and likewise for doubles.
@@ -783,13 +691,13 @@ public class UncommonBenchmark {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#sin(double)} that can be significantly faster (between 4x and 40x
+     * A fairly-close approximation of Math.sin() that can be significantly faster (between 4x and 40x
      * faster sin() calls in benchmarking, depending on whether HotSpot deoptimizes Math.sin() for its own inscrutable
      * reasons), and both takes and returns floats. Takes the same arguments Math.sin() does, so one angle in radians,
      * which may technically be any float (but this will lose precision on fairly large floats, such as those that are
      * larger than about 4096f). This is closely related to {@link NumberTools#sway(float)}, but the shape of the output when
      * graphed is almost identical to sin(). The difference between the result of this method and
-     * {@link Math#sin(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * Math.sin() should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though. The error for this float
      * version is extremely close to the double version, {@link NumberTools#sin(double)}, so you should choose based on what type
      * you have as input and/or want to return rather than on quality concerns. Coercion between float and double takes
@@ -824,13 +732,13 @@ public class UncommonBenchmark {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (between 4x and 40x
+     * A fairly-close approximation of Math.cos() that can be significantly faster (between 4x and 40x
      * faster cos() calls in benchmarking, depending on whether HotSpot deoptimizes Math.cos() for its own inscrutable
      * reasons), and both takes and returns doubles. Takes the same arguments Math.cos() does, so one angle in radians,
      * which may technically be any double (but this will lose precision on fairly large doubles, such as those that
      * are larger than about 65536.0). This is closely related to {@link NumberTools#sway(float)}, but the shape of the output when
      * graphed is almost identical to cos(). The difference between the result of this method and
-     * {@link Math#cos(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * Math.cos() should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though.Coercion between float and
      * double takes about as long as this method normally takes to run, so if you have floats you should usually use
      * methods that take floats (or return floats, if assigning the result to a float), and likewise for doubles.
@@ -863,13 +771,13 @@ public class UncommonBenchmark {
     }
 
     /**
-     * A fairly-close approximation of {@link Math#cos(double)} that can be significantly faster (between 4x and 40x
+     * A fairly-close approximation of Math.cos() that can be significantly faster (between 4x and 40x
      * faster cos() calls in benchmarking, depending on whether HotSpot deoptimizes Math.cos() for its own inscrutable
      * reasons), and both takes and returns floats. Takes the same arguments Math.cos() does, so one angle in radians,
      * which may technically be any float (but this will lose precision on fairly large floats, such as those that are
      * larger than about 4096f). This is closely related to {@link NumberTools#sway(float)}, but the shape of the output when
      * graphed is almost identical to cos(). The difference between the result of this method and
-     * {@link Math#cos(double)} should be under 0.001 at all points between -pi and pi, with an average difference of
+     * Math.cos() should be under 0.001 at all points between -pi and pi, with an average difference of
      * about 0.0005; not all points have been checked for potentially higher errors, though. The error for this float
      * version is extremely close to the double version, {@link NumberTools#cos(double)}, so you should choose based on what type
      * you have as input and/or want to return rather than on quality concerns. Coercion between float and double takes

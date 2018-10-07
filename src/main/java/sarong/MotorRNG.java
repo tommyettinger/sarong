@@ -5,8 +5,8 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A 64-bit generator based on {@link VortexRNG} but with the stream fixed to a known-good number.
- * Its period is 2 to the 64.
+ * A 64-bit generator that should be like {@link LightRNG} but faster; period is 2 to the 64, Stateful and Skipping.
+ * Equidistributed.
  * <br>
  * This implements SkippingRandomness and StatefulRandomness, meaning you can skip forwards or backwards from
  * any given state in constant time, as well as set the state or get the current state as a long.
@@ -14,11 +14,11 @@ import java.io.Serializable;
  * Created by Tommy Ettinger on 11/9/2017.
  */
 public final class MotorRNG implements StatefulRandomness, SkippingRandomness, Serializable {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 5L;
     /**
      * Can be any long value.
      */
-    public long state;
+    private long state;
 
     /**
      * Creates a new generator seeded using Math.random.
@@ -57,12 +57,20 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final int next(final int bits) {
-        long z = (state += 0x6C8E9CF970932BD5L);
-        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
-        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
-        return (int)(
-                (z ^ (z >>> 25))
-                        >>> (64 - bits));
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 21) + 0xC6BC279692B5CC85L;
+        z = (z ^ z >>> 19) + 0x6C8E9CF970932BD5L;
+        return (int) ((z ^ z >>> 25) >>> 64 - bits);
+
+//        final long z = (state += 0x9E3779B97F4A7C15L), x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
+//        return (int) ((x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26)) >>> (64 - bits));
+
+//        long z = (state += 0x6C8E9CF970932BD5L);
+//        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+//        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+//        return (int)(
+//                (z ^ (z >>> 25))
+//                        >>> (64 - bits));
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -74,10 +82,23 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final long nextLong() {
-        long z = (state += 0x6C8E9CF970932BD5L);
-        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
-        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
-        return z ^ (z >>> 25);
+        long z = (state += 0x9E3779B97F4A7C15L);
+        z = (z ^ z >>> 31 ^ 0xC6BC279692B5CC85L) * 0x41C64E6BL + 0x6C8E9CF970932BD5L;
+        return z ^ z >>> 31;
+
+//        final long y = state;
+//        final long z = y ^ (state += 0xC6BC279692B5CC85L);
+//        final long r = (y - (z << 29 | z >>> 35)) * z;
+//        return r ^ r >>> 28;
+
+//        final long z = (state += 0x9E3779B97F4A7C15L),
+//                x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
+//        return (x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26));
+
+//        long z = (state += 0x6C8E9CF970932BD5L);
+//        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+//        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+//        return z ^ (z >>> 25);
 
 //        long a = (state = state * 0x369DEA0F31A53F85L + 1L);
 //        a ^= Long.reverseBytes(a) ^ a >>> 29;
@@ -134,10 +155,18 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final long skip(long advance) {
-        long z = (state += 0x6C8E9CF970932BD5L * advance);
-        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
-        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
-        return z ^ (z >>> 25);
+        final long y = (state += 0xC6BC279692B5CC85L * advance) - 0xC6BC279692B5CC85L;
+        final long z = y ^ state;
+        final long r = (y - (z << 29 | z >>> 35)) * z;
+        return r ^ r >> 28;
+
+//        final long z = (state += 0x9E3779B97F4A7C15L * advance), x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
+//        return (x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26));
+
+//        long z = (state += 0x6C8E9CF970932BD5L * advance);
+//        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+//        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+//        return z ^ (z >>> 25);
     }
 
     /**

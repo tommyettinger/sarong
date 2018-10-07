@@ -2019,6 +2019,60 @@ public class RNGBenchmark {
     }
 
 
+
+
+    private IsaacRNG Isaac = new IsaacRNG(9999L);
+    private RNG IsaacR = new RNG(Isaac);
+    @Benchmark
+    public long measureIsaac()
+    {
+        return Isaac.nextLong();
+    }
+
+    @Benchmark
+    public long measureIsaacInt()
+    {
+        return Isaac.next(32);
+    }
+    @Benchmark
+    public long measureIsaacR()
+    {
+        return IsaacR.nextLong();
+    }
+
+    @Benchmark
+    public long measureIsaacIntR()
+    {
+        return IsaacR.nextInt();
+    }
+
+    private Isaac32RNG Isaac32 = new Isaac32RNG(9999L);
+    private RNG Isaac32R = new RNG(Isaac32);
+    @Benchmark
+    public long measureIsaac32()
+    {
+        return Isaac32.nextLong();
+    }
+
+    @Benchmark
+    public long measureIsaac32Int()
+    {
+        return Isaac32.next(32);
+    }
+    @Benchmark
+    public long measureIsaac32R()
+    {
+        return Isaac32R.nextLong();
+    }
+
+    @Benchmark
+    public long measureIsaac32IntR()
+    {
+        return Isaac32R.nextInt();
+    }
+
+    
+    
     /*
     public long doJet()
     {

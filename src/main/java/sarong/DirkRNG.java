@@ -72,12 +72,12 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
      */
     @Override
     public final long nextLong() {
-        long z = state;
-        z = (z ^ z >>> 26) * ((state += 0x9E3779B97F4A7C15L) ^ z);
-        return (z ^ z >>> 28);
 //        long z = state;
-//        z *= ((state += 0x9E3779B97F4A7C15L) ^ z);
-//        return (z - (z << 41 | z >>> 23));
+//        z = (z ^ z >>> 26) * ((state += 0x9E3779B97F4A7C15L) ^ z);
+//        return (z ^ z >>> 28);
+        long z = state;
+        z *= (z ^ (state += 0x9E3779B97F4A7C15L));
+        return (z - (z << 23 | z >>> 41));
     }
 
     /**
