@@ -751,20 +751,26 @@ public class RNGBenchmark {
 //        return ThrustAltRNG.determine(state++);
 //    }
 //
-//    @Benchmark
-//    public long measureLightDetermine() {
-//        return LightRNG.determine(state++);
-//    }
 //
 //    @Benchmark
 //    public long measureDervishDetermine() {
 //        return DervishRNG.determine(state++);
 //    }
 //
-//    @Benchmark
-//    public long measureLinnormDetermine() {
-//        return LinnormRNG.determine(state++);
-//    }
+
+    @Benchmark
+    public long measureLightDetermine() {
+        return LightRNG.determine(state++);
+    }
+    @Benchmark
+    public long measureLinnormDetermine() {
+        return LinnormRNG.determine(state++);
+    }
+    @Benchmark
+    public long measureMotorDetermine() {
+        return MotorRNG.determine(state++);
+    }
+
 //
 //    //@Benchmark
 //    public long measureVortexDetermine() {

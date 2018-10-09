@@ -6,7 +6,9 @@ import java.io.Serializable;
 
 /**
  * A 64-bit generator that should be like {@link LightRNG} but faster; period is 2 to the 64, Stateful and Skipping.
- * Equidistributed.
+ * One-dimensionally equidistributed. Passes at least 2TB of PractRand with no anomalies. Speed is very close to
+ * {@link LinnormRNG}, but this has more features (just {@link #skip(long)}, really). {@link #determine(long)} should
+ * also be a good alternative to {@link LinnormRNG#determine(long)}, and about 10% faster (which is hard to attain).
  * <br>
  * This implements SkippingRandomness and StatefulRandomness, meaning you can skip forwards or backwards from
  * any given state in constant time, as well as set the state or get the current state as a long.
@@ -14,7 +16,7 @@ import java.io.Serializable;
  * Created by Tommy Ettinger on 11/9/2017.
  */
 public final class MotorRNG implements StatefulRandomness, SkippingRandomness, Serializable {
-    private static final long serialVersionUID = 5L;
+    private static final long serialVersionUID = 6L;
     /**
      * Can be any long value.
      */
@@ -57,10 +59,13 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final int next(final int bits) {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 21) + 0xC6BC279692B5CC85L;
-        z = (z ^ z >>> 19) + 0x6C8E9CF970932BD5L;
-        return (int) ((z ^ z >>> 25) >>> 64 - bits);
+        final long y = (state += 0x9E3779B97F4A7C15L);
+        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
+        return (int) ((z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23)) >>> 64 - bits);
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ z >>> 21) + 0xC6BC279692B5CC85L;
+//        z = (z ^ z >>> 19) + 0x6C8E9CF970932BD5L;
+//        return (int) ((z ^ z >>> 25) >>> 64 - bits);
 
 //        final long z = (state += 0x9E3779B97F4A7C15L), x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
 //        return (int) ((x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26)) >>> (64 - bits));
@@ -82,9 +87,12 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final long nextLong() {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 31 ^ 0xC6BC279692B5CC85L) * 0x41C64E6BL + 0x6C8E9CF970932BD5L;
-        return z ^ z >>> 31;
+        final long y = (state += 0x9E3779B97F4A7C15L);
+        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
+        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
+
+//        z = (z ^ z >>> 31 ^ 0xC6BC279692B5CC85L) * 0x41C64E6BL + 0x6C8E9CF970932BD5L;
+//        return z ^ z >>> 31;
 
 //        final long y = state;
 //        final long z = y ^ (state += 0xC6BC279692B5CC85L);
@@ -119,32 +127,27 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      * @param s any long; increment while calling with {@code ++state}
      * @return a pseudo-random long obtained from the given state and stream deterministically
      */
-    public static long determine(long s) { 
-        return (s = (s = ((s *= 0x6C8E9CF970932BD5L) ^ s >>> 25) * 0x2545F4914F6CDD1DL) ^ ((s << 19) | (s >>> 45)) ^ ((s << 53) | (s >>> 11))) ^ s >>> 25;
+    public static long determine(long s) {
+        return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ s >> 28) * 0xD2B74407B1CE6E93L) ^ (s << 21 | s >>> 43) ^ (s << 41 | s >>> 23));
     }
 
     /**
-     * Call with {@code MotorRNG.determineBare(state += 0x6C8E9CF970932BD5L)}, where state can be any long; and the
-     * number added to state should usually keep its less-significant 32 bits unchanged. If the assignment to state has
-     * stayed intact on the next time this is called in the same way, it will have the same qualities as MotorRNG
-     * normally does, though if the less-significant 32 bits of the increment change from {@code 0x70932BD5}, then it
-     * may have very different quality that MotorRNG should have.
+     * Call with {@code MotorRNG.determineBare(state += 0x9E3779B97F4A7C15L)}, where state can be any long; and the
+     * number added to state should usually be fairly similar to 0x9E3779B97F4A7C15L (not many bits should differ, and
+     * the number must be odd). If the assignment to state has stayed intact on the next time this is called in the same
+     * way, it will have the same qualities as MotorRNG normally does, though if the increment has been changed a lot
+     * from {@code 0x9E3779B97F4A7C15L}, then it may have very different quality that MotorRNG should have.
      * <br>
-     * You can probably experiment with different increments for stream. The number 0x6C8E9CF970932BD5L was obtained 
-     * through quite a lot of trial and error, modified to give optimal results for the common case of stream being 0,
-     * and is also a lucky find, but it's just a Weyl sequence increment, which means its bit structure is as
-     * unpredictable as an irrational number in fixed-point form. A common number used for this is 0x9E3779B97F4A7BB5L,
-     * which is the golden ratio times 2 to the 64. Here, we need to keep the bottom 32 bits intact to keep the same
-     * assurances MotorRNG normally gets; even if you disregard that and change those bits, the increment must be an
-     * odd number (this is true for every Weyl sequence).
-     * @param s any long; increment while calling with {@code state += 0x6C8E9CF970932BD5L} (only change the more-significant 32 bits of that increment)
+     * You can probably experiment with different increments for stream. The number 0x9E3779B97F4A7C15L is 2 to the 64
+     * divided by the golden ratio and adjusted to be an odd number, but it's just a Weyl sequence increment, which
+     * means its bit structure is as unpredictable as an irrational number in fixed-point form.
+     * @param s any long; increment while calling with {@code state += 0x9E3779B97F4A7C15L}
      * @return a pseudo-random long obtained from the given state deterministically
      */
     public static long determineBare(long s)
     {
-        return (s = (s = (s ^ s >>> 25) * 0x2545F4914F6CDD1DL) ^ ((s << 19) | (s >>> 45)) ^ ((s << 53) | (s >>> 11))) ^ s >>> 25;
+        return ((s = (s ^ s >> 28) * 0xD2B74407B1CE6E93L) ^ (s << 21 | s >>> 43) ^ (s << 41 | s >>> 23));
     }
-//public static long motor(long state) { (s = (s = ((s *= 0x6C8E9CF970932BD5L) ^ s >>> 25) * 0x2545F4914F6CDD1DL) ^ ((s << 19) | (s >>> 45)) ^ ((s << 53) | (s >>> 11))) ^ s >>> 25; } //motor(++state)
     /**
      * Advances or rolls back the MotorRNG's state without actually generating each number. Skips forward
      * or backward a number of steps specified by advance, where a step is equal to one call to nextLong(),
@@ -155,10 +158,13 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     @Override
     public final long skip(long advance) {
-        final long y = (state += 0xC6BC279692B5CC85L * advance) - 0xC6BC279692B5CC85L;
-        final long z = y ^ state;
-        final long r = (y - (z << 29 | z >>> 35)) * z;
-        return r ^ r >> 28;
+        final long y = (state += 0x9E3779B97F4A7C15L * advance);
+        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
+        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
+//        final long y = (state += 0xC6BC279692B5CC85L * advance) - 0xC6BC279692B5CC85L;
+//        final long z = y ^ state;
+//        final long r = (y - (z << 29 | z >>> 35)) * z;
+//        return r ^ r >> 28;
 
 //        final long z = (state += 0x9E3779B97F4A7C15L * advance), x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
 //        return (x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26));
