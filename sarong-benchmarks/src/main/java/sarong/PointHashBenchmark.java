@@ -450,6 +450,103 @@ public class PointHashBenchmark {
         }
     }
 
+    public static final class Golden2PointHash {
+        /**
+         * Gets a 64-bit point hash of a 2D point (x and y are both longs) and a state/seed as a long. This point
+         * hash has just about the best speed of any algorithms tested, and though its quality is mediocre for
+         * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
+         * <br>
+         * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
+         * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
+         * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
+         * generalized ratio. See
+         * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
+         * for some more information on how he uses this, but we do things differently because we want random-seeming
+         * results instead of separated sub-random results.
+         * @param x x position; any long
+         * @param y y position; any long
+         * @param s the state/seed; any long
+         * @return 64-bit hash of the x,y point with the given state
+         */
+        public static long hashAll(long x, long y, long s) {
+            s += (x + (y + s * 0xD1B54A32D192ED03L) * 0xABC98388FB8FAC03L) * 0x8CB92BA72F3D8DD7L;
+            return ((s = (s ^ s >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ s >>> 25);
+        }
+
+        /**
+         * Gets a 64-bit point hash of a 3D point (x, y, and z are all longs) and a state/seed as a long. This point
+         * hash has just about the best speed of any algorithms tested, and though its quality is mediocre for
+         * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
+         * <br>
+         * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
+         * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
+         * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
+         * generalized ratio. See
+         * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
+         * for some more information on how he uses this, but we do things differently because we want random-seeming
+         * results instead of separated sub-random results.
+         * @param x x position; any long
+         * @param y y position; any long
+         * @param z z position; any long
+         * @param s the state/seed; any long
+         * @return 64-bit hash of the x,y,z point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long s) {
+            s += (x + (y + (z + s * 0xDB4F0B9175AE2165L) * 0xBBE0563303A4615FL) * 0xA0F2EC75A1FE1575L) * 0x89E182857D9ED689L;
+            return ((s = (s ^ s >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ s >>> 25);
+        }
+
+        /**
+         * Gets a 64-bit point hash of a 4D point (x, y, z, and w are all longs) and a state/seed as a long. This point
+         * hash has just about the best speed of any algorithms tested, and though its quality is mediocre for
+         * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
+         * <br>
+         * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
+         * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
+         * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
+         * generalized ratio. See
+         * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
+         * for some more information on how he uses this, but we do things differently because we want random-seeming
+         * results instead of separated sub-random results.
+         * @param x x position; any long
+         * @param y y position; any long
+         * @param z z position; any long
+         * @param w w position; any long
+         * @param s the state; any long
+         * @return 64-bit hash of the x,y,z,w point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long w, long s) {
+            s += (x + (y + (z + (w + s * 0xE19B01AA9D42C633L) * 0xC6D1D6C8ED0C9631L) * 0xAF36D01EF7518DBBL) * 0x9A69443F36F710E7L) * 0x881403B9339BD42DL;
+            return ((s = (s ^ s >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ s >>> 25);
+        }
+
+        /**
+         * Gets a 64-bit point hash of a 6D point (x, y, z, w, u, and v are all longs) and a state/seed as a long. This
+         * point hash has just about the best speed of any algorithms tested, and though its quality is mediocre for
+         * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
+         * <br>
+         * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
+         * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
+         * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
+         * generalized ratio. See
+         * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
+         * for some more information on how he uses this, but we do things differently because we want random-seeming
+         * results instead of separated sub-random results.
+         * @param x x position; any long
+         * @param y y position; any long
+         * @param z z position; any long
+         * @param w w position; any long
+         * @param u u position; any long
+         * @param v v position; any long
+         * @param s the state; any long
+         * @return 64-bit hash of the x,y,z,w,u,v point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long w, long u, long v, long s) {
+            s += (x + (y + (z + (w + (u + (v + s * 0xE95E1DD17D35800DL) * 0xD4BC74E13F3C782FL) * 0xC1EDBC5B5C68AC25L) * 0xB0C8AC50F0EDEF5DL) * 0xA127A31C56D1CDB5L) * 0x92E852C80D153DB3L) * 0x85EB75C3024385C3L;
+            return ((s = (s ^ s >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ s >>> 25);
+        }
+    }
+
     public static final class CantorPointHash {
         /**
          * Gets a 64-bit point hash of a 3D point (x and y are both longs) and a state/seed as a long.
@@ -631,6 +728,28 @@ public class PointHashBenchmark {
     public long measureCantorPointHash6()
     {
         return CantorPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
+                inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
+    }
+
+    @Benchmark
+    public long measureGolden2PointHash2()
+    {
+        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], 1L);
+    }
+    @Benchmark
+    public long measureGolden2PointHash3()
+    {
+        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], 1L);
+    }
+    @Benchmark
+    public long measureGolden2PointHash4()
+    {
+        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF], 1L);
+    }
+    @Benchmark
+    public long measureGolden2PointHash6()
+    {
+        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
                 inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
     }
 
