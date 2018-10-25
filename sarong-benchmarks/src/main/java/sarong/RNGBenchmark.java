@@ -746,10 +746,10 @@ public class RNGBenchmark {
 */
 
 
-//    @Benchmark
-//    public long measureAltThrustDetermine() {
-//        return ThrustAltRNG.determine(state++);
-//    }
+    @Benchmark
+    public long measureAltThrustDetermine() {
+        return ThrustAltRNG.determine(state++);
+    }
 //
 //
 //    @Benchmark
@@ -766,10 +766,15 @@ public class RNGBenchmark {
     public long measureLinnormDetermine() {
         return LinnormRNG.determine(state++);
     }
+
     @Benchmark
-    public long measureMotorDetermine() {
-        return MotorRNG.determine(state++);
+    public long measureDirkDetermine() {
+        return DirkRNG.determine(state++);
     }
+//    @Benchmark
+//    public long measureMotorDetermine() {
+//        return MotorRNG.determine(state++);
+//    }
 
 //
 //    //@Benchmark
