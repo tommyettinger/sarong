@@ -47,11 +47,18 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
     public VortexRNG(long seed)
     {
         state = seed;
-        stream = 0x6C8E9CF970932BD5L;
+        stream = (seed + 0x6C8E9CF970932BD5L);
+        stream = (stream ^ (stream >>> 30)) * 0xBF58476D1CE4E5B9L;
+        stream = (stream ^ (stream >>> 27)) * 0x94D049BB133111EBL;
+        stream ^= (stream >>> 31);
+
     }
     public VortexRNG(final long seed, final int stream) {
         state = seed;
-        this.stream = 0x6C8E9CF970932BD5L ^ (long) stream << 32;
+        this.stream = (stream * 0x9E3779B97F4A7C15L + 0x6C8E9CF970932BD5L);
+        this.stream = (this.stream ^ (this.stream >>> 30)) * 0xBF58476D1CE4E5B9L;
+        this.stream = (this.stream ^ (this.stream >>> 27)) * 0x94D049BB133111EBL;
+        this.stream ^= (this.stream >>> 31);
     }
 
     /**
@@ -72,12 +79,12 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
     }
     /**
      * Get the stream of this VortexRNG as an int.
-     * This int can be passed back to {@link #setStream(int)} directly; it is not the internally-used long stream.
+     * This int can be passed back to {@link #setStream(long)} directly; it is not the internally-used long stream.
      *
-     * @return the stream of this object in a format that can be used with {@link #setStream(int)}.
+     * @return the stream of this object in a format that can be used with {@link #setStream(long)}.
      */
-    public int getStream() {
-        return (int) ((stream ^ 0x6C8E9CF970932BD5L) >>> 32);
+    public long getStream() {
+        return stream;
     }
     /**
      * Set the internal stream of this VortexRNG with an int.
@@ -85,8 +92,8 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
      * ensuring the lower 32 bits of that long are the same since they seem to matter more for quality.
      * @param stream any int
      */
-    public void setStream(int stream) {
-        this.stream = 0x6C8E9CF970932BD5L ^ (long) (stream) << 32;
+    public void setStream(long stream) {
+        this.stream = stream;
     }
 
     /**
@@ -115,11 +122,17 @@ public final class VortexRNG implements RandomnessSource, SkippingRandomness, Se
      * @return a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive)
      */
     @Override
-    public final long nextLong() { 
-        long z = (state = state * 0x41C64E6DL + stream);
-        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
-        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
-        return z ^ (z >>> 25);
+    public final long nextLong() {
+        long x = (state += 0x6C8E9CF570932BD5L);
+        long y = (stream += 0x9E3779B97F4A7C15L);
+        x = (x ^ x >>> 25) * 0xBF58476D1CE4E5B9L;
+        y = (y ^ y >>> 28) * 0x94D049BB133111EBL;
+        return x + y;
+
+//        long z = (state = state * 0x41C64E6DL + stream);
+//        z = (z ^ z >>> 25) * 0x2545F4914F6CDD1DL;
+//        z ^= ((z << 19) | (z >>> 45)) ^ ((z << 53) | (z >>> 11));
+//        return z ^ (z >>> 25);
     }
 
     /**

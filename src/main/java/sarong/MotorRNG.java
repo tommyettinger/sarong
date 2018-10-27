@@ -60,8 +60,12 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
     @Override
     public final int next(final int bits) {
         final long y = (state += 0x9E3779B97F4A7C15L);
-        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
-        return (int) ((z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23)) >>> 64 - bits);
+        final long z = (y ^ (y << 23 | y >>> 41) ^ (y << 29 | y >>> 35)) * 0xDB4F0B9175AE2165L;
+        return (int) ((z ^ (z << 11 | z >>> 53) ^ (z << 19 | z >>> 45)) >>> 64 - bits);
+
+//        final long y = (state += 0x9E3779B97F4A7C15L);
+//        final long z = (y ^ y >>> 28) * 0xD2B74407B1CE6E93L;
+//        return (int) ((z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23)) >>> 64 - bits);
 //        long z = (state += 0x9E3779B97F4A7C15L);
 //        z = (z ^ z >>> 21) + 0xC6BC279692B5CC85L;
 //        z = (z ^ z >>> 19) + 0x6C8E9CF970932BD5L;
@@ -86,10 +90,22 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      * @return a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive)
      */
     @Override
-    public final long nextLong() {
-        final long y = (state += 0x9E3779B97F4A7C15L);
-        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
-        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
+    public final long nextLong() {//0xD1B54A32D192ED03L, 0xABC98388FB8FAC02L, 0x8CB92BA72F3D8DD7L
+        final long l = (state += 0x9E3779B97F4A7C15L);
+        final long z = (l ^ l >>> 28 ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L + 0x632BE59BD9B4E019L;
+        return (z ^ (z << 46 | z >>> 18) ^ (z << 19 | z >>> 45));
+//        return z ^ z >>> 26;
+//        return determineBare(state += 0x9E3779B97F4A7C15L);
+//        long s = (state += 0x9E3779B97F4A7C15L);
+//        return ((s = (s ^ (s << 13 | s >>> 51) ^ (s << 29 | s >>> 35)) * 0xDB4F0B9175AE2165L) ^ s >>> 28);
+//        final long y = (state += 0x9E3779B97F4A7C15L);
+//        final long z = (y ^ (y << 13 | y >>> 51) ^ (y << 29 | y >>> 35)) * 0xDB4F0B9175AE2165L;
+//        return (z ^ z >>> 28);
+//        final long z = (y ^ (y << 23 | y >>> 41) ^ (y << 29 | y >>> 35)) * 0xDB4F0B9175AE2165L;
+//        return (z ^ (z << 11 | z >>> 53) ^ (z << 19 | z >>> 45));
+
+//        final long z = (y ^ y >>> 28) * 0xD2B74407B1CE6E93L;
+//        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
 
 //        z = (z ^ z >>> 31 ^ 0xC6BC279692B5CC85L) * 0x41C64E6BL + 0x6C8E9CF970932BD5L;
 //        return z ^ z >>> 31;
@@ -115,7 +131,7 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
 //        final long z = (state += 0x6C8E9CF970932BD5L);
 //        return (z ^ z >>> 25) ^ Long.reverseBytes(z) * 0x59071D96D81ECD35L;
 
-        //(z ^ z >> 25) * 0x59071D96D81ECD35L ^ ((z << 12) | (z >> 52)) ^ ((z << 47) | (z >> 17));
+        //(z ^ z >>> 25) * 0x59071D96D81ECD35L ^ ((z << 12) | (z >>> 52)) ^ ((z << 47) | (z >>> 17));
 
     }
 
@@ -128,7 +144,10 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      * @return a pseudo-random long obtained from the given state and stream deterministically
      */
     public static long determine(long s) {
-        return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ s >> 28) * 0xD2B74407B1CE6E93L) ^ (s << 21 | s >>> 43) ^ (s << 41 | s >>> 23));
+//        return (s = ((s = ((s *= 0x9E3779B97F4A7C15L) << 35 | s >>> 29) * 0xD1B54A32D192ED03L) << 17 | s >>> 47) * 0xABC98388FB8FAC03L) ^ s >>> 28;
+//        return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ (s << 13 | s >>> 51) ^ (s << 29 | s >>> 35)) * 0xDB4F0B9175AE2165L) ^ s >>> 28);
+        return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ s >>> 25 ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L + 0x632BE59BD9B4E019L)  ^ (s << 46 | s >>> 18) ^ (s << 19 | s >>> 45));
+//        return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ (s << 23 | s >>> 41) ^ (s << 29 | s >>> 35)) * 0xDB4F0B9175AE2165L) ^ (s << 11 | s >>> 53) ^ (s << 19 | s >>> 45));
     }
 
     /**
@@ -146,7 +165,8 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
      */
     public static long determineBare(long s)
     {
-        return ((s = (s ^ s >> 28) * 0xD2B74407B1CE6E93L) ^ (s << 21 | s >>> 43) ^ (s << 41 | s >>> 23));
+        return ((s = (s ^ (s << 13 | s >>> 51) ^ (s << 29 | s >>> 35)) * 0xDB4F0B9175AE2165L) ^ s >>> 28);
+//        return ((s = (s ^ (s << 23 | s >>> 41) ^ (s << 29 | s >>> 35)) * 0xDB4F0B9175AE2165L) ^ (s << 11 | s >>> 53) ^ (s << 19 | s >>> 45));
     }
     /**
      * Advances or rolls back the MotorRNG's state without actually generating each number. Skips forward
@@ -159,12 +179,16 @@ public final class MotorRNG implements StatefulRandomness, SkippingRandomness, S
     @Override
     public final long skip(long advance) {
         final long y = (state += 0x9E3779B97F4A7C15L * advance);
-        final long z = (y ^ y >> 28) * 0xD2B74407B1CE6E93L;
-        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
+        final long z = (y ^ (y << 23 | y >>> 41) ^ (y << 29 | y >>> 35)) * 0xDB4F0B9175AE2165L;
+        return (z ^ (z << 11 | z >>> 53) ^ (z << 19 | z >>> 45));
+        
+//        final long y = (state += 0x9E3779B97F4A7C15L * advance);
+//        final long z = (y ^ y >>> 28) * 0xD2B74407B1CE6E93L;
+//        return (z ^ (z << 21 | z >>> 43) ^ (z << 41 | z >>> 23));
 //        final long y = (state += 0xC6BC279692B5CC85L * advance) - 0xC6BC279692B5CC85L;
 //        final long z = y ^ state;
 //        final long r = (y - (z << 29 | z >>> 35)) * z;
-//        return r ^ r >> 28;
+//        return r ^ r >>> 28;
 
 //        final long z = (state += 0x9E3779B97F4A7C15L * advance), x = (z ^ (z << 18 | z >>> 46) ^ (z << 47 | z >>> 17)) * 0x41C64E6DL;
 //        return (x ^ (x << 25 | x >>> 39) ^ (x << 38 | x >>> 26));
