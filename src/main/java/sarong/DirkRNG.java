@@ -5,8 +5,11 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * An experimental tweak on {@link ThrustAltRNG} that seems sorta fast and very high-quality, but isn't equidistributed.
- * Passes 16TB of PractRand with no anomalies, but has issues at 32TB. Period is 2 to the 64, like ThrustAltRNG.
+ * An experimental tweak on {@link LightRNG} that has a very fast static {@link #determine(long)} method but lackluster
+ * instance methods. Passes 32TB of PractRand with some anomalies, all "unusual." Period is 2 to the 64, like LightRNG.
+ * Notable because its determine() methods appear to work equally well regardless of increment between calls; there's no
+ * increment that breaks a pattern (like if you call LightRNG.determine() with inputs separated by the modular
+ * multiplicative inverse of LightRNG's increment, it won't do well at all).
  * <br>
  * Created by Tommy Ettinger on 9/30/2018.
  */
@@ -59,10 +62,8 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
     @Override
     public final int next(final int bits) {
         long z = (++state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L;
-        z = (z ^ (z << 19 | z >>> 45) ^ (z << 29 | z >>> 35)) * 0x8CB92BA72F3D8DD5L;
-        return (int)(z ^ z >>> 26
-        //        (z << 19 | z >>> 45) ^ (z << 46 | z >>> 18)
-        ) >>> (32 - bits);
+        z = (z ^ (z << 11 | z >>> 53) ^ (z << 54 | z >>> 10)) * 0x8CB92BA72F3D8DD5L;
+        return (int)(z ^ (z << 19 | z >>> 45) ^ (z << 46 | z >>> 18)) >>> (32 - bits);
 
 //        long z = state;
 //        z = (z ^ z >>> 26) * ((state += 0x9E3779B97F4A7C15L) ^ z);
@@ -79,8 +80,8 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
     @Override
     public final long nextLong() {
         long z = (++state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L;
-        z = (z ^ (z << 19 | z >>> 45) ^ (z << 29 | z >>> 35)) * 0x8CB92BA72F3D8DD5L;
-        return z ^ z >>> 26;//(z << 19 | z >>> 45) ^ (z << 46 | z >>> 18);
+        z = (z ^ (z << 11 | z >>> 53) ^ (z << 54 | z >>> 10)) * 0x8CB92BA72F3D8DD5L;
+        return z ^ (z << 19 | z >>> 45) ^ (z << 46 | z >>> 18);
 
 //        long z = state;
 //        z = (z ^ z >>> 26) * ((state += 0x9E3779B97F4A7C15L) ^ z);
@@ -101,8 +102,8 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
     @Override
     public final long skip(long advance) {
         long z = ((state += advance) ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L;
-        z = (z ^ (z << 19 | z >>> 45) ^ (z << 29 | z >>> 35)) * 0x8CB92BA72F3D8DD5L;
-        return z ^ z >>> 26;// (z << 19 | z >>> 45) ^ (z << 46 | z >>> 18);
+        z = (z ^ (z << 11 | z >>> 53) ^ (z << 54 | z >>> 10)) * 0x8CB92BA72F3D8DD5L;
+        return z ^ (z << 19 | z >>> 45) ^ (z << 46 | z >>> 18);
 
 //        final long s = (state += 0x9E3779B97F4A7C15L * advance);
 //        long z = s - 0x9E3779B97F4A7C15L;
@@ -155,9 +156,7 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
      * @return a pseudo-random alteration of state
      */
     public static long determine(long state) {
-        return (state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 19 | state >>> 45) ^ (state << 29 | state >>> 35)) * 0x8CB92BA72F3D8DD5L)
-                ^ state >>> 26;//(state << 19 | state >>> 45) ^ (state << 46 | state >>> 18);
-//        return ((state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * (state + 0x9E3779B97F4A7C15L ^ state)) ^ state >>> 28);
+        return ((state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * (state + 0x9E3779B97F4A7C15L ^ state)) ^ state >>> 28);
     }
 
     /**
@@ -172,8 +171,7 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
      * @return a pseudo-random number generated from state
      */
     public static long randomize(long state) {
-        return (state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 19 | state >>> 45) ^ (state << 29 | state >>> 35)) * 0x8CB92BA72F3D8DD5L)
-                ^ state >>> 26;//(state << 19 | state >>> 45) ^ (state << 46 | state >>> 18);
+        return (state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 11 | state >>> 53) ^ (state << 54 | state >>> 10)) * 0x8CB92BA72F3D8DD5L) ^ (state << 19 | state >>> 45) ^ (state << 46 | state >>> 18);
 
         //return ((state = (state ^ state >>> 26) * (state + 0x9E3779B97F4A7C15L ^ state)) ^ state >>> 28);
     }
@@ -189,10 +187,7 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
      *              generate numbers in reverse order
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
-    public static float determineFloat(long state) { return ((
-            (state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 19 | state >>> 45) ^ (state << 29 | state >>> 35)) * 0x8CB92BA72F3D8DD5L)
-                    ^ state >>> 26//(state << 19 | state >>> 45) ^ (state << 46 | state >>> 18)
-    ) & 0xFFFFFF) * 0x1p-24f; }
+    public static float determineFloat(long state) { return (((state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 11 | state >>> 53) ^ (state << 54 | state >>> 10)) * 0x8CB92BA72F3D8DD5L) ^ (state << 19 | state >>> 45) ^ (state << 46 | state >>> 18)) & 0xFFFFFF) * 0x1p-24f; }
     
     /**
      * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -206,11 +201,7 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
      *              generate numbers in reverse order
      * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
      */
-    public static double determineDouble(long state) { return (
-            (
-                    (state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 19 | state >>> 45) ^ (state << 29 | state >>> 35)) * 0x8CB92BA72F3D8DD5L)
-                            ^ state >>> 26//(state << 19 | state >>> 45) ^ (state << 46 | state >>> 18)
-            ) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
+    public static double determineDouble(long state) { return (((state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 11 | state >>> 53) ^ (state << 54 | state >>> 10)) * 0x8CB92BA72F3D8DD5L) ^ (state << 19 | state >>> 45) ^ (state << 46 | state >>> 18)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
 
     /**
      * Given a state that should usually change each time this is called, and a bound that limits the result to some
@@ -229,9 +220,7 @@ public final class DirkRNG implements StatefulRandomness, SkippingRandomness, Se
     public static int determineBounded(long state, final int bound)
     {
         return (int)((bound * (
-                ((state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 19 | state >>> 45) ^ (state << 29 | state >>> 35)) * 0x8CB92BA72F3D8DD5L) ^ 
-                //        (state << 19 | state >>> 45) ^ (state << 46 | state >>> 18)
-                state >>> 26)
+                ((state = ((state = (state ^ 0x9E3779B97F4A7C15L) * 0xD1B54A32D192ED03L) ^ (state << 11 | state >>> 53) ^ (state << 54 | state >>> 10)) * 0x8CB92BA72F3D8DD5L) ^ (state << 19 | state >>> 45) ^ (state << 46 | state >>> 18))
                         & 0xFFFFFFFFL)) >> 32);
     }
 //    public static void main(String[] args)

@@ -261,8 +261,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Fork(1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
+@Warmup(iterations = 5, time = 5)
+@Measurement(iterations = 5, time = 5)
 public class RNGBenchmark {
 
     private long state = 9000, stream = 9001, oddState = 9999L;
