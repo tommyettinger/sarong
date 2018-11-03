@@ -7,23 +7,17 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * A mid-quality but very fast RNG that has no apparent visual artifacts here; uses Mark Overton's CMRES subcycle
- * generator type, with minor modifications. This is meant to be an answer to when people ask for a bare-minimum
- * generator that's still "good enough" for games. It still passes at least 512GB of PractRand testing, which is good
- * for a generator this small and simple. It has an unknown period that is fairly high; unless the seed used
- * puts the generator in a worse cycle (some of which  have a much lower period, like the seed 0), the period probably
- * won't be exhausted without hours (possibly days) of pure random number generation. It cannot produce all possible
- * longs in its longest cycle, and it can't produce even a fraction of all possible longs in its smallest cycle. It
- * implements RandomnessSource, but if you just want to copy this class with no dependencies, then the class declaration
+ * A mid-quality and very fast RNG that has no apparent visual artifacts here; uses an XLCG-type base that guarantees a
+ * period of 2 to the 64 and that all seeds are valid, then adjusts the result of the XLCG irreversibly to improve
+ * quality. This cannot produce all long values and will produce some longs more often than others. Even though it isn't
+ * equidistributed, that is, it produces various outputs at different frequencies, it still passes at least 2TB of
+ * PractRand testing with no anomalies or failures. It is about 0.06 ns slower per long than ThrustAltRNG, and has the
+ * same caveats to its quality (both are not equidistributed, both have the same period, both allow all seeds).
+ * <br>
+ * It implements RandomnessSource, but if you want to copy this class with no dependencies, then the class declaration
  * can easily be changed to {@code public class BasicRandom64 extends Random implements Serializable} without any other
  * changes. Note, it does extend java.util.Random for additional ease of integration, but doesn't use the slow
  * {@code synchronized} keyword that Random's implementations do.
- * <br>
- * <a href="http://www.drdobbs.com/tools/fast-high-quality-parallel-random-number/231000484">This Dr. Dobb's article has
- * more on this type of generator</a>. The code associated with it seems to be mostly accurate, but the period on this
- * 64-bit CMRES generator seems to be understated in the code documentation; my tests seem to show that the period is
- * either much longer, or that due to the irreversible nature of the generator, it can't return to its original state.
- * @author Mark Overton
  * @author Tommy Ettinger
  */
 public class BasicRandom64 extends Random implements RandomnessSource, Serializable {
@@ -32,7 +26,8 @@ public class BasicRandom64 extends Random implements RandomnessSource, Serializa
 
     public BasicRandom64()
     {
-        state = 1L;
+        state = (long) ((Math.random() - 0.5) * 0x10000000000000L)
+                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L);
     }
 
     public BasicRandom64(final long seed) {
@@ -41,12 +36,13 @@ public class BasicRandom64 extends Random implements RandomnessSource, Serializa
 
     public void setState(final long seed)
     {
-        state = (seed ^ 0x9E3779B97F4A7C15L) * 0x41C64E6B ^ (seed >>> 32);
+        state = seed;
     }
 
     public final long nextLong() {
-        final long x = state * 0x7CDD0CFB6AD2A499L;
-        return (state -= (x << 35 | x >> 29)) + x;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xD1B54A32D192ED03L);
+        z -= z >> 28;
+        return z ^ z >> 26;
     }
 
     /**
@@ -58,12 +54,14 @@ public class BasicRandom64 extends Random implements RandomnessSource, Serializa
      * @return an int with at most the specified bits
      */
     public final int next(final int bits) {
-        final long x = state * 0x7CDD0CFB6AD2A499L;
-        return (int)((state -= (x << 35 | x >> 29)) + x >>> (64 - bits));
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xD1B54A32D192ED03L);
+        z -= z >> 28;
+        return (int) ((z ^ z >> 26) >>> (64 - bits));
     }
     public final int nextInt() {
-        final long x = state * 0x7CDD0CFB6AD2A499L;
-        return (int)((state -= (x << 35 | x >> 29)) + x);
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xD1B54A32D192ED03L);
+        z -= z >> 28;
+        return (int) (z ^ z >> 26);
     }
 
     /**
@@ -176,9 +174,7 @@ public class BasicRandom64 extends Random implements RandomnessSource, Serializa
     }
 
     public BasicRandom64 copy() {
-        BasicRandom64 sr = new BasicRandom64();
-        sr.state = state;
-        return sr;
+        return new BasicRandom64(state);
     }
 
     @Override

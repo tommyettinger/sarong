@@ -95,8 +95,8 @@ public final class ThrustAltRNG implements StatefulRandomness, SkippingRandomnes
     @Override
     public final int next(final int bits) {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
-        return (int)(z ^ (z >>> 22)) >>> (32 - bits);
+        final long z = (s ^ s >>> 25) * (s | 0xA529L);
+        return (int)(z ^ z >>> 22) >>> (32 - bits);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -109,8 +109,8 @@ public final class ThrustAltRNG implements StatefulRandomness, SkippingRandomnes
     @Override
     public final long nextLong() {
         final long s = (state += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
-        return z ^ (z >>> 22);
+        final long z = (s ^ s >>> 25) * (s | 0xA529L);
+        return (z ^ z >>> 22);
     }
 
     /**
