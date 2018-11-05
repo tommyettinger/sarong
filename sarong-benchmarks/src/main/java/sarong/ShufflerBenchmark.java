@@ -83,8 +83,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Fork(1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
+@Warmup(iterations = 5, time = 5)
+@Measurement(iterations = 5, time = 5)
 public class ShufflerBenchmark {
 
     private final ShuffledIntSequence
@@ -160,19 +160,67 @@ public class ShufflerBenchmark {
     }
 
     private final SNShuffledIntSequence
-            snsis255 = new SNShuffledIntSequence(255, 31337L),
-            snsis256 = new SNShuffledIntSequence(256, 31337L),
-            snsis257 = new SNShuffledIntSequence(257, 31337L);
+            snsis15 = new SNShuffledIntSequence(15, 31337),
+            snsis16 = new SNShuffledIntSequence(16, 31337),
+            snsis17 = new SNShuffledIntSequence(17, 31337);
     @Benchmark
-    public int measureSNSIS_255_Bound(){
-        return snsis255.next();
+    public int measureSNSIS_15_Bound(){
+        return snsis15.next();
     }
+    @Benchmark
+    public int measureSNSIS_17_Bound(){
+        return snsis17.next();
+    }
+    @Benchmark
+    public int measureSNSIS_16_Bound(){
+        return snsis16.next();
+    }
+
+    private final ShuffledIntSequence
+            sis257 = new ShuffledIntSequence(257, 31337),
+            sis1025 = new ShuffledIntSequence(1025, 31337),
+            sis256 = new ShuffledIntSequence(256, 31337),
+            sis1024 = new ShuffledIntSequence(1024, 31337);
+
+    @Benchmark
+    public int measureSIS_257_Bound(){
+        return sis257.next();
+    }
+    @Benchmark
+    public int measureSIS_1025_Bound(){
+        return sis1025.next();
+    }
+    @Benchmark
+    public int measureSIS_256_Bound(){
+        return sis256.next();
+    }
+    @Benchmark
+    public int measureSIS_1024_Bound(){
+        return sis1024.next();
+    }
+
+    private final SNShuffledIntSequence
+            snsis257 = new SNShuffledIntSequence(257, 31337),
+            snsis1025 = new SNShuffledIntSequence(1025, 31337),
+            snsis256 = new SNShuffledIntSequence(256, 31337),
+            snsis1024 = new SNShuffledIntSequence(1024, 31337);
+
     @Benchmark
     public int measureSNSIS_257_Bound(){
         return snsis257.next();
     }
     @Benchmark
+    public int measureSNSIS_1025_Bound(){
+        return snsis1025.next();
+    }
+    @Benchmark
     public int measureSNSIS_256_Bound(){
         return snsis256.next();
     }
+    @Benchmark
+    public int measureSNSIS_1024_Bound(){
+        return snsis1024.next();
+    }
+
+
 }

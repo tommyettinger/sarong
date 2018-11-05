@@ -14,7 +14,7 @@ import java.io.Serializable;
  * possible results. You can go back to the previous item with {@link #previous()}, which is allowed to go earlier than
  * the first result generated (it will jump back to what is effectively the previous shuffled sequence). You can restart
  * the sequence with {@link #restart()} to use the same sequence over again (which doesn't make much sense here, since
- * this makes many sequences by re-shuffling), or {@link #restart(long)} to use a different seed (the bound is fixed).
+ * this makes many sequences by re-shuffling), or {@link #restart(int)} to use a different seed (the bound is fixed).
  * <br>
  * Created by Tommy Ettinger on 10/6/2018.
  * @author Viet Tung Hoang, Ben Morris, and Phillip Rogaway
@@ -22,7 +22,7 @@ import java.io.Serializable;
  */
 public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializable {
     private static final long serialVersionUID = 1L;
-    protected long seed;
+    protected int seed;
     /**
      * Constructs a ShuffledIntSequence with a random seed and a bound of 10.
      */
@@ -36,8 +36,7 @@ public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializ
      */
     public SNShuffledIntSequence(int bound)
     {
-        this(bound, (long) ((Math.random() - 0.5) * 0x10000000000000L)
-                ^ (long) (((Math.random() - 0.5) * 2.0) * 0x8000000000000000L));
+        this(bound, (int)((Math.random() - 0.5) * 0x1.0p32));
     }
 
     /**
@@ -45,7 +44,7 @@ public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializ
      * @param bound how many distinct ints this can return
      * @param seed any int; will be used to get several seeds used internally
      */
-    public SNShuffledIntSequence(int bound, long seed)
+    public SNShuffledIntSequence(int bound, int seed)
     {
         super(bound, seed);
         this.seed = seed;
@@ -61,7 +60,7 @@ public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializ
         int shuffleIndex = super.next();
         if(shuffleIndex == -1)
         {
-            restart(seed += 0x9E3779B97F4A7C15L);
+            restart(seed += 0x9E3779B9);
             index = 0;
             shuffleIndex = super.next();
         }
@@ -89,10 +88,10 @@ public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializ
     /**
      * Starts the sequence over, but can change the seed (completely changing the sequence). If {@code seed} is the same
      * as the seed given in the constructor, this will use the same sequence, acting like {@link #restart()}.
-     * @param seed any int; will be used to get several seeds used internally
+     * @param seed any long; will be used to get several seeds used internally
      */
     @Override
-    public void restart(long seed)
+    public void restart(int seed)
     {
         super.restart(seed);
         this.seed = seed;

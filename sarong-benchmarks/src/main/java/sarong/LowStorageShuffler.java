@@ -36,7 +36,7 @@ public class LowStorageShuffler implements Serializable {
     private static final long serialVersionUID = 1L;
     public final int bound;
     protected int index, pow4, halfBits, leftMask, rightMask;
-    protected int key0, key1;//, key2, key3;
+    protected int key0, key1;
 
     public static int nextPowerOfTwo(int x) {
         if (x == 0) return 1;
@@ -60,7 +60,7 @@ public class LowStorageShuffler implements Serializable {
      */
     public LowStorageShuffler(int bound)
     {
-        this(bound, (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        this(bound, (int)((Math.random() - 0.5) * 0x1.0p32));
     }
 
     /**
@@ -138,7 +138,15 @@ public class LowStorageShuffler implements Serializable {
 
     public static int determine(int z)
     {
-        return (z = ((z = ((z = ((z *= 0xBDEAD) ^ z >>> 13) * 0x7FFFF) ^ z >>> 12) * 0x1FFFF) ^ z >>> 14) * 0x1FFF) ^ z >>> 15;
+        z = (z ^ 0x91E10DA5) * 0xACFD3;
+        z ^= z >>> 13;
+        z = (z << 19) - z;
+        z ^= z >>> 12;
+        z = (z << 17) - z;
+        z ^= z >>> 14;
+        z = (z << 13) - z;
+        return z ^ z >>> 15;
+        //return (z = ((z = ((z = ((z *= 0xBDEAD) ^ z >>> 13) * 0x7FFFF) ^ z >>> 12) * 0x1FFFF) ^ z >>> 14) * 0x1FFF) ^ z >>> 15;
 
     }    
     /**
@@ -149,10 +157,8 @@ public class LowStorageShuffler implements Serializable {
     public void restart(int seed)
     {
         index = 0;
-        key0 = determine(seed ^ 0xDE4D * ~bound);
-        key1 = determine(key0 ^ 0xBA55 * bound);
-        key0 ^= determine(~key1 ^ 0xBEEF * bound);
-        key1 ^= determine(~key0 ^ 0x1337 * bound);
+        key0 = determine(seed);
+        key1 = determine(seed ^ key0);
     }
 
     /**

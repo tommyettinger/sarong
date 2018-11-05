@@ -10,9 +10,10 @@ import java.util.Random;
  * A mid-quality and very fast RNG that has no apparent visual artifacts here; uses an XLCG-type base that guarantees a
  * period of 2 to the 64 and that all seeds are valid, then adjusts the result of the XLCG irreversibly to improve
  * quality. This cannot produce all long values and will produce some longs more often than others. Even though it isn't
- * equidistributed, that is, it produces various outputs at different frequencies, it still passes at least 2TB of
- * PractRand testing with no anomalies or failures. It is about 0.06 ns slower per long than ThrustAltRNG, and has the
- * same caveats to its quality (both are not equidistributed, both have the same period, both allow all seeds).
+ * equidistributed, that is, it produces various outputs at different frequencies, it still passes 32TB of PractRand
+ * testing with only one anomaly, considered "unusual." It is about 0.06 ns slower per long than ThrustAltRNG, and has
+ * the same caveats to its quality (both are not equidistributed, both have the same period, both allow all seeds) but
+ * this is not a SkippingRandomness like ThrustAltRNG.
  * <br>
  * It implements RandomnessSource, but if you want to copy this class with no dependencies, then the class declaration
  * can easily be changed to {@code public class BasicRandom64 extends Random implements Serializable} without any other
