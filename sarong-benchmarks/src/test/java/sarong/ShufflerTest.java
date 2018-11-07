@@ -66,7 +66,7 @@ public class ShufflerTest {
     public void testSNBounds()
     {
         for (int i = 3; i <= 42; i++) {
-            SwapOrNotShuffler sn = new SwapOrNotShuffler(i, 31337 + i);
+            SwapOrNotShuffler sn = new SwapOrNotShuffler(i, 0x31337);
             System.out.printf("Bound %02d: %d", i, sn.next());
             for (int j = 1; j < i; j++) {
                 System.out.print(", " + sn.next());
@@ -77,12 +77,12 @@ public class ShufflerTest {
     @Test
     public void testSNReseed()
     {
-        SwapOrNotShuffler sn = new SwapOrNotShuffler(7, 0);
+        SwapOrNotShuffler sn = new SwapOrNotShuffler(30, 0);
         for (int i = 0; i < 30; i++) {
             sn.restart(i);
-            System.out.printf("Seed %08X: %d", i, sn.next());
-            for (int j = 1; j < 7; j++) {
-                System.out.print(", " + sn.next());
+            System.out.printf("Seed %08X: %02d", i, sn.next());
+            for (int j = 1; j < 30; j++) {
+                System.out.printf(", %02d", sn.next());
             }
             System.out.println();
         }

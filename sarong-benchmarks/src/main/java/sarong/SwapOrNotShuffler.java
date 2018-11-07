@@ -29,8 +29,8 @@ public class SwapOrNotShuffler implements Serializable {
     protected static final int ROUNDS = 6;
     protected int index;
     protected final int[] keys = new int[ROUNDS];
-    protected final int[] functions = new int[ROUNDS];
-
+//    protected final int[] functions = new int[ROUNDS];
+    protected int func;
     /**
      * Constructs a SwapOrNotShuffler with a random seed and a bound of 10.
      */
@@ -102,8 +102,9 @@ public class SwapOrNotShuffler implements Serializable {
     public void restart(int seed)
     {
         index = 0;
+        int z = seed;
         for (int i = 0; i < ROUNDS; i++) {
-            int z = (seed = (seed ^ 0x6C8E9CF5) * 0xACFD3) ^ 0xC13FA9A9;
+            z = (seed = (seed ^ 0x6C8E9CF5) * 0xACFD3) ^ 0xC13FA9A9;
             z ^= z >>> 13;
             z = (z << 19) - z;
             z ^= z >>> 12;
@@ -111,12 +112,17 @@ public class SwapOrNotShuffler implements Serializable {
             z ^= z >>> 14;
             z = (z << 13) - z;
             keys[i] = (int)((bound * ((z ^= z >>> 15) & 0x7FFFFFFFL)) >> 31);
-            z = z * 0xDB4F0B91 ^ i;
-            z = (z << 5) - (z << 3 | z >>> 29);
-            z ^= z >> 11;
-            z = (z << 10) - (z << 7 | z >>> 25) ^ 0xEDF84ED4;
-            functions[i] = z ^ z >>> 9;
+//            z = z * 0xDF6ED ^ i;
+//            z = (z << 5) - (z << 3 | z >>> 29);
+//            z ^= z >> 11;
+//            z = (z << 10) - (z << 7 | z >>> 25) ^ 0xEDF84ED4;
+//            functions[i] = z ^ z >>> 9;
         }
+        z *= 0xDF6ED;
+        z = (z << 5) - (z << 3 | z >>> 29);
+        z ^= z >> 11;
+        z = (z << 10) - (z << 7 | z >>> 25) ^ 0xEDF84ED4;
+        func = z ^ z >>> 9;
     }
 
     /**
@@ -157,7 +163,7 @@ public class SwapOrNotShuffler implements Serializable {
             int key = keys[i] - index;
             key += (key >> 31 & bound);
 //            if(functions[i] * ~Math.max(index, key) < 0) index = key;
-            if((functions[i] + Math.max(index, key) & 1) == 0) index = key;
+            if(((func >>> i) + Math.max(index, key) & 1) == 0) index = key;
         }
         return index;
     }
