@@ -124,6 +124,7 @@ public class PeriodTest {
     }
     ///////// BEGIN subcycle finder code and period evaluator
     @Test
+//    public static void main(String[] args)
     public void testSubcycle32()
     {
         // multiplying
@@ -282,22 +283,50 @@ public class PeriodTest {
         LinnormRNG lin = new LinnormRNG();
         System.out.println(lin.getState());
         Random rand = new RNG(lin).asRandom();
+//        for (int c = 1; c <= 200; c++) {
+//            //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
+//            final int r = BigInteger.probablePrime(20, rand).intValue();
+//            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
+//            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
+//            for (int j = 1; j < 32; j++) {
+//                i = 0;
+//                for (; ; i++) {
+//                    if ((stateA = Integer.rotateLeft(stateA * r, j)) == 1) {
+//                        if (i >>> 24 == 0xFF)
+//                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+        int target;
         for (int c = 1; c <= 200; c++) {
             //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
-            final int r = BigInteger.probablePrime(20, rand).intValue();
+//            final int r = BigInteger.probablePrime(31, rand).intValue();
             //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
-            for (int j = 1; j < 32; j++) {
-                i = 0;
-                for (; ; i++) {
-                    if ((stateA = Integer.rotateLeft(stateA * r, j)) == 1) {
-                        if (i >>> 24 == 0xFF)
-                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
-                        break;
+            for (int s = 1; s < 32; s++) {
+                for (int r = 1; r < 32; r++) {
+                    System.out.printf("%03d/200, testing (x << %d) - rotl(x, %d) ... ", c, s, r);
+                    stateA = 1;
+                    i = 0;
+                    for (int j = 0; j < 0x100000; j++) {
+                        stateA = (stateA << s) - Integer.rotateLeft(stateA, r);
+                    }
+                    target = stateA;
+                    for (; ; ) {
+                        if ((stateA = (stateA << s) - Integer.rotateLeft(stateA, r)) == target) {
+                            System.out.printf("Period is 0x%08X\n", i);
+                            break;
+                        }
+                        if (++i == 0) {
+                            System.out.printf("Cycled strangely, state ended on 0x%08X\n", stateA);
+                            break;
+                        }
                     }
                 }
             }
         }
+
 
 //        int stateA = 1, i = 0;
 //        for (; ; i++) {
@@ -326,8 +355,14 @@ public class PeriodTest {
     public void showCombined()
     {
         // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
-        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFFD3B83L);
+        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFF89FC1CL); // 5/1, 6/-4 
+//        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFD6D7E76L); // 5/1, 9/8 
         result = tmp.divide(result.gcd(tmp)).multiply(result);
+        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
+//        tmp = BigInteger.valueOf(0xFBD0F379L); // 27/20
+        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFFD3B83L);
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
 //        tmp = BigInteger.valueOf(0xFFFD3B83L); //mul 0xFFEDA0B5L //add 0xFFF8A98DL
 //        result = tmp.divide(result.gcd(tmp)).multiply(result);
 //        tmp = BigInteger.valueOf(0xFFF60EDDL); //add 0xFFF8A98DL

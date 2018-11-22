@@ -14,10 +14,13 @@ import java.io.Serializable;
  * {@link #restart()} to use the same sequence over again, or {@link #restart(int)} to use a different seed (the bound
  * is fixed).
  * <br>
- * This class is extremely similar to {@link LowStorageShuffler}, but LowStorageShuffler is optimized for usage on GWT
- * while SwapOrNotShuffler is meant to have higher quality in general. There's also {@link ShuffledIntSequence}, which
- * extends LowStorageShuffler and uses different behavior so it "re-shuffles" the results when all results have been
- * produced, and {@link SNShuffledIntSequence}, which extends this class but is otherwise like ShuffledIntSequence.
+ * This class is extremely similar to {@link LowStorageShuffler}; both classes are optimized for usage on GWT but
+ * SwapOrNotShuffler is meant to have higher quality in general. LowStorageShuffler sometimes performs better (when the
+ * bound is equal to or just less than a power of 4), but often performs much worse (when the bound is just a little
+ * more than a power of 4), while SwapOrNotShuffler has steady performance that has an expected-case near the best-case
+ * of LowStorageShuffler. There's also {@link ShuffledIntSequence}, which extends LowStorageShuffler and uses different
+ * behavior so it "re-shuffles" the results when all results have been produced, and {@link SNShuffledIntSequence},
+ * which extends this class but is otherwise like ShuffledIntSequence.
  * <br>
  * Created by Tommy Ettinger on 10/1/2018.
  * @author Viet Tung Hoang, Ben Morris, and Phillip Rogaway
@@ -29,7 +32,6 @@ public class SwapOrNotShuffler implements Serializable {
     protected static final int ROUNDS = 6;
     protected int index;
     protected final int[] keys = new int[ROUNDS];
-//    protected final int[] functions = new int[ROUNDS];
     protected int func;
     /**
      * Constructs a SwapOrNotShuffler with a random seed and a bound of 10.
@@ -47,9 +49,9 @@ public class SwapOrNotShuffler implements Serializable {
     }
 
     /**
-     * Constructs a SwapOrNotShuffler with the given exclusive upper bound and long seed.
+     * Constructs a SwapOrNotShuffler with the given exclusive upper bound and int seed.
      * @param bound how many distinct ints this can return
-     * @param seed any long; will be used to get several seeds used internally
+     * @param seed any int; will be used to get several seeds used internally
      */
     public SwapOrNotShuffler(int bound, int seed)
     {
@@ -104,7 +106,7 @@ public class SwapOrNotShuffler implements Serializable {
         index = 0;
         int z = seed;
         for (int i = 0; i < ROUNDS; i++) {
-            z = (seed = (seed ^ 0x6C8E9CF5) * 0xACFD3) ^ 0xC13FA9A9;
+            z = (seed = seed + 0x6C8E9CF5 ^ 0x9E3779BA);
             z ^= z >>> 13;
             z = (z << 19) - z;
             z ^= z >>> 12;
@@ -112,57 +114,39 @@ public class SwapOrNotShuffler implements Serializable {
             z ^= z >>> 14;
             z = (z << 13) - z;
             keys[i] = (int)((bound * ((z ^= z >>> 15) & 0x7FFFFFFFL)) >> 31);
-//            z = z * 0xDF6ED ^ i;
-//            z = (z << 5) - (z << 3 | z >>> 29);
-//            z ^= z >> 11;
-//            z = (z << 10) - (z << 7 | z >>> 25) ^ 0xEDF84ED4;
-//            functions[i] = z ^ z >>> 9;
         }
-        z *= 0xDF6ED;
-        z = (z << 5) - (z << 3 | z >>> 29);
-        z ^= z >> 11;
-        z = (z << 10) - (z << 7 | z >>> 25) ^ 0xEDF84ED4;
-        func = z ^ z >>> 9;
+        z = (z << 9) + (z << 8 | z >>> 24);
+        z = (z << 27) + (z << 20 | z >>> 12);
+        func = (z << 19) + (z << 14 | z >>> 18);
+        // func may be out of range for an int on GWT; this is OK because it always has bitwise
+        // ops used on it before anything else.
     }
 
-    /**
-     * @param data the data being ciphered
-     * @param key the current key portion
-     * @param fun the current round function portion
-     * @return the ciphered data
-     */
-    public int round(int data, int key, int fun)
-    {
-        // this is X′ in the paper
-        key -= data;
-        // cheaper modulo for when we know key (X') is >= -bound
-        key += (key >> 31) & bound;
-        // the operation of fun doesn't happen in the Abelian group, but X' and data are in it
-        return (fun * (Math.max(data, key) ^ fun) < 0) ? key : data;
-    }
+//    /**
+//     * @param data the data being ciphered
+//     * @param key the current key portion
+//     * @param fun the current round function portion
+//     * @return the ciphered data
+//     */
+//    public int round(int data, int key, int fun)
+//    {
+//        // this is X′ in the paper
+//        key -= data;
+//        // cheaper modulo for when we know key (X') is >= -bound
+//        key += (key >> 31) & bound;
+//        // the operation of fun doesn't happen in the Abelian group, but X' and data are in it
+//        return (fun * (Math.max(data, key) ^ fun) < 0) ? key : data;
+//    }
 
     /**
      * @param index the index to cipher; must be between 0 and {@link #bound}, inclusive
-     * @return the ciphered index, which might not be less than bound but will be less than or equal to {@link #bound}
+     * @return the ciphered index, which will be less than {@link #bound}
      */
-//    public int encode(int index)
-//    {
-//        for (int i = 0; i < ROUNDS; i++) { 
-//            int key = keys[i] - index;
-//            key += (key >> 31 & bound);
-////            final int bit = -(Integer.bitCount(functions[i] + Math.max(index, key)) & 1);
-////            final int bit = functions[i] * ~Math.max(index, key) >> 31;
-//            final int bit = -(functions[i] + Math.max(index, key) & 1);
-//            index = (key & bit) ^ (index & ~bit);
-//        }
-//        return index;
-//    }
     public int encode(int index)
     {
         for (int i = 0; i < ROUNDS; i++) { 
             int key = keys[i] - index;
             key += (key >> 31 & bound);
-//            if(functions[i] * ~Math.max(index, key) < 0) index = key;
             if(((func >>> i) + Math.max(index, key) & 1) == 0) index = key;
         }
         return index;

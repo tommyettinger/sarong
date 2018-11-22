@@ -78,7 +78,7 @@ public class SNShuffledIntSequence extends SwapOrNotShuffler implements Serializ
         int shuffleIndex = super.previous();
         if(shuffleIndex == -1)
         {
-            restart(seed -= 0x9E3779B97F4A7C15L);
+            restart(seed -= 0x9E3779B9);
             index = bound;
             shuffleIndex = super.previous();
         }
