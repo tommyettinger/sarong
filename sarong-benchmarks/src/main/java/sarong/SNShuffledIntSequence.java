@@ -5,8 +5,8 @@ import java.io.Serializable;
 /**
  * An infinite sequence of pseudo-random ints (typically used as indices) from 0 to some bound, with all possible ints
  * returned in a shuffled order before re-shuffling for the next result. Does not store the sequence in memory. Uses a
- * Swap-Or-Not network with 7 rounds using on a non-power-of-two domain, as described in
- * <a href="https://arxiv.org/abs/1208.1176">this paper by Viet Tung Hoang, Ben Morris, and Phillip Rogaway</a>.
+ * Swap-Or-Not shuffle with 6 rounds on a non-power-of-two domain (0 inclusive to bound exclusive), as described
+ * in <a href="https://arxiv.org/abs/1208.1176">this paper by Viet Tung Hoang, Ben Morris, and Phillip Rogaway</a>.
  * The API is very simple; you construct a SNShuffledIntSequence by specifying how many items it should shuffle (the
  * actual sequence is boundless, but the items it can return are limited to between 0 and some bound), and you can
  * optionally use a seed (it will be random if you don't specify one). Call {@link #next()} on a SNShuffledIntSequence
@@ -15,6 +15,10 @@ import java.io.Serializable;
  * the first result generated (it will jump back to what is effectively the previous shuffled sequence). You can restart
  * the sequence with {@link #restart()} to use the same sequence over again (which doesn't make much sense here, since
  * this makes many sequences by re-shuffling), or {@link #restart(int)} to use a different seed (the bound is fixed).
+ * <br>
+ * Like {@link SwapOrNotShuffler}, which this is based on, don't use this for cryptographic purposes. While the
+ * Swap-or-Not Shuffle algorithm is capable of strong security guarantees, this implementation emphasizes speed and does
+ * not offer any hope of security against a competent attacker.
  * <br>
  * Created by Tommy Ettinger on 10/6/2018.
  * @author Viet Tung Hoang, Ben Morris, and Phillip Rogaway

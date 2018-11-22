@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 /**
  * Gets a sequence of distinct pseudo-random ints (typically used as indices) from 0 to some bound, without storing all
- * of the sequence in memory. Uses a Swap-Or-Not network with 6 rounds using on a non-power-of-two domain, as described
- * in <a href="https://arxiv.org/abs/1208.1176">this paper by Viet Tung Hoang, Ben Morris, and Phillip Rogaway</a>.
- * The API is very simple; you construct a SwapOrNotShuffler by specifying how many items it can shuffle, and you can
- * optionally use a seed (it will be random if you don't specify a seed). Call {@link #next()} on a SwapOrNotShuffler
- * to get the next distinct int in the shuffled ordering; next() will return -1 if there are no more distinct ints (if
- * {@link #bound} items have already been returned). You can go back to the previous item with {@link #previous()},
- * which similarly returns -1 if it can't go earlier in the sequence. You can restart the sequence with
- * {@link #restart()} to use the same sequence over again, or {@link #restart(int)} to use a different seed (the bound
- * is fixed).
+ * of the sequence in memory. Uses a Swap-Or-Not shuffle with 6 rounds on a non-power-of-two domain (0 inclusive to
+ * bound exclusive), as described in <a href="https://arxiv.org/abs/1208.1176">this paper by Viet Tung Hoang, Ben
+ * Morris, and Phillip Rogaway</a>. The API is very simple; you construct a SwapOrNotShuffler by specifying how many
+ * items it can shuffle, and you can optionally use a seed (it will be random if you don't specify a seed). Call
+ * {@link #next()} on a SwapOrNotShuffler to get the next distinct int in the shuffled ordering; next() will return -1
+ * if there are no more distinct ints (if {@link #bound} items have already been returned). You can go back to the
+ * previous item with {@link #previous()}, which similarly returns -1 if it can't go earlier in the sequence. You can
+ * restart the sequence with {@link #restart()} to use the same sequence over again, or {@link #restart(int)} to use a
+ * different seed (the bound is fixed).
  * <br>
  * This class is extremely similar to {@link LowStorageShuffler}; both classes are optimized for usage on GWT but
  * SwapOrNotShuffler is meant to have higher quality in general. LowStorageShuffler sometimes performs better (when the
@@ -21,6 +21,12 @@ import java.io.Serializable;
  * of LowStorageShuffler. There's also {@link ShuffledIntSequence}, which extends LowStorageShuffler and uses different
  * behavior so it "re-shuffles" the results when all results have been produced, and {@link SNShuffledIntSequence},
  * which extends this class but is otherwise like ShuffledIntSequence.
+ * <br>
+ * Don't use this for cryptographic purposes; it uses too-few rounds, the "function" is probably as insecure as it gets,
+ * and in this version there are only 2 to the 32 possible keys, which would make a brute-force attack trivial. It seems
+ * good enough for generating shuffles for domains with unusual small sizes when the purpose is game-related, and not
+ * anything too serious. While the Swap-or-Not Shuffle algorithm is capable of strong security guarantees, this
+ * implementation emphasizes speed and does not offer any hope of security against a competent attacker.
  * <br>
  * Created by Tommy Ettinger on 10/1/2018.
  * @author Viet Tung Hoang, Ben Morris, and Phillip Rogaway
@@ -104,22 +110,24 @@ public class SwapOrNotShuffler implements Serializable {
     public void restart(int seed)
     {
         index = 0;
-        int z = seed;
+        int z;
+        func = ~seed;
         for (int i = 0; i < ROUNDS; i++) {
-            z = (seed = seed + 0x6C8E9CF5 ^ 0x9E3779BA);
+            z = (seed += 0xC13FA9A9); // 2 to the 32 divided by the plastic constant (an irrational number)
+            // 32-bit no-multiply version of Paperweight algorithm
             z ^= z >>> 13;
             z = (z << 19) - z;
             z ^= z >>> 12;
             z = (z << 17) - z;
             z ^= z >>> 14;
             z = (z << 13) - z;
-            keys[i] = (int)((bound * ((z ^= z >>> 15) & 0x7FFFFFFFL)) >> 31);
+            func += (keys[i] = (int)((bound * ((z ^ z >>> 15) & 0xFFFFFFFFL)) >> 32)); // can we avoid this multiply?
+            // func may be out of range for an int on GWT; this is OK because it always has bitwise
+            // ops used on it before anything else. Bitwise ops fix the range to a valid int.
         }
-        z = (z << 9) + (z << 8 | z >>> 24);
-        z = (z << 27) + (z << 20 | z >>> 12);
-        func = (z << 19) + (z << 14 | z >>> 18);
-        // func may be out of range for an int on GWT; this is OK because it always has bitwise
-        // ops used on it before anything else.
+//        z = (z << 9) + (z << 8 | z >>> 24) ^ 0x9E3779B9;
+//        z = (z << 27) + (z << 20 | z >>> 12);
+//        func = (z << 19) + (z << 14 | z >>> 18);
     }
 
 //    /**
