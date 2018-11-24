@@ -260,18 +260,18 @@ public final class Lathe32RNG implements StatefulRandomness, Serializable {
         stateB = s1 ^ s0 ^ (s1 >>> 13) ^ (s0 >>> 10); // b, c
         return result;//(result << 11 | result >>> 21) + s1;
     }
-
-    public static void main(String[] args)
-    {
-        Lathe32RNG rng = new Lathe32RNG(1, 1);
-        for (int i = 0; i < 256; i++) {
-            for (int j = 0; j < 0x40000000; j++) {
-                rng.nextLongOther();
-                if (rng.stateA == 1 && rng.stateB == 1) {
-                    System.out.printf("%016X\n", ((long) i) << 30 | j);
-                    break;
-                }
-            }
-        }
-    }
+//
+//    public static void main(String[] args)
+//    {
+//        Lathe32RNG rng = new Lathe32RNG(1, 1);
+//        for (int i = 0; i < 256; i++) {
+//            for (int j = 0; j < 0x40000000; j++) {
+//                rng.nextLongOther();
+//                if (rng.stateA == 1 && rng.stateB == 1) {
+//                    System.out.printf("%016X\n", ((long) i) << 30 | j);
+//                    break;
+//                }
+//            }
+//        }
+//    }
 }

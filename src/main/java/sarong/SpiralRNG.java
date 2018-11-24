@@ -224,42 +224,42 @@ public final class SpiralRNG implements RandomnessSource, Serializable {
     public int hashCode() {
         return (int) ((state ^ state >>> 32) + 31 * (stream ^ stream >>> 32));
     }
-    public static void main(String[] args)
-    {
-        /*
-        cd target/classes
-        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
-         */
-        byte state = 0, stream = 1;
-        int y = 0;
-        char[] counts = new char[256];
-        for (int i = 0; i < 0xFF00; i++) {
-            /*
-  					uint64_t y = stateB ^ stateB >> 31;
-					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
-					return (z ^ z >> 27u) + (stateB = y ^ y >> 37);
-             */
-//            y = -(stream & 1);
-//            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
-//            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
-
-            stream ^= (stream & 0xFF) >> 3;
-            final byte z = (state = (byte) (((state & 0xFF) ^ 0x65) * 0x93 + (stream ^= stream << 5)));
-            counts[z + (stream ^= (stream & 0xFF) >> 4) & 0xFF]++;
-//            y = -(stream & 1);
-//            final byte z = (state = (byte) (((state & 0xFF) * 0x65) + 0x7F + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8)))));
-////            final byte z = (state += 1 + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
-//            counts[(z ^ (z&0xFF) >>> 5) + (y >>> 24 ^ 0x95) & 0xFF]++;
-            
-            //uint64_t z = (stateA = (stateA ^ UINT64_C(0x6C8E9CF570932BD5)) * UINT64_C(0x5DA942042E4DD58B)) + (stateB = stateB >> 1u ^ (y & UINT64_C(0xD800000000000000)));
-            //final byte z = (byte) ((state = (byte) (((state & 0xFF) ^ 0x65) * 0x5B)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
-            //final byte z = (byte) (((state ^ state >>> 27) + (stream ^ stream >>> 30)) * 0xD9);
-        }
-        int b = -1;
-        for (int i = 0; i < 32; i++) {
-            System.out.printf("%03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X\n",
-                    ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF,
-                    ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF);
-        }
-    }
+//    public static void main(String[] args)
+//    {
+//        /*
+//        cd target/classes
+//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/SpiralRNG > spiral_asm.txt
+//         */
+//        byte state = 0, stream = 1;
+//        int y = 0;
+//        char[] counts = new char[256];
+//        for (int i = 0; i < 0xFF00; i++) {
+//            /*
+//  					uint64_t y = stateB ^ stateB >> 31;
+//					const uint64_t z = (stateA = (stateA * UINT64_C(0x41C64E6D)) + UINT64_C(1)) + (y ^= y << 25);
+//					return (z ^ z >> 27u) + (stateB = y ^ y >> 37);
+//             */
+////            y = -(stream & 1);
+////            final byte z = (byte) ((state = (byte) (((state & 0xFF) * 0x65) + 1)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+////            counts[(z ^ z >>> 27) + (y & 0x95) & 0xFF]++;
+//
+//            stream ^= (stream & 0xFF) >> 3;
+//            final byte z = (state = (byte) (((state & 0xFF) ^ 0x65) * 0x93 + (stream ^= stream << 5)));
+//            counts[z + (stream ^= (stream & 0xFF) >> 4) & 0xFF]++;
+////            y = -(stream & 1);
+////            final byte z = (state = (byte) (((state & 0xFF) * 0x65) + 0x7F + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8)))));
+//////            final byte z = (state += 1 + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+////            counts[(z ^ (z&0xFF) >>> 5) + (y >>> 24 ^ 0x95) & 0xFF]++;
+//            
+//            //uint64_t z = (stateA = (stateA ^ UINT64_C(0x6C8E9CF570932BD5)) * UINT64_C(0x5DA942042E4DD58B)) + (stateB = stateB >> 1u ^ (y & UINT64_C(0xD800000000000000)));
+//            //final byte z = (byte) ((state = (byte) (((state & 0xFF) ^ 0x65) * 0x5B)) + (stream = (byte)((stream & 0xFF) >>> 1 ^ (y & 0xB8))));
+//            //final byte z = (byte) (((state ^ state >>> 27) + (stream ^ stream >>> 30)) * 0xD9);
+//        }
+//        int b = -1;
+//        for (int i = 0; i < 32; i++) {
+//            System.out.printf("%03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X  %03d: %04X\n",
+//                    ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF,
+//                    ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF, ++b, counts[b] & 0xFFFF);
+//        }
+//    }
 }
