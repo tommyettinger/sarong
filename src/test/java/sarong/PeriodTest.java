@@ -300,32 +300,35 @@ public class PeriodTest {
 //            }
 //        }
         int target;
-        for (int c = 1; c <= 200; c++) {
+//        for (int c = 1; c <= 200; c++) {
             //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
 //            final int r = BigInteger.probablePrime(31, rand).intValue();
             //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-            for (int s = 1; s < 32; s++) {
-                for (int r = 1; r < 32; r++) {
-                    System.out.printf("%03d/200, testing (x << %d) - rotl(x, %d) ... ", c, s, r);
+//            for (int s = 1; s < 32; s++) {
+//                for (int r = 1; r < 32; r++) {
+            for (int s : new int[]{5, 9, 27}) {
+                for (int r : new int[]{1, 8, 20}) {
+                    System.out.printf("testing (x << %d) + rotl(x, %d) ... ", s, r);
                     stateA = 1;
                     i = 0;
                     for (int j = 0; j < 0x100000; j++) {
-                        stateA = (stateA << s) - Integer.rotateLeft(stateA, r);
+                        stateA = (stateA << s) + Integer.rotateLeft(stateA, r);
                     }
                     target = stateA;
+                    System.out.printf("target is 0x%08X, ", target);
                     for (; ; ) {
-                        if ((stateA = (stateA << s) - Integer.rotateLeft(stateA, r)) == target) {
-                            System.out.printf("Period is 0x%08X\n", i);
+                        if ((stateA = (stateA << s) + Integer.rotateLeft(stateA, r)) == target) {
+                            System.out.printf("period is 0x%08X\n", i);
                             break;
                         }
                         if (++i == 0) {
-                            System.out.printf("Cycled strangely, state ended on 0x%08X\n", stateA);
+                            System.out.printf("cycled strangely, state ended on 0x%08X\n", stateA);
                             break;
                         }
                     }
                 }
             }
-        }
+//        }
 
 
 //        int stateA = 1, i = 0;
@@ -382,28 +385,29 @@ public class PeriodTest {
         //Random rand = new RNG(lin).asRandom();
         //for (int c = 1; c <= 200; c++) {
             //final int r = lin.nextInt()|1;
-            final long r = 0x41C64E6BL;//0x41C64E6D;
+            final long r = 0x7FFFFFFFL;//0x41C64E6BL;//0x41C64E6D;
             //final int r = BigInteger.probablePrime(32, rand).intValue();
             //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
         //System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
         System.out.printf("testing r = 0x%08X\n", r);
 //        for (int j = 1; j < 64; j++) {
-        int j = 28;
-        i = 0;
-        OUTER:
-        for (; i < 0x4000000000L;) {
-            for (int k = 0x80000000; k < 0; k++) {
-                state *= r;
-                if ((state = (state << j | state >>> -j)) == 1) {
-                    //if (i > 0x100000000L)
-                    System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
-                    break OUTER;
+        for (int j = 3; j < 64; j++) {
+            i = 0L;
+            state = 1L;
+            OUTER:
+            for (; i < 0x40000000000L; ) {
+                for (int k = 0x80000000; k < 0; k++) {
+                    if ((state = (state << j | state >>> -j) * 0x7FFFFFFFL) == 1L) {
+                        //if (i > 0x100000000L)
+                        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
+                        break OUTER;
+                    }
+                    i++;
                 }
-                i++;
+                System.out.printf("Period is at least 0x%016X\n", i);
             }
-            System.out.printf("Period is at least 0x%016X\n", i);
+            System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
         }
-        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
 //            }
         //}
 

@@ -1326,6 +1326,32 @@ public class RNGBenchmark {
     {
         return Mover64R.nextInt();
     }
+    
+    private Molerat32RNG Molerat32 = new Molerat32RNG(0);
+    private RNG Molerat32R = new RNG(Molerat32);
+
+    @Benchmark
+    public long measureMolerat32()
+    {
+        return Molerat32.nextLong();
+    }
+
+    @Benchmark
+    public int measureMolerat32Int()
+    {
+        return Molerat32.next(32);
+    }
+    @Benchmark
+    public long measureMolerat32R()
+    {
+        return Molerat32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureMolerat32IntR()
+    {
+        return Molerat32R.nextInt();
+    }
 
     private SFC64RNG SFC64 = new SFC64RNG(9999L);
     private RNG SFC64R = new RNG(SFC64);
