@@ -3,17 +3,17 @@ package sarong;
 import sarong.util.StringKit;
 
 /**
- * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
- * specifically a cmr with a 64-bit state, that has its result multiplied by a constant. Its period is unknown. The
- * period is at the very least 2 to the 38, since the cmr generator has been checked up to that period length without
- * running out of period.
+ * The fastest generator in this library currently, and one of Mark Overton's subcycle generators from
+ * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically a cmr with a 64-bit state, that has
+ * its result multiplied by a constant. Its period is unknown, but is at the very least 2 to the 42, since the generator
+ * passes PractRand after generating that many 64-bit integers (it passes with two minor anomalies, and none at the end,
+ * the 32TB mark). It probably won't pass many tests when the bits are reversed, so that is something to be aware of.
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
- * it in a short-period subcycle. It skips at most 65536 times
- * into its core generator's cycle when seeding. It uses constants to store 128 known midpoints for that
- * generator, which ensures it calculates an advance at most 511 times. There are 2 to the 32
- * possible starting states for this generator when using {@link #setState(int)}, but it is unknown if that method
- * actually puts the generator in the longest possible cycle, or just a sufficiently long one.
+ * it in a short-period subcycle. It skips at most 65536 times into its core generator's cycle when seeding. It uses
+ * constants to store 128 known midpoints for that generator, which ensures it calculates an advance at most 511 times.
+ * There are 2 to the 16 possible starting states for this generator when using {@link #setState(int)}, but it is
+ * unknown if that method actually puts the generator in the longest possible cycle, or just a sufficiently long one.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed.
@@ -44,44 +44,49 @@ public final class MiniMover64RNG implements RandomnessSource {
     }
 
     private static final long[] startingA = {
-            0x0000000041C64E6BL, 0xEF4563DBF53BAFEBL, 0xC9473CEB940930F1L, 0xD005BC5361828BAAL, 0xFA26D82FE48E01F7L, 0xF364837DAF5B1665L, 0xB7C1B31ADD219790L, 0x051D187FB68CA207L,
-            0x991687C566C20C69L, 0xAC4695A49B3946C9L, 0x4A7A9075CC3C7893L, 0xBB3D9B37E8C10AE3L, 0x375FCBABD788698EL, 0xD68E2F704BC94031L, 0x1711B04B27E212B7L, 0x828D35A6EF002365L,
-            0x97A7894B55C6BE26L, 0x240E385EFBA8FA8BL, 0xC69C2B3811506884L, 0xA3A43140A2F5BCC2L, 0xE0A4E06471A54F53L, 0xD8083FC08D140615L, 0x23B3A4F7D613C2DCL, 0xFECD1327FA65F182L,
-            0x7669C2654D3BD322L, 0xB1E302546CC2F3B7L, 0x4DE59563A71AA71FL, 0xC00D9E5F7F1592C3L, 0xCD525EBBEE5898EEL, 0x123B8C22AD497218L, 0x49517AE95A218A36L, 0x98B4301E16ABD51BL,
-            0x1DEBD6974717B12DL, 0xC6DC07327CE1A182L, 0xA7A46144B93B06C2L, 0xE4724B4E4DA3CA65L, 0x1A033E1FAE65905DL, 0xBC36CE75A306C724L, 0x8C95690DB12AEAFFL, 0x46A4E4489885ED44L,
-            0xC6D8E7BA62C72E5BL, 0x75D92C3EFD6102A0L, 0x46B31EF29FFF25CAL, 0xDE0EFE69276684DEL, 0x4721D67D543E4795L, 0xF127E3F3CE6F4485L, 0x1D20550E407582D4L, 0x219D04CAC8820A2BL,
-            0x30E0D153CB92480EL, 0x8FE37BF67657F061L, 0x1D4AE8F0EF20C406L, 0x8D3D7DB6C69196B0L, 0xF14A1BB76968044FL, 0xFF7601F422327C04L, 0x5ABE5A6DF8579F67L, 0x6D40827D1CB439BDL,
-            0xBD690447C7063DE0L, 0xC90158B1277A71F0L, 0x8BC66371575E5DAAL, 0xFCD3CCFB8261026CL, 0x9EFD68155A1AB99DL, 0xCCE0F1F7E0A7C593L, 0x4C6EA9F8D4CBC6C9L, 0xDFF56BAEB0E2B21DL,
-            0xED30BF4BD50DB1B5L, 0x156438AAA396BF57L, 0x5F4A6C8463E7B5CFL, 0xB711FA310B981CCEL, 0xEFB2F1176429177EL, 0x5296D6B37C6DCE0DL, 0xF771DC501A5B414FL, 0x724AD00E5B0D67CCL,
-            0x284FDBD72A9F128EL, 0xCDEBD4032E3E3FD3L, 0x12AC369973C8B4D0L, 0x9700AF4FAAF66DEAL, 0x2EDA40BFC22D073BL, 0xB008A44F3E1E31F1L, 0x57F1D981B9B50E5EL, 0xFEF3677844A09EC7L,
-            0xDB47A0B27BF77DF3L, 0x0CB4C3B688BEB057L, 0xC9245362B0DD5010L, 0x1663D3102F7D7E64L, 0x1588D1E70E4FEC59L, 0x65F48845D0FC6926L, 0xDB759F0BEE52FE39L, 0x8F6138F380AFB411L,
-            0x631E84C5BDDC3635L, 0xDB0E835883D533F3L, 0xCA37A28BDDEE441AL, 0xB38757850835989BL, 0x996F3BE0FF3A16D3L, 0x0E06EB8C69D79D07L, 0x72D691BD9744BC9BL, 0xBBD092004CBAE725L,
-            0x7FDB07A2E7441983L, 0x7F1885B7B191BA2CL, 0x0ADD9FC3A3F4FDD8L, 0xFFAE7E1208AD17BEL, 0xAE4E2A78AC731CD3L, 0x8DE9DBBBA5E5516CL, 0x585BDE400F927D5DL, 0x76E6EF636DA3A391L,
-            0xC181F6966C1CC2CAL, 0x3EA18F057776D247L, 0xAD19ED105057096AL, 0xB5751F6E9097CEFFL, 0x1D5673FAB6BD2AD1L, 0x6DBBC55F1E5FA934L, 0x84A0B604F28B40CEL, 0x9DE4A3BC3252D6DBL,
-            0xC12B76EFFB817725L, 0x529FB77A0FE05D39L, 0x9FCF0CD7FD64D4FBL, 0x6614158F30DB33BDL, 0x04ACD499677DDC44L, 0xF774D044E9174271L, 0x19CEBC6A32905CDFL, 0x096EFF39BA4ABEFFL,
-            0x78B1F5AA54DA2681L, 0xE5D0D955D1D29F92L, 0xDF90549CD7E09E17L, 0xF35A265E90E0F720L, 0x0162FC20830ED5D4L, 0x991F77F540CCC6E1L, 0xE93B7118E07C28EBL, 0x597203FCC7A8546BL,
+            0x000000009E3779B9L, 0x039D4C0EC780FFC4L, 0x22BF0C8809124A51L, 0x419478016274934CL, 0x67EB9FB70D83B000L, 0x8CD9300DB62CECACL, 0x5EB38D35E65BCA91L, 0x26E82EB2B8035384L,
+            0xD3D6D3164D13AB96L, 0x22F343450051C48FL, 0xA9AF0884FFD1E11FL, 0x05B96ECE5678E573L, 0x49B2CD2FE2C5A8D7L, 0x4D58EEBEA4096D34L, 0xD078ADD52D36FCD7L, 0x5E7B25100F8B9199L,
+            0x367E6F4DFF334968L, 0xB6117240C6983624L, 0x7360D391EC35D779L, 0x3464E854FD0DB0DAL, 0xEDC7CB38DCEC6236L, 0x7561A6EAFD832509L, 0xA2EFF24EE359B58BL, 0xF55CC1EB3C9C0532L,
+            0x1188CFF963D7712AL, 0x5D1840177E492F3CL, 0x9A958076F51B6375L, 0x182520A1E0B8802DL, 0x63F63F7A18C3D395L, 0x1CD3EA9E55797B87L, 0xDA272371A34E004AL, 0xADE9798773033626L,
+            0xAB9E177279A07270L, 0xD445048F21FE6889L, 0x9F9E6FFEE5D49C65L, 0x76AA00E9CF42948FL, 0x5B94795BA31EF681L, 0x8E327E5C23C6278EL, 0xA7487525FC71C0EDL, 0xCB4553F5CC35D2FFL,
+            0xAA8DAFF6105EEC75L, 0xFF8BFDBF2939F199L, 0x763AB30E339AB08AL, 0xFAFF3BF69D677B2CL, 0xFE09C3CCADAC55FCL, 0xE0C2763206467E19L, 0x95BCE42330B30253L, 0xA46AA3749F42AFADL,
+            0x0730B18B71912C8BL, 0x675AD42A33C23833L, 0xF6538A72F3FAB5EFL, 0xC6D4D39FC5E67FCCL, 0xF46B4C5291B6C364L, 0xF09A18B4BF487325L, 0x3D2FCA863CA14A3DL, 0xEC81A78A94A738F2L,
+            0xB94126C859447C88L, 0x1A0C6CC2AB5BE5D6L, 0x3E6217A40B51C914L, 0x85B2612BFD533328L, 0x45CACB43C44E5435L, 0xD83F5E91A3E6DC14L, 0x9F0ECC356A201778L, 0x7C6D7B8C2566BC1BL,
+            0xE90BE053465D2259L, 0xC0770C8420804D8EL, 0xA9B28B647F3E1137L, 0xFB74B9506E69D300L, 0x084E188DA96E397AL, 0x5FB25AA5DCE4B43DL, 0x9660B29E3BCAE4E1L, 0x70D29772984ABB1FL,
+            0x5297E1ADF851EDB7L, 0x2194198123CF7CD3L, 0xA3D3AC4EC9E40109L, 0x17835AF5D74E022BL, 0xCD501B51D005E7F8L, 0x46DFD73FCA620DDEL, 0x628183BE18CB5C8CL, 0x206FC522720EFE48L,
+            0x821F722D1191758DL, 0x47E88E67E6FB64BBL, 0x799C46DCD00EF4A1L, 0x26F278866AD710A8L, 0x9FFD01EFEBC3AEF5L, 0xB797BA536EDDE98BL, 0xDF8D6B81F91E068DL, 0xCED943914A93E894L,
+            0x2572E5A835E13634L, 0x650C74798C3F4372L, 0x136F741D2FFE947FL, 0xFF038810EDDCD880L, 0xBF1C4C3B2046F3B2L, 0xDB6B1712607AE0E3L, 0x985EE8EF7E88A3B4L, 0xC96E7CD1F9DD6BFFL,
+            0x897083347494EA74L, 0x1AFE74C8344D347AL, 0x2CE6E347A0055876L, 0x88DB18C55AD2529FL, 0xBC1334454676A99BL, 0x18BE613EF297E1E5L, 0x5EC4983D09F91159L, 0xA1865969F348DEFDL,
+            0x765AD392A65888B7L, 0x551AF361C50DBA42L, 0x2BD28F4EC5BD37FFL, 0xD29D8B7E8FC9B0F7L, 0xCDF2826B168D8299L, 0xA98B919E395EE6B3L, 0xFC95F4661A18505FL, 0x1191A025A0E2A52DL,
+            0x4E5C4AC1875D7449L, 0xA9718CBD2CFA8291L, 0x1F1A31F33A4B6306L, 0xE195535A47B96813L, 0x5BA56ECA862113B2L, 0xFE5868AF147BED1DL, 0x6BAED11FA6AF9B8BL, 0x18E7116F90938968L,
+            0x6A25411BD98049A1L, 0x84797CA9522F6A59L, 0x7A2D443415A0C237L, 0xFB05EA2734634E63L, 0xBDD08B877D56F644L, 0x9D0CF3D98D427405L, 0xCE60AA76A161E94AL, 0x9B89A8F54366238AL,
     };
 
+    /**
+     * Sets the state using 16 bits of the given int {@code s}. Although 65536 seeds are possible, this will only
+     * generate a new state at most 511 times.
+     * @param s only 16 bits are used (values 0 to 65535 inclusive will all have different results).
+     */
     public final void setState(final int s) {
         stateA = startingA[s >>> 9 & 0x7F];
         for (int i = s & 0x1FF; i > 0; i--) {
-            stateA = (stateA << 42 | stateA >>> 22) * 0x41C64E6BL;
+            stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
         }
     }
 
     public final int nextInt()
     {
-        return (int)((stateA = (stateA << 42 | stateA >>> 22) * 0x41C64E6BL) * 0x41C64E6DL);
+        return (int)((stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL);
     }
     @Override
     public final int next(final int bits)
     {
-        return (int)((stateA = (stateA << 42 | stateA >>> 22) * 0x41C64E6BL) * 0x41C64E6DL) >>> (32 - bits);
+        return (int)((stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL) >>> (32 - bits);
     }
     @Override
     public final long nextLong()
     {
-        return (stateA = (stateA << 42 | stateA >>> 22) * 0x41C64E6BL) * 0x41C64E6DL;
+        return (stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL;
     }
 
     /**
@@ -406,18 +411,18 @@ public final class MiniMover64RNG implements RandomnessSource {
 //    }
 ///////// END subcycle finder code and period evaluator
     
-//    public static void main(String[] args)
-//    {
-//        long stateA = 0x41C64E6BL;
-//        System.out.println("long[] startingA = {");
-//        for (int ctr = 0; ctr < 128; ctr++) {
-//            System.out.printf("0x%016XL, ", stateA);
-//            if((ctr & 7) == 7)
-//                System.out.println();
-//            for (int i = 0; i < 512; i++) {
-//                stateA = (stateA << 42 | stateA >>> 22) * 0x41C64E6BL;
-//            }
-//        }
-//        System.out.println("};");
-//    }
+    public static void main(String[] args)
+    {
+        long stateA = 0x9E3779B9L;
+        System.out.println("long[] startingA = {");
+        for (int ctr = 0; ctr < 128; ctr++) {
+            System.out.printf("0x%016XL, ", stateA);
+            if((ctr & 7) == 7)
+                System.out.println();
+            for (int i = 0; i < 512; i++) {
+                stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
+            }
+        }
+        System.out.println("};");
+    }
 }
