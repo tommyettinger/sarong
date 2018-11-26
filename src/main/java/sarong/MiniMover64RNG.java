@@ -8,22 +8,34 @@ import sarong.util.StringKit;
  * its result multiplied by a constant. Its period is unknown, but is at the very least 2 to the 42, since the generator
  * passes PractRand after generating that many 64-bit integers (it passes with two minor anomalies, and none at the end,
  * the 32TB mark). It probably won't pass many tests when the bits are reversed, so that is something to be aware of.
+ * Notably, this generator's {@link #nextLong()} method is extremely small (as are all of the methods that use it as a
+ * basis), which may help with inlining decisions for HotSpot. Generating the next step just needs a bitwise rotation of
+ * the current state, multiplying the result by a 32-bit constant, and assigning that to state. Generating a long after
+ * that only needs a multiplication by a 31-bit constant, which could be modified to allow this to pass tests when the
+ * bits are reversed (presumably by appending one or more xorshift operations). The choice of constants for the
+ * multipliers and for the rotation needs to be carefully verified; earlier choices came close to failing PractRand at
+ * 8TB (and were worsening, so were likely to fail at 16TB), but this set of constants has higher quality in testing.
+ * For transparency, the constants used are the state multiplier 0x9E3779B9L, which is 2 to the 32 divided by the golden
+ * ratio, the post-processing multiplier 0x41C64E6DL, which was recommended in PractRand as a small LCG multiplier, and
+ * a left rotation constant of 21, which was chosen because it is slightly smaller than 1/3 of 64, and that seems to
+ * work well in a 64-bit CMR generator.
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
- * it in a short-period subcycle. It skips at most 65536 times into its core generator's cycle when seeding. It uses
- * constants to store 128 known midpoints for that generator, which ensures it calculates an advance at most 511 times.
- * There are 2 to the 16 possible starting states for this generator when using {@link #setState(int)}, but it is
- * unknown if that method actually puts the generator in the longest possible cycle, or just a sufficiently long one.
+ * it in a short-period subcycle. It skips at most 16712703 times into its core generator's cycle when seeding. It uses
+ * constants to store 256 known midpoints for the generator, then skips an additional up-to-1023 times past that point.
+ * Each midpoint is 65536 generations ahead of the previous midpoint. There are 2 to the 18 possible starting states for
+ * this generator when using {@link #setState(int)}, but it is unknown if that method actually puts the generator in the
+ * longest possible cycle, or just a sufficiently long one.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed.
  * <br>
- * Created by Tommy Ettinger on 9/13/2018.
+ * Created by Tommy Ettinger on 11/26/2018.
  * @author Mark Overton
  * @author Tommy Ettinger
  */
 public final class MiniMover64RNG implements RandomnessSource {
-    private long stateA, stateB;
+    private long state;
     public MiniMover64RNG()
     {
         setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
@@ -36,57 +48,79 @@ public final class MiniMover64RNG implements RandomnessSource {
     /**
      * Not advised for external use; prefer {@link #MiniMover64RNG(int)} because it guarantees a good subcycle. This
      * constructor allows all subcycles to be produced, including ones with a shorter period.
-     * @param stateA the state to use, exactly unless it is 0 (then this uses 1)
+     * @param state the state to use, exactly unless it is 0 (then this uses 1)
      */
-    public MiniMover64RNG(final long stateA)
+    public MiniMover64RNG(final long state)
     {
-        this.stateA = stateA == 0L ? 1L : stateA;
+        this.state = state == 0L ? 1L : state;
     }
 
-    private static final long[] startingA = {
-            0x000000009E3779B9L, 0x039D4C0EC780FFC4L, 0x22BF0C8809124A51L, 0x419478016274934CL, 0x67EB9FB70D83B000L, 0x8CD9300DB62CECACL, 0x5EB38D35E65BCA91L, 0x26E82EB2B8035384L,
-            0xD3D6D3164D13AB96L, 0x22F343450051C48FL, 0xA9AF0884FFD1E11FL, 0x05B96ECE5678E573L, 0x49B2CD2FE2C5A8D7L, 0x4D58EEBEA4096D34L, 0xD078ADD52D36FCD7L, 0x5E7B25100F8B9199L,
-            0x367E6F4DFF334968L, 0xB6117240C6983624L, 0x7360D391EC35D779L, 0x3464E854FD0DB0DAL, 0xEDC7CB38DCEC6236L, 0x7561A6EAFD832509L, 0xA2EFF24EE359B58BL, 0xF55CC1EB3C9C0532L,
-            0x1188CFF963D7712AL, 0x5D1840177E492F3CL, 0x9A958076F51B6375L, 0x182520A1E0B8802DL, 0x63F63F7A18C3D395L, 0x1CD3EA9E55797B87L, 0xDA272371A34E004AL, 0xADE9798773033626L,
-            0xAB9E177279A07270L, 0xD445048F21FE6889L, 0x9F9E6FFEE5D49C65L, 0x76AA00E9CF42948FL, 0x5B94795BA31EF681L, 0x8E327E5C23C6278EL, 0xA7487525FC71C0EDL, 0xCB4553F5CC35D2FFL,
-            0xAA8DAFF6105EEC75L, 0xFF8BFDBF2939F199L, 0x763AB30E339AB08AL, 0xFAFF3BF69D677B2CL, 0xFE09C3CCADAC55FCL, 0xE0C2763206467E19L, 0x95BCE42330B30253L, 0xA46AA3749F42AFADL,
-            0x0730B18B71912C8BL, 0x675AD42A33C23833L, 0xF6538A72F3FAB5EFL, 0xC6D4D39FC5E67FCCL, 0xF46B4C5291B6C364L, 0xF09A18B4BF487325L, 0x3D2FCA863CA14A3DL, 0xEC81A78A94A738F2L,
-            0xB94126C859447C88L, 0x1A0C6CC2AB5BE5D6L, 0x3E6217A40B51C914L, 0x85B2612BFD533328L, 0x45CACB43C44E5435L, 0xD83F5E91A3E6DC14L, 0x9F0ECC356A201778L, 0x7C6D7B8C2566BC1BL,
-            0xE90BE053465D2259L, 0xC0770C8420804D8EL, 0xA9B28B647F3E1137L, 0xFB74B9506E69D300L, 0x084E188DA96E397AL, 0x5FB25AA5DCE4B43DL, 0x9660B29E3BCAE4E1L, 0x70D29772984ABB1FL,
-            0x5297E1ADF851EDB7L, 0x2194198123CF7CD3L, 0xA3D3AC4EC9E40109L, 0x17835AF5D74E022BL, 0xCD501B51D005E7F8L, 0x46DFD73FCA620DDEL, 0x628183BE18CB5C8CL, 0x206FC522720EFE48L,
-            0x821F722D1191758DL, 0x47E88E67E6FB64BBL, 0x799C46DCD00EF4A1L, 0x26F278866AD710A8L, 0x9FFD01EFEBC3AEF5L, 0xB797BA536EDDE98BL, 0xDF8D6B81F91E068DL, 0xCED943914A93E894L,
-            0x2572E5A835E13634L, 0x650C74798C3F4372L, 0x136F741D2FFE947FL, 0xFF038810EDDCD880L, 0xBF1C4C3B2046F3B2L, 0xDB6B1712607AE0E3L, 0x985EE8EF7E88A3B4L, 0xC96E7CD1F9DD6BFFL,
-            0x897083347494EA74L, 0x1AFE74C8344D347AL, 0x2CE6E347A0055876L, 0x88DB18C55AD2529FL, 0xBC1334454676A99BL, 0x18BE613EF297E1E5L, 0x5EC4983D09F91159L, 0xA1865969F348DEFDL,
-            0x765AD392A65888B7L, 0x551AF361C50DBA42L, 0x2BD28F4EC5BD37FFL, 0xD29D8B7E8FC9B0F7L, 0xCDF2826B168D8299L, 0xA98B919E395EE6B3L, 0xFC95F4661A18505FL, 0x1191A025A0E2A52DL,
-            0x4E5C4AC1875D7449L, 0xA9718CBD2CFA8291L, 0x1F1A31F33A4B6306L, 0xE195535A47B96813L, 0x5BA56ECA862113B2L, 0xFE5868AF147BED1DL, 0x6BAED11FA6AF9B8BL, 0x18E7116F90938968L,
-            0x6A25411BD98049A1L, 0x84797CA9522F6A59L, 0x7A2D443415A0C237L, 0xFB05EA2734634E63L, 0xBDD08B877D56F644L, 0x9D0CF3D98D427405L, 0xCE60AA76A161E94AL, 0x9B89A8F54366238AL,
+    private static final long[] starting = {
+            0x000000009E3779B9L, 0x3B8FC958F31EDA72L, 0xD65FCA34221AE79EL, 0xD1D0129A934029AEL, 0x76487440E53D6DF1L, 0x23A3513401A622B0L, 0x90190513B057E092L, 0xE71A9E0801045EDDL,
+            0xCC8C18579C4F58F7L, 0x63F2C5AB11CE6A0DL, 0xD68A4E08B923DB48L, 0xAAB0DE27C8F2AF64L, 0x86CB87754B5642E8L, 0xDEFA30634C0B7577L, 0x43BE36F3C3B74F65L, 0x6B6FD89017A0A97DL,
+            0x440B41A2A5E1C0D6L, 0xFFEB33C5B24EE830L, 0x26E53595E2280A26L, 0x12F2526D06CDF7FDL, 0xFEAFF92D0E5FF424L, 0xCD6D34166E5C15ABL, 0xFC3F2307ED6A5094L, 0xD19147F8E373B79CL,
+            0x6B4385E08BD17503L, 0xE3307AF38B4B3F69L, 0x9E075AF9344F3172L, 0xE6ABC10084A3C64BL, 0x623E72CFA2124CE1L, 0x9619FFDC7741150EL, 0x35BBB499321FB17CL, 0x547D93E6EABAE288L,
+            0xB1BB900999391989L, 0xF2B6A36E2B74ABFDL, 0xB1554E2018BBBDCEL, 0xC7D2949E15B0F435L, 0xB6CE7BB5CB4B85D3L, 0x89D8EF6444C21B72L, 0x807C2CDCCAA04650L, 0x508E97EC6F7E8200L,
+            0x6E26B960CA372975L, 0xB18325F328CACED6L, 0x1BE26F268AAEE28DL, 0x7B9D09A322914A6AL, 0xB60D3754CA86E8AEL, 0x2BDDE7F688AAC807L, 0x4277DB3E755DF315L, 0x0D9D5C7376A318B0L,
+            0x77B8AE1FCB50740AL, 0xE98BBFA83A0E1B98L, 0xFA7D325D5012FAF6L, 0xFBAFB6A750122E5CL, 0x2FC293145BF17259L, 0xAEE61EF2E2C1136EL, 0xD843DA31FA30166AL, 0xCB5439714BE182A0L,
+            0x2BF7D169AA3FCB21L, 0x6A32949AFE26086AL, 0x0D2282637A5DE391L, 0xBCE4ABF63EAD1D03L, 0xEC5A1E315AC21C06L, 0xEE78DE4B0817F57DL, 0x60D8A7563EF1477AL, 0x911E18BF0D40144BL,
+            0xA3DD993DA75E5585L, 0x76CACC2F1D980C23L, 0x13B08273152A6CF4L, 0x412B694F86A0FD74L, 0xE33E2FA2EC85334EL, 0xFBFDB2E43EAE4FDAL, 0x901685992003C139L, 0x25DB6A3A3F382B37L,
+            0x7A3F9DCCAA9A31A1L, 0x42FECE662CC20318L, 0xE5830C50C07AAC70L, 0x1BFFD4DA173ABA99L, 0xC7360E3B7192B2C7L, 0x741470808ED902F3L, 0xC92962DDDFEA8FFAL, 0x055D06BDE448E8C2L,
+            0xE0A7CC888C02BE8FL, 0x8E7E0790DD8E07EAL, 0x826B0553895B1AAFL, 0xE8C58BA7AAA58FFEL, 0xCF7151A441189F5FL, 0x3A7A1CBB4E879FA7L, 0xD72EEC8A7EFCBBA3L, 0x6B8C77A8954D0BF7L,
+            0x73F34FE8FB0D8A9BL, 0x6AE297552616C873L, 0x2C4BFD618875BD73L, 0xE98E66DEFEB78A21L, 0xCB834E733E709C50L, 0x8549E7EE0A84CDC2L, 0x2B6E96B9372049C8L, 0x815706308CBE0965L,
+            0x0744B5093B9CABBAL, 0x8DCF6EA1903504E7L, 0x132A796A48ADFCA5L, 0x9F8F27C1E909C058L, 0x2CEE06E6EE1F5464L, 0x4D62EB09818C8F28L, 0x227FE2C3F1D602BFL, 0x3E27033C9D492A2DL,
+            0xBDA74A65A3510F69L, 0x9EDA095387235CE8L, 0xD4E4C6B09EB5236DL, 0x4BD5574FDFEF003DL, 0x44E862A20801F72FL, 0x27E6EFE688B4C83EL, 0xC9E8B6E36B64B351L, 0x94F8B89DD9D95A23L,
+            0x52BCD222D63A833BL, 0x7D4E109CBCAC447BL, 0x205C5D9B41D4B536L, 0x2DEE86E015A01563L, 0xD50E141D4E626F0EL, 0x784CF0A2A7DF0F2CL, 0xB415A9891FB8D999L, 0xF55E85E3D31FFEAAL,
+            0x2C8273E565F8596CL, 0x3EDCC59F02D0AD91L, 0x24FBE3D4820DF713L, 0x18D9A3DA2219387EL, 0xCF1F6C734E66C1F5L, 0x277967EBA92FADA7L, 0x004D1C3CE5DB911BL, 0xBB24BA3C8385C723L,
+            0x8D5875128360F2A7L, 0xA9C6C4DF9FCCCA06L, 0x6FECA1183DDF2208L, 0xEC6A1B4526680673L, 0x1F30BD544B870B14L, 0xC8CEF1B3296A340FL, 0xD0D83FE58A46B927L, 0x918D0D521351E66EL,
+            0x365B57385CD83843L, 0x3801138F4D2D36DFL, 0x3FBB9D893B0D2343L, 0x11F44781EA77AD00L, 0x43DCD114D96729FDL, 0x3BD4DCCB594B6200L, 0xA24A9B213A09B058L, 0x09A3E7F0BE142BB1L,
+            0x90236C4D945599B7L, 0x2BA8A0608D0417ECL, 0xC24FEF571FC782DFL, 0x8DC625863607028BL, 0xBEDA2DBFB8A84987L, 0x915D2C8925A72E05L, 0xDBE8B345156E5C33L, 0xB699F01B3A7135B8L,
+            0x73E82A7E2DBE8CF5L, 0xEC0348F876389FB5L, 0x4A0B54EA2D49A245L, 0x338791CF4309ED1CL, 0xC600944F8239852CL, 0x54E2A687D4995C26L, 0x7C9E29BADBED71CBL, 0x4094B0FF0339D075L,
+            0xF0204249A6058FB0L, 0x6541EE890DA7F33BL, 0xF2FB714B53B6540CL, 0x3299C9024579D55BL, 0x3AE82580C2CB344DL, 0x62281AC6A4C19184L, 0x523711B215B65DA7L, 0xD2232BC66BAEBF8CL,
+            0xF05868D81D54CADFL, 0xF8C670CBFE46DAB5L, 0x60F49E5FA3A30680L, 0x33BED3AE1CA5FA89L, 0x0B9577229DA48E79L, 0x5586CC9E612E7655L, 0x31272E47B47F8AF2L, 0x529A3EC1636A9FC0L,
+            0x90501EF07A4EBFADL, 0xAEFF651E4A047F52L, 0xF160B66AEA6603BDL, 0x9BC156E2775665D1L, 0xD3C898E787E6ADBCL, 0x393F6D6B6B4AC94DL, 0x9795EE44CBA5E935L, 0x676232369E68CA73L,
+            0x516FC161A97658B9L, 0x7243223BD7B8812AL, 0x4061A73DE3AC1EB6L, 0x87589DE0B4CBA6B6L, 0x17F2D34487B117AFL, 0x5E7786C984DEDF4BL, 0xD30DF191B5B0923DL, 0xA49791249D2684B3L,
+            0x1A0CBCFB5BE5AB5CL, 0x7628D1C1EB51C2F2L, 0x50168CC527A39AF8L, 0x697CB60CF8F9322BL, 0x48AFF611B2E10946L, 0xA3858FD4EA18E2B6L, 0xEFD20E4CEF2A65F5L, 0xDB1CED0A445A293FL,
+            0xFDF61684CC927D67L, 0xDC6376DBBB5D3BFCL, 0xD09BFB2F6F8D6CDFL, 0x1E84842524902A05L, 0xBD92B8C37F9EE46DL, 0x06F7A007ED5C2ED6L, 0x82EE75DF651DCCA7L, 0x9F2D4ED71D6180EEL,
+            0xA0D3DCD3B8AE1150L, 0x7D17C26D2C397B06L, 0x8C0720297799B091L, 0x71070EF8E8D38300L, 0xBC0430BB90CF3145L, 0xEA523D477537C90CL, 0xD42D8753251C0BD3L, 0xF0967F3D663603D9L,
+            0x6A724E528FA997CFL, 0xA476827F739B7100L, 0xFB4848834480191AL, 0xC9D2E5724A0AE765L, 0xD220F37EB7FD56A5L, 0xC0986CDDC6A4613AL, 0x4B70F47719C3D8D8L, 0x87AD1A0426B0BE6EL,
+            0x0753E68807C62CB5L, 0x99BA97040B35F7BFL, 0xB278C34645360313L, 0x2A3BB3439F729DFDL, 0x1BA7FEDEFE42E878L, 0xE689C25E229FF893L, 0x5A886195FB13BB22L, 0x16B17F955E2C9A76L,
+            0x40AF38E5B5413AC6L, 0xA2F26EB7E9A4949FL, 0xAFE07155EE2C5FCDL, 0x46F6C31C27832F3EL, 0x82E6051363F4CC9DL, 0x3D2B03828EAB31D3L, 0x126CA811A46BF03BL, 0x69E8E26BDF6409F1L,
+            0xF9E2985426D876ADL, 0x008CA76E0541E8E0L, 0xC27A4485B397F943L, 0x85EB66C4C81E90DFL, 0x44FEB62F172BF3E0L, 0x238A7B993CE155BEL, 0x988BF9ECF8F36F59L, 0x3A58DA6AB00C876AL,
+            0x74348C5D00115985L, 0xD0291A87BAA4649EL, 0x7A36C1D79F4FC33BL, 0x28548F67E91EA20FL, 0xB01469B524F79B6EL, 0x67AEEBA546D67C35L, 0x30E10DE9E3BABCCBL, 0x45F9DC2FC4B25D03L,
     };
 
     /**
-     * Sets the state using 16 bits of the given int {@code s}. Although 65536 seeds are possible, this will only
-     * generate a new state at most 511 times.
-     * @param s only 16 bits are used (values 0 to 65535 inclusive will all have different results).
+     * Sets the state using 16 bits of the given int {@code s}. Although 262144 seeds are possible, this will only
+     * generate a new state at most 1023 times, and each generated state takes less time than {@link #nextLong()}.
+     * Giving this method sequential values for s will be guaranteed to produce larger distances between the sequences
+     * produced by those states; the worst-case is when s values are separated by exactly 256. For most values of s and
+     * s + 1, the sequence starting with s + 1 is the same as the sequence starting with s after it generates 65536 long
+     * values. However, the sequence starting with s + 256 is the same as the sequence starting with s after it
+     * generates 1 long value.
+     * @param s only 18 bits are used (values 0 to 262143 inclusive will all have different results).
      */
     public final void setState(final int s) {
-        stateA = startingA[s >>> 9 & 0x7F];
-        for (int i = s & 0x1FF; i > 0; i--) {
-            stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
+        long v = starting[s & 0xFF];
+        for (int i = s >>> 8 & 0x3FF; i > 0; i--) {
+            v = (v << 21 | v >>> 43) * 0x9E3779B9L;
         }
+        state = v;
     }
 
     public final int nextInt()
     {
-        return (int)((stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL);
+        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL);
     }
     @Override
     public final int next(final int bits)
     {
-        return (int)((stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL) >>> (32 - bits);
+        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL) >>> (32 - bits);
     }
     @Override
     public final long nextLong()
     {
-        return (stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L) * 0x41C64E6DL;
+        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL;
     }
 
     /**
@@ -94,11 +128,11 @@ public final class MiniMover64RNG implements RandomnessSource {
      * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
      * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
      *
-     * @return a copy of this Mover64RNG
+     * @return a copy of this MiniMover64RNG
      */
     @Override
     public MiniMover64RNG copy() {
-        return new MiniMover64RNG(stateA);
+        return new MiniMover64RNG(state);
     }
 
     /**
@@ -107,24 +141,24 @@ public final class MiniMover64RNG implements RandomnessSource {
      * may not be. 
      * @return the state, a long
      */
-    public long getStateA()
+    public long getState()
     {
-        return stateA;
+        return state;
     }
 
     /**
      * Sets the "A" part of the state to any long, which may put the generator in a low-period subcycle.
      * Use {@link #setState(int)} to guarantee a good subcycle.
-     * @param stateA any int
+     * @param state any int
      */
-    public void setStateA(final long stateA)
+    public void setState(final long state)
     {
-        this.stateA = stateA == 0L ? 1L : stateA;
+        this.state = state == 0L ? 1L : state;
     }
     
     @Override
     public String toString() {
-        return "Mover64RNG with state 0x" + StringKit.hex(stateA);
+        return "MiniMover64RNG with state 0x" + StringKit.hex(state);
     }
 
     @Override
@@ -132,297 +166,28 @@ public final class MiniMover64RNG implements RandomnessSource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MiniMover64RNG mover64RNG = (MiniMover64RNG) o;
+        MiniMover64RNG miniMover64RNG = (MiniMover64RNG) o;
 
-        return stateA == mover64RNG.stateA;
+        return state == miniMover64RNG.state;
     }
 
     @Override
     public int hashCode() {
-        return (int)(stateA ^ stateA >>> 32);
+        return (int)(state ^ state >>> 32);
     }
 
 //    public static void main(String[] args)
 //    {
-//        // A 10 0xC010AEB4
-//        // B 22 0x195B9108
-//        // all  0x04C194F3485D5A68
-//
-//        // A 17 0xF7F87D28
-//        // B 14 0xF023E25B 
-//        // all  0xE89BB7902049CD38
-//
-//
-//        // A11 B14 0xBBDA9763B6CA318D
-//        // A8  B14 0xC109F954C76CB09C
-//        // A17 B14 0xE89BB7902049CD38
-////        BigInteger result = BigInteger.valueOf(0xF7F87D28L);
-////        BigInteger tmp = BigInteger.valueOf(0xF023E25BL);
-////        result = tmp.divide(result.gcd(tmp)).multiply(result);
-////        System.out.printf("0x%016X\n", result.longValue());
-//        int stateA = 1, i = 0;
-//        for (; ; i++) {
-//            if((stateA = Integer.rotateLeft(stateA * 0x9E37, 17)) == 1)
-//            {
-//                System.out.printf("0x%08X\n", i);
-//                break;
-//            }
-//        }
-//        BigInteger result = BigInteger.valueOf(i & 0xFFFFFFFFL);
-//        i = 0;
-//        for (; ; i++) {
-//            if((stateA = Integer.rotateLeft(stateA * 0x4E6D, 14)) == 1)
-//            {
-//                System.out.printf("0x%08X\n", i);
-//                break;
-//            }
-//        }         
-//        BigInteger tmp = BigInteger.valueOf(i & 0xFFFFFFFFL);
-//        result = tmp.divide(result.gcd(tmp)).multiply(result);
-//        System.out.printf("\n0x%016X\n", result.longValue());
-//
-//    }
-
-//    public static void main(String[] args)
-//    {
-//        Mover32RNG m = new Mover32RNG();
-//        System.out.println("int[] startingA = {");
-//        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x00000200) {
-//            m.setState(i);
-//            System.out.printf("0x%08X, ", m.stateA);
+//        long stateA = 0x9E3779B9L;
+//        System.out.println("long[] starting = {");
+//        for (int ctr = 0; ctr < 256; ctr++) {
+//            System.out.printf("0x%016XL, ", stateA);
 //            if((ctr & 7) == 7)
 //                System.out.println();
-//        }
-//        System.out.println("}, startingB = {");
-//        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x02000000) {
-//            m.setState(i);
-//            System.out.printf("0x%08X, ", m.stateB);
-//            if((ctr & 7) == 7)
-//                System.out.println();
+//            for (int i = 0; i < 0x10000; i++) {
+//                stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
+//            }
 //        }
 //        System.out.println("};");
 //    }
-    
-///////// BEGIN subcycle finder code and period evaluator
-//    public static void main(String[] args)
-//    {
-//        // multiplying
-//        // A refers to 0x9E377
-//        // A 10 0xC010AEB4
-//        // B refers to 0x64E6D
-//        // B 22 0x195B9108
-//        // all  0x04C194F3485D5A68
-//
-//        // A=Integer.rotateLeft(A*0x9E377, 17) 0xF7F87D28
-//        // B=Integer.rotateLeft(A*0x64E6D, 14) 0xF023E25B 
-//        // all  0xE89BB7902049CD38
-//
-//
-//        // A11 B14 0xBBDA9763B6CA318D
-//        // A8  B14 0xC109F954C76CB09C
-//        // A17 B14 0xE89BB7902049CD38
-////        BigInteger result = BigInteger.valueOf(0xF7F87D28L);
-////        BigInteger tmp = BigInteger.valueOf(0xF023E25BL);
-////        result = tmp.divide(result.gcd(tmp)).multiply(result);
-////        System.out.printf("0x%016X\n", result.longValue());
-//        // 0x9E37
-//        // rotation 27: 0xEE06F34D
-//        // 0x9E35
-//        // rotation 6 : 0xE1183C3A
-//        // rotation 19: 0xC4FCFC55
-//        // 0x9E3B
-//        // rotation 25: 0xE69313ED
-//        // 0xDE4D
-//        // rotation 3 : 0xF6C16607
-//        // rotation 23: 0xD23AD58D
-//        // rotation 29: 0xC56DC41F
-//        // 0x1337
-//        // rotation 7: 0xF41BD009
-//        // rotation 20: 0xF5846878
-//        // rotation 25: 0xF38658F9
-//        // 0xACED
-//        // rotation 28: 0xFC98CC08
-//        // rotation 31: 0xFA18CD57
-//        // 0xBA55
-//        // rotation 19: 0xFB059E43
-//        // 0xC6D5
-//        // rotation 05: 0xFFD78FD4
-//        // 0x5995
-//        // rotation 28: 0xFF4AB87D
-//        // rotation 02: 0xFF2AA5D5
-//        // 0xA3A9
-//        // rotation 09: 0xFF6B3AF7
-//        // 0xB9EF
-//        // rotation 23: 0xFFAEB037
-//        // 0x3D29
-//        // rotation 04: 0xFF6B92C5
-//        // 0x5FAB
-//        // rotation 09: 0xFF7E3277 // seems to be very composite
-//        // 0xCB7F
-//        // rotation 01: 0xFF7F28FE
-//        // 0x89A7
-//        // rotation 13: 0xFFFDBF50 // wow! note that this is a multiple of 16
-//        // 0xBCFD
-//        // rotation 17: 0xFFF43787 // second-highest yet, also an odd number
-//        // 0xA01B
-//        // rotation 28: 0xFFEDA0B5
-//        // 0xC2B9
-//        // rotation 16: 0xFFEA9001
-//        
-//        
-//        // adding
-//        // 0x9E3779B9
-//        // rotation 2 : 0xFFCC8933
-//        // rotation 7 : 0xF715CEDF
-//        // rotation 25: 0xF715CEDF
-//        // rotation 30: 0xFFCC8933
-//        // 0x6C8E9CF5
-//        // rotation 6 : 0xF721971A
-//        // 0x41C64E6D
-//        // rotation 13: 0xFA312DBF
-//        // rotation 19: 0xFA312DBF
-//        // rotation 1 : 0xF945B8A7
-//        // rotation 31: 0xF945B8A7
-//        // 0xC3564E95
-//        // rotation 1 : 0xFA69E895 also 31
-//        // rotation 5 : 0xF2BF5E23 also 27
-//        // 0x76BAF5E3
-//        // rotation 14: 0xF4DDFC5A also 18
-//        // 0xA67943A3 
-//        // rotation 11: 0xF1044048 also 21
-//        // 0x6C96FEE7
-//        // rotation 2 : 0xF4098F0D
-//        // 0xA3014337
-//        // rotation 15: 0xF3700ABF also 17
-//        // 0x9E3759B9
-//        // rotation 1 : 0xFB6547A2 also 31
-//        // 0x6C8E9CF7
-//        // rotation 7 : 0xFF151D74 also 25
-//        // rotation 13: 0xFD468E2B also 19
-//        // rotation 6 : 0xF145A7EB also 26
-//        // 0xB531A935
-//        // rotation 13: 0xFF9E2F67 also 19
-//        // 0xC0EF50EB
-//        // rotation 07: 0xFFF8A98D also 25
-//        // 0x518DC14F
-//        // rotation 09: 0xFFABD755 also 23 // probably not prime
-//        // 0xA5F152BF
-//        // rotation 07: 0xFFB234B2 also 27
-//        // 0x8092D909
-//        // rotation 10: 0xFFA82F7C also 22
-//        // 0x73E2CCAB
-//        // rotation 09: 0xFF9DE8B1 also 23
-//        // stateB = rotate32(stateB + 0xB531A935, 13)
-//        // stateC = rotate32(stateC + 0xC0EF50EB, 7)
-//
-//        // subtracting, rotating, and bitwise NOT:
-//        // 0xC68E9CF3
-//        // rotation 13: 0xFEF97E17, also 19 
-//        // 0xC68E9CB7
-//        // rotation 12: 0xFE3D7A2E
-//
-//        // left xorshift
-//        // 5
-//        // rotation 15: 0xFFF7E000
-//        // 13
-//        // rotation 17: 0xFFFD8000
-//
-//        // minus left shift, then xor
-//        // state - (state << 12) ^ 0xC68E9CB7, rotation 21: 0xFFD299CB
-//        // add xor
-//        // state + 0xC68E9CB7 ^ 0xDFF4ECB9, rotation 30: 0xFFDAEDF7
-//        // state + 0xC68E9CB7 ^ 0xB5402ED7, rotation 01: 0xFFE73631
-//        // state + 0xC68E9CB7 ^ 0xB2B386E5, rotation 24: 0xFFE29F5D
-//        // sub xor
-//        // state - 0x9E3779B9 ^ 0xE541440F, rotation 22: 0xFFFC9E3E
-//
-//
-//        // best power of two:
-//        // can get 63.999691 with: (period is 0xFFF1F6F18B2A1330)
-//        // multiplying A by 0x89A7 and rotating left by 13
-//        // multiplying B by 0xBCFD and rotating left by 17
-//        // can get 63.998159 with: (period is 0xFFAC703E2B6B1A30)
-//        // multiplying A by 0x89A7 and rotating left by 13
-//        // multiplying B by 0xB9EF and rotating left by 23
-//        // can get 63.998 with:
-//        // adding 0x9E3779B9 for A and rotating left by 2
-//        // xorshifting B left by 5 (B ^ B << 5) and rotating left by 15
-//        // can get 63.99 with:
-//        // adding 0x9E3779B9 for A and rotating left by 2
-//        // adding 0x6C8E9CF7 for B and rotating left by 7
-//        // can get 63.98 with:
-//        // adding 0x9E3779B9 for A and rotating left by 2
-//        // multiplying by 0xACED, NOTing, and rotating left by 28 for B
-//        // 0xFF6B3AF7L 0xFFAEB037L 0xFFD78FD4L
-//        
-//        // 0xFF42E24AF92DCD8C, 63.995831
-//        //BigInteger result = BigInteger.valueOf(0xFF6B3AF7L), tmp = BigInteger.valueOf(0xFFD78FD4L);
-//
-//        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFF43787L);
-//        result = tmp.divide(result.gcd(tmp)).multiply(result);
-//        tmp = BigInteger.valueOf(0xFFEDA0B5L);
-//        result = tmp.divide(result.gcd(tmp)).multiply(result);
-//        System.out.printf("\n0x%s, %2.6f\n", result.toString(16).toUpperCase(), Math.log(result.doubleValue()) / Math.log(2));
-////        tmp = BigInteger.valueOf(0xFFABD755L);
-////        result = tmp.divide(result.gcd(tmp)).multiply(result);
-////        System.out.printf("\n0x%s, %2.6f\n", result.toString(16).toUpperCase(), Math.log(result.doubleValue()) / Math.log(2));
-//        int stateA = 1, i;
-//        LinnormRNG lin = new LinnormRNG();
-//        System.out.println(lin.getState());
-//        Random rand = new RNG(lin).asRandom();
-//        for (int c = 1; c <= 200; c++) {
-//            //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
-//            final int r = BigInteger.probablePrime(20, rand).intValue();
-//            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-//            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
-//            for (int j = 1; j < 32; j++) {
-//                i = 0;
-//                for (; ; i++) {
-//                    if ((stateA = Integer.rotateLeft(stateA * r, j)) == 1) {
-//                        if (i >>> 24 == 0xFF)
-//                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-////        int stateA = 1, i = 0;
-////        for (; ; i++) {
-////            if((stateA = Integer.rotateLeft(~(stateA * 0x9E37), 7)) == 1)
-////            {
-////                System.out.printf("0x%08X\n", i);
-////                break;
-////            }
-////        }
-////        BigInteger result = BigInteger.valueOf(i & 0xFFFFFFFFL);
-////        i = 0;
-////        for (; ; i++) {
-////            if((stateA = Integer.rotateLeft(~(stateA * 0x4E6D), 17)) == 1)
-////            {
-////                System.out.printf("0x%08X\n", i);
-////                break;
-////            }
-////        }         
-////        BigInteger tmp = BigInteger.valueOf(i & 0xFFFFFFFFL);
-////        result = tmp.divide(result.gcd(tmp)).multiply(result);
-////        System.out.printf("\n0x%016X\n", result.longValue());
-//
-//    }
-///////// END subcycle finder code and period evaluator
-    
-    public static void main(String[] args)
-    {
-        long stateA = 0x9E3779B9L;
-        System.out.println("long[] startingA = {");
-        for (int ctr = 0; ctr < 128; ctr++) {
-            System.out.printf("0x%016XL, ", stateA);
-            if((ctr & 7) == 7)
-                System.out.println();
-            for (int i = 0; i < 512; i++) {
-                stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
-            }
-        }
-        System.out.println("};");
-    }
 }
