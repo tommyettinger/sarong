@@ -528,27 +528,23 @@ public class RNGBenchmark {
     private FlapRNG Flap = new FlapRNG(9999L);
     private RNG FlapR = new RNG(Flap);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureFlap()
     {
         return Flap.nextLong();
     }
 
     @Benchmark
-    // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public int measureFlapInt()
     {
         return Flap.next(32);
     }
     @Benchmark
-    // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureFlapR()
     {
         return FlapR.nextLong();
     }
 
     @Benchmark
-    // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public int measureFlapIntR()
     {
         return FlapR.nextInt();
@@ -557,24 +553,46 @@ public class RNGBenchmark {
     private LapRNG Lap = new LapRNG(9999L);
     private RNG LapR = new RNG(Lap);
     @Benchmark
-    //  // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureLap()
     {
         return Lap.nextLong();
     }
 
     @Benchmark
-    // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public int measureLapInt()
     {
         return Lap.next(32);
     }
     @Benchmark
-    // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)
     public long measureLapR()
     {
         return LapR.nextLong();
     }
+    private ThunderRNG Thunder = new ThunderRNG(9999L);
+    private RNG ThunderR = new RNG(Thunder);
+    @Benchmark
+    public long measureThunder()
+    {
+        return Thunder.nextLong();
+    }
+
+    @Benchmark
+    public int measureThunderInt()
+    {
+        return Thunder.next(32);
+    }
+    @Benchmark
+    public long measureThunderR()
+    {
+        return ThunderR.nextLong();
+    }
+
+    @Benchmark
+    public int measureThunderIntR()
+    {
+        return ThunderR.nextInt();
+    }
+
 
     @Benchmark
     // @Warmup(iterations = 4) @Measurement(iterations = 4) @Fork(1)

@@ -3,11 +3,12 @@ package sarong;
 import sarong.util.StringKit;
 
 /**
- * The fastest generator in this library currently, and one of Mark Overton's subcycle generators from
- * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically a cmr with a 64-bit state, that has
+ * The fastest generator in this library on desktop JVMs; one of Mark Overton's subcycle generators from
+ * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically a CMR with a 64-bit state, that has
  * its result multiplied by a constant. Its period is unknown, but is at the very least 2 to the 42, since the generator
  * passes PractRand after generating that many 64-bit integers (it passes with two minor anomalies, and none at the end,
  * the 32TB mark). It probably won't pass many tests when the bits are reversed, so that is something to be aware of.
+ * <br>
  * Notably, this generator's {@link #nextLong()} method is extremely small (as are all of the methods that use it as a
  * basis), which may help with inlining decisions for HotSpot. Generating the next step just needs a bitwise rotation of
  * the current state, multiplying the result by a 32-bit constant, and assigning that to state. Generating a long after
@@ -24,11 +25,12 @@ import sarong.util.StringKit;
  * it in a short-period subcycle. It skips at most 16712703 times into its core generator's cycle when seeding. It uses
  * constants to store 256 known midpoints for the generator, then skips an additional up-to-1023 times past that point.
  * Each midpoint is 65536 generations ahead of the previous midpoint. There are 2 to the 18 possible starting states for
- * this generator when using {@link #setState(int)}, but it is unknown if that method actually puts the generator in the
+ * this generator when using {@link #seed(int)}, but it is unknown if that method actually puts the generator in the
  * longest possible cycle, or just a sufficiently long one.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
- * really move when it comes to speed.
+ * really move when it comes to speed. This generator has less state than {@link Mover64RNG}, has a shorter period than
+ * it, and is faster than it in all aspects except the time needed to {@link #seed(int)}.
  * <br>
  * Created by Tommy Ettinger on 11/26/2018.
  * @author Mark Overton
@@ -38,11 +40,11 @@ public final class MiniMover64RNG implements RandomnessSource {
     private long state;
     public MiniMover64RNG()
     {
-        setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        seed((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
     public MiniMover64RNG(final int state)
     {
-        setState(state);
+        seed(state);
     }
 
     /**
@@ -91,7 +93,7 @@ public final class MiniMover64RNG implements RandomnessSource {
     };
 
     /**
-     * Sets the state using 16 bits of the given int {@code s}. Although 262144 seeds are possible, this will only
+     * Seeds the state using 18 bits of the given int {@code s}. Although 262144 seeds are possible, this will only
      * generate a new state at most 1023 times, and each generated state takes less time than {@link #nextLong()}.
      * Giving this method sequential values for s will be guaranteed to produce larger distances between the sequences
      * produced by those states; the worst-case is when s values are separated by exactly 256. For most values of s and
@@ -100,7 +102,7 @@ public final class MiniMover64RNG implements RandomnessSource {
      * generates 1 long value.
      * @param s only 18 bits are used (values 0 to 262143 inclusive will all have different results).
      */
-    public final void setState(final int s) {
+    public final void seed(final int s) {
         long v = starting[s & 0xFF];
         for (int i = s >>> 8 & 0x3FF; i > 0; i--) {
             v = (v << 21 | v >>> 43) * 0x9E3779B9L;
@@ -136,8 +138,8 @@ public final class MiniMover64RNG implements RandomnessSource {
     }
 
     /**
-     * Gets the "A" part of the state; if this generator was set with {@link #MiniMover64RNG()},
-     * {@link #MiniMover64RNG(int)}, or {@link #setState(int)}, then this will be on the optimal subcycle, otherwise it
+     * Gets the state; if this generator was set with {@link #MiniMover64RNG()},
+     * {@link #MiniMover64RNG(int)}, or {@link #seed(int)}, then this will be on the optimal subcycle, otherwise it
      * may not be. 
      * @return the state, a long
      */
@@ -147,15 +149,15 @@ public final class MiniMover64RNG implements RandomnessSource {
     }
 
     /**
-     * Sets the "A" part of the state to any long, which may put the generator in a low-period subcycle.
-     * Use {@link #setState(int)} to guarantee a good subcycle.
+     * Sets the state to any long, which may put the generator in a low-period subcycle.
+     * Use {@link #seed(int)} to guarantee a good subcycle.
      * @param state any int
      */
     public void setState(final long state)
     {
         this.state = state == 0L ? 1L : state;
     }
-    
+
     @Override
     public String toString() {
         return "MiniMover64RNG with state 0x" + StringKit.hex(state);
