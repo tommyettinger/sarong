@@ -378,37 +378,35 @@ public class PeriodTest {
     @Test
     public void testSubcycle64()
     {
-        long i;
-        long state = 1L;
+//        long i;
+//        long state = 1L;
 //        LinnormRNG lin = new LinnormRNG(2L);//3676505223501568873L
 //        System.out.println(lin.getState());
         //Random rand = new RNG(lin).asRandom();
         //for (int c = 1; c <= 200; c++) {
             //final int r = lin.nextInt()|1;
-            final long r = 0x7FFFFFFFL;//0x41C64E6BL;//0x41C64E6D;
-            //final int r = BigInteger.probablePrime(32, rand).intValue();
-            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-        //System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
-        System.out.printf("testing r = 0x%08X\n", r);
-//        for (int j = 1; j < 64; j++) {
-        for (int j = 3; j < 64; j++) {
-            i = 0L;
-            state = 1L;
-            OUTER:
-            for (; i < 0x40000000000L; ) {
-                for (int k = 0x80000000; k < 0; k++) {
-                    if ((state = (state << j | state >>> -j) * 0x7FFFFFFFL) == 1L) {
-                        //if (i > 0x100000000L)
-                        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
-                        break OUTER;
-                    }
-                    i++;
-                }
-                System.out.printf("Period is at least 0x%016X\n", i);
-            }
-            System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
-        }
+//        final long r = 0x7FFFFFFFL;//0x41C64E6BL;//0x41C64E6D;
+//            //final int r = BigInteger.probablePrime(32, rand).intValue();
+//            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
+//        //System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
+//        System.out.printf("testing r = 0x%08X\n", r);
+//        for (int j = 3; j < 64; j++) {
+//            i = 0L;
+//            state = 1L;
+//            OUTER:
+//            for (; i < 0x40000000000L; ) {
+//                for (int k = 0x80000000; k < 0; k++) {
+//                    if ((state = (state << j | state >>> -j) * 0x7FFFFFFFL) == 1L) {
+//                        //if (i > 0x100000000L)
+//                        System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
+//                        break OUTER;
+//                    }
+//                    i++;
+//                }
+//                System.out.printf("Period is at least 0x%016X\n", i);
 //            }
+//            System.out.printf("state * 0x%08X, rotation %02d: 0x%016X\n", r, j, i);
+//        }
         //}
 
 //        int stateA = 1, i = 0;
@@ -427,10 +425,43 @@ public class PeriodTest {
 //                System.out.printf("0x%08X\n", i);
 //                break;
 //            }
-//        }         
+//        }
 //        BigInteger tmp = BigInteger.valueOf(i & 0xFFFFFFFFL);
 //        result = tmp.divide(result.gcd(tmp)).multiply(result);
 //        System.out.printf("\n0x%016X\n", result.longValue());
+        long stateA, i, target;
+//        for (int c = 1; c <= 200; c++) {
+        //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
+//            final int r = BigInteger.probablePrime(31, rand).intValue();
+        //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
+//            for (int s = 1; s < 32; s++) {
+//                for (int r = 1; r < 32; r++) {
+        for (int s : new int[]{5, 9, 27}) {
+            for (int r : new int[]{1, 8, 20}) {
+                System.out.printf("testing (x << %d) + rotl(x, %d) ...\n", s, r);
+                stateA = 1L;
+                i = 0L;
+                for (int j = 0; j < 0x100000; j++) {
+                    stateA = (stateA << s) + Long.rotateLeft(stateA, r);
+                }
+                target = stateA;
+                System.out.printf("target is 0x%08X,\n", target);
+                for (; ; ) {
+                    if ((stateA = (stateA << s) + Long.rotateLeft(stateA, r)) == target) {
+                        System.out.printf("period is 0x%08X\n", i);
+                        break;
+                    }
+                    if (++i == 0) {
+                        System.out.printf("cycled strangely, state ended on 0x%08X\n", stateA);
+                        break;
+                    }
+                    else if((i & 0xFFFFFFFFL) == 0L)
+                    {
+                        System.out.printf("Currently at 0x%016X\n", i);
+                    }
+                }
+            }
+        }
 
     }
 

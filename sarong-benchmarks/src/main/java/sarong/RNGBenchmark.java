@@ -1446,7 +1446,35 @@ public class RNGBenchmark {
     {
         return Overdrive64R.nextInt();
     }
-    
+
+    private MoverCounter64RNG MoverCounter64 = new MoverCounter64RNG(9999L);
+    private RNG MoverCounter64R = new RNG(MoverCounter64);
+    @Benchmark
+    public long measureMoverCounter64()
+    {
+        return MoverCounter64.nextLong();
+    }
+
+    @Benchmark
+    public int measureMoverCounter64Int()
+    {
+        return MoverCounter64.next(32);
+    }
+    @Benchmark
+    public long measureMoverCounter64R()
+    {
+        return MoverCounter64R.nextLong();
+    }
+
+    @Benchmark
+    public int measureMoverCounter64IntR()
+    {
+        return MoverCounter64R.nextInt();
+    }
+
+
+
+
     private DirkRNG Dirk = new DirkRNG(9999L);
     private RNG DirkR = new RNG(Dirk);
     @Benchmark
