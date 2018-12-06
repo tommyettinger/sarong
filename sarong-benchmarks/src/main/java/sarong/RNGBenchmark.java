@@ -2797,7 +2797,7 @@ public class RNGBenchmark {
 
     /*
 mvn clean install
-java -jar target/benchmarks.jar RNGBenchmark -wi 4 -i 4 -f 1 -gc true
+java -jar target/benchmarks.jar RNGBenchmark -wi 5 -i 5 -f 1 -gc true
      */
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()

@@ -2,42 +2,48 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
- * specifically a CMR with a 64-bit state, that has its result multiplied by a second 64-bit state that changes with
- * every generated number as a counter with a large increment. Its period is unknown, but is at the very least 2 to the
- * 63, since the second state goes through all odd-number values and is never even, and the actual period depends on the
- * period of the CMR and what prime factors it shares with 2 to the 63, and determining the CMR's period would require
- * generating an unknown but probably very high amount of random values until the generator cycles. It passes at least
- * 16TB of PractRand testing without any anomalies (tests are ongoing). It probably won't pass many tests when the bits
- * are reversed, so that is something to be aware of. Like {@link MiniMover64RNG}, which this is based on, this can't
- * return 0L from {@link #nextLong()}, and there are probably other numbers this can't return (though also almost
- * certainly fewer such numbers than MiniMover64RNG).
+ * specifically a CMR with a 64-bit state, that has its result multiplied by 127 and added to a running sum that is
+ * returned. The period of the full generator depends on the period of the CMR and what the sum of all results of the
+ * CMR is modulo 2 to the 64. Determining the CMR's period would require generating an unknown but probably very high
+ * amount of random values until the generator cycles (more than 2 to the 42, less than 2 to the 64). The actual period
+ * of the full generator is probably much higher than the CMR's period, unless the sum of all results of the CMR is 0
+ * (then the actual period would be equal to the period of the CMR). It passes at least 16TB of PractRand 0.94 testing
+ * with one minor anomaly (tests are ongoing). It probably won't pass many tests when the bits are reversed, so that is
+ * something to be aware of. Unlike {@link MiniMover64RNG}, which this is based on, it can return 0, but like
+ * MiniMover64RNG it cannot return the same number twice in a row. It is very, very fast, usually benchmarking in
+ * second-place behind MiniMover64RNG (faster than {@link ThrustAltRNG} in third place).
  * <br>
  * The choice of constants for the multipliers and for the rotation needs to be carefully verified; earlier choices came
  * close to failing PractRand at 8TB (and were worsening, so were likely to fail at 16TB), but this set of constants has
  * higher quality in testing. For transparency, the constants used are the state multiplier 0x9E3779B9L, which is 2 to
- * the 32 divided by the golden ratio, the increment for the counter is 0x9E3779B97F4A7AF6L, which is 2 to the 64
- * divided by the golden ratio (without the minor adjustment usually applied to the last two bits of the actual
- * constant, leaving this number as even), and a left rotation constant of 21, which was chosen because it is slightly
- * smaller than 1/3 of 64, and that seems to work well in a 64-bit CMR generator.
+ * the 32 divided by the golden ratio, a left rotation constant of 21, which was chosen because it is slightly smaller
+ * than 1/3 of 64 (that seems to work well in a 64-bit CMR generator), and a multiplier applied to the CMR's output of
+ * 127L or 0x7FL (which offers high-enough quality while still being optimized by the JIT compiler into a right shift
+ * and a subtract operation, or possibly a more specialized instruction). MiniMover64RNG uses a much larger multiplier
+ * on the output (0x41C64E6DL), but because this sums those multiplied outputs, it can get by with a smaller and faster
+ * multiplier for that section.
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
  * it in a short-period subcycle. This generator, unlike its relatives that also use CMR generators, does not partially
  * skip into the CMR sequence, and instead relies on storing only 256 very-distant points in the CMR sequence, using the
- * bulk of a given seed to affect the counter instead, which has 2 to the 63 valid values that can be accessed without
+ * bulk of a given seed to affect the counter instead, which has 2 to the 64 valid values that can be accessed without
  * any skipping required.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed. This generator has simpler seeding than {@link MiniMover64RNG} or
  * {@link Mover64RNG}, and has a higher known period (and probably a higher actual period) than either, plus is even
- * more robust in PractRand testing, but is slower than MiniMover64RNG.
+ * more robust in PractRand testing, but is sometimes slightly slower than MiniMover64RNG.
  * <br>
  * Created by Tommy Ettinger on 11/26/2018.
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class MoverCounter64RNG implements RandomnessSource {
+public final class MoverCounter64RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private long state, counter;
     public MoverCounter64RNG()
     {
@@ -109,23 +115,26 @@ public final class MoverCounter64RNG implements RandomnessSource {
      * @param s a seed to fill the counter and state with usable values; all bits are used, though not directly
      */
     public final void seed(final long s) {
-        counter = s << 1 | 1L;
+        counter = s;// << 1 | 1L;
         state = starting[(int) (s ^ s >>> 56) & 0xFF];
     }
 
     public final int nextInt()
     {
-        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L));
+        return (int)(counter += (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 127L);
+//        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L));
     }
     @Override
     public final int next(final int bits)
     {
-        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L)) >>> (32 - bits);
+        return (int)(counter += (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 127L) >>> (32 - bits);
+//        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L)) >>> (32 - bits);
     }
     @Override
     public final long nextLong()
     {
-        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L);
+        return (counter += (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 127L);
+//        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L);
     }
 
     /**
@@ -177,7 +186,7 @@ public final class MoverCounter64RNG implements RandomnessSource {
      */
     public void setCounter(long counter)
     {
-        this.counter = counter | 1L;
+        this.counter = counter;// | 1L;
     }
     
     @Override
@@ -197,21 +206,21 @@ public final class MoverCounter64RNG implements RandomnessSource {
 
     @Override
     public int hashCode() {
-        return (int)((state ^ state >>> 32) * 31L ^ (counter >>> 1 ^ counter >>> 33));
+        return (int)((state ^ state >>> 32) * 31L ^ (counter ^ counter >>> 32));
     }
 
-    public static void main(String[] args)
-    {
-        long stateA = 0x9E3779B9L;
-        System.out.println("long[] starting = {");
-        for (int ctr = 0; ctr < 256; ctr++) {
-            System.out.printf("0x%016XL, ", stateA);
-            if((ctr & 7) == 7)
-                System.out.println();
-            for (int i = 0; i < 0x7FFFFFFF; i++) {
-                stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
-            }
-        }
-        System.out.println("};");
-    }
+//    public static void main(String[] args)
+//    {
+//        long stateA = 0x9E3779B9L;
+//        System.out.println("long[] starting = {");
+//        for (int ctr = 0; ctr < 256; ctr++) {
+//            System.out.printf("0x%016XL, ", stateA);
+//            if((ctr & 7) == 7)
+//                System.out.println();
+//            for (int i = 0; i < 0x7FFFFFFF; i++) {
+//                stateA = (stateA << 21 | stateA >>> 43) * 0x9E3779B9L;
+//            }
+//        }
+//        System.out.println("};");
+//    }
 }

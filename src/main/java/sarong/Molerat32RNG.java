@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>
  * (specifically, an un-investigated generator mentioned in the code attached to the article), a lera^lera^lera with
@@ -39,7 +41,8 @@ import sarong.util.StringKit;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class Molerat32RNG implements RandomnessSource {
+public final class Molerat32RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private int stateA, stateB, stateC;
     public Molerat32RNG()
     {

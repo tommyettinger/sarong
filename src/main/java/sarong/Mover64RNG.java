@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
  * specifically a cmr^cmr with two 64-bit states. It is extremely fast, faster than {@link LinnormRNG} and
@@ -42,7 +44,8 @@ import sarong.util.StringKit;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class Mover64RNG implements RandomnessSource {
+public final class Mover64RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private long stateA, stateB;
     public Mover64RNG()
     {

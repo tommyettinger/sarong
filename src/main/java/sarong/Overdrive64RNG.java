@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * The fastest generator here that still passes statistical quality tests (and does so extremely well, to boot). This is
  * a slightly-faster variant on {@link Mover64RNG}; it replaces one of Mover64RNG's two "CMR" generators with a "CERS"
@@ -29,7 +31,8 @@ import sarong.util.StringKit;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class Overdrive64RNG implements RandomnessSource {
+public final class Overdrive64RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private long stateA, stateB;
     public Overdrive64RNG()
     {

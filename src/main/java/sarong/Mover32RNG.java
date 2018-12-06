@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
  * specifically a cmr^cmr with two 32-bit states; this is the fastest 32-bit generator that still passes statistical
@@ -42,7 +44,8 @@ import sarong.util.StringKit;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class Mover32RNG implements RandomnessSource {
+public final class Mover32RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private int stateA, stateB;
     public Mover32RNG()
     {

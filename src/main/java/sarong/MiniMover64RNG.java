@@ -2,6 +2,8 @@ package sarong;
 
 import sarong.util.StringKit;
 
+import java.io.Serializable;
+
 /**
  * The fastest generator in this library on desktop JVMs; one of Mark Overton's subcycle generators from
  * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically a CMR with a 64-bit state, that has
@@ -36,7 +38,8 @@ import sarong.util.StringKit;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class MiniMover64RNG implements RandomnessSource {
+public final class MiniMover64RNG implements RandomnessSource, Serializable {
+    private static final long serialVersionUID = 1L;
     private long state;
     public MiniMover64RNG()
     {
