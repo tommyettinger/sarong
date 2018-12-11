@@ -1769,6 +1769,12 @@ public class RNGBenchmark {
     {
         return Starfish32.next(32);
     }
+
+    @Benchmark
+    public int measureStarfish32NextInt()
+    {
+        return Starfish32.nextInt();
+    }
     @Benchmark
     public long measureStarfish32R()
     {
@@ -1781,6 +1787,25 @@ public class RNGBenchmark {
         return Starfish32R.nextInt();
     }
 
+
+    private GWTRNG GWT = new GWTRNG(9999, 999);
+    @Benchmark
+    public long measureGWT()
+    {
+        return GWT.nextLong();
+    }
+
+    @Benchmark
+    public int measureGWTInt()
+    {
+        return GWT.next(32);
+    }
+
+    @Benchmark
+    public int measureGWTNextInt()
+    {
+        return GWT.nextInt();
+    }
 
     private Otter32RNG Otter32 = new Otter32RNG(9999, 999);
     private RNG Otter32R = new RNG(Otter32);

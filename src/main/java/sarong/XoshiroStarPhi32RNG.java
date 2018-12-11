@@ -13,20 +13,29 @@ import java.io.Serializable;
 
 /**
  * A modification of Blackman and Vigna's xoshiro128 generator with a different "scrambler" than the default; this
- * generator has four 32-bit states and passes at least 32TB of PractRand (with one "unusual" anomaly at 4TB). It is
- * four-dimensionally equidistributed, which is an uncommon feature of a PRNG, and means every output is equally likely
- * not just when one value is generated with {@link #nextInt()}, but also that when up to four 32-bit values are
- * generated and treated as up to a 128-bit output, then all possible 128-bit outputs are equally likely (with the
- * exception of the 128-bit value 0x9E3779BD9E3779BD9E3779BD9E3779BD). The scrambler simply multiplies a state variable
- * by 31, rotates that value left by 23, and adds a number obtained from the golden ratio, phi. It may have all sorts of
- * issues since this scrambler hasn't been analyzed much, but 128 bits of state help make most issues less severe. A
- * clear known flaw is that if you subtract the same golden-ratio-based number from each result, the resulting modified 
- * generator will quickly fail binary matrix rank tests. This could be ameliorated by employing a fifth state variable
- * that increments in a Weyl sequence, which is what {@link Oriole32RNG} does, and adding that instead of the golden
- * ratio, though this would have an unclear effect on the 4-dimensional equidistribution. XoshiroStarPhi32RNG is
- * optimized for GWT, like {@link Lathe32RNG} and {@link XoshiroStarStar32RNG}, which means any non-bitwise math in the
- * source is followed by bitwise math later, and this sometimes can result in obtuse-looking code along the lines of
- * {@code int foo = bar + 0x9E3779BD | 0;}.
+ * generator has four 32-bit states, a period of 2 to the 128 minus 1, and passes at least 32TB of PractRand (with no
+ * anomalies for at least one seed). It is four-dimensionally equidistributed, which is an uncommon feature of a PRNG,
+ * and means every output is equally likely not just when one value is generated with {@link #nextInt()}, but also that
+ * when up to four 32-bit values are generated and treated as up to a 128-bit output, then all possible 128-bit outputs
+ * are equally likely (with the exception of the 128-bit value 0x9E3779BD9E3779BD9E3779BD9E3779BD, which won't ever be
+ * generated as a group even though 0x9E3779BD can occur up to three times in four results). The scrambler simply
+ * multiplies a state variable by 31, rotates that value left by 28, and adds a number obtained from the golden ratio,
+ * phi (0x9E3779BD). It may have all sorts of issues since this scrambler hasn't been analyzed much, but 128 bits of
+ * state help make most issues less severe, and the same scrambler works well for xoroshiro with 32-bit states (used in
+ * {@link Starfish32RNG}). A clear known flaw is that if you subtract the same golden-ratio-based number from each
+ * result, the resulting modified generator will quickly fail binary matrix rank tests. This could be ameliorated by
+ * employing a fifth state variable that increments in a Weyl sequence, which is what {@link Oriole32RNG} does, and
+ * adding that instead of the golden ratio, though this would eliminate the 4-dimensional equidistribution. This
+ * generator has the close-repeats issue that all Xoshiro generators so far have, where a result that should repeat
+ * somewhere in the vast period of 2 to the 128 is much more likely to repeat close to multiple identical results.
+ * XoshiroStarPhi32RNG is optimized for GWT, like {@link Lathe32RNG} and {@link XoshiroStarStar32RNG}, which means any
+ * non-bitwise math in the source is followed by bitwise math later, and this sometimes can result in obtuse-looking
+ * code along the lines of {@code int foo = bar + 0x9E3779BD | 0;}.
+ * <br>
+ * A main intended purpose of this generator is to supply distinct groups of 4 ints at a time, either by fetching the
+ * four states after generating a result with {@link #nextInt()}, which does not yield very random results, or by
+ * calling {@link #nextInt()} four times, which can be done 2 to the 126 minus 1 times before cycling. This is useful
+ * for random 128-bit UUIDs, which won't ever collide until the generator cycles if all 128 bits are used.
  * <br>
  * This generator seems to be a little faster than {@link XoshiroStarStar32RNG} while offering the same period and
  * distribution. It does not have one group of vulnerabilities held by the "StarStar" scrambler, where multiplying the
@@ -52,7 +61,7 @@ import java.io.Serializable;
  */
 public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private int stateA, stateB, stateC, stateD;
 
@@ -102,7 +111,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return (result ^ result >>> 17) * 3 >>> (32 - bits);
-        return (result << 23 | result >>> 9) + 0x9E3779BD >>> (32 - bits);
+        return (result << 28 | result >>> 4) + 0x9E3779BD >>> (32 - bits);
     }
 
     /**
@@ -119,7 +128,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return (result ^ result >>> 17) * 3 | 0;
-        return (result << 23 | result >>> 9) + 0x9E3779BD | 0;
+        return (result << 28 | result >>> 4) + 0x9E3779BD | 0;
     }
 
     @Override
@@ -132,7 +141,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateA ^= stateD;
         stateC ^= t;
 //        long high = (result ^ result >>> 17) * 3;
-        long high = (result << 23 | result >>> 9) + 0x9E3779BD;
+        long high = (result << 28 | result >>> 4) + 0x9E3779BD;
         stateD = (stateD << 11 | stateD >>> 21);
         result = stateB * 31;
         t = stateB << 9;
@@ -143,7 +152,7 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
         stateC ^= t;
         stateD = (stateD << 11 | stateD >>> 21);
 //        return high << 32 ^ ((result ^ result >>> 17) * 3);
-        return high << 32 ^ ((result << 23 | result >>> 9) + 0x9E3779BD);
+        return high << 32 ^ ((result << 28 | result >>> 4) + 0x9E3779BD);
     }
 
     /**
@@ -309,7 +318,8 @@ public final class XoshiroStarPhi32RNG implements RandomnessSource, Serializable
 
     @Override
     public int hashCode() {
-        return 31 * (31 * (31 * stateA + stateB) + stateC) + stateD | 0;
+        // OpenJDK 9 and higher dot product optimization
+        return (31 * 31 * 31 * stateA + 31 * 31 * stateB + 31 * stateC + stateD) | 0;
     }
     
 //    public static void main(String[] args)
