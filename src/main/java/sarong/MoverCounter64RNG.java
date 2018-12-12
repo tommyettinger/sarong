@@ -13,10 +13,10 @@ import java.io.Serializable;
  * generated number, always to an odd number in an additive sequence. This also multiplies the result of the CMR by a
  * constant to help scramble some correlations between bits. Determining this generator's actual period for its
  * longest cycle would require generating an unknown but impractically high amount of random values until the generator
- * cycles (more than 2 to the 63, less than 2 to the 128). It passes at least 1TB of PractRand 0.94 testing without
- * anomalies (tests are ongoing). It probably won't pass many tests when the bits are reversed, so that is something to
- * be aware of. Like {@link MiniMover64RNG}, which this is based on, this cannot return 0, but it is possible that it
- * may return the same number twice in a row. It is very, very fast, usually benchmarking in second-place behind
+ * cycles (more than 2 to the 63, less than 2 to the 128). It passes all 32TB of PractRand 0.94 testing without
+ * anomalies (tested seed = 1). It probably won't pass many tests when the bits are reversed, so that is something to be
+ * aware of. Like {@link MiniMover64RNG}, which this is based on, this cannot return 0, but it is possible that it may
+ * return the same number twice in a row. It is very, very fast, usually benchmarking in second-place behind
  * MiniMover64RNG (sometimes in third place behind {@link ThrustAltRNG}).
  * <br>
  * The choice of constants for the multipliers and for the rotation needs to be carefully verified; earlier choices came
@@ -41,7 +41,8 @@ import java.io.Serializable;
  * assigned {@code (seed << 1) | 1L} and the state is assigned a more complicated value, using the sum of the seed, one
  * of the 256 distant points in the other sequence determined by the top 8 bits of the seed, and another point in that
  * sequence determined by the bottom 8 bits of the seed. The state can never be 0, and it is possible that some numbers
- * may never show up in its longest cycle, while the counter is always an odd number.
+ * may never show up in its longest cycle, while the counter is always an odd number. It is also likely that many seeds
+ * will be on a shorter cycle than the longest one, but the minimum length (as long as state is not 0) is 2 to the 63.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed. This generator has simpler seeding than {@link MiniMover64RNG} or
@@ -53,7 +54,7 @@ import java.io.Serializable;
  * @author Tommy Ettinger
  */
 public final class MoverCounter64RNG implements RandomnessSource, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     private long state, counter;
     public MoverCounter64RNG()
     {
