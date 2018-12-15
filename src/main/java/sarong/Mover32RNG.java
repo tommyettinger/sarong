@@ -368,14 +368,12 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
 //        // } are all relatively coprime, total period is
 //        // 0xFFCA2B600EECB96802194A31711490F0, or 2 to the 127.998814
 //        // 
-//        // const Uint32 p = a * 0x89A7;
-//        // const Uint32 q = b * 0xBCFD;
-//        // const Uint32 r = c * 0xA01B;
-//        // const Uint32 s = d * 0xC2B9;
-//        // a = rotate32(p, 13);
-//        // b = rotate32(q, 17);
-//        // c = rotate32(r, 28);
-//        // d = rotate32(s, 16);
+//        // a = rotate32(a, 13) * 0x89A7;
+//        // b = rotate32(b, 17) * 0xBCFD;
+//        // c = rotate32(c, 28) * 0xA01B;
+//        // d = rotate32(d, 16) * 0xC2B9;
+//  
+//        // e = rotate32(e, 7) + 0xC0EF50EB;
 //        
 //        // adding
 //        // 0x9E3779B9
