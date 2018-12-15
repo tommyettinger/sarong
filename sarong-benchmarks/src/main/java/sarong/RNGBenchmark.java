@@ -42,135 +42,267 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Results:
+ * Results for all benchmarks on an i7-8750H CPU clocked at 2.20GHz :
  * <br>
  * <pre>
- * Benchmark                                 Mode  Cnt   Score   Error  Units
- * RNGBenchmark.measureAltThrustDetermine    avgt    5   3.887 ± 0.055  ns/op
- * RNGBenchmark.measureAltThrustRandomize    avgt    5   3.532 ± 0.035  ns/op
- * RNGBenchmark.measureFlap                  avgt    5   3.938 ± 0.024  ns/op
- * RNGBenchmark.measureFlapInt               avgt    5   3.491 ± 0.047  ns/op
- * RNGBenchmark.measureFlapIntR              avgt    5   3.951 ± 0.028  ns/op
- * RNGBenchmark.measureFlapR                 avgt    5   4.511 ± 0.038  ns/op
- * RNGBenchmark.measureInlineJab63           avgt    5   3.194 ± 0.032  ns/op  :)  best speed, not well-distributed
- * RNGBenchmark.measureInlineThrust          avgt    5   3.354 ± 0.026  ns/op
- * RNGBenchmark.measureInlineThrustAlt       avgt    5   3.532 ± 0.033  ns/op
- * RNGBenchmark.measureInlineThrustAltOther  avgt    5   3.527 ± 0.039  ns/op
- * RNGBenchmark.measureInlineVortex          avgt    5   3.622 ± 0.046  ns/op
- * RNGBenchmark.measureJDK                   avgt    5  24.726 ± 0.174  ns/op  :(  worst speed
- * RNGBenchmark.measureJDKInt                avgt    5  12.352 ± 0.057  ns/op
- * RNGBenchmark.measureJab63                 avgt    5   3.373 ± 0.016  ns/op
- * RNGBenchmark.measureJab63Int              avgt    5   3.566 ± 0.033  ns/op
- * RNGBenchmark.measureJab63IntR             avgt    5   4.069 ± 0.037  ns/op
- * RNGBenchmark.measureJab63R                avgt    5   3.756 ± 0.045  ns/op
- * RNGBenchmark.measureLap                   avgt    5   3.367 ± 0.028  ns/op
- * RNGBenchmark.measureLapInt                avgt    5   3.674 ± 0.079  ns/op
- * RNGBenchmark.measureLapIntR               avgt    5   4.128 ± 0.038  ns/op
- * RNGBenchmark.measureLapR                  avgt    5   3.870 ± 0.019  ns/op
- * RNGBenchmark.measureLight                 avgt    5   3.978 ± 0.034  ns/op
- * RNGBenchmark.measureLightInt              avgt    5   4.340 ± 0.135  ns/op
- * RNGBenchmark.measureLightIntR             avgt    5   4.892 ± 0.026  ns/op
- * RNGBenchmark.measureLightR                avgt    5   4.449 ± 0.027  ns/op
- * RNGBenchmark.measureLongPeriod            avgt    5   4.963 ± 0.058  ns/op
- * RNGBenchmark.measureLongPeriodInt         avgt    5   5.276 ± 0.044  ns/op
- * RNGBenchmark.measureLongPeriodIntR        avgt    5   5.947 ± 0.046  ns/op
- * RNGBenchmark.measureLongPeriodR           avgt    5   5.571 ± 0.026  ns/op
- * RNGBenchmark.measureThrust                avgt    5   3.542 ± 0.137  ns/op  :? unusual Error result
- * RNGBenchmark.measureThrustAlt             avgt    5   3.541 ± 0.018  ns/op  :) best quality/speed/distribution mix
- * RNGBenchmark.measureThrustAltInt          avgt    5   3.746 ± 0.045  ns/op
- * RNGBenchmark.measureThrustAltIntR         avgt    5   4.143 ± 0.019  ns/op
- * RNGBenchmark.measureThrustAltR            avgt    5   3.982 ± 0.184  ns/op
- * RNGBenchmark.measureThrustInt             avgt    5   3.609 ± 0.058  ns/op
- * RNGBenchmark.measureThrustIntR            avgt    5   4.118 ± 0.010  ns/op
- * RNGBenchmark.measureThrustR               avgt    5   3.930 ± 0.031  ns/op
- * RNGBenchmark.measureVortex                avgt    5   3.750 ± 0.018  ns/op
- * RNGBenchmark.measureVortexDetermine       avgt    5   4.595 ± 0.053  ns/op
- * RNGBenchmark.measureVortexDetermineBare   avgt    5   3.627 ± 0.071  ns/op
- * RNGBenchmark.measureVortexInt             avgt    5   4.075 ± 0.039  ns/op
- * RNGBenchmark.measureVortexIntR            avgt    5   4.831 ± 0.047  ns/op
- * RNGBenchmark.measureVortexR               avgt    5   4.298 ± 0.070  ns/op
- * RNGBenchmark.measureXoRo                  avgt    5   3.890 ± 0.016  ns/op
- * RNGBenchmark.measureXoRoInt               avgt    5   4.206 ± 0.049  ns/op
- * RNGBenchmark.measureXoRoIntR              avgt    5   4.674 ± 0.069  ns/op
- * RNGBenchmark.measureXoRoR                 avgt    5   4.206 ± 0.053  ns/op
+ * Benchmark                                  Mode  Cnt   Score   Error  Units
+ * RNGBenchmark.measureAltThrustDetermine     avgt    5   2.636 ± 0.006  ns/op
+ * RNGBenchmark.measureBasicRandom32          avgt    5   2.966 ± 0.004  ns/op
+ * RNGBenchmark.measureBasicRandom32Int       avgt    5   2.178 ± 0.021  ns/op
+ * RNGBenchmark.measureBasicRandom32IntR      avgt    5   2.383 ± 0.027  ns/op
+ * RNGBenchmark.measureBasicRandom32R         avgt    5   3.212 ± 0.010  ns/op
+ * RNGBenchmark.measureBasicRandom64          avgt    5   2.549 ± 0.020  ns/op
+ * RNGBenchmark.measureBasicRandom64Int       avgt    5   2.660 ± 0.009  ns/op
+ * RNGBenchmark.measureBasicRandom64IntR      avgt    5   2.896 ± 0.006  ns/op
+ * RNGBenchmark.measureBasicRandom64R         avgt    5   2.822 ± 0.015  ns/op
+ * RNGBenchmark.measureChurro32               avgt    5   6.071 ± 0.052  ns/op
+ * RNGBenchmark.measureChurro32Int            avgt    5   3.663 ± 0.003  ns/op
+ * RNGBenchmark.measureChurro32IntR           avgt    5   4.460 ± 0.021  ns/op
+ * RNGBenchmark.measureChurro32R              avgt    5   8.272 ± 0.056  ns/op
+ * RNGBenchmark.measureDervish                avgt    5   3.133 ± 0.038  ns/op
+ * RNGBenchmark.measureDervishInt             avgt    5   3.248 ± 0.042  ns/op
+ * RNGBenchmark.measureDervishIntR            avgt    5   3.588 ± 0.009  ns/op
+ * RNGBenchmark.measureDervishR               avgt    5   3.575 ± 0.117  ns/op
+ * RNGBenchmark.measureDirk                   avgt    5   3.137 ± 0.006  ns/op
+ * RNGBenchmark.measureDirkDetermine          avgt    5   3.016 ± 0.011  ns/op
+ * RNGBenchmark.measureDirkInt                avgt    5   3.135 ± 0.017  ns/op
+ * RNGBenchmark.measureDirkIntR               avgt    5   3.576 ± 0.013  ns/op
+ * RNGBenchmark.measureDirkR                  avgt    5   3.559 ± 0.022  ns/op
+ * RNGBenchmark.measureDizzy32                avgt    5   5.429 ± 0.066  ns/op
+ * RNGBenchmark.measureDizzy32Int             avgt    5   3.382 ± 0.011  ns/op
+ * RNGBenchmark.measureDizzy32IntNative1      avgt    5   3.479 ± 0.029  ns/op
+ * RNGBenchmark.measureDizzy32IntNative2      avgt    5   3.479 ± 0.009  ns/op
+ * RNGBenchmark.measureDizzy32IntR            avgt    5   3.949 ± 0.037  ns/op
+ * RNGBenchmark.measureDizzy32R               avgt    5   6.154 ± 0.076  ns/op
+ * RNGBenchmark.measureFlap                   avgt    5   2.857 ± 0.014  ns/op
+ * RNGBenchmark.measureFlapInt                avgt    5   2.380 ± 0.038  ns/op
+ * RNGBenchmark.measureFlapIntR               avgt    5   2.703 ± 0.052  ns/op
+ * RNGBenchmark.measureFlapR                  avgt    5   3.210 ± 0.018  ns/op
+ * RNGBenchmark.measureGWT                    avgt    5   4.293 ± 0.026  ns/op
+ * RNGBenchmark.measureGWTInt                 avgt    5   2.918 ± 0.040  ns/op
+ * RNGBenchmark.measureGWTNextInt             avgt    5   2.914 ± 0.020  ns/op
+ * RNGBenchmark.measureIsaac                  avgt    5   5.141 ± 0.012  ns/op
+ * RNGBenchmark.measureIsaac32                avgt    5   8.779 ± 0.069  ns/op
+ * RNGBenchmark.measureIsaac32Int             avgt    5   5.242 ± 0.021  ns/op
+ * RNGBenchmark.measureIsaac32IntR            avgt    5   5.682 ± 0.018  ns/op
+ * RNGBenchmark.measureIsaac32R               avgt    5   9.753 ± 0.066  ns/op
+ * RNGBenchmark.measureIsaacInt               avgt    5   5.229 ± 0.037  ns/op
+ * RNGBenchmark.measureIsaacIntR              avgt    5   5.590 ± 0.064  ns/op
+ * RNGBenchmark.measureIsaacR                 avgt    5   5.540 ± 0.190  ns/op
+ * RNGBenchmark.measureJDK                    avgt    5  17.561 ± 0.054  ns/op
+ * RNGBenchmark.measureJDKInt                 avgt    5   8.767 ± 0.052  ns/op
+ * RNGBenchmark.measureJab63                  avgt    5   2.397 ± 0.011  ns/op
+ * RNGBenchmark.measureJab63Int               avgt    5   2.512 ± 0.013  ns/op
+ * RNGBenchmark.measureJab63IntR              avgt    5   2.761 ± 0.043  ns/op
+ * RNGBenchmark.measureJab63R                 avgt    5   2.691 ± 0.030  ns/op
+ * RNGBenchmark.measureLap                    avgt    5   2.415 ± 0.027  ns/op
+ * RNGBenchmark.measureLapInt                 avgt    5   2.530 ± 0.024  ns/op
+ * RNGBenchmark.measureLapIntR                avgt    5   2.892 ± 0.065  ns/op
+ * RNGBenchmark.measureLapR                   avgt    5   2.761 ± 0.013  ns/op
+ * RNGBenchmark.measureLathe32                avgt    5   4.296 ± 0.005  ns/op
+ * RNGBenchmark.measureLathe32Int             avgt    5   2.915 ± 0.022  ns/op
+ * RNGBenchmark.measureLathe32IntR            avgt    5   3.244 ± 0.070  ns/op
+ * RNGBenchmark.measureLathe32R               avgt    5   4.873 ± 0.028  ns/op
+ * RNGBenchmark.measureLathe64                avgt    5   2.917 ± 0.028  ns/op
+ * RNGBenchmark.measureLathe64Int             avgt    5   3.021 ± 0.036  ns/op
+ * RNGBenchmark.measureLathe64IntR            avgt    5   3.432 ± 0.011  ns/op
+ * RNGBenchmark.measureLathe64R               avgt    5   3.192 ± 0.008  ns/op
+ * RNGBenchmark.measureLight                  avgt    5   2.826 ± 0.017  ns/op
+ * RNGBenchmark.measureLight32                avgt    5   4.672 ± 0.038  ns/op
+ * RNGBenchmark.measureLight32Int             avgt    5   2.881 ± 0.665  ns/op
+ * RNGBenchmark.measureLight32IntR            avgt    5   3.280 ± 0.640  ns/op
+ * RNGBenchmark.measureLight32R               avgt    5   5.463 ± 0.008  ns/op
+ * RNGBenchmark.measureLightDetermine         avgt    5   2.805 ± 0.007  ns/op
+ * RNGBenchmark.measureLightInt               avgt    5   2.830 ± 0.007  ns/op
+ * RNGBenchmark.measureLightIntR              avgt    5   3.192 ± 0.032  ns/op
+ * RNGBenchmark.measureLightR                 avgt    5   3.151 ± 0.027  ns/op
+ * RNGBenchmark.measureLinnorm                avgt    5   2.620 ± 0.026  ns/op
+ * RNGBenchmark.measureLinnormDetermine       avgt    5   2.770 ± 0.019  ns/op
+ * RNGBenchmark.measureLinnormInt             avgt    5   2.665 ± 0.018  ns/op
+ * RNGBenchmark.measureLinnormIntR            avgt    5   2.875 ± 0.009  ns/op
+ * RNGBenchmark.measureLinnormR               avgt    5   2.989 ± 0.014  ns/op
+ * RNGBenchmark.measureLobster32              avgt    5   4.654 ± 0.178  ns/op
+ * RNGBenchmark.measureLobster32Int           avgt    5   3.039 ± 0.026  ns/op
+ * RNGBenchmark.measureLobster32IntR          avgt    5   3.346 ± 0.029  ns/op
+ * RNGBenchmark.measureLobster32R             avgt    5   5.140 ± 0.025  ns/op
+ * RNGBenchmark.measureLongPeriod             avgt    5   3.530 ± 0.011  ns/op
+ * RNGBenchmark.measureLongPeriodInt          avgt    5   3.607 ± 0.031  ns/op
+ * RNGBenchmark.measureLongPeriodIntR         avgt    5   4.095 ± 0.018  ns/op
+ * RNGBenchmark.measureLongPeriodR            avgt    5   3.955 ± 0.038  ns/op
+ * RNGBenchmark.measureMesh                   avgt    5   3.298 ± 0.022  ns/op
+ * RNGBenchmark.measureMeshInt                avgt    5   3.243 ± 0.008  ns/op
+ * RNGBenchmark.measureMeshIntR               avgt    5   3.718 ± 0.068  ns/op
+ * RNGBenchmark.measureMeshR                  avgt    5   3.701 ± 0.010  ns/op
+ * RNGBenchmark.measureMiniMover64            avgt    5   2.398 ± 0.006  ns/op
+ * RNGBenchmark.measureMiniMover64Int         avgt    5   2.447 ± 0.010  ns/op
+ * RNGBenchmark.measureMiniMover64IntR        avgt    5   2.635 ± 0.017  ns/op
+ * RNGBenchmark.measureMiniMover64R           avgt    5   2.634 ± 0.020  ns/op
+ * RNGBenchmark.measureMizuchi                avgt    5   2.673 ± 0.019  ns/op
+ * RNGBenchmark.measureMizuchiInt             avgt    5   2.704 ± 0.012  ns/op
+ * RNGBenchmark.measureMizuchiIntR            avgt    5   2.939 ± 0.010  ns/op
+ * RNGBenchmark.measureMizuchiR               avgt    5   3.008 ± 0.042  ns/op
+ * RNGBenchmark.measureMolerat32              avgt    5   5.033 ± 0.040  ns/op
+ * RNGBenchmark.measureMolerat32Int           avgt    5   3.050 ± 0.009  ns/op
+ * RNGBenchmark.measureMolerat32IntR          avgt    5   3.480 ± 0.012  ns/op
+ * RNGBenchmark.measureMolerat32R             avgt    5   5.426 ± 0.010  ns/op
+ * RNGBenchmark.measureMotor                  avgt    5   3.768 ± 0.023  ns/op
+ * RNGBenchmark.measureMotorInt               avgt    5   3.701 ± 0.007  ns/op
+ * RNGBenchmark.measureMotorIntR              avgt    5   4.201 ± 0.012  ns/op
+ * RNGBenchmark.measureMotorR                 avgt    5   4.098 ± 0.006  ns/op
+ * RNGBenchmark.measureMover32                avgt    5   3.822 ± 0.015  ns/op
+ * RNGBenchmark.measureMover32Int             avgt    5   2.621 ± 0.013  ns/op
+ * RNGBenchmark.measureMover32IntR            avgt    5   2.775 ± 0.032  ns/op
+ * RNGBenchmark.measureMover32R               avgt    5   4.209 ± 0.063  ns/op
+ * RNGBenchmark.measureMover64                avgt    5   2.619 ± 0.025  ns/op
+ * RNGBenchmark.measureMover64Int             avgt    5   2.636 ± 0.033  ns/op
+ * RNGBenchmark.measureMover64IntR            avgt    5   2.772 ± 0.032  ns/op
+ * RNGBenchmark.measureMover64R               avgt    5   2.733 ± 0.169  ns/op
+ * RNGBenchmark.measureMoverCounter64         avgt    5   2.463 ± 0.006  ns/op
+ * RNGBenchmark.measureMoverCounter64Int      avgt    5   2.466 ± 0.016  ns/op
+ * RNGBenchmark.measureMoverCounter64IntR     avgt    5   2.691 ± 0.017  ns/op
+ * RNGBenchmark.measureMoverCounter64R        avgt    5   2.687 ± 0.016  ns/op
+ * RNGBenchmark.measureOrbit                  avgt    5   2.916 ± 0.012  ns/op
+ * RNGBenchmark.measureOrbitA                 avgt    5   2.914 ± 0.005  ns/op
+ * RNGBenchmark.measureOrbitB                 avgt    5   3.027 ± 0.010  ns/op
+ * RNGBenchmark.measureOrbitC                 avgt    5   3.003 ± 0.021  ns/op
+ * RNGBenchmark.measureOrbitD                 avgt    5   2.914 ± 0.031  ns/op
+ * RNGBenchmark.measureOrbitE                 avgt    5   3.260 ± 0.027  ns/op
+ * RNGBenchmark.measureOrbitF                 avgt    5   2.905 ± 0.026  ns/op
+ * RNGBenchmark.measureOrbitG                 avgt    5   3.027 ± 0.013  ns/op
+ * RNGBenchmark.measureOrbitH                 avgt    5   2.905 ± 0.026  ns/op
+ * RNGBenchmark.measureOrbitI                 avgt    5   3.017 ± 0.012  ns/op
+ * RNGBenchmark.measureOrbitInt               avgt    5   3.018 ± 0.017  ns/op
+ * RNGBenchmark.measureOrbitIntR              avgt    5   3.357 ± 0.009  ns/op
+ * RNGBenchmark.measureOrbitJ                 avgt    5   2.781 ± 0.009  ns/op
+ * RNGBenchmark.measureOrbitK                 avgt    5   2.895 ± 0.011  ns/op
+ * RNGBenchmark.measureOrbitL                 avgt    5   2.753 ± 0.012  ns/op
+ * RNGBenchmark.measureOrbitM                 avgt    5   3.141 ± 0.011  ns/op
+ * RNGBenchmark.measureOrbitN                 avgt    5   3.147 ± 0.022  ns/op
+ * RNGBenchmark.measureOrbitO                 avgt    5   3.008 ± 0.031  ns/op
+ * RNGBenchmark.measureOrbitR                 avgt    5   3.297 ± 0.019  ns/op
+ * RNGBenchmark.measureOriole32               avgt    5   4.691 ± 0.005  ns/op
+ * RNGBenchmark.measureOriole32Int            avgt    5   3.134 ± 0.040  ns/op
+ * RNGBenchmark.measureOriole32IntR           avgt    5   3.522 ± 0.017  ns/op
+ * RNGBenchmark.measureOriole32R              avgt    5   5.153 ± 0.070  ns/op
+ * RNGBenchmark.measureOtter32                avgt    5   4.958 ± 0.009  ns/op
+ * RNGBenchmark.measureOtter32Int             avgt    5   3.121 ± 0.031  ns/op
+ * RNGBenchmark.measureOtter32IntR            avgt    5   3.509 ± 0.020  ns/op
+ * RNGBenchmark.measureOtter32R               avgt    5   5.633 ± 0.023  ns/op
+ * RNGBenchmark.measureOverdrive64            avgt    5   2.493 ± 0.022  ns/op
+ * RNGBenchmark.measureOverdrive64Int         avgt    5   2.558 ± 0.084  ns/op
+ * RNGBenchmark.measureOverdrive64IntR        avgt    5   2.735 ± 0.022  ns/op
+ * RNGBenchmark.measureOverdrive64R           avgt    5   2.716 ± 0.025  ns/op
+ * RNGBenchmark.measurePaperweight            avgt    5   3.370 ± 0.029  ns/op
+ * RNGBenchmark.measurePaperweightInt         avgt    5   3.400 ± 0.019  ns/op
+ * RNGBenchmark.measurePaperweightIntR        avgt    5   3.879 ± 0.019  ns/op
+ * RNGBenchmark.measurePaperweightR           avgt    5   3.796 ± 0.026  ns/op
+ * RNGBenchmark.measureQuixotic               avgt    5   2.608 ± 0.020  ns/op
+ * RNGBenchmark.measureQuixoticInt            avgt    5   2.660 ± 0.012  ns/op
+ * RNGBenchmark.measureQuixoticIntR           avgt    5   2.923 ± 0.012  ns/op
+ * RNGBenchmark.measureQuixoticR              avgt    5   2.892 ± 0.023  ns/op
+ * RNGBenchmark.measureSFC64                  avgt    5   3.214 ± 0.011  ns/op
+ * RNGBenchmark.measureSFC64Int               avgt    5   3.307 ± 0.025  ns/op
+ * RNGBenchmark.measureSFC64IntR              avgt    5   3.725 ± 0.023  ns/op
+ * RNGBenchmark.measureSFC64R                 avgt    5   3.909 ± 0.156  ns/op
+ * RNGBenchmark.measureSeaSlater32            avgt    5   4.992 ± 0.110  ns/op
+ * RNGBenchmark.measureSeaSlater32Int         avgt    5   3.063 ± 0.011  ns/op
+ * RNGBenchmark.measureSeaSlater32IntR        avgt    5   3.430 ± 0.026  ns/op
+ * RNGBenchmark.measureSeaSlater32R           avgt    5   5.585 ± 0.100  ns/op
+ * RNGBenchmark.measureSeaSlater64            avgt    5   3.074 ± 0.039  ns/op
+ * RNGBenchmark.measureSeaSlater64Int         avgt    5   3.161 ± 0.009  ns/op
+ * RNGBenchmark.measureSeaSlater64IntR        avgt    5   3.544 ± 0.058  ns/op
+ * RNGBenchmark.measureSeaSlater64R           avgt    5   3.457 ± 0.075  ns/op
+ * RNGBenchmark.measureSpiral                 avgt    5   3.471 ± 0.031  ns/op
+ * RNGBenchmark.measureSpiralA                avgt    5   3.475 ± 0.025  ns/op
+ * RNGBenchmark.measureSpiralB                avgt    5   3.159 ± 0.008  ns/op
+ * RNGBenchmark.measureSpiralC                avgt    5   3.290 ± 0.011  ns/op
+ * RNGBenchmark.measureSpiralD                avgt    5   3.203 ± 0.073  ns/op
+ * RNGBenchmark.measureSpiralE                avgt    5   3.223 ± 0.010  ns/op
+ * RNGBenchmark.measureSpiralF                avgt    5   3.001 ± 0.029  ns/op
+ * RNGBenchmark.measureSpiralG                avgt    5   3.082 ± 0.062  ns/op
+ * RNGBenchmark.measureSpiralH                avgt    5   3.169 ± 0.031  ns/op
+ * RNGBenchmark.measureSpiralI                avgt    5   2.669 ± 0.034  ns/op
+ * RNGBenchmark.measureSpiralInt              avgt    5   3.513 ± 0.050  ns/op
+ * RNGBenchmark.measureSpiralIntR             avgt    5   4.234 ± 0.010  ns/op
+ * RNGBenchmark.measureSpiralR                avgt    5   3.991 ± 0.037  ns/op
+ * RNGBenchmark.measureStarfish32             avgt    5   4.449 ± 0.056  ns/op
+ * RNGBenchmark.measureStarfish32Int          avgt    5   3.016 ± 0.017  ns/op
+ * RNGBenchmark.measureStarfish32IntR         avgt    5   3.208 ± 0.014  ns/op
+ * RNGBenchmark.measureStarfish32NextInt      avgt    5   2.997 ± 0.052  ns/op
+ * RNGBenchmark.measureStarfish32R            avgt    5   5.013 ± 0.157  ns/op
+ * RNGBenchmark.measureTangle                 avgt    5   2.572 ± 0.029  ns/op
+ * RNGBenchmark.measureTangleA                avgt    5   2.582 ± 0.008  ns/op
+ * RNGBenchmark.measureTangleB                avgt    5   2.734 ± 0.004  ns/op
+ * RNGBenchmark.measureTangleC                avgt    5   2.762 ± 0.018  ns/op
+ * RNGBenchmark.measureTangleD                avgt    5   2.838 ± 0.015  ns/op
+ * RNGBenchmark.measureTangleInt              avgt    5   2.651 ± 0.008  ns/op
+ * RNGBenchmark.measureTangleIntR             avgt    5   2.978 ± 0.039  ns/op
+ * RNGBenchmark.measureTangleR                avgt    5   2.963 ± 0.009  ns/op
+ * RNGBenchmark.measureThrust                 avgt    5   2.508 ± 0.024  ns/op
+ * RNGBenchmark.measureThrustAlt              avgt    5   2.516 ± 0.012  ns/op
+ * RNGBenchmark.measureThrustAlt32            avgt    5   4.363 ± 0.009  ns/op
+ * RNGBenchmark.measureThrustAlt32Int         avgt    5   2.792 ± 0.009  ns/op
+ * RNGBenchmark.measureThrustAlt32IntR        avgt    5   3.151 ± 0.020  ns/op
+ * RNGBenchmark.measureThrustAlt32R           avgt    5   5.111 ± 0.150  ns/op
+ * RNGBenchmark.measureThrustAltInt           avgt    5   2.522 ± 0.006  ns/op
+ * RNGBenchmark.measureThrustAltIntR          avgt    5   2.811 ± 0.009  ns/op
+ * RNGBenchmark.measureThrustAltR             avgt    5   2.823 ± 0.066  ns/op
+ * RNGBenchmark.measureThrustInt              avgt    5   2.511 ± 0.010  ns/op
+ * RNGBenchmark.measureThrustIntR             avgt    5   2.790 ± 0.038  ns/op
+ * RNGBenchmark.measureThrustR                avgt    5   2.791 ± 0.011  ns/op
+ * RNGBenchmark.measureThunder                avgt    5   2.653 ± 0.035  ns/op
+ * RNGBenchmark.measureThunderInt             avgt    5   2.761 ± 0.022  ns/op
+ * RNGBenchmark.measureThunderIntR            avgt    5   3.023 ± 0.015  ns/op
+ * RNGBenchmark.measureThunderR               avgt    5   2.984 ± 0.015  ns/op
+ * RNGBenchmark.measureVortex                 avgt    5   2.928 ± 0.003  ns/op
+ * RNGBenchmark.measureVortexInt              avgt    5   3.026 ± 0.028  ns/op
+ * RNGBenchmark.measureVortexIntR             avgt    5   3.401 ± 0.027  ns/op
+ * RNGBenchmark.measureVortexR                avgt    5   3.342 ± 0.104  ns/op
+ * RNGBenchmark.measureXoRo                   avgt    5   2.763 ± 0.011  ns/op
+ * RNGBenchmark.measureXoRo32                 avgt    5   3.785 ± 0.007  ns/op
+ * RNGBenchmark.measureXoRo32Int              avgt    5   2.770 ± 0.030  ns/op
+ * RNGBenchmark.measureXoRo32IntR             avgt    5   3.114 ± 0.050  ns/op
+ * RNGBenchmark.measureXoRo32R                avgt    5   4.409 ± 0.012  ns/op
+ * RNGBenchmark.measureXoRoInt                avgt    5   2.881 ± 0.025  ns/op
+ * RNGBenchmark.measureXoRoIntR               avgt    5   3.129 ± 0.026  ns/op
+ * RNGBenchmark.measureXoRoR                  avgt    5   2.991 ± 0.007  ns/op
+ * RNGBenchmark.measureXoshiroAra32           avgt    5   4.929 ± 0.190  ns/op
+ * RNGBenchmark.measureXoshiroAra32Int        avgt    5   3.257 ± 0.024  ns/op
+ * RNGBenchmark.measureXoshiroAra32IntR       avgt    5   3.675 ± 0.024  ns/op
+ * RNGBenchmark.measureXoshiroAra32R          avgt    5   5.349 ± 0.062  ns/op
+ * RNGBenchmark.measureXoshiroStarPhi32       avgt    5   5.117 ± 0.021  ns/op
+ * RNGBenchmark.measureXoshiroStarPhi32Int    avgt    5   3.381 ± 0.009  ns/op
+ * RNGBenchmark.measureXoshiroStarPhi32IntR   avgt    5   3.767 ± 0.012  ns/op
+ * RNGBenchmark.measureXoshiroStarPhi32R      avgt    5   5.477 ± 0.022  ns/op
+ * RNGBenchmark.measureXoshiroStarStar32      avgt    5   5.257 ± 0.070  ns/op
+ * RNGBenchmark.measureXoshiroStarStar32Int   avgt    5   3.466 ± 0.046  ns/op
+ * RNGBenchmark.measureXoshiroStarStar32IntR  avgt    5   3.836 ± 0.096  ns/op
+ * RNGBenchmark.measureXoshiroStarStar32R     avgt    5   5.747 ± 0.016  ns/op
+ * RNGBenchmark.measureXoshiroXara32          avgt    5   5.080 ± 0.014  ns/op
+ * RNGBenchmark.measureXoshiroXara32Int       avgt    5   3.319 ± 0.011  ns/op
+ * RNGBenchmark.measureXoshiroXara32IntR      avgt    5   3.748 ± 0.064  ns/op
+ * RNGBenchmark.measureXoshiroXara32R         avgt    5   5.512 ± 0.149  ns/op
+ * RNGBenchmark.measureZag32                  avgt    5   6.304 ± 0.107  ns/op
+ * RNGBenchmark.measureZag32Int               avgt    5   3.366 ± 0.011  ns/op
+ * RNGBenchmark.measureZag32IntR              avgt    5   3.875 ± 0.107  ns/op
+ * RNGBenchmark.measureZag32R                 avgt    5   6.411 ± 0.103  ns/op
+ * RNGBenchmark.measureZig32                  avgt    5   5.908 ± 0.084  ns/op
+ * RNGBenchmark.measureZig32Int               avgt    5   3.498 ± 0.043  ns/op
+ * RNGBenchmark.measureZig32IntR              avgt    5   4.031 ± 0.063  ns/op
+ * RNGBenchmark.measureZig32R                 avgt    5   6.505 ± 0.056  ns/op
+ * RNGBenchmark.measureZog32                  avgt    5   5.206 ± 0.076  ns/op
+ * RNGBenchmark.measureZog32Int               avgt    5   3.216 ± 0.018  ns/op
+ * RNGBenchmark.measureZog32IntR              avgt    5   3.693 ± 0.035  ns/op
+ * RNGBenchmark.measureZog32R                 avgt    5   5.770 ± 0.020  ns/op
  * </pre>
  * <br>
- * ThrustAltRNG is the fastest so far that passes stringent quality tests (no failures with gjrand on many seeds and few
- * seeds cause severe failures, none systematically; 32TB PractRand testing completed without failure). Jab63, inlined
- * in particular, is faster and still tests as having high quality, but neither it nor ThrustAltRNG can produce all
- * possible 64-bit longs. LightRNG passes PractRand but has more frequent issues with gjrand. XoRo fails PractRand
- * unless you disregard binary matrix rank tests, as the author recommends; because gjrand can't take a test out of
- * consideration, XoRo probably fails it fully. ThrustRNG does reasonably well on gjrand but fails on PractRand at only
- * 32GB. VortexRNG does very well on gjrand and passes PractRand at 32TB, but it's also slower than XoRo with a smaller
- * period on the same state.
- * <br>
- * As for the recently-added GWT-friendly generators Zig32RNG, Zag32RNG, Zog32RNG, and XoRo32RNG, the first three all
- * perform about equally well on GWT and pass PractRand, while XoRo32RNG performs very well on GWT but fails a few tests
- * in PractRand fairly early on (There are ways to eliminate the statistical quality issues, but they also slow down the
- * generator significantly). Even though Zig and Zag are similar, Zog32RNG performs quite a bit better on desktop:
- * <br>
- * <pre>
- * Benchmark                       Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureXoRo32      avgt    5  5.148 ± 0.352  ns/op
- * RNGBenchmark.measureXoRo32Int   avgt    5  3.825 ± 0.427  ns/op
- * RNGBenchmark.measureXoRo32IntR  avgt    5  4.111 ± 0.396  ns/op
- * RNGBenchmark.measureXoRo32R     avgt    5  6.029 ± 1.172  ns/op
- * RNGBenchmark.measureZag32       avgt    5  7.638 ± 1.260  ns/op
- * RNGBenchmark.measureZag32Int    avgt    5  4.732 ± 0.851  ns/op
- * RNGBenchmark.measureZag32IntR   avgt    5  5.393 ± 0.919  ns/op
- * RNGBenchmark.measureZag32R      avgt    5  8.506 ± 1.333  ns/op
- * RNGBenchmark.measureZig32       avgt    5  8.167 ± 1.734  ns/op
- * RNGBenchmark.measureZig32Int    avgt    5  4.843 ± 0.582  ns/op
- * RNGBenchmark.measureZig32IntR   avgt    5  5.573 ± 0.647  ns/op
- * RNGBenchmark.measureZig32R      avgt    5  9.015 ± 1.248  ns/op
- * RNGBenchmark.measureZog32       avgt    5  7.151 ± 1.485  ns/op
- * RNGBenchmark.measureZog32Int    avgt    5  4.488 ± 0.899  ns/op
- * RNGBenchmark.measureZog32IntR   avgt    5  5.248 ± 0.758  ns/op
- * RNGBenchmark.measureZog32R      avgt    5  7.950 ± 1.415  ns/op
- * </pre>
- * 
- * Testing the newly-added variants on XoRo32RNG called Oriole32RNG and Lathe32RNG, Lathe is the faster of the two, and
- * both beat Zog on speed (Oriole very narrowly, Lathe comfortably) while all three have about the same quality.
- * Lathe, Oriole, and Zog trounce XoRo32 on quality but are still slower than it. Oriole also has the best period of the
- * group, but isn't a StatefulRandomness, while Lathe has the same period as XoRo32 and is a StatefulRandomness.
- * <pre>
- * Benchmark                         Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLathe32       avgt   10  5.692 ± 0.054  ns/op
- * RNGBenchmark.measureLathe32Int    avgt   10  3.971 ± 0.022  ns/op
- * RNGBenchmark.measureLathe32IntR   avgt   10  4.684 ± 0.460  ns/op
- * RNGBenchmark.measureLathe32R      avgt   10  6.456 ± 0.109  ns/op
- * RNGBenchmark.measureOriole32      avgt   10  6.168 ± 0.029  ns/op
- * RNGBenchmark.measureOriole32Int   avgt   10  4.262 ± 0.020  ns/op
- * RNGBenchmark.measureOriole32IntR  avgt   10  4.816 ± 0.038  ns/op
- * RNGBenchmark.measureOriole32R     avgt   10  6.884 ± 0.101  ns/op
- * RNGBenchmark.measureXoRo32        avgt   10  5.047 ± 0.026  ns/op
- * RNGBenchmark.measureXoRo32Int     avgt   10  3.717 ± 0.022  ns/op
- * RNGBenchmark.measureXoRo32IntR    avgt   10  4.034 ± 0.029  ns/op
- * RNGBenchmark.measureXoRo32R       avgt   10  5.749 ± 0.024  ns/op
- * RNGBenchmark.measureZog32         avgt   10  6.839 ± 0.029  ns/op
- * RNGBenchmark.measureZog32Int      avgt   10  4.305 ± 0.026  ns/op
- * RNGBenchmark.measureZog32IntR     avgt   10  4.967 ± 0.028  ns/op
- * RNGBenchmark.measureZog32R        avgt   10  7.586 ± 0.065  ns/op
- * </pre>
- * <br>
- * Testing the top 3 contenders among one-dimensionally equidistributed generators (LightRNG and LinnormRNG pass 32TB on
- * PractRand but XoRoRNG reliably fails one group of tests and sometimes fails others):
- * <pre>
- * Benchmark                       Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLight       avgt    5  3.763 ± 0.204  ns/op
- * RNGBenchmark.measureLightInt    avgt    5  4.047 ± 0.008  ns/op
- * RNGBenchmark.measureLinnorm     avgt    5  3.442 ± 0.018  ns/op
- * RNGBenchmark.measureLinnormInt  avgt    5  3.668 ± 0.010  ns/op
- * RNGBenchmark.measureXoRo        avgt    5  3.656 ± 0.028  ns/op
- * RNGBenchmark.measureXoRoInt     avgt    5  3.941 ± 0.034  ns/op
- * ...and one result for the non-equidistributed ThrustAltRNG...
- * RNGBenchmark.measureThrustAlt   avgt    5  3.322 ± 0.053  ns/op
- * </pre>
- * Linnorm is the new best generator we have, except that it isn't a SkippingRandomness and its period is "just" 2 to
- * the 64. Every other need seems to be met by its high speed, easily-stored state, unsurpassed statistical quality, and
- * ability to produce all long values. ThrustAltRNG may be faster, but since it isn't known how many numbers it is
- * incapable of producing, it probably shouldn't be used for procedural generation. If you need to target GWT, though,
- * your needs are suddenly completely different...
+ * The fastest generator depends on your target platform, but on a desktop or laptop using an OpenJDK-based Java
+ * installation, Jab63RNG and MiniMover64RNG are virtually tied for first place. Neither is at all equidistributed; for
+ * generators that are capable of producing all outputs with equal likelihood, LinnormRNG, MizuchiRNG, and QuixoticRNG
+ * are all about the same, with DiverRNG probably a little faster (but it was added after this benchmark was run, so its
+ * results wouldn't be from the same circumstances). DiverRNG and possibly QuixoticRNG are likely to have higher quality
+ * than LinnormRNG and MizuchiRNG, since the last two fail one PractRand test after 16TB while at least DiverRNG does
+ * not have that issue.
  * <br>
  * GWT-compatible generators need to work with an "int" type that isn't equivalent to Java's "int" and is closer to a
  * Java "double" that gets cast to an int when bitwise operations are used on it. This JS int is about 10x-20x faster to
@@ -179,66 +311,15 @@ import java.util.concurrent.TimeUnit;
  * overflow, and about precision loss if you do exceed those limits severely, since JS numbers are floating-point. So,
  * you can't safely multiply by too large of an int (I limit my multipliers to 20 bits), you need to follow up normal
  * math with bitwise math to bring any overflowing numbers back to the 32-bit range, and you should avoid longs and math
- * on them whenever possible. So here's some GWT-safe generators, measured on a desktop JDK:
- * <pre>
- * Benchmark                                  Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureDizzy32                avgt    3  7.742 ± 0.144  ns/op // 1D equidistribution
- * RNGBenchmark.measureDizzy32Int             avgt    3  5.094 ± 0.084  ns/op // 2D equidistribution
- * RNGBenchmark.measureDizzy32IntR            avgt    3  5.826 ± 0.113  ns/op // 2D equidistribution
- * RNGBenchmark.measureDizzy32R               avgt    3  8.636 ± 0.079  ns/op // 1D equidistribution
- * RNGBenchmark.measureLathe32                avgt    3  6.181 ± 0.159  ns/op // no equidistribution
- * RNGBenchmark.measureLathe32Int             avgt    3  4.409 ± 0.024  ns/op // 1D equidistribution
- * RNGBenchmark.measureLathe32IntR            avgt    3  4.791 ± 0.242  ns/op // 1D equidistribution
- * RNGBenchmark.measureLathe32R               avgt    3  7.147 ± 0.013  ns/op // no equidistribution
- * RNGBenchmark.measureOriole32               avgt    3  6.578 ± 0.058  ns/op // no equidstribution
- * RNGBenchmark.measureOriole32Int            avgt    3  4.640 ± 0.118  ns/op // 1D equidistribution
- * RNGBenchmark.measureOriole32IntR           avgt    3  5.352 ± 0.098  ns/op // 1D equidistribution
- * RNGBenchmark.measureOriole32R              avgt    3  7.729 ± 0.127  ns/op // no equidistribution
- * RNGBenchmark.measureXoshiroAra32           avgt    3  7.175 ± 0.696  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroAra32Int        avgt    3  4.953 ± 0.132  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroAra32IntR       avgt    3  5.513 ± 0.227  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroAra32R          avgt    3  7.770 ± 0.215  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroStarPhi32       avgt    3  7.294 ± 0.386  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroStarPhi32Int    avgt    3  5.032 ± 0.045  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroStarPhi32IntR   avgt    3  5.618 ± 0.064  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroStarPhi32R      avgt    3  8.017 ± 0.202  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroStarStar32      avgt    3  7.690 ± 0.127  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroStarStar32Int   avgt    3  5.210 ± 0.102  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroStarStar32IntR  avgt    3  5.856 ± 0.291  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroStarStar32R     avgt    3  8.475 ± 0.266  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroXara32          avgt    3  7.309 ± 0.083  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroXara32Int       avgt    3  5.027 ± 0.139  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroXara32IntR      avgt    3  5.567 ± 0.186  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroXara32R         avgt    3  8.075 ± 0.131  ns/op // 2D equidistribution
- * </pre>
- * And here's some of the best GWT-safe generators compared against each other, including the new Starfish generator
- * (these benchmarks were performed while a multi-threaded test was also running, so they are slower):
- * <pre>
- * Benchmark                             Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLathe32           avgt    3  8.073 ± 0.388  ns/op // no equidistribution
- * RNGBenchmark.measureLathe32Int        avgt    3  5.780 ± 0.976  ns/op // 1D equidistribution
- * RNGBenchmark.measureLathe32IntR       avgt    3  6.358 ± 0.823  ns/op // 1D equidistribution
- * RNGBenchmark.measureLathe32R          avgt    3  9.102 ± 1.079  ns/op // no equidistribution
- * RNGBenchmark.measureStarfish32        avgt    3  8.285 ± 0.439  ns/op // 1D equidistribution
- * RNGBenchmark.measureStarfish32Int     avgt    3  5.866 ± 0.699  ns/op // 2D equidistribution
- * RNGBenchmark.measureStarfish32IntR    avgt    3  6.448 ± 1.158  ns/op // 2D equidistribution
- * RNGBenchmark.measureStarfish32R       avgt    3  9.297 ± 1.122  ns/op // 1D equidistribution
- * RNGBenchmark.measureXoshiroAra32      avgt    3  9.048 ± 1.296  ns/op // 2D equidistribution
- * RNGBenchmark.measureXoshiroAra32Int   avgt    3  6.440 ± 0.188  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroAra32IntR  avgt    3  7.181 ± 0.497  ns/op // 4D equidistribution
- * RNGBenchmark.measureXoshiroAra32R     avgt    3  9.879 ± 1.205  ns/op // 2D equidistribution
- * </pre>
- * And testing (under load, again) Starfish vs. the newer Otter generator; Otter tends to be faster on GWT because
- * multiplication isn't as fast in browsers, but it is a little slower on desktop.
- * <pre>
- * Benchmark                          Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureLathe32        avgt    3  6.328 ± 0.568  ns/op
- * RNGBenchmark.measureLathe32Int     avgt    3  4.455 ± 0.165  ns/op
- * RNGBenchmark.measureLobster32      avgt    3  6.793 ± 0.461  ns/op
- * RNGBenchmark.measureLobster32Int   avgt    3  4.601 ± 0.056  ns/op
- * RNGBenchmark.measureStarfish32     avgt    3  6.503 ± 0.109  ns/op
- * RNGBenchmark.measureStarfish32Int  avgt    3  4.505 ± 1.135  ns/op
- * </pre>
+ * on them whenever possible. The GWT-safe generators are in the bulk results above; the ones that are GWT-safe are (an
+ * asterisk marks a generator that doesn't pass many statistical tests): Churro32RNG, Dizzy32RNG, Lathe32RNG,
+ * Lobster32RNG, Molerat32RNG, Mover32RNG, Oriole32RNG, SeaSlater32RNG*, Starfish32RNG, XoRo32RNG*, XoshiroAra32RNG,
+ * XoshiroStarPhi32RNG, XoshiroStarStar32RNG, XoshiroXara32RNG, Zag32RNG, Zig32RNG, and Zog32RNG. GWTRNG is a special
+ * case because it uses Starfish32RNG's algorithm verbatim, but implements IRNG instead of just RandomnessSource and so
+ * has some extra optimizations it can use when producing 32-bit values. Starfish32RNG and all of the Xoshiro-based
+ * generators are probably the best choices for 32-bit generators, with Starfish having a smaller and possibly more
+ * manageable state size, and Xoshiro variants having much longer periods.
+ * <br>
  * You can benchmark most of these in GWT for yourself on
  * <a href="https://tommyettinger.github.io/SquidLib-Demos/bench/rng/">this SquidLib-Demos page</a>; comparing "runs"
  * where higher is better is a good way of estimating how fast a generator is. Each "run" is 10,000 generated numbers.
