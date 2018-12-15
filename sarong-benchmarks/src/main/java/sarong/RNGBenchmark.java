@@ -2151,6 +2151,31 @@ public class RNGBenchmark {
         return QuixoticR.nextInt();
     }
 
+    private DiverRNG Diver = new DiverRNG(9999L);
+    private RNG DiverR = new RNG(Diver);
+    @Benchmark
+    public long measureDiver()
+    {
+        return Diver.nextLong();
+    }
+
+    @Benchmark
+    public int measureDiverInt()
+    {
+        return Diver.next(32);
+    }
+    @Benchmark
+    public long measureDiverR()
+    {
+        return DiverR.nextLong();
+    }
+
+    @Benchmark
+    public int measureDiverIntR()
+    {
+        return DiverR.nextInt();
+    }
+
 
 
 
