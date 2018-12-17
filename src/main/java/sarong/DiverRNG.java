@@ -64,7 +64,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(int bits)
     {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
@@ -76,7 +76,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (z ^ z >>> 25);
     }
@@ -99,7 +99,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 25);
     }
@@ -112,7 +112,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
@@ -172,7 +172,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
@@ -186,7 +186,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
@@ -197,7 +197,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         return ((z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
 
@@ -208,7 +208,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         return ((z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L) < 0;
     }
 
@@ -229,7 +229,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     /**
      * Sets the seed (also the current state) of this generator.
      *
-     * @param seed the seed to use for this LightRNG, as if it was constructed with this seed.
+     * @param seed the seed to use for this DiverRNG, as if it was constructed with this seed.
      */
     @Override
     public final void setState(final long seed) {
@@ -239,7 +239,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     /**
      * Gets the current state of this generator.
      *
-     * @return the current seed of this LightRNG, changed once per call to nextLong()
+     * @return the current seed of this DiverRNG, changed once per call to nextLong()
      */
     @Override
     public final long getState() {
@@ -248,7 +248,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "LinnormRNG with state 0x" + StringKit.hex(state) + 'L';
+        return "DiverRNG with state 0x" + StringKit.hex(state) + 'L';
     }
 
     @Override
@@ -284,7 +284,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * to an incrementing state variable. 0x632BE59BD9B4E019L is "Neely's number", a large prime that has been truncated
      * and bitwise-rotated and has good properties in other places.
      * @param state a long that should change between calls with {@code state += 0x632BE59BD9B4E019L}
-     * @return
+     * @return any long
      */
     public static long randomize(long state)
     {
