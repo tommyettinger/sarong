@@ -69,6 +69,19 @@ import java.util.concurrent.TimeUnit;
  * hash-table hash function because it involves a perfect hash function, but it is still a little slower than Golden.
  * Cantor also may possibly be symmetrical across the line {@code y = -x} in 2D, and similar hyperplanes in higher
  * dimensions. Golden has replaced HastyPointHash (the one here) in SquidLib, and some noise functions have seen gains.
+ * <br>
+ * For just 2D hashes, here's a benchmark that includes SquidLib's Coord.hashCode() algorithm extended to use two long
+ * inputs instead of its normal two ints, as LathePointHash. Interestingly, it's faster than the previous fastest 2D
+ * point hash, and has comparable collision rates to Cantor, but isn't at all random like Golden. LathePointHash doesn't
+ * use any arithmetic operations, only bitwise ones, which may help its performance on GWT.
+ * <pre>
+ * Benchmark                                    Mode  Cnt   Score   Error  Units
+ * PointHashBenchmark.measureCantorPointHash2   avgt    6   5.645 ± 0.030  ns/op
+ * PointHashBenchmark.measureGoldenPointHash2   avgt    6   5.355 ± 0.043  ns/op
+ * PointHashBenchmark.measureLathePointHash2    avgt    6   5.013 ± 0.006  ns/op
+ * PointHashBenchmark.measurePointHash2         avgt    6   6.372 ± 0.336  ns/op
+ * PointHashBenchmark.measureSzudzikPointHash2  avgt    6  10.182 ± 0.076  ns/op
+ * </pre>
  */
 
 @State(Scope.Thread)
@@ -274,8 +287,8 @@ public class PointHashBenchmark {
          */
         public static long hashAll(long x, long y, long state)
         {
-            x = ((x >= y ? x * x + x + y : x + y * y) ^ state) * 0xC6BC279692B5CC8BL;
-            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
+            return ((x >= y ? x * x + x + y : x + y * y) * (state<<1|1L)) ^ state;
+//            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
         }
         /**
          * Gets a 64-bit point hash of a 3D point (x, y, and z are all longs) and a state/seed as a long.
@@ -291,8 +304,7 @@ public class PointHashBenchmark {
         public static long hashAll(long x, long y, long z, long state)
         {
             y = (y >= z ? y * y + y + z : y + z * z);
-            x = ((x >= y ? x * x + x + y : x + y * y) ^ state) * 0xC6BC279692B5CC8BL;
-            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
+            return ((x >= y ? x * x + x + y : x + y * y) * (state<<1|1L)) ^ state;
         }
 
         /**
@@ -311,8 +323,9 @@ public class PointHashBenchmark {
         {
             z = (z >= w ? z * z + z + w : z + w * w);
             y = (y >= z ? y * y + y + z : y + z * z);
-            x = ((x >= y ? x * x + x + y : x + y * y) ^ state) * 0xC6BC279692B5CC8BL;
-            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
+            return ((x >= y ? x * x + x + y : x + y * y) * (state<<1|1L)) ^ state;
+//            x = ((x >= y ? x * x + x + y : x + y * y) ^ state) * 0xC6BC279692B5CC8BL;
+//            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
         }
 
         /**
@@ -333,8 +346,80 @@ public class PointHashBenchmark {
             w = (w >= u ? w * w + w + u : w + u * u);
             z = (z >= w ? z * z + z + w : z + w * w);
             y = (y >= z ? y * y + y + z : y + z * z);
-            x = ((x >= y ? x * x + x + y : x + y * y) ^ state) * 0xC6BC279692B5CC8BL;
-            return (x = (x ^ x >>> 25) * 0x9E3779B97F4A7C15L) ^ (x >>> 22);
+            return ((x >= y ? x * x + x + y : x + y * y) * (state<<1|1L)) ^ state;
+        }
+    }
+    public static final class Szudzik2PointHash {
+        /**
+         * Gets a 64-bit point hash of a 3D point (x, y, and z are all longs) and a state/seed as a long.
+         * This uses a 3D variant of Matthew Szudzik's function for perfect hashing in 2D, then feeds that (very non-random)
+         * perfect hash through a simple RNG-like unary hash (it is close to SquidLib's old ThrustRNG).
+         * @see <a href="https://stackoverflow.com/a/13871379/786740">Szudzik's function described on StackOverflow</a>
+         * @param x x position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param y y position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param state any long
+         * @return 64-bit hash of the x,y,z point with the given state
+         */
+        public static long hashAll(long x, long y, long state)
+        {
+            return ((x += (x >= y ? x * x + y : y * y)) ^ (x << 21 | x >>> 43) ^ (x << 52 | x >>> 12) ^ state) * 0x9E3779B97F4A7C15L;
+        }
+        /**
+         * Gets a 64-bit point hash of a 3D point (x, y, and z are all longs) and a state/seed as a long.
+         * This uses a 3D variant of Matthew Szudzik's function for perfect hashing in 2D, then feeds that (very non-random)
+         * perfect hash through a simple RNG-like unary hash (it is close to SquidLib's old ThrustRNG).
+         * @see <a href="https://stackoverflow.com/a/13871379/786740">Szudzik's function described on StackOverflow</a>
+         * @param x x position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param y y position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param z z position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param state any long
+         * @return 64-bit hash of the x,y,z point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long state)
+        {
+            y = (y >= z ? y * y + y + z : y + z * z);
+            return ((x += (x >= y ? x * x + y : y * y)) ^ (x << 21 | x >>> 43) ^ (x << 52 | x >>> 12) ^ state) * 0x9E3779B97F4A7C15L;
+//            return (state += (x >= y ? x * x + x + y : x + y * y) * 0x9E3779B97F4A7C15L) ^ state >>> 26;
+        }
+
+        /**
+         * Gets a 64-bit point hash of a 4D point (x, y, z, and w are all longs) and a state/seed as a long.
+         * This uses a 4D variant of Matthew Szudzik's function for perfect hashing in 2D, then feeds that (very non-random)
+         * perfect hash through a simple RNG-like unary hash (it is close to SquidLib's old ThrustRNG).
+         * @see <a href="https://stackoverflow.com/a/13871379/786740">Szudzik's function described on StackOverflow</a>
+         * @param x x position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param y y position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param z z position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param w w position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param state any long
+         * @return 64-bit hash of the x,y,z,w point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long w, long state)
+        {
+            z = (z >= w ? z * z + z + w : z + w * w);
+            y = (y >= z ? y * y + y + z : y + z * z);
+            return ((x += (x >= y ? x * x + y : y * y)) ^ (x << 21 | x >>> 43) ^ (x << 52 | x >>> 12) ^ state) * 0x9E3779B97F4A7C15L;
+        }
+
+        /**
+         * Gets a 64-bit point hash of a 4D point (x, y, z, and w are all longs) and a state/seed as a long.
+         * This uses a 4D variant of Matthew Szudzik's function for perfect hashing in 2D, then feeds that (very non-random)
+         * perfect hash through a simple RNG-like unary hash (it is close to SquidLib's old ThrustRNG).
+         * @see <a href="https://stackoverflow.com/a/13871379/786740">Szudzik's function described on StackOverflow</a>
+         * @param x x position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param y y position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param z z position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param w w position, as a non-negative long (it may work for negative longs, but no guarantees)
+         * @param state any long
+         * @return 64-bit hash of the x,y,z,w point with the given state
+         */
+        public static long hashAll(long x, long y, long z, long w, long u, long v, long state)
+        {
+            u = (u >= v ? u * u + u + v : u + v * v);
+            w = (w >= u ? w * w + w + u : w + u * u);
+            z = (z >= w ? z * z + z + w : z + w * w);
+            y = (y >= z ? y * y + y + z : y + z * z);
+            return ((x += (x >= y ? x * x + y : y * y)) ^ (x << 21 | x >>> 43) ^ (x << 52 | x >>> 12) ^ state) * 0x9E3779B97F4A7C15L;
         }
     }
 
@@ -620,7 +705,14 @@ public class PointHashBenchmark {
         }
     }
 
-
+    public static final class LathePointHash {
+        public static long hashAll(long x, long y) {
+            y ^= x;
+            y ^= (x << 24 | x >>> 40) ^ (y << 16) ^ (y << 37 | y >>> 27);
+            y = x ^ (y << 21 | y >>> 43);
+            return y ^ (y << 51 | y >>> 13);
+        }
+    }
 
     @Benchmark
     public long measurePointHash2()
@@ -644,27 +736,27 @@ public class PointHashBenchmark {
                 inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
     }
 
-    @Benchmark
-    public long measureHastyPointHash2()
-    {
-        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureHastyPointHash3()
-    {
-        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureHastyPointHash4()
-    {
-        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureHastyPointHash6()
-    {
-        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
-                inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
-    }
+//    @Benchmark
+//    public long measureHastyPointHash2()
+//    {
+//        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureHastyPointHash3()
+//    {
+//        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureHastyPointHash4()
+//    {
+//        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureHastyPointHash6()
+//    {
+//        return HastyPointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
+//                inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
+//    }
     @Benchmark
     public long measureSzudzikPointHash2()
     {
@@ -731,26 +823,31 @@ public class PointHashBenchmark {
                 inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
     }
 
+//    @Benchmark
+//    public long measureSzudzik2PointHash2()
+//    {
+//        return Szudzik2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureSzudzik2PointHash3()
+//    {
+//        return Szudzik2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureSzudzik2PointHash4()
+//    {
+//        return Szudzik2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF], 1L);
+//    }
+//    @Benchmark
+//    public long measureSzudzik2PointHash6()
+//    {
+//        return Szudzik2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
+//                inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
+//    }
     @Benchmark
-    public long measureGolden2PointHash2()
+    public long measureLathePointHash2()
     {
-        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureGolden2PointHash3()
-    {
-        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureGolden2PointHash4()
-    {
-        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF], 1L);
-    }
-    @Benchmark
-    public long measureGolden2PointHash6()
-    {
-        return Golden2PointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF], inputs[z++ & 0xFFFF], inputs[w++ & 0xFFFF],
-                inputs[u++ & 0xFFFF], inputs[v++ & 0xFFFF], 1L);
+        return LathePointHash.hashAll(inputs[x++ & 0xFFFF], inputs[y++ & 0xFFFF]);
     }
 
 }

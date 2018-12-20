@@ -2,6 +2,7 @@ package sarong;
 
 import org.huldra.math.BigInt;
 import org.junit.Test;
+import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 /**
@@ -86,7 +87,7 @@ public class TestDistribution {
 //        int result, xor = 0;
         int r;
 //        BigInt sum = new BigInt(0);
-        Roaring64NavigableMap all = new Roaring64NavigableMap();
+        RoaringBitmap all = new RoaringBitmap();
         int i = 0x80000000;
         for (; i < 0x7FFFFFFF; i++) {
 //            result = (i << 6) + (i << 28 | i >>> 4);
@@ -95,13 +96,14 @@ public class TestDistribution {
 //            result = (i ^ i >>> 15) + (i << 23);
 //            xor ^= result;
 //            sum.add(result);
-            r = (i >>> 12) ^ (i << 19 | i >>> 13);
-            if(all.contains(r & 0xFFFFFFFFL))
+//            r = (i >>> 12) ^ (i << 19 | i >>> 13);
+            r = (i << 5 | i >>> 27) - (i << 7);
+            if(all.contains(r))
             {
                 System.out.println("UH OH, duplicate at " + (i + 0x80000000L));
                 return;
             }
-            all.addLong(r & 0xFFFFFFFFL);
+            all.add(r);
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
@@ -110,10 +112,11 @@ public class TestDistribution {
 //        result = (result << 28 | result >>> 4);
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
-        r = (i >>> 12) ^ (i << 19 | i >>> 13);
-        if(all.contains(r & 0xFFFFFFFFL))
+//        r = (i >>> 12) ^ (i << 19 | i >>> 13);
+        r = (i << 5 | i >>> 27) - (i << 7);
+        if(all.contains(r))
             System.out.println("TROUBLE AT THE END!");
-        all.addLong(r & 0xFFFFFFFFL);
+        all.add(r);
 //        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));

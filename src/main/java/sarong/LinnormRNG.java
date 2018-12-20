@@ -22,7 +22,7 @@ import java.io.Serializable;
  * faster than {@link LightRNG} with similar quality other than the TMFn failure, and also faster than {@link XoRoRNG}
  * while passing tests that XoRoRNG always or frequently fails (and fails early), such as binary matrix rank tests. It
  * is slower than {@link DiverRNG}, which is a variant on the structure of LinnormRNG, and DiverRNG passes PractRand to
- * a further point than LinnormRNG (Diver probably passes more than 32TB, but at least passes 16TB with one anomaly).
+ * a further point than LinnormRNG (Diver passes 32TB, and doesn't show any of the problems where Linnorm fails).
  * <br>
  * This generator is a StatefulRandomness but not a SkippingRandomness, so it can't (efficiently) have the skip() method
  * that LightRNG has. A method could be written to run the generator's state backwards, though, as well as to get the
@@ -372,7 +372,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      *              generate numbers in reverse order
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
-    public static float determineFloat(long state) { return ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 32) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f; }
+    public static float determineFloat(long state) { return ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f; }
 
     /**
      * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this

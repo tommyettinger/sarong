@@ -347,7 +347,14 @@ import java.util.concurrent.TimeUnit;
 public class RNGBenchmark {
 
     private long state = 9000, stream = 9001, oddState = 9999L;
-
+    private int istate = 9000;
+    private static final long[] inputs = new long[0x100000];
+    static {
+        for (int i = 0; i < 0x100000; i++) {
+            inputs[i] = LinnormRNG.determine(i) + i;
+        }
+    }
+    
 //    public long doThunder()
 //    {
 //        ThunderRNG rng = new ThunderRNG(seed);
@@ -843,12 +850,6 @@ public class RNGBenchmark {
         doThrust4Int();
     }
 */
-
-
-    @Benchmark
-    public long measureAltThrustDetermine() {
-        return ThrustAltRNG.determine(state++);
-    }
 //
 //
 //    @Benchmark
@@ -857,6 +858,11 @@ public class RNGBenchmark {
 //    }
 //
 
+
+    @Benchmark
+    public long measureAltThrustDetermine() {
+        return ThrustAltRNG.determine(state++);
+    }
     @Benchmark
     public long measureLightDetermine() {
         return LightRNG.determine(state++);
@@ -865,10 +871,26 @@ public class RNGBenchmark {
     public long measureLinnormDetermine() {
         return LinnormRNG.determine(state++);
     }
+    @Benchmark
+    public long measureDiverDetermine() {
+        return DiverRNG.determine(state++);
+    }
 
     @Benchmark
-    public long measureDirkDetermine() {
-        return DirkRNG.determine(state++);
+    public long measureAltThrustDeCorrelatedDetermine() {
+        return ThrustAltRNG.determine(inputs[istate++ & 0xFFFFF]);
+    }
+    @Benchmark
+    public long measureLightDeCorrelatedDetermine() {
+        return LightRNG.determine(inputs[istate++ & 0xFFFFF]);
+    }
+    @Benchmark
+    public long measureLinnormDeCorrelatedDetermine() {
+        return LinnormRNG.determine(inputs[istate++ & 0xFFFFF]);
+    }
+    @Benchmark
+    public long measureDiverDeCorrelatedDetermine() {
+        return DiverRNG.determine(inputs[istate++ & 0xFFFFF]);
     }
 //    @Benchmark
 //    public long measureMotorDetermine() {

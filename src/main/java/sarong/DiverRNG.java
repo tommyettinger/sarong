@@ -13,10 +13,12 @@ import java.io.Serializable;
  * {@code state = (state ^ 7822362180758744021) * -4126379630918251389}, and the only requirements for an XLCG are that
  * the constant used with XOR, when treated as unsigned and modulo 8, equals 5, while the multiplier, again treated as
  * unsigned and modulo 8, equals 3). Starting with that XLCG's output, it bitwise-left-rotates by 27, multiplies by a
- * very large negative long (2 to the 64 divided by an irrational number that generalizes the golden ratio, where that
- * irrational number is the solution to {@code x}<sup>{@code 5}</sup>{@code = x + 1}), then returns another xorshift.
- * For whatever reason, the output of this simple function passes at least 16TB of PractRand with one anomaly (tests are
- * ongoing), meaning its statistical quality is excellent. {@link ThrustAltRNG} is slightly faster, but isn't
+ * very large negative long (see next), then returns a right-xorshift by 25. The large negative long is
+ * -2643881736870682267, which when treated as unsigned is 2 to the 64 divided by an irrational number that generalizes
+ * the golden ratio. This specific irrational number is the solution to {@code x}<sup>{@code 5}</sup>{@code = x + 1}.
+ * Other multipliers also seem to work well as long as they have enough set bits (fairly-small multipliers fail tests).
+ * For whatever reason, the output of this simple function passes all 32TB of PractRand with one anomaly ("unusual"
+ * at 256GB), meaning its statistical quality is excellent. {@link ThrustAltRNG} is slightly faster, but isn't
  * equidistributed; unlike ThrustAltRNG, this can produce all long values as output. ThrustAltRNG bunches some outputs
  * and makes producing them more likely, while others can't be produced at all. Notably, this generator is faster than
  * {@link LinnormRNG}, which it is based on, while improving its quality, is faster than {@link LightRNG} while keeping
@@ -26,6 +28,10 @@ import java.io.Serializable;
  * This generator is a StatefulRandomness but not a SkippingRandomness, so it can't (efficiently) have the skip() method
  * that LightRNG has. A method could be written to run the generator's state backwards, though, as well as to get the
  * state from an output of {@link #nextLong()}.
+ * <br>
+ * The static determine() methods in this class are currently identical to the ones in LinnormRNG, and haven't been
+ * checked with PractRand 0.94 (only 0.93, which doesn't have a TMFn test). They may change if the methods from Linnorm
+ * turn out to fail like its {@link LinnormRNG#nextLong()} and other instance methods.
  * <br>
  * The name comes in a roundabout way from Xmulzencab, Maya mythology's bee god who is also called the Diving God,
  * because the state transition is built around Xor and MUL. I was also listening to a Dio song, Holy Diver, at the
@@ -64,7 +70,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(int bits)
     {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
@@ -76,7 +82,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (z ^ z >>> 25);
     }
@@ -99,7 +105,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 25);
     }
@@ -112,7 +118,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
@@ -149,10 +155,9 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
         rand >>>= 32;
         bound >>= 32;
         final long z = (randLow * boundLow >> 32);
-        long t = rand * boundLow + z;
+        final long t = rand * boundLow + z;
         final long tLow = t & 0xFFFFFFFFL;
-        t >>>= 32;
-        return rand * bound + t + (tLow + randLow * bound >> 32) - (z >> 63) - (bound >> 63);
+        return rand * bound + (t >>> 32) + (tLow + randLow * bound >> 32) - (z >> 63) - (bound >> 63);
     }
     /**
      * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
@@ -172,7 +177,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
@@ -186,7 +191,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         z = (z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
@@ -197,7 +202,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         return ((z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
 
@@ -208,7 +213,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);;
+        final long z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
         return ((z << 27 | z >>> 37) * 0xDB4F0B9175AE2165L) < 0;
     }
 
@@ -248,7 +253,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "LinnormRNG with state 0x" + StringKit.hex(state) + 'L';
+        return "DiverRNG with state 0x" + StringKit.hex(state) + 'L';
     }
 
     @Override
@@ -265,10 +270,12 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
 
     /**
      * Static randomizing method that takes its state as a parameter; state is expected to change between calls to this.
-     * It is recommended that you use {@code LinnormRNG.determine(++state)} or {@code LinnormRNG.determine(--state)} to
-     * produce a sequence of different numbers, but you can also use {@code LinnormRNG.determine(state += 12345L)} or
+     * It is recommended that you use {@code DiverRNG.determine(++state)} or {@code DiverRNG.determine(--state)} to
+     * produce a sequence of different numbers, but you can also use {@code DiverRNG.determine(state += 12345L)} or
      * any odd-number increment. All longs are accepted by this method, and all longs can be produced; unlike several
      * other classes' determine() methods, passing 0 here does not return 0.
+     * <br>
+     * This is currently identical to {@link LinnormRNG#determine(long)}, but this may change separately from that.
      * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
      * @return any long
      */
@@ -277,28 +284,53 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
         return (state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25;
     }
 
+//    public static long determine(long state)
+//    {
+//        // generalized golden ratio, neely        
+//        // phi, used in philox
+////        return (state = ((state = (state ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L) ^ state >>> 28 ^ 0x9E3779B97F4A7C15L) * 0xD2B74407B1CE6E93L) ^ (state << 19 | state >>> 45) ^ (state << 37 | state >>> 27);
+////        return (state = ((state = (state ^ (state << 21 | state >>> 43) ^ (state << 33 | state >>> 31)) * 0xC6BC279692B5CC83L) ^ state >>> 28) * 0xD2B74407B1CE6E93L) ^ state >>> 28;
+//        return (state = ((state = (state ^ (state << 21 | state >>> 43) ^ (state << 33 | state >>> 31) ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25;
+//
+////        state = (state << 45 | state >>> 19) * 0x9E3779B97F4A7C15L;
+////        state = (state ^ (state << 21 | state >>> 43) ^ (state << 35 | state >>> 29) ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L;
+////        state = (state ^ state >>> 26) * 0xD1B54A32D192ED03L;
+////        return state ^ state >>> 26;
+////        return (state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29;
+////        return ((state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25) * 0x2545F4914F6CDD1DL;
+//    }
+
     /**
      * Like {@link #determine(long)}, but assumes state has already been multiplied by {@code 0x632BE59BD9B4E019L} or
      * some other very-large and very-complex long (use other numbers at your own risk!). A common usage is to call
-     * randomize() like {@code LinnormRNG.randomize(state += 0x632BE59BD9B4E019L)}, which acts like a multiplier applied
+     * randomize() like {@code DiverRNG.randomize(state += 0x632BE59BD9B4E019L)}, which acts like a multiplier applied
      * to an incrementing state variable. 0x632BE59BD9B4E019L is "Neely's number", a large prime that has been truncated
      * and bitwise-rotated and has good properties in other places.
+     * <br>
+     * This is currently identical to {@link LinnormRNG#randomize(long)}, but this may change separately from that.
      * @param state a long that should change between calls with {@code state += 0x632BE59BD9B4E019L}
-     * @return
+     * @return any long
      */
     public static long randomize(long state)
     {
         return (state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25;
     }
 
+//    public static long randomize(long state)
+//    {
+//        return (state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29;
+//    }
+
     /**
      * Static randomizing method that takes its state as a parameter and limits output to an int between 0 (inclusive)
      * and bound (exclusive); state is expected to change between calls to this. It is recommended that you use
-     * {@code LinnormRNG.determineBounded(++state, bound)} or {@code LinnormRNG.determineBounded(--state, bound)} to
+     * {@code DiverRNG.determineBounded(++state, bound)} or {@code DiverRNG.determineBounded(--state, bound)} to
      * produce a sequence of different numbers, but you can also use
-     * {@code LinnormRNG.determineBounded(state += 12345L, bound)} or any odd-number increment. All longs are accepted
+     * {@code DiverRNG.determineBounded(state += 12345L, bound)} or any odd-number increment. All longs are accepted
      * by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
      * odd-number values for bound, this isn't possible for most generators). The bound can be negative.
+     * <br>
+     * This is currently identical to {@link LinnormRNG#determineBounded(long, int)}, but this may change separately.
      * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
      * @param bound the outer exclusive bound, as an int
      * @return an int between 0 (inclusive) and bound (exclusive)
@@ -307,6 +339,10 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     {
         return (int)((bound * (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25) & 0x7FFFFFFFL)) >> 31);
     }
+//    public static int determineBounded(long state, final int bound)
+//    {
+//        return (int)((bound * (((state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29) & 0x7FFFFFFFL)) >> 31);
+//    }
 
     /**
      * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
@@ -315,12 +351,18 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * {@code 0x632BE59BD9B4E019L} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd. The period is 2 to the 64 if you increment or decrement by 1, but there are
      * only 2 to the 30 possible floats between 0 and 1.
+     * <br>
+     * This is currently identical to {@link LinnormRNG#determineFloat(long)}, but this may change separately.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
-    public static float determineFloat(long state) { return ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 32) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f; }
+    public static float determineFloat(long state) { return ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f; }
+
+//    public static float determineFloat(long state) {
+//        return ((((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) >>> 40) * 0x1p-24f; 
+//    }
 
     /**
      * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -329,67 +371,13 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * multiplies state by {@code 0x632BE59BD9B4E019L} within this method, so using a small increment won't be much
      * different from using a very large one, as long as it is odd. The period is 2 to the 64 if you increment or
      * decrement by 1, but there are only 2 to the 62 possible doubles between 0 and 1.
+     * <br>
+     * This is currently identical to {@link LinnormRNG#determineDouble(long)}, but this may change separately.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
      */
     public static double determineDouble(long state) { return (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) ^ state >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
-
-//    public static void main(String[] args){
-//        //Oriole32RNG oriole = new Oriole32RNG(123, 456, 789);
-//        LinnormRNG r = new LinnormRNG(123456789L);
-//        for (int j = 0; j < 15; j++) {
-//            for (long i = 0x100000000L + j; i <= 0x30000000FL; i += 0x100000000L) {
-//                long limit = 4L;//oriole.nextInt();
-//                long result = r.nextLong(limit);
-//                System.out.printf("%016X %021d %016X %021d %b, ", result, result, limit, limit,Math.abs(limit) - Math.abs(result) >= 0 && (limit >> 63) == (result >> 63));
-//            }
-//            System.out.println();
-//        }
-//    }
-//    public static void main(String[] args)
-//    {
-//        /*
-//        cd target/classes
-//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/DervishRNG > Dervish_asm.txt
-//         */
-//        long longState = 1L;
-//        int intState = 1;
-//        float floatState = 0f;
-//        double doubleState = 0.0;
-//        LinnormRNG rng = new LinnormRNG(1L);
-//        //longState += determine(i);
-//        //longState = longState + 0x9E3779B97F4A7C15L;
-//        //seed += determine(longState++);
-//        for (int r = 0; r < 10; r++) {
-//            for (int i = 0; i < 10000007; i++) {
-//                longState += rng.nextLong();
-//            }
-//        }
-//        System.out.println(longState);
-//
-//        for (int r = 0; r < 10; r++) {
-//            for (int i = 0; i < 10000007; i++) {
-//                intState += rng.next(16);
-//            }
-//        }
-//        System.out.println(intState);
-//
-//        for (int r = 0; r < 10; r++) {
-//            for (int i = 0; i < 10000007; i++) {
-//                floatState += rng.nextFloat();
-//            }
-//        }
-//        System.out.println(floatState);
-//
-//        for (int r = 0; r < 10; r++) {
-//            for (int i = 0; i < 10000007; i++) {
-//                doubleState += rng.nextDouble();
-//            }
-//        }
-//        System.out.println(doubleState);
-//
-//    }
-
+    //public static double determineDouble(long state) { return (((state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
 }
