@@ -234,7 +234,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     /**
      * Sets the seed (also the current state) of this generator.
      *
-     * @param seed the seed to use for this LightRNG, as if it was constructed with this seed.
+     * @param seed the seed to use for this DiverRNG, as if it was constructed with this seed.
      */
     @Override
     public final void setState(final long seed) {
@@ -244,7 +244,7 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     /**
      * Gets the current state of this generator.
      *
-     * @return the current seed of this LightRNG, changed once per call to nextLong()
+     * @return the current seed of this DiverRNG, changed once per call to nextLong()
      */
     @Override
     public final long getState() {
