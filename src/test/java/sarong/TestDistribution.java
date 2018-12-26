@@ -97,10 +97,11 @@ public class TestDistribution {
 //            xor ^= result;
 //            sum.add(result);
 //            r = (i >>> 12) ^ (i << 19 | i >>> 13);
-            r = (i << 5 | i >>> 27) - (i << 7);
+            //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
+            r = (i << 27 | i >>> 5) ^ (i >>> 7);
             if(all.contains(r))
             {
-                System.out.println("UH OH, duplicate at " + (i + 0x80000000L));
+                System.out.println("UH OH, duplicate " + r + " at " + (i + 0x80000000L));
                 return;
             }
             all.add(r);
@@ -113,7 +114,8 @@ public class TestDistribution {
 //        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
 //        xor ^= result;
 //        r = (i >>> 12) ^ (i << 19 | i >>> 13);
-        r = (i << 5 | i >>> 27) - (i << 7);
+        //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
+        r = (i << 27 | i >>> 5) ^ (i >>> 7);
         if(all.contains(r))
             System.out.println("TROUBLE AT THE END!");
         all.add(r);

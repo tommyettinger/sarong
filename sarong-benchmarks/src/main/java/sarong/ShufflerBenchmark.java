@@ -88,20 +88,25 @@ import java.util.concurrent.TimeUnit;
 public class ShufflerBenchmark {
 
     private final ShuffledIntSequence
-            sis4  = new ShuffledIntSequence(4 , 1),
-            sis5  = new ShuffledIntSequence(5 , 1),
-            sis6  = new ShuffledIntSequence(6 , 1),
-            sis7  = new ShuffledIntSequence(7 , 1),
-            sis8  = new ShuffledIntSequence(8 , 1),
-            sis9  = new ShuffledIntSequence(9 , 1),
-            sis10 = new ShuffledIntSequence(10, 1),
-            sis11 = new ShuffledIntSequence(11, 1),
-            sis12 = new ShuffledIntSequence(12, 1),
-            sis13 = new ShuffledIntSequence(13, 1),
-            sis14 = new ShuffledIntSequence(14, 1),
-            sis15 = new ShuffledIntSequence(15, 1),
-            sis16 = new ShuffledIntSequence(16, 1),
-            sis17 = new ShuffledIntSequence(17, 1);
+            sis4  = new ShuffledIntSequence(4 , 31337),
+            sis5  = new ShuffledIntSequence(5 , 31337),
+            sis6  = new ShuffledIntSequence(6 , 31337),
+            sis7  = new ShuffledIntSequence(7 , 31337),
+            sis8  = new ShuffledIntSequence(8 , 31337),
+            sis9  = new ShuffledIntSequence(9 , 31337),
+            sis10 = new ShuffledIntSequence(10, 31337),
+            sis11 = new ShuffledIntSequence(11, 31337),
+            sis12 = new ShuffledIntSequence(12, 31337),
+            sis13 = new ShuffledIntSequence(13, 31337),
+            sis14 = new ShuffledIntSequence(14, 31337),
+            sis15 = new ShuffledIntSequence(15, 31337),
+            sis16 = new ShuffledIntSequence(16, 31337),
+            sis17 = new ShuffledIntSequence(17, 31337),
+            sis257 = new ShuffledIntSequence(257, 31337),
+            sis1025 = new ShuffledIntSequence(1025, 31337),
+            sis256 = new ShuffledIntSequence(256, 31337),
+            sis1024 = new ShuffledIntSequence(1024, 31337);
+
     @Benchmark
     public int measureSIS_4_Bound(){
         return sis4.next();
@@ -158,30 +163,6 @@ public class ShufflerBenchmark {
     public int measureSIS_17_Bound(){
         return sis17.next();
     }
-
-    private final SNShuffledIntSequence
-            snsis15 = new SNShuffledIntSequence(15, 31337),
-            snsis16 = new SNShuffledIntSequence(16, 31337),
-            snsis17 = new SNShuffledIntSequence(17, 31337);
-    @Benchmark
-    public int measureSNSIS_15_Bound(){
-        return snsis15.next();
-    }
-    @Benchmark
-    public int measureSNSIS_17_Bound(){
-        return snsis17.next();
-    }
-    @Benchmark
-    public int measureSNSIS_16_Bound(){
-        return snsis16.next();
-    }
-
-    private final ShuffledIntSequence
-            sis257 = new ShuffledIntSequence(257, 31337),
-            sis1025 = new ShuffledIntSequence(1025, 31337),
-            sis256 = new ShuffledIntSequence(256, 31337),
-            sis1024 = new ShuffledIntSequence(1024, 31337);
-
     @Benchmark
     public int measureSIS_257_Bound(){
         return sis257.next();
@@ -200,11 +181,26 @@ public class ShufflerBenchmark {
     }
 
     private final SNShuffledIntSequence
+            snsis15 = new SNShuffledIntSequence(15, 31337),
+            snsis16 = new SNShuffledIntSequence(16, 31337),
+            snsis17 = new SNShuffledIntSequence(17, 31337),
             snsis257 = new SNShuffledIntSequence(257, 31337),
             snsis1025 = new SNShuffledIntSequence(1025, 31337),
             snsis256 = new SNShuffledIntSequence(256, 31337),
             snsis1024 = new SNShuffledIntSequence(1024, 31337);
 
+    @Benchmark
+    public int measureSNSIS_15_Bound(){
+        return snsis15.next();
+    }
+    @Benchmark
+    public int measureSNSIS_17_Bound(){
+        return snsis17.next();
+    }
+    @Benchmark
+    public int measureSNSIS_16_Bound(){
+        return snsis16.next();
+    }
     @Benchmark
     public int measureSNSIS_257_Bound(){
         return snsis257.next();
@@ -221,6 +217,4 @@ public class ShufflerBenchmark {
     public int measureSNSIS_1024_Bound(){
         return snsis1024.next();
     }
-
-
 }

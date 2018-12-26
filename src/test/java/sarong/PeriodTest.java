@@ -123,8 +123,8 @@ public class PeriodTest {
         System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
     }
     ///////// BEGIN subcycle finder code and period evaluator
-    @Test
 //    public static void main(String[] args)
+    @Test
     public void testSubcycle32()
     {
         // multiplying
@@ -158,7 +158,7 @@ public class PeriodTest {
         // rotation 23: 0xD23AD58D
         // rotation 29: 0xC56DC41F
         // 0x1337
-        // rotation 7: 0xF41BD009
+        // rotation 7:  0xF41BD009
         // rotation 20: 0xF5846878
         // rotation 25: 0xF38658F9
         // 0xACED
@@ -228,7 +228,7 @@ public class PeriodTest {
         // 0x518DC14F
         // rotation 09: 0xFFABD755 also 23 // probably not prime
         // 0xA5F152BF
-        // rotation 07: 0xFFB234B2 also 27
+        // rotation 07: 0xFFB234B2 also 25
         // 0x8092D909
         // rotation 10: 0xFFA82F7C also 22
         // 0x73E2CCAB
@@ -279,56 +279,50 @@ public class PeriodTest {
         // 0xFF42E24AF92DCD8C, 63.995831
         //BigInteger result = BigInteger.valueOf(0xFF6B3AF7L), tmp = BigInteger.valueOf(0xFFD78FD4L);
 
-        int stateA = 1, i;
+        int stateA, i;
         LinnormRNG lin = new LinnormRNG();
         System.out.println(lin.getState());
         Random rand = new RNG(lin).asRandom();
-//        for (int c = 1; c <= 200; c++) {
-//            //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
-//            final int r = BigInteger.probablePrime(20, rand).intValue();
-//            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-//            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
-//            for (int j = 1; j < 32; j++) {
-//                i = 0;
-//                for (; ; i++) {
-//                    if ((stateA = Integer.rotateLeft(stateA * r, j)) == 1) {
-//                        if (i >>> 24 == 0xFF)
-//                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-        int target;
-//        for (int c = 1; c <= 200; c++) {
-            //final int r = (Light32RNG.determine(20007 + c) & 0xFFFF)|1;
-//            final int r = BigInteger.probablePrime(31, rand).intValue();
-            //System.out.printf("(x ^ x << %d) + 0xC68E9CB7\n", c);
-//            for (int s = 1; s < 32; s++) {
-//                for (int r = 1; r < 32; r++) {
-            for (int s : new int[]{5, 9, 27}) {
-                for (int r : new int[]{1, 8, 20}) {
-                    System.out.printf("testing (x << %d) + rotl(x, %d) ... ", s, r);
-                    stateA = 1;
-                    i = 0;
-                    for (int j = 0; j < 0x100000; j++) {
-                        stateA = (stateA << s) + Integer.rotateLeft(stateA, r);
-                    }
-                    target = stateA;
-                    System.out.printf("target is 0x%08X, ", target);
-                    for (; ; ) {
-                        if ((stateA = (stateA << s) + Integer.rotateLeft(stateA, r)) == target) {
-                            System.out.printf("period is 0x%08X\n", i);
-                            break;
-                        }
-                        if (++i == 0) {
-                            System.out.printf("cycled strangely, state ended on 0x%08X\n", stateA);
-                            break;
-                        }
+        for (int c = 1; c <= 200; c++) {
+            final int r = BigInteger.probablePrime(32, rand).intValue();
+            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
+            for (int j = 1; j < 32; j++) {
+                i = 0;
+                stateA = 1;
+                for (; ; i++) {
+                    if ((stateA = Integer.rotateLeft(stateA, j) + r) == 1) {
+                        if (i >>> 24 == 0xFF)
+                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+                        break;
                     }
                 }
             }
-//        }
+        }
+//        int target;
+//            for (int s = 1; s < 32; s++) {
+//                for (int r = 1; r < 32; r++) {
+//            for (int s : new int[]{5, 9, 27}) {
+//                for (int r : new int[]{1, 8, 20}) {
+//                    System.out.printf("testing (x << %d) + rotl(x, %d) ... ", s, r);
+//                    stateA = 1;
+//                    i = 0;
+//                    for (int j = 0; j < 0x100000; j++) {
+//                        stateA = (stateA << s) + Integer.rotateLeft(stateA, r);
+//                    }
+//                    target = stateA;
+//                    System.out.printf("target is 0x%08X, ", target);
+//                    for (; ; ) {
+//                        if ((stateA = (stateA << s) + Integer.rotateLeft(stateA, r)) == target) {
+//                            System.out.printf("period is 0x%08X\n", i);
+//                            break;
+//                        }
+//                        if (++i == 0) {
+//                            System.out.printf("cycled strangely, state ended on 0x%08X\n", stateA);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
 
 
 //        int stateA = 1, i = 0;
@@ -358,10 +352,10 @@ public class PeriodTest {
     public void showCombined()
     {
         // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
-        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFF89FC1CL); // 5/1, 6/-4 
+        BigInteger result = BigInteger.valueOf(0xFFF43787L), tmp = BigInteger.valueOf(0xFFFD8000L); // 5/1, 6/-4 
 //        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFD6D7E76L); // 5/1, 9/8 
-        result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
 //        tmp = BigInteger.valueOf(0xFBD0F379L); // 27/20
         result = tmp.divide(result.gcd(tmp)).multiply(result);
 //        BigInteger result = BigInteger.valueOf(0xFFFDBF50L), tmp = BigInteger.valueOf(0xFFFD3B83L);
@@ -462,7 +456,25 @@ public class PeriodTest {
                 }
             }
         }
-
     }
-
+    // MiniMover64RNG good-period range finder
+    public static void main(String[] args)
+    {
+        long state, ctr = 0;
+        for (int i = 0; i < 0x10000; i++) {
+            OUTER:
+            for (int j = 0; j < 0x10000; j++) {
+                state = ++ctr;
+                for (int p = 0; p < 0x100000; p++) {
+                    state = (state << 21 | state >>> 43) * 0x9E3779B9L;
+                    if (state == ctr) {
+                        System.out.println(ctr + " is NOT OKAY, period cycles at " + p);
+                        continue OUTER;
+                    }
+                }
+                //System.out.println("Seed of " + i + " is okay");
+            }
+            System.out.println("Successfully checked " + ctr + " seeds");
+        }
+    }
 }
