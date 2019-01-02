@@ -8,31 +8,43 @@ import java.io.Serializable;
  * The fastest generator in this library on desktop JVMs; one of Mark Overton's subcycle generators from
  * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically a CMR with a 64-bit state, that has
  * its result multiplied by a constant. Its period is unknown, but is at the very least 2 to the 42, since the generator
- * passes PractRand after generating that many 64-bit integers (it passes with two minor anomalies, and none at the end,
- * the 32TB mark). It probably won't pass many tests when the bits are reversed, so that is something to be aware of.
+ * passes PractRand after generating that many 64-bit integers (it passes 32TB with no anomalies). It also can pass
+ * TestU01's BigCrush suite in both forward and reversed bit order, though not for all seeds (as expected).
  * <br>
  * Notably, this generator's {@link #nextLong()} method is extremely small (as are all of the methods that use it as a
  * basis), which may help with inlining decisions for HotSpot. Generating the next step just needs a bitwise rotation of
  * the current state, multiplying the result by a 32-bit constant, and assigning that to state. Generating a long after
- * that only needs a multiplication by a 31-bit constant, which could be modified to allow this to pass tests when the
- * bits are reversed (presumably by appending one or more xorshift operations). The choice of constants for the
- * multipliers and for the rotation needs to be carefully verified; earlier choices came close to failing PractRand at
- * 8TB (and were worsening, so were likely to fail at 16TB), but this set of constants has higher quality in testing.
- * For transparency, the constants used are the state multiplier 0x9E3779B9L, which is 2 to the 32 divided by the golden
- * ratio, the post-processing multiplier 0x41C64E6DL, which was recommended in PractRand as a small LCG multiplier, and
- * a left rotation constant of 21, which was chosen because it is slightly smaller than 1/3 of 64, and that seems to
- * work well in a 64-bit CMR generator.
+ * that only needs a multiplication by another constant, which doesn't have the issues with reversed-bits testing that
+ * some other generators do when they multiply as their only output step (xorshift128 notably has patterns in its low
+ * bits, so multiplying by a constant doesn't help those bits, but the CMR generator here has no such low-bit problems).
+ * This means only three math instructions need to be performed to get a new random number (bitwise rotate left,
+ * multiply, multiply), which is extremely low for a high-quality generator.
+ * <br>
+ * The choice of constants for the multipliers and for the rotation needs to be carefully verified; earlier choices came
+ * close to failing PractRand at 8TB (and were worsening, so were likely to fail at 16TB), but this set of constants has
+ * higher quality in testing. Other constants did well in PractRand but had failures in TestU01 (even down to SmallCrush
+ * when reversed). For transparency, the constants used in this version:
+ * <ul>
+ * <li>The state multiplier is 0xAC564B05L (or 2891336453L), which is one of the constants evaluated in Tables of Linear
+ * Congruential Generators of Different Sizes and Good Lattice Structure, by Pierre L'Ecuyer, to be optimal for an LCG
+ * with a modulus of 2 to the 32 and an odd addend (this doesn't have an addend, but it isn't an LCG either).</li>
+ * <li>The post-processing multiplier is 0x818102004182A025L (or -9115001970698837979L), which is a probable prime with
+ * a low Hamming weight (14 bits of 64 are set), in the hope it will perform well speed-wise. This number doesn't seem
+ * as critical to the quality of the generator, and some other multipliers probably work just as well.</li>
+ * <li>A left rotation constant of 29, which was chosen because it seems to allow the generator to pass certain
+ * TestU01 statistical tests, such as Birthday Spacings, where most other rotations do not.</li>
+ * </ul>
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
- * it in a short-period subcycle. It skips at most 16712703 times into its core generator's cycle when seeding. It uses
- * constants to store 256 known midpoints for the generator, then skips an additional up-to-1023 times past that point.
- * Each midpoint is 65536 generations ahead of the previous midpoint. There are 2 to the 18 possible starting states for
- * this generator when using {@link #seed(int)}, but it is unknown if that method actually puts the generator in the
- * longest possible cycle, or just a sufficiently long one.
+ * it in a short-period subcycle. One long test brute-force checked all seeds from 1 to {@code Math.pow(2, 25)} and
+ * validated that each of their periods is at least {@code Math.pow(2, 20) - 1}. This means that as long as a period
+ * as low as 1 million is rarely allowed, a starting state can be quickly chosen from a 32-bit int by using the bottom
+ * 25 bits of the int (plus 1, to disallow the 0 state) and using the remaining 7 bits to step up to 127 times through
+ * the generator.
  * <br>
  * The name comes from M. Overton, who discovered this category of subcycle generators, and also how this generator can
  * really move when it comes to speed. This generator has less state than {@link Mover64RNG}, has a shorter period than
- * it, and is faster than it in all aspects except the time needed to {@link #seed(int)}.
+ * it, and is faster than it in all aspects.
  * <br>
  * Created by Tommy Ettinger on 11/26/2018.
  * @author Mark Overton
@@ -109,25 +121,25 @@ public final class MiniMover64RNG implements RandomnessSource, Serializable {
         long v = (s & 0x1FFFFFF) + 1L; // at least 2 to the 25 sequential seeds have periods of at least 1048575.
         //long v = starting[s & 0xFF];
         for (int i = s >>> 25; i > 0; i--) {
-            v = (v << 21 | v >>> 43) * 0x9E3779B9L;
+            v = (v << 29 | v >>> 35) * 0xAC564B05L;
         }
         state = v;
     }
 
     public final int nextInt()
     {
-        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL);
+        return (int)((state = (state << 29 | state >>> 35) * 0xAC564B05L) * 0x818102004182A025L);
     }
     @Override
     public final int next(final int bits)
     {
-        return (int)((state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL) >>> (32 - bits);
+        return (int)((state = (state << 29 | state >>> 35) * 0xAC564B05L) * 0x818102004182A025L) >>> (32 - bits);
     }
     @Override
-    public final long nextLong()
-    {
+    public final long nextLong() {
         
-        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL;
+        return (state = (state << 29 | state >>> 35) * 0xAC564B05L) * 0x818102004182A025L;
+//        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * 0x41C64E6DL; // earlier, fails some of TestU01
     }
 
     /**

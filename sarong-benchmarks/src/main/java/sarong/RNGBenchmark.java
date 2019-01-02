@@ -875,6 +875,14 @@ public class RNGBenchmark {
     public long measureDiverDetermine() {
         return DiverRNG.determine(state++);
     }
+//    @Benchmark
+//    public long measureXXHashDetermine() {
+//        return DiverRNG.xxHash(state++);
+//    }
+//    @Benchmark
+//    public long measureExcelsiorDetermine() {
+//        return DiverRNG.excelsior(state++);
+//    }
 
     @Benchmark
     public long measureAltThrustDeCorrelatedDetermine() {
@@ -892,6 +900,14 @@ public class RNGBenchmark {
     public long measureDiverDeCorrelatedDetermine() {
         return DiverRNG.determine(inputs[istate++ & 0xFFFFF]);
     }
+//    @Benchmark
+//    public long measureXXHashDeCorrelatedDetermine() {
+//        return DiverRNG.xxHash(inputs[istate++ & 0xFFFFF]);
+//    }
+//    @Benchmark
+//    public long measureExcelsiorDeCorrelatedDetermine() {
+//        return DiverRNG.excelsior(inputs[istate++ & 0xFFFFF]);
+//    }
 //    @Benchmark
 //    public long measureMotorDetermine() {
 //        return MotorRNG.determine(state++);
@@ -2950,7 +2966,7 @@ public class RNGBenchmark {
 
     /*
 mvn clean install
-java -jar target/benchmarks.jar RNGBenchmark -wi 5 -i 5 -f 1 -gc true
+java -jar target/benchmarks.jar RNGBenchmark -wi 5 -i 5 -f 1
      */
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
