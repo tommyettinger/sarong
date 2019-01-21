@@ -50,7 +50,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.version>3.8.0</maven.compiler.version>
-        <maven.javadoc.version>3.0.0</maven.javadoc.version>
+        <maven.javadoc.version>3.0.1</maven.javadoc.version>
         <maven.resources.version>3.1.0</maven.resources.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.gpg.version>1.6</maven.gpg.version>
@@ -168,16 +168,6 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <version>${maven.source.version}</version>
                 <executions>
-                    <!--<execution>
-                        <id>package-jars</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <includePom>true</includePom>
-                        </configuration>
-                    </execution>-->
                     <execution>
                         <id>attach-sources</id>
                         <goals>
@@ -194,15 +184,6 @@
                 <version>${maven.javadoc.version}</version>
                 <inherited>true</inherited>
                 <executions>
-                    <!--<execution>
-                        <id>package-jars</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                        </configuration>
-                    </execution>-->
                     <execution>
                         <id>attach-javadocs</id>
                         <goals>

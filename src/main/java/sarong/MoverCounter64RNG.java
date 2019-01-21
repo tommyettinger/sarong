@@ -156,6 +156,11 @@ public final class MoverCounter64RNG implements RandomnessSource, Serializable {
 //        return (state = (state << 21 | state >>> 43) * 0x9E3779B9L) * (counter += 0x9E3779B97F4A7AF6L);
         return ((state = (state << 21 | state >>> 43) * (counter += 0x9E3779B97F4A7AF6L)) * 0x41C64E6BL);
     }
+    public final long nextLongAlt()
+    {
+//        return (state = (state << 41 | state >>> 23) ^ (counter += 0x6C8E9CF570932BD5L)) * 0xDB4F0B9175AE2165L;
+        return (state = (state << 35 | state >>> 29) ^ (counter = counter * 0x369DEA0F31A53F85L + 0x9E3779B97F4A7AF5L)) * 0xDB4F0B9175AE2165L;
+    }
 
     /**
      * Produces a copy of this MiniMover64RNG that, if next() and/or nextLong() are called on this object and the

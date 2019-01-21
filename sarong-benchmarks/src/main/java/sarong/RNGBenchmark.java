@@ -348,7 +348,7 @@ public class RNGBenchmark {
 
     private long state = 9000, stream = 9001, oddState = 9999L;
     private int istate = 9000;
-    private static final long[] inputs = new long[0x100000];
+    private static volatile long[] inputs = new long[0x100000];
     static {
         for (int i = 0; i < 0x100000; i++) {
             inputs[i] = LinnormRNG.determine(i) + i;
@@ -879,10 +879,10 @@ public class RNGBenchmark {
 //    public long measureXXHashDetermine() {
 //        return DiverRNG.xxHash(state++);
 //    }
-//    @Benchmark
-//    public long measureExcelsiorDetermine() {
-//        return DiverRNG.excelsior(state++);
-//    }
+    @Benchmark
+    public long measureDonutDetermine() {
+        return DiverRNG.donut(state++);
+    }
 
     @Benchmark
     public long measureAltThrustDeCorrelatedDetermine() {
@@ -904,10 +904,10 @@ public class RNGBenchmark {
 //    public long measureXXHashDeCorrelatedDetermine() {
 //        return DiverRNG.xxHash(inputs[istate++ & 0xFFFFF]);
 //    }
-//    @Benchmark
-//    public long measureExcelsiorDeCorrelatedDetermine() {
-//        return DiverRNG.excelsior(inputs[istate++ & 0xFFFFF]);
-//    }
+    @Benchmark
+    public long measureDonutDeCorrelatedDetermine() {
+        return DiverRNG.donut(inputs[istate++ & 0xFFFFF]);
+    }
 //    @Benchmark
 //    public long measureMotorDetermine() {
 //        return MotorRNG.determine(state++);
@@ -1567,6 +1567,7 @@ public class RNGBenchmark {
     }
 
     private MoverCounter64RNG MoverCounter64 = new MoverCounter64RNG(9999L);
+    private MoverCounter64RNG MoverCounter64Alt = new MoverCounter64RNG(9999L);
     private RNG MoverCounter64R = new RNG(MoverCounter64);
     @Benchmark
     public long measureMoverCounter64()
@@ -1591,6 +1592,11 @@ public class RNGBenchmark {
         return MoverCounter64R.nextInt();
     }
 
+    @Benchmark
+    public long measureMoverCounter64Alt()
+    {
+        return MoverCounter64Alt.nextLongAlt();
+    }
 
 
 

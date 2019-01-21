@@ -467,11 +467,15 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
 //        hash ^= hash >>> 32;
 //        return hash;
 //    }
-//    public static long excelsior(long state) {
-////        z = (z ^ z << 11 ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L;
-////        z = (z ^ z >>> 30) * 0x369DEA0F31A53F85L;
-////        return z ^ z >>> 27;
-//        return ((state = ((state = ((state << ((state & 31) + 5)) ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L) ^ state >>> 24 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
-//    }
+    public static long donut(long z) {
+//        z = (z ^ (z << 12 | z >>> 52) ^ (z << 43 | z >>> 21) ^ 0xDB4F0B9175AE2165L) * 0xE0A28963L;
+//        z = (z ^ (z << 52 | z >>> 12) ^ (z << 21 | z >>> 43) ^ 0x9E3779B97F4A7C15L) * 0x81383173L;
+//        return z ^ z >>> 28;
+        z = (z ^ 0xDB4F0B9175AE2165L) * 0x4823A80B2006E21BL;
+        z = (z ^ (z << 52 | z >>> 12) ^ (z << 21 | z >>> 43) ^ 0x9E3779B97F4A7C15L) * 0x81383173L;
+        return z ^ z >>> 28;
+
+        //return ((state = ((state = ((state << ((state & 31) + 5)) ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L) ^ state >>> 24 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
+    }
     
 }
