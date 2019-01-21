@@ -3,7 +3,12 @@ package sarong;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Tommy Ettinger on 9/13/2018.
@@ -486,21 +491,37 @@ public class PeriodTest {
     @Test
     public void miniRangeFinder()
     {
-        long state, ctr = 0;
-        for (int i = 0; i < 0x10000; i++) {
-            OUTER:
-            for (int j = 0; j < 0x10000; j++) {
-                state = ++ctr;
-                for (int p = 0; p < 0x100000; p++) {
-                    state = (state << 21 | state >>> 43) * 0x9E3779B9L;
-                    if (state == ctr) {
-                        System.out.println(ctr + " is NOT OKAY, period cycles at " + p);
-                        continue OUTER;
-                    }
-                }
-                //System.out.println("Seed of " + i + " is okay");
-            }
-            System.out.println("Successfully checked " + ctr + " seeds");
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        try {
+            executor.invokeAll(Arrays.asList(runner(0), runner(0x800000), runner(0x1000000), runner(0x1800000)));
+            executor.awaitTermination(10, TimeUnit.DAYS); // it won't take this long
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+    }
+    private static Callable<Long> runner(final long start)
+    {
+        return new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                long state, ctr = start;
+                for (int i = 0; i < 0x80; i++) {
+                    for (int j = 0; j < 0x10000; j++) {
+                        state = ++ctr;
+                        for (int p = 0; p < 0x100000; p++) {
+//                    state = (state << 21 | state >>> 43) * 0x9E3779B9L;
+                            state = (state << 29 | state >>> 35) * 0xAC564B05L;
+                            if (state == ctr) {
+                                System.out.println(ctr + " is NOT OKAY, period cycles at " + p);
+                                throw new InterruptedException("period cycles at " + p);
+                            }
+                        }
+                        //System.out.println("Seed of " + i + " is okay");
+                    }
+                    System.out.println("Successfully checked seeds " + (ctr - 0x10000) + " to " + ctr);
+                }
+                return ctr;
+            }
+        };
     }
 }
