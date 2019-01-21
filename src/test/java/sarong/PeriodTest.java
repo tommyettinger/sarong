@@ -13,11 +13,11 @@ public class PeriodTest {
     public void checkPeriod32(){
         int stateA = 1, i = 0;
         //final int r = 13, m = 0x89A7;
-        final int r = 17, m = 0xBCFD;
+        final int r = 25, m = 0xA5F152BF;
         for (; i != -1; i++) {
-            if ((stateA = Integer.rotateLeft(stateA, r) * m) == 1) {
+            if ((stateA = Integer.rotateLeft(stateA, 25) + 0xA5F152BF) == 1) {
                 //if (i >>> 24 == 0xFF)
-                System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", m, r, i);
+                System.out.printf("(state + 0x%08X, rotation %02d: 0x%08X\n", m, r, i);
                 break;
             }
         }
@@ -123,9 +123,9 @@ public class PeriodTest {
         System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
     }
     ///////// BEGIN subcycle finder code and period evaluator
-//    public static void main(String[] args)
-    @Test
-    public void testSubcycle32()
+    public static void main(String[] args)
+//    @Test
+//    public void testSubcycle32()
     {
         // multiplying
         // A refers to 0x9E377
@@ -233,8 +233,32 @@ public class PeriodTest {
         // rotation 10: 0xFFA82F7C also 22
         // 0x73E2CCAB
         // rotation 09: 0xFF9DE8B1 also 23
+        // 0x98EA52FD
+        // rotation 07: 0xFFEBC6C7 also 25
+        // 0x87194377
+        // rotation 03: 0xFFF4D1C8 also 29
+        // 0x9504583F
+        // rotation 15: 0xFFFA683A also 17
+        // 0x8F2554F7
+        // rotation 11: 0xFFFA5B00 also 21
+        // 0xC91ED343
+        // rotation 10: 0xFFF8F071 also 22
+        // 0x847A859B
+        // rotation 15: 0xFFF8BBBC also 17
+        // 0xC4DE9951
+        // rotation 07: 0xFFFEEAA9 also 25
+        // 0xAA78EDD7
+        // rotation 01: 0xFFFF9C61 also 31
+        // 0x929E7143
+        // rotation 14: 0xFFFA8F94 also 18
         // stateB = rotate32(stateB + 0xB531A935, 13)
         // stateC = rotate32(stateC + 0xC0EF50EB, 7)
+
+        // to get period of 0xFFFF9C61:
+        // a = rotate32(a, 1) + 0xAA78EDD7
+        // to get period of 0xFFFEEAA9:
+        // b = rotate32(b, 25) + 0xC4DE9951
+
 
         // subtracting, rotating, and bitwise NOT:
         // 0xC68E9CF3
@@ -280,10 +304,10 @@ public class PeriodTest {
         //BigInteger result = BigInteger.valueOf(0xFF6B3AF7L), tmp = BigInteger.valueOf(0xFFD78FD4L);
 
         int stateA, i;
-        LinnormRNG lin = new LinnormRNG();
-        System.out.println(lin.getState());
-        Random rand = new RNG(lin).asRandom();
-        for (int c = 1; c <= 200; c++) {
+        DiverRNG div = new DiverRNG();
+        System.out.println(div.getState());
+        Random rand = new RNG(div).asRandom();
+        for (int c = 1; c <= 800; c++) {
             final int r = BigInteger.probablePrime(32, rand).intValue();
             System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
             for (int j = 1; j < 32; j++) {
@@ -291,8 +315,8 @@ public class PeriodTest {
                 stateA = 1;
                 for (; ; i++) {
                     if ((stateA = Integer.rotateLeft(stateA, j) + r) == 1) {
-                        if (i >>> 24 == 0xFF)
-                            System.out.printf("(state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+                        if (i >>> 20 == 0xFFF)
+                            System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
                         break;
                     }
                 }
@@ -352,7 +376,7 @@ public class PeriodTest {
     public void showCombined()
     {
         // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
-        BigInteger result = BigInteger.valueOf(0xFFF43787L), tmp = BigInteger.valueOf(0xFFFD8000L); // 5/1, 6/-4 
+        BigInteger result = BigInteger.valueOf(0xFFFEEAA9L), tmp = BigInteger.valueOf(0xFFFF9C61L); // 5/1, 6/-4
 //        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFD6D7E76L); // 5/1, 9/8 
 //        result = tmp.divide(result.gcd(tmp)).multiply(result);
 //        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
@@ -458,7 +482,9 @@ public class PeriodTest {
         }
     }
     // MiniMover64RNG good-period range finder
-    public static void main(String[] args)
+    //public static void main(String[] args)
+    @Test
+    public void miniRangeFinder()
     {
         long state, ctr = 0;
         for (int i = 0; i < 0x10000; i++) {

@@ -5,32 +5,21 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>,
- * specifically a cmr^cmr with two 32-bit states; this is the fastest 32-bit generator that still passes statistical
- * tests, plus it's optimized for GWT (sometimes). It has a period of just under 2 to the 64, 0xFFF1F6F18B2A1330, which
- * is roughly 2 to the 63.999691, and allows 2 to the 32 initial seeds.
+ * An unusual generator built around a type of subcycle generator that Mark Overton discovered and mostly discarded,
+ * MoverCounter32RNG uses two rca generators and mixes them together with some bitwise ops and one multiplication. It has
+ * a period of just under 2 to the 64, 0xFFFE870A6BECE609, which is roughly 2 to the 63.999968, and allows 2 to the 32
+ * initial seeds.
  * <br>
- * This seems to do well in PractRand testing (32 TB passed), but this is not a generator Overton tested. "Chaotic"
- * generators like this one tend to score well in PractRand, but it isn't clear if they will fail other tests (in
- * particular, they can't generate all possible long values, and also can't generate 0 or possibly some other ints). As
- * for desktop/server speed, this is faster than {@link Lathe32RNG} (which is also high-quality) and is also faster than
- * {@link XoRo32RNG} (which is very fast but has quality issues) and {@link ThrustAlt32RNG} (which has a very small
- * period and probably isn't very useful). However, this is slower than Lathe32RNG when using GWT and viewing in
- * Firefox; for some reason {@link Starfish32RNG} optimizes well on Firefox and less well on Chrome, but Mover does very
- * well in older Chrome (faster than Lathe) and rather poorly on Firefox. It doesn't do amazingly well in current Chrome
- * versions, however, and Lathe beats it most of the time there. On 64-bit desktop or server Java, you may want to
- * prefer {@link Mover64RNG}, which is the same algorithm using larger words and constants. While each of the two parts
- * of a Mover32RNG can have their full period evaluated, making the total period possible to calculate, the same cannot
- * be said for Mover64RNG (its period is high enough for most usage, but the actual total is still unknown).
  * <br>
- * Its period is 0xFFF1F6F18B2A1330 for the largest cycle, which it always initializes into if {@link #setState(int)} is
+ * Its period is 0xFFFE870A6BECE609 for the largest cycle, which it always initializes into if {@link #setState(int)} is
  * used. setState() only allows 2 to the 32 starting states, but less than 2 to the 64 states are in the largest cycle,
  * so using a long or two ints to set the state seems ill-advised. The generator has two similar parts, each updated
- * without needing to read from the other part. Each is a 32-bit CMR generator, which multiplies a state by a constant,
- * rotates by another constant, and stores that as the next state. The particular constants used here were found by
- * randomly picking 16-bit odd numbers as multipliers, checking the period for every non-zero rotation, and reporting
- * the multiplier and rotation amount when a period was found that was greater than 0xFF000000. Better multipliers are
- * almost guaranteed to exist, but finding them would be a challenge.
+ * without needing to read from the other part. Each is a 32-bit rca generator, which rotates a state by a constant,
+ * adds anf09503069eother constant, and stores that as the next state. The particular constants used here were found by randomly
+ * picking 32-bit probable primes numbers as addends, checking the period for every non-zero rotation, and reporting
+ * the addend and rotation amount when a period was found that was greater than 0xFFF00000. Better multipliers are
+ * almost guaranteed to exist, but finding them would be a challenge. The ones used here are (rotate left by 25, add
+ * 0xC4DE9951) and (rotate left by 1, add 0xAA78EDD7).
  * <br>
  * This is a RandomnessSource but not a StatefulRandomness because it needs to take care and avoid seeds that would put
  * it in a short-period subcycle. It uses two generators with different cycle lengths, and skips at most 65536 times
@@ -44,121 +33,72 @@ import java.io.Serializable;
  * @author Mark Overton
  * @author Tommy Ettinger
  */
-public final class Mover32RNG implements RandomnessSource, Serializable {
+public final class MoverCounter32RNG implements RandomnessSource, Serializable {
     private static final long serialVersionUID = 1L;
     private int stateA, stateB;
-    public Mover32RNG()
+    public MoverCounter32RNG()
     {
-        setState((int)((Math.random() * 2.0 - 1.0) * 0x80000000));
+        this((int)((Math.random() * 2.0 - 1.0) * 0x80000000),
+                (int)((Math.random() * 2.0 - 1.0) * 0x80000000));
     }
-    public Mover32RNG(final int state)
+    public MoverCounter32RNG(final int state)
     {
         setState(state);
     }
 
-    /**
-     * Not advised for external use; prefer {@link #Mover32RNG(int)} because it guarantees a good subcycle. This
-     * constructor allows all subcycles to be produced, including ones with a shorter period.
-     * @param stateA
-     * @param stateB
-     */
-    public Mover32RNG(final int stateA, final int stateB)
+    public MoverCounter32RNG(final int stateA, final int stateB)
     {
         this.stateA = stateA == 0 ? 1 : stateA;
         this.stateB = stateB == 0 ? 1 : stateB;
     }
 
-    private static final int[] startingA = {
-            0x00000001, 0xCB2DA1A7, 0x215A5ADF, 0x2688266B, 0xEA31ECEE, 0x3F02F6A8, 0xB0833422, 0xC791ACA6,
-            0x976236C8, 0xF57961C0, 0x16EBE830, 0xCCCC2F10, 0x165D9801, 0x15E02FEA, 0xA302CC65, 0xAF68AE37,
-            0x4997CCA3, 0xF331F604, 0xF1DE5DA7, 0x07F21BA7, 0xD1752EC7, 0x308B16F2, 0x1B92D899, 0xF1A38AC8,
-            0x58F317B2, 0x1CC8EC79, 0x62588F4B, 0x975BF8FE, 0xE589C2D0, 0xB087C03D, 0x600F5DD0, 0xA32BD629,
-            0x3B52D26D, 0x0C7C18FD, 0xEB037A63, 0xE6F8BC93, 0x2CD250CF, 0x84327882, 0xA708FC6E, 0x5873EF12,
-            0x72FD78CF, 0xFFE73771, 0x18817285, 0x8EB3BC50, 0xE68597E0, 0xDF719E77, 0x35FE32C8, 0xF60532A1,
-            0xE93A1484, 0x697DF36B, 0xDFD41306, 0x37E0FADD, 0x6883EB39, 0xAF9CF955, 0xE11EB329, 0xDA951CC2,
-            0x325ECD67, 0x1DD8AC79, 0x7632669F, 0x0949BCB0, 0x965B0557, 0xB72DC0BC, 0x84448A7C, 0x6AC9B9CF,
-            0x92B7742A, 0xCFB27744, 0xFF154B26, 0xFD11E5F7, 0x5B6DE8D4, 0x59727211, 0x0A36FF7F, 0x56657899,
-            0xF9848758, 0x59415D9E, 0xE70E6901, 0x90858D00, 0x10B73995, 0x324FC7AD, 0xC62F801D, 0x4BBDA0E8,
-            0x70C8FDD5, 0xCC4376F1, 0x489AD7B7, 0xF4FB2500, 0x2279E051, 0x7840BF9E, 0x876AABF9, 0xF374F7BD,
-            0x6074B429, 0xC2EE6430, 0x238172DA, 0xFE3D050E, 0x5EF2F6B4, 0xF6359946, 0x127AAD89, 0xECA6FA56,
-            0x678B27CE, 0xDCD03A3C, 0xA45371BB, 0x5F2F422C, 0xE26B613C, 0x70DD9AF4, 0x1B0787BB, 0x0B8D2553,
-            0x3A430C3F, 0xAFF29AE2, 0x9DFAEB51, 0x1DE0F40E, 0x0467D74A, 0x85949411, 0xF8BC0358, 0x558BA744,
-            0x41A5B43A, 0x6B7E1C89, 0x9BF095BD, 0x5E2473CC, 0x4DFBF45B, 0xFB3510DC, 0xB7EC5786, 0xA99D6129,
-            0x120988F6, 0x796A7DE7, 0x9DEFD945, 0x0D2B25CE, 0xB7C1107E, 0x72E29D75, 0x85E01D79, 0x69AB992F,
-    }, startingB = {
-            0x00000001, 0xAB7EE445, 0x6FB35C9C, 0x459AB7A2, 0xEA61D065, 0x306F5E5F, 0xCE50A64A, 0x6D76B642,
-            0x11F3C6D4, 0xB3FF1D66, 0x657E6790, 0x4C62472D, 0xBEABAB16, 0xFD455176, 0xDCB98EDB, 0x1FC27360,
-            0x80C1241C, 0xC0C5BCC0, 0x6A67518B, 0xF2D69A39, 0xFA7D6C16, 0xE906A517, 0x899FFA7B, 0x2E42A99D,
-            0xBAF5B6E8, 0x3BBDC45A, 0x2497A707, 0xEA2DB138, 0x7D4ABF97, 0x552F5D4E, 0x15FE4BBD, 0xBC51DF5A,
-            0x465BDC95, 0x736A018F, 0x8A72CB63, 0x103119BE, 0x40403117, 0xA295957B, 0xCDDA9C19, 0xF0551CC6,
-            0x77CBAB76, 0xA054FD6A, 0x8974C93F, 0x8E314DC1, 0x42BC030E, 0x7F090540, 0x177998EA, 0x20457F09,
-            0xC13609D7, 0xA2683753, 0xE9F84638, 0x1BE07B83, 0x5DB36480, 0x39AE5B3A, 0xE044E164, 0x6E6B6191,
-            0x6036E5C8, 0x00703FE1, 0x53935ED8, 0x6B4443F5, 0x8FB91605, 0x146478C9, 0x2D0429BB, 0x86E8F88A,
-            0xD8DFFDB7, 0x77223F7D, 0x2B065674, 0xD80D2DD6, 0x0DFE5CEB, 0x44A495A5, 0x758EF0A9, 0x5FB55BA5,
-            0x8935A9B1, 0x84189069, 0xAA2194BC, 0x5FB95103, 0x6B60B887, 0xC63A769E, 0xA74BE357, 0x9F71B1F8,
-            0x3320B09E, 0xD369B3FC, 0xBCDB4B4E, 0xDC4DBCC9, 0x01F67CD2, 0xB3F6AA2B, 0x082CA2B3, 0xA54F168F,
-            0x0A9F82C9, 0x77DC3F93, 0x18D32D96, 0x1FC3FCE5, 0x97542B7A, 0x88CA9F81, 0x75370CE4, 0x8C2749C3,
-            0x94B63AE4, 0xC55E3BB7, 0x176BA775, 0x8C2BFEFC, 0x8C457557, 0xD8BFFD54, 0xB3D322DC, 0x072D766C,
-            0x40912BF4, 0x99CA7F36, 0xBC78BE45, 0x22F95B6B, 0xB37B05C9, 0x23493DB3, 0xCFBDC9C3, 0xB0379084,
-            0x2A2BFA20, 0x9A9DA93D, 0xCDE62486, 0x079CF8E6, 0x5B45CF64, 0xA19945A8, 0x196C1AA8, 0x9B19C771,
-            0x702CC28B, 0xFF4C5B02, 0x2FDD78D2, 0x71FFBD4E, 0xDF4C60A4, 0x143FAB0B, 0xAD9C8EB0, 0x6F35837D,
-    };
-
     public final void setState(final int s) {
-        stateA = startingA[s >>> 9 & 0x7F];
-        for (int i = s & 0x1FF; i > 0; i--) {
-            stateA *= 0x89A7;
-            stateA = (stateA << 13 | stateA >>> 19);
-        }
-        stateB = startingB[s >>> 25];
-        for (int i = s >>> 16 & 0x1FF; i > 0; i--) {
-            stateB *= 0xBCFD;
-            stateB = (stateB << 17 | stateB >>> 15);
-        }
+        stateB = s;
+        stateA = ~s;
+        stateA ^= stateA >>> 13;
+        stateA = (stateA << 19) - stateA;
+        stateA ^= stateA >>> 12;
+        stateA = (stateA << 17) - stateA;
+        stateA ^= stateA >>> 14;
+        stateA = (stateA << 13) - stateA;
+        stateA ^= stateA >>> 15;
+
     }
 
     public final int nextInt()
     {
-        int y = stateA * 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        final int x = stateB * 0xBCFD;
-        return (y ^ (stateB = (x << 17 | x >>> 15)));
+//        final int result = (stateB = (stateB << 25 | stateB >>> 7) + 0xC4DE9951) * (stateA >>> 11 | 1);
+//        return result ^ (result >> 16) + (stateA = (stateA << 1 | stateA >>> 31) + 0xAA78EDD7);
+
+        return ((stateB += 0x9E3779BD) ^ (stateA = (stateA << 21 | stateA >>> 11) * (stateB | 0xFFE00001)) * 0xA5295);
+
     }
     @Override
     public final int next(final int bits)
     {
-        int y = stateA * 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        final int x = stateB * 0xBCFD;
-        return (y ^ (stateB = (x << 17 | x >>> 15))) >>> (32 - bits);
+        return ((stateB += 0x9E3779BD) ^ (stateA = (stateA << 21 | stateA >>> 11) * (stateB | 0xFFE00001)) * 0xA5295)>>> (32 - bits);
     }
     @Override
     public final long nextLong()
     {
-        int y = stateA * 0x89A7;
-        y = (y << 13 | y >>> 19);
-        int x = stateB * 0xBCFD;
-        final long t = (y ^ (x = (x << 17 | x >>> 15))) & 0xFFFFFFFFL;
-        y *= 0x89A7;
-        stateA = (y = (y << 13 | y >>> 19));
-        x *= 0xBCFD;
-        return t << 32 | ((y ^ (stateB = (x << 17 | x >>> 15))) & 0xFFFFFFFFL);
+        final long t = ((stateB += 0x9E3779BD) ^ (stateA = (stateA << 21 | stateA >>> 11) * (stateB | 0xFFE00001)) * 0xA5295) & 0xFFFFFFFFL;
+        return t << 32 | (((stateB += 0x9E3779BD) ^ (stateA = (stateA << 21 | stateA >>> 11) * (stateB | 0xFFE00001)) * 0xA5295) & 0xFFFFFFFFL);
     }
 
     /**
-     * Produces a copy of this Mover32RNG that, if next() and/or nextLong() are called on this object and the
+     * Produces a copy of this MoverCounter32RNG that, if next() and/or nextLong() are called on this object and the
      * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
      * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
      *
-     * @return a copy of this Mover32RNG
+     * @return a copy of this MoverCounter32RNG
      */
     @Override
-    public Mover32RNG copy() {
-        return new Mover32RNG(stateA, stateB);
+    public MoverCounter32RNG copy() {
+        return new MoverCounter32RNG(stateA, stateB);
     }
 
     /**
-     * Gets the "A" part of the state; if this generator was set with {@link #Mover32RNG()}, {@link #Mover32RNG(int)},
+     * Gets the "A" part of the state; if this generator was set with {@link #MoverCounter32RNG()}, {@link #MoverCounter32RNG(int)},
      * or {@link #setState(int)}, then this will be on the optimal subcycle, otherwise it may not be. 
      * @return the "A" part of the state, an int
      */
@@ -168,7 +108,7 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
     }
 
     /**
-     * Gets the "B" part of the state; if this generator was set with {@link #Mover32RNG()}, {@link #Mover32RNG(int)},
+     * Gets the "B" part of the state; if this generator was set with {@link #MoverCounter32RNG()}, {@link #MoverCounter32RNG(int)},
      * or {@link #setState(int)}, then this will be on the optimal subcycle, otherwise it may not be. 
      * @return the "B" part of the state, an int
      */
@@ -183,7 +123,7 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
      */
     public void setStateA(final int stateA)
     {
-        this.stateA = stateA == 0 ? 1 : stateA;
+        this.stateA = stateA;
     }
 
     /**
@@ -193,12 +133,12 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
      */
     public void setStateB(final int stateB)
     {
-        this.stateB = stateB == 0 ? 1 : stateB;
+        this.stateB = stateB;
     }
     
     @Override
     public String toString() {
-        return "Mover32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
+        return "MoverCounter32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
     }
 
     @Override
@@ -206,9 +146,9 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Mover32RNG mover32RNG = (Mover32RNG) o;
+        MoverCounter32RNG moverCounter32RNG = (MoverCounter32RNG) o;
 
-        return stateA == mover32RNG.stateA && stateB == mover32RNG.stateB;
+        return stateA == moverCounter32RNG.stateA && stateB == moverCounter32RNG.stateB;
     }
 
     @Override
@@ -281,7 +221,7 @@ public final class Mover32RNG implements RandomnessSource, Serializable {
 
 //    public static void main(String[] args)
 //    {
-//        Mover32RNG m = new Mover32RNG();
+//        MoverCounter32RNG m = new MoverCounter32RNG();
 //        System.out.println("int[] startingA = {");
 //        for (int i = 0, ctr = 0; ctr < 128; ctr++, i+= 0x00000200) {
 //            m.setState(i);

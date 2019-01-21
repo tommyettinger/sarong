@@ -448,4 +448,26 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
         return (((state = ((state = ((state << ((state & 31) + 5)) ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L)
                     ^ (state >>> ((state >>> 60) + 16))) * 0x369DEA0F31A53F85L) ^ state >>> 27) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
     //public static double determineDouble(long state) { return (((state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
+
+    public static long glowDetermine(long state)
+    {
+        state = (state ^ (state << 21 | state >>> 43) ^ (state << 45 | state >>> 19) ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L;
+        state = (state ^ (state << 21 | state >>> 43) ^ (state << 45 | state >>> 19) ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L;
+        return state ^ (state >>> 27);
+    }
+    //					z = ((z << 21) ^ z ^ UINT64_C(0xDB4F0B9175AE2165)) * UINT64_C(0xD1B54A32D192ED03);
+    //					z = (z ^ (z >> ((z >> 60) | 16))) * UINT64_C(0x369DEA0F31A53F85);
+    //					return z ^ z >> 27;
+    public static long wobbleDetermine(long state)
+    {
+//        z = ((z << ((z & 31) + 5)) ^ (z << 3 | z >>> 61)) * 0xAEF17502108EF2D9L;
+
+        return ((state = ((state = (state << 21 ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L)
+                ^ state >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
+//                ^ (state >>> (state >>> 60 | 16))) * 0x369DEA0F31A53F85L) ^ state >>> 27);
+//        z = ((z << ((z & 31) + 5)) ^ z ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L;
+//        z = (z ^ (z >>> ((z >>> 60) + 16))) * 0x369DEA0F31A53F85L;
+//        return z ^ z >>> 27;
+    }
+
 }
