@@ -156,11 +156,11 @@ public final class Molerat32RNG implements RandomnessSource, Serializable {
         stateA = (stateA << 9) + (stateA << 8 | stateA >>> 24);
         stateB = (stateB << 5) + (stateB << 1 | stateB >>> 31);
         stateC = (stateC << 27) + (stateC << 20 | stateC >>> 12);
-        final long t = stateA ^ stateB ^ stateC;
+        final long t = (stateA ^ stateB ^ stateC) & 0xFFFFFFFFL;
         stateA = (stateA << 9) + (stateA << 8 | stateA >>> 24);
         stateB = (stateB << 5) + (stateB << 1 | stateB >>> 31);
         stateC = (stateC << 27) + (stateC << 20 | stateC >>> 12);
-        return t << 32 ^ stateA ^ stateB ^ stateC;
+        return t << 32 | ((stateA ^ stateB ^ stateC) & 0xFFFFFFFFL);
     }
 
     /**

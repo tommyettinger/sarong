@@ -875,39 +875,45 @@ public class RNGBenchmark {
     public long measureDiverDetermine() {
         return DiverRNG.determine(state++);
     }
-//    @Benchmark
-//    public long measureXXHashDetermine() {
-//        return DiverRNG.xxHash(state++);
-//    }
+
     @Benchmark
     public long measureDonutDetermine() {
         return DiverRNG.donut(state++);
     }
+    @Benchmark
+    public long measureGlowDetermine() {
+        return DiverRNG.glowDetermine(state++);
+    }
+    @Benchmark
+    public long measureWobbleDetermine() {
+        return DiverRNG.wobbleDetermine(state++);
+    }
 
-    @Benchmark
-    public long measureAltThrustDeCorrelatedDetermine() {
-        return ThrustAltRNG.determine(inputs[istate++ & 0xFFFFF]);
-    }
-    @Benchmark
-    public long measureLightDeCorrelatedDetermine() {
-        return LightRNG.determine(inputs[istate++ & 0xFFFFF]);
-    }
-    @Benchmark
-    public long measureLinnormDeCorrelatedDetermine() {
-        return LinnormRNG.determine(inputs[istate++ & 0xFFFFF]);
-    }
-    @Benchmark
-    public long measureDiverDeCorrelatedDetermine() {
-        return DiverRNG.determine(inputs[istate++ & 0xFFFFF]);
-    }
 //    @Benchmark
-//    public long measureXXHashDeCorrelatedDetermine() {
-//        return DiverRNG.xxHash(inputs[istate++ & 0xFFFFF]);
+//    public long measureLinnormDeCorrelatedDetermine() {
+//        return LinnormRNG.determine(inputs[istate++ & 0xFFFFF]);
 //    }
-    @Benchmark
-    public long measureDonutDeCorrelatedDetermine() {
-        return DiverRNG.donut(inputs[istate++ & 0xFFFFF]);
-    }
+//    @Benchmark
+//    public long measureDiverDeCorrelatedDetermine() {
+//        return DiverRNG.determine(inputs[istate++ & 0xFFFFF]);
+//    }
+//    @Benchmark
+//    public long measureAltThrustDeCorrelatedDetermine() {
+//        return ThrustAltRNG.determine(inputs[istate++ & 0xFFFFF]);
+//    }
+//    @Benchmark
+//    public long measureLightDeCorrelatedDetermine() {
+//        return LightRNG.determine(inputs[istate++ & 0xFFFFF]);
+//    }
+//    @Benchmark
+//    public long measureGlowDeCorrelatedDetermine() {
+//        return DiverRNG.glowDetermine(inputs[istate++ & 0xFFFFF]);
+//    }
+//    @Benchmark
+//    public long measureDonutDeCorrelatedDetermine() {
+//        return DiverRNG.donut(inputs[istate++ & 0xFFFFF]);
+//    }
+
 //    @Benchmark
 //    public long measureMotorDetermine() {
 //        return MotorRNG.determine(state++);
@@ -1416,6 +1422,32 @@ public class RNGBenchmark {
     public int measureMover32IntR()
     {
         return Mover32R.nextInt();
+    }
+
+    private MoverCounter32RNG MoverCounter32 = new MoverCounter32RNG(0);
+    private RNG MoverCounter32R = new RNG(MoverCounter32);
+
+    @Benchmark
+    public long measureMoverCounter32()
+    {
+        return MoverCounter32.nextLong();
+    }
+
+    @Benchmark
+    public int measureMoverCounter32Int()
+    {
+        return MoverCounter32.next(32);
+    }
+    @Benchmark
+    public long measureMoverCounter32R()
+    {
+        return MoverCounter32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureMoverCounter32IntR()
+    {
+        return MoverCounter32R.nextInt();
     }
 
 //    private Mover32RNG Mover32A = new Mover32RNG(0);

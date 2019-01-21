@@ -1,5 +1,6 @@
 package sarong;
 
+import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
 import java.io.Serializable;
@@ -7,28 +8,35 @@ import java.io.Serializable;
 /**
  * An IRNG implementation that is meant to provide random numbers very quickly when targeting GWT but also to produce
  * the same numbers when used on desktop, Android, or other platforms, and that can have its state read as a
- * StatefulRandomness. This uses the same algorithm as {@link Lathe32RNG}, which means it has two 32-bit ints for state
- * and a period of 0xFFFFFFFFFFFFFFFF (2 to the 64 minus 1), while passing 32TB of PractRand tests (so its quality is
- * very good). Unlike {@link RNG}, there is no RandomnessSource that can be swapped out, but also somewhat less
+ * StatefulRandomness. This uses the same algorithm as {@link Starfish32RNG}, which means it has two 32-bit ints for
+ * state and a period of 0xFFFFFFFFFFFFFFFF (2 to the 64 minus 1), while passing 32TB of PractRand tests without any
+ * failures or anomalies (so its quality is very good). This previously used {@link Lathe32RNG}'s algorithm, which is a
+ * tiny bit faster on desktop and a fair amount faster on GWT, but can't produce all long values and produces some more
+ * often than others. Unlike {@link RNG}, there is no RandomnessSource that can be swapped out, but also somewhat less
  * indirection on common calls like {@link #nextInt()} and {@link #nextFloat()}. Although this implements
  * {@link StatefulRandomness}, it is not recommended to use this as the RandomnessSource for a StatefulRNG; you should
- * use {@link Lathe32RNG} if you want the larger API provided by StatefulRNG and/or RNG while keeping similar, though
- * probably slightly weaker, GWT performance relative to this class.
+ * use {@link Starfish32RNG} if you want the larger API provided by StatefulRNG and/or RNG while keeping similar, though
+ * probably slightly weaker, GWT performance relative to this class. Any performance measurements on GWT depend heavily
+ * on the browser; in some versions of Chrome and Chromium, this performs almost exactly as well as Lathe32RNG, but in
+ * newer versions it lags behind by a small factor. It tends to be very fast in the current Firefox (September 2018).
  * <br>
- * <a href="http://xoroshiro.di.unimi.it/xoroshiro128plus.c">Original version here for xorshiro128+</a>; this version
- * uses <a href="https://groups.google.com/d/msg/prng/Ll-KDIbpO8k/bfHK4FlUCwAJ">different constants</a> by the same
- * author, Sebastiano Vigna.
+ * Be advised: if you subtract {@code 0x9E3779BD} from every output, that modified output will fail some tests reliably.
+ * Similar numbers may also cause this result, though it isn't clear if this is ever relevant in actual usage. Part of
+ * the reason Lathe32RNG was switched out was because its behavior on {@link #between(int, int)} was poor, but it
+ * doesn't seem to be for this version.
  * <br>
- * Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
- * Ported and modified in 2018 by Tommy Ettinger
+ * <a href="http://xoshiro.di.unimi.it/xoroshiro64starstar.c">Original version here for xoroshiro64**</a>.
+ * <br>
+ * Written in 2018 by David Blackman and Sebastiano Vigna (vigna@acm.org)
+ * Ported and modified in 2018  and 2019 by Tommy Ettinger
  * @author Sebastiano Vigna
  * @author David Blackman
  * @author Tommy Ettinger (if there's a flaw, use SquidLib's issues and don't bother Vigna or Blackman, the algorithm here has been adjusted from their work)
  */
-public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Serializable {
-    private static final long serialVersionUID = 1L;
+public final class GWTRNG extends AbstractRNG implements IStatefulRNG, Serializable {
+    private static final long serialVersionUID = 2L;
 
-    private int stateA, stateB;
+    public int stateA, stateB;
 
     /**
      * Creates a new generator seeded using two calls to Math.random().
@@ -64,6 +72,16 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
     }
 
     /**
+     * Hashes {@code seed} using both {@link CrossHash#hash(CharSequence)} and {@link String#hashCode()} and uses those
+     * two results as the two states with {@link #setState(int, int)}. If seed is null, this won't call
+     * String.hashCode() on it and will instead use 1 as that state (to avoid the forbidden double-zero case).
+     * @param seed any String; may be null
+     */
+    public GWTRNG(final String seed) {
+        setState(CrossHash.hash(seed), seed == null ? 1 : seed.hashCode());
+    }
+
+    /**
      * Get up to 32 bits (inclusive) of random output; the int this produces
      * will not require more than {@code bits} bits to represent.
      *
@@ -73,12 +91,11 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
     @Override
     public final int next(int bits) {
         final int s0 = stateA;
-        int s1 = stateB;
-        final int result = s0 + s1;
-        s1 ^= s0;
-        stateA = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        stateB = (s1 << 28 | s1 >>> 4); // c
-        return (result << 10 | result >>> 22) + s0 >>> (32 - bits);
+        final int s1 = stateB ^ s0;
+        final int result = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (result << 28 | result >>> 4) + 0x9E3779BD >>> (32 - bits);
     }
 
     /**
@@ -89,12 +106,27 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
     @Override
     public final int nextInt() {
         final int s0 = stateA;
-        int s1 = stateB;
-        final int result = s0 + s1;
-        s1 ^= s0;
-        stateA = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        stateB = (s1 << 28 | s1 >>> 4); // c
-        return (result << 10 | result >>> 22) + s0;
+        final int s1 = stateB ^ s0;
+        final int result = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (result << 28 | result >>> 4) + 0x9E3779BD;
+    }
+    /**
+     * Returns a random non-negative integer below the given bound, or 0 if the bound is 0 or
+     * negative.
+     *
+     * @param bound the upper bound (exclusive)
+     * @return the found number
+     */
+    @Override
+    public final int nextInt(final int bound) {
+        final int s0 = stateA;
+        final int s1 = stateB ^ s0;
+        final int result = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (int) ((bound * ((result << 28 | result >>> 4) + 0x9E3779BD & 0xFFFFFFFFL)) >>> 32) & ~(bound >> 31);
     }
 
     /**
@@ -104,17 +136,16 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
      */
     @Override
     public final long nextLong() {
-        final int s0 = stateA;
-        int s1 = stateB;
-        final int high = s0 + s1;
-        s1 ^= s0;
-        final int s00 = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        s1 = (s1 << 28 | s1 >>> 4); // c
-        final int low = s00 + s1;
-        s1 ^= s00;
-        stateA = (s00 << 13 | s00 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        stateB = (s1 << 28 | s1 >>> 4); // c
-        return (long)((high << 10 | high >>> 22) + s0) << 32 ^ ((low << 10 | low >>> 22) + s00);
+        int s0 = stateA;
+        int s1 = stateB ^ s0;
+        final int high = s0 * 31;
+        s0 = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        s1 = (s1 << 13 | s1 >>> 19) ^ s0;
+        final int low = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return ((high << 28 | high >>> 4) + 0x9E3779BDL) << 32
+                | ((low << 28 | low >>> 4) + 0x9E3779BD & 0xFFFFFFFFL);
     }
 
     /**
@@ -127,69 +158,54 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
     @Override
     public final boolean nextBoolean() {
         final int s0 = stateA;
-        int s1 = stateB;
-        final int result = s0 + s1;
-        s1 ^= s0;
-        stateA = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        stateB = (s1 << 28 | s1 >>> 4); // c
-        return (result << 10 | result >>> 22) + s0 < 0;
+        final int s1 = stateB ^ s0;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return (s0 * 31 & 8) == 8; // same effect as a sign check if this was rotated as normal
     }
 
     /**
      * Gets a random double between 0.0 inclusive and 1.0 exclusive.
      * This returns a maximum of 0.9999999999999999 because that is the largest double value that is less than 1.0 .
-     * <br>
-     * This is abstract because some generators may natively work with double or float values, but others may need to
-     * convert a long to a double as with {@code (nextLong() & 0x1fffffffffffffL) * 0x1p-53}, which is recommended if
-     * longs are fast to produce.
      *
      * @return a double between 0.0 (inclusive) and 0.9999999999999999 (inclusive)
      */
     @Override
     public final double nextDouble() {
-        final int s0 = stateA;
-        int s1 = stateB;
-        final int high = s0 + s1;
-        s1 ^= s0;
-        final int s00 = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        s1 = (s1 << 28 | s1 >>> 4); // c
-        final int low = s00 + s1;
-        s1 ^= s00;
-        stateA = (s00 << 13 | s00 >>> 19) ^ s1 ^ (s1 << 5); // a, b
-        stateB = (s1 << 28 | s1 >>> 4); // c
-        return (((long)((high << 10 | high >>> 22) + s0) << 32 ^ ((low << 10 | low >>> 22) + s00))
-                & 0x1fffffffffffffL) * 0x1p-53;
+        int s0 = stateA;
+        int s1 = stateB ^ s0;
+        final int high = s0 * 31;
+        s0 = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        s1 = (s1 << 13 | s1 >>> 19) ^ s0;
+        final int low = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return  ((((high << 28 | high >>> 4) + 0x9E3779BDL) << 32
+                | ((low << 28 | low >>> 4) + 0x9E3779BD & 0xFFFFFFFFL))
+                & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
     }
 
     /**
      * Gets a random float between 0.0f inclusive and 1.0f exclusive.
      * This returns a maximum of 0.99999994 because that is the largest float value that is less than 1.0f .
-     * <br>
-     * This is abstract because some generators may natively work with double or float values, but others may need to
-     * convert an int or long to a float as with {@code (nextInt() & 0xffffff) * 0x1p-24f},
-     * {@code (nextLong() & 0xffffffL) * 0x1p-24f}, or {@code next(24) * 0x1p-24f}, any of which can work when the
-     * method they call is high-quality and fast. You probably would want to use nextInt() or next() if your
-     * implementation is natively 32-bit and is slower at producing longs, for example.
      *
      * @return a float between 0f (inclusive) and 0.99999994f (inclusive)
      */
     @Override
     public final float nextFloat() {
         final int s0 = stateA;
-        int s1 = stateB;
-        final int result = s0 + s1;
-        s1 ^= s0;
-        stateA = (s0 << 13 | s0 >>> 19) ^ s1 ^ (s1 << 5);
-        stateB = (s1 << 28 | s1 >>> 4);
-        return ((result << 10 | result >>> 22) + s0 & 0xffffff) * 0x1p-24f;
+        final int s1 = stateB ^ s0;
+        final int result = s0 * 31;
+        stateA = (s0 << 26 | s0 >>> 6) ^ s1 ^ (s1 << 9);
+        stateB = (s1 << 13 | s1 >>> 19);
+        return ((result << 28 | result >>> 4) + 0x9E3779BD & 0xffffff) * 0x1p-24f;
     }
 
     /**
-     * Creates a copy of this IRNG; it will generate the same random numbers, given the same calls in order, as this
-     * IRNG at the point copy() is called. The copy will not share references with this IRNG. This implementation will
-     * faithfully reproduce this generator as a copied GWTRNG.
-     * 
-     * @return a copy of this IRNG
+     * Creates a copy of this GWTRNG; it will generate the same random numbers, given the same calls in order, as this
+     * GWTRNG at the point copy() is called. The copy will not share references with this GWTRNG.
+     *
+     * @return a copy of this GWTRNG
      */
     @Override
     public GWTRNG copy() {
@@ -306,7 +322,7 @@ public final class GWTRNG extends AbstractRNG implements StatefulRandomness, Ser
     public int hashCode() {
         return 31 * stateA + stateB;
     }
-    
+
     @Override
     public String toString() {
         return "GWTRNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);

@@ -443,30 +443,27 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     }
     //public static double determineDouble(long state) { return (((state = ((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) ^ state >>> 29) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
 
+    public static long glowDetermine(long state)
+    {
+        state = (state ^ (state << 21 | state >>> 43) ^ (state << 45 | state >>> 19) ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L;
+        state = (state ^ (state << 21 | state >>> 43) ^ (state << 45 | state >>> 19) ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L;
+        return state ^ (state >>> 27);
+    }
+    //					z = ((z << 21) ^ z ^ UINT64_C(0xDB4F0B9175AE2165)) * UINT64_C(0xD1B54A32D192ED03);
+    //					z = (z ^ (z >> ((z >> 60) | 16))) * UINT64_C(0x369DEA0F31A53F85);
+    //					return z ^ z >> 27;
+    public static long wobbleDetermine(long state)
+    {
+//        z = ((z << ((z & 31) + 5)) ^ (z << 3 | z >>> 61)) * 0xAEF17502108EF2D9L;
 
-//    private static final long P1 = 0x9e3779b185ebca87L;
-//    private static final long P2 = 0xc2b2ae3d27d4eb4fL;
-//    private static final long P3 = 0x165667b19e3779f9L;
-//    private static final long P4 = 0x85ebca77c2b2ae63L;
-//    private static final long P5 = 0x27d4eb2f165667c5L;
-//    // (2 to the 64) / (golden ratio, generalized to some higher power)
-//    private static final long G3 = 0xD1B54A32D192ED03L;
-//    private static final long G4 = 0xDB4F0B9175AE2165L;
-//    public static long xxHash(long input) {
-//        long hash = P5 + 8;
-//        input *= P2;
-//        input = Long.rotateLeft(input, 31);
-//        input *= P1;
-//        hash ^= input;
-//        hash = Long.rotateLeft(hash, 27) * P1 + P4;
-//
-//        hash ^= hash >>> 33;
-//        hash *= P2;
-//        hash ^= hash >>> 29;
-//        hash *= P3;
-//        hash ^= hash >>> 32;
-//        return hash;
-//    }
+        return ((state = ((state = (state << 21 ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L)
+                ^ state >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
+//                ^ (state >>> (state >>> 60 | 16))) * 0x369DEA0F31A53F85L) ^ state >>> 27);
+//        z = ((z << ((z & 31) + 5)) ^ z ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L;
+//        z = (z ^ (z >>> ((z >>> 60) + 16))) * 0x369DEA0F31A53F85L;
+//        return z ^ z >>> 27;
+    }
+
     public static long donut(long z) {
 //        z = (z ^ (z << 12 | z >>> 52) ^ (z << 43 | z >>> 21) ^ 0xDB4F0B9175AE2165L) * 0xE0A28963L;
 //        z = (z ^ (z << 52 | z >>> 12) ^ (z << 21 | z >>> 43) ^ 0x9E3779B97F4A7C15L) * 0x81383173L;
@@ -477,5 +474,4 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
 
         //return ((state = ((state = ((state << ((state & 31) + 5)) ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L) ^ state >>> 24 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
     }
-    
 }
