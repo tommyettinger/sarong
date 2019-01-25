@@ -452,19 +452,16 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
     //					z = ((z << 21) ^ z ^ UINT64_C(0xDB4F0B9175AE2165)) * UINT64_C(0xD1B54A32D192ED03);
     //					z = (z ^ (z >> ((z >> 60) | 16))) * UINT64_C(0x369DEA0F31A53F85);
     //					return z ^ z >> 27;
-    public static long wobbleDetermine(long state)
-    {
-//        z = ((z << ((z & 31) + 5)) ^ (z << 3 | z >>> 61)) * 0xAEF17502108EF2D9L;
-        
-
-        return ((state = ((state = (state << 21 ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L)
-                ^ state >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
-
-//                ^ (state >>> (state >>> 60 | 16))) * 0x369DEA0F31A53F85L) ^ state >>> 27);
-//        z = ((z << ((z & 31) + 5)) ^ z ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L;
-//        z = (z ^ (z >>> ((z >>> 60) + 16))) * 0x369DEA0F31A53F85L;
-//        return z ^ z >>> 27;
-    }
+//    public static long wobbleDetermine(long state)
+//    {
+//        return ((state = ((state = (state << 21 ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L)
+//                ^ state >>> 27 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
+////        z = ((z << ((z & 31) + 5)) ^ (z << 3 | z >>> 61)) * 0xAEF17502108EF2D9L;
+////                ^ (state >>> (state >>> 60 | 16))) * 0x369DEA0F31A53F85L) ^ state >>> 27);
+////        z = ((z << ((z & 31) + 5)) ^ z ^ 0xDB4F0B9175AE2165L) * 0xC6BC279692B5CC83L;
+////        z = (z ^ (z >>> ((z >>> 60) + 16))) * 0x369DEA0F31A53F85L;
+////        return z ^ z >>> 27;
+//    }
 
     public static long donut(long z) {
 //        z = (z ^ (z << 12 | z >>> 52) ^ (z << 43 | z >>> 21) ^ 0xDB4F0B9175AE2165L) * 0xE0A28963L;
@@ -477,5 +474,36 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
         //return (z = ((z = (z ^ 0xDB4F0B9175AE2165L) * 0x4823A80B2006E21BL) ^ (z << 52 | z >>> 12) ^ (z << 21 | z >>> 43) ^ 0x9E3779B97F4A7C15L) * 0x81383173L) ^ z >>> 28;
 
         //return ((state = ((state = ((state << ((state & 31) + 5)) ^ state ^ 0xDB4F0B9175AE2165L) * 0xD1B54A32D192ED03L) ^ state >>> 24 ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L) ^ state >>> 26);
+    }
+
+    /**
+     * Two-shift version of a unary hash that uses an uncommon bijective step found by Pelle Evensen.
+     * Not all operations of the form {@code n ^ (n << a) ^ (n >>> b)} are bijections; the list was given by Evensen
+     * <a href="https://mostlymangling.blogspot.com/2018/09/invertible-additions-mod-2.html">here</a>. This uses
+     * {@code a = 7} and {@code b = 23}, as well as some other operations (no initial multiply, so it may do well when
+     * the input changes in a linear pattern). It passes at least 1TB of PractRand with no anomalies.
+     * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
+     * @return any long
+     */
+    public static long pelican2(long state)
+    {
+        state = (state ^ 0xDB4F0B9175AE2165L) * 0x4823A80B2006E21BL;
+        state = (state ^ state << 7 ^ state >>> 23) * 0x4C8148C08017D353L;
+        return state ^ state >>> 28;
+    }
+    /**
+     * Three-shift version of a unary hash that uses an uncommon bijective step found by Pelle Evensen.
+     * Not all operations of the form {@code n ^ (n << a) ^ (n >>> b) ^ (n >>> c)} are bijections; the list was given by
+     * Evensen <a href="https://mostlymangling.blogspot.com/2018/09/invertible-additions-mod-2.html">here</a>. This uses
+     * {@code a = 6}, {@code b = 21}, and {@code c = 37}, as well as some other operations (no initial multiply, so it
+     * may do well when the input changes in a linear pattern). It passes at least 16TB of PractRand with no anomalies.
+     * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
+     * @return any long
+     */
+    public static long pelican3(long state)
+    {
+        state = (state ^ 0xDB4F0B9175AE2165L) * 0x4823A80B2006E21BL;
+        state = (state ^ state << 6 ^ state >>> 21 ^ state >>> 37) * 0xC6BC279692B5CC83L;
+        return state ^ state >>> 28;
     }
 }

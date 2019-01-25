@@ -748,10 +748,10 @@ public class RNGBenchmark {
         return z ^ z >>> 28;
     }
 
-    @Benchmark
-    public long measureAltThrustDetermine() {
-        return ThrustAltRNG.determine(state++);
-    }
+//    @Benchmark
+//    public long measureAltThrustDetermine() {
+//        return ThrustAltRNG.determine(state++);
+//    }
     @Benchmark
     public long measureLightDetermine() {
         return LightRNG.determine(state++);
@@ -774,11 +774,15 @@ public class RNGBenchmark {
         return DiverRNG.glowDetermine(state++);
     }
     @Benchmark
-    public long measureWobbleDetermine() {
-        return DiverRNG.wobbleDetermine(state++);
+    public long measurePelican2Determine() {
+        return DiverRNG.pelican2(state++);
     }
     @Benchmark
-    public long measureThrustAlt32Determine() {
+    public long measurePelican3Determine() {
+        return DiverRNG.pelican3(state++);
+    }
+    @Benchmark
+    public int measureThrustAlt32Determine() {
         return ThrustAlt32RNG.determineInt(istate++);
     }
 
