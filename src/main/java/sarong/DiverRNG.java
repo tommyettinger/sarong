@@ -496,7 +496,10 @@ public final class DiverRNG implements StatefulRandomness, Serializable {
      * Not all operations of the form {@code n ^ (n << a) ^ (n >>> b) ^ (n >>> c)} are bijections; the list was given by
      * Evensen <a href="https://mostlymangling.blogspot.com/2018/09/invertible-additions-mod-2.html">here</a>. This uses
      * {@code a = 6}, {@code b = 21}, and {@code c = 37}, as well as some other operations (no initial multiply, so it
-     * may do well when the input changes in a linear pattern). It passes at least 16TB of PractRand with no anomalies.
+     * may do well when the input changes in a linear pattern). It passes at least 32TB of PractRand with no anomalies.
+     * It has serious trouble when input changes in specific patterns, such as
+     * {@code ++state; state = (state << 63 | state >>> 1);}, though it does fine with some similar patterns, such as
+     * {@code ++state; state = (state << 1 | state >>> 63);}. "Serious trouble" means it fails very early in PractRand.
      * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
      * @return any long
      */
