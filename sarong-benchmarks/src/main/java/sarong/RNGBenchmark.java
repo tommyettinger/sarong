@@ -336,6 +336,22 @@ import java.util.concurrent.TimeUnit;
  * except one, while Lathe can't and Oriole won't with equal frequency). Starfish seems to have comparable quality and
  * speed relative to Oriole (excellent and pretty good, respectively), but improves on its distribution at the expense
  * of its period, and has a smaller state.
+ * <br>
+ * Benchmarking determine() methods is much like benchmarking the normal RandomnessSource methods, it just requires
+ * passing a state that goes up as a counter. Some good determine() methods for various usage:
+ * <pre>
+ * Benchmark                              Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDiverDetermine     avgt    5  5.100 ± 0.043  ns/op
+ * RNGBenchmark.measureLightDetermine     avgt    5  4.016 ± 0.052  ns/op
+ * RNGBenchmark.measureLinnormDetermine   avgt    5  3.858 ± 0.041  ns/op
+ * RNGBenchmark.measurePelican3Determine  avgt    5  4.192 ± 0.026  ns/op
+ * RNGBenchmark.measurePelicanDetermine   avgt    5  4.543 ± 0.049  ns/op // passes PractRand in many stricter cases
+ * </pre>
+ * The two slowest methods here are also the most robust, standing up to unusual patterns in the input that will cause
+ * LightRNG.determine(), LinnormRNG.determine(), and DiverRNG.pelican3() to fail. PelicanRNG.determine() appears to be
+ * the most robust of all of these and is faster than DiverRNG.determine(). LinnormRNG.determine() is the fastest, but
+ * incrementing by some values will cause it to fail after a few GB of testing, and rotating a counter almost certainly
+ * will cause it to fail for some rotations because it wasn't built to handle that.
  */
 
 @State(Scope.Thread)
@@ -773,10 +789,20 @@ public class RNGBenchmark {
     public long measureGlowDetermine() {
         return DiverRNG.glowDetermine(state++);
     }
+    
+    // strikes down at PractRand and slays its ruin on the mountain-side 
+    @Benchmark
+    public long measurePelicanDetermine() {
+        return PelicanRNG.determine(state++);
+    }
+    
+    // fails PractRand eventually
     @Benchmark
     public long measurePelican2Determine() {
         return DiverRNG.pelican2(state++);
     }
+    
+    // does well on PractRand usually
     @Benchmark
     public long measurePelican3Determine() {
         return DiverRNG.pelican3(state++);
@@ -2228,6 +2254,34 @@ public class RNGBenchmark {
     public int measureDiverIntR()
     {
         return DiverR.nextInt();
+    }
+
+
+
+
+    private PelicanRNG Pelican = new PelicanRNG(9999L);
+    private RNG PelicanR = new RNG(Pelican);
+    @Benchmark
+    public long measurePelican()
+    {
+        return Pelican.nextLong();
+    }
+
+    @Benchmark
+    public int measurePelicanInt()
+    {
+        return Pelican.next(32);
+    }
+    @Benchmark
+    public long measurePelicanR()
+    {
+        return PelicanR.nextLong();
+    }
+
+    @Benchmark
+    public int measurePelicanIntR()
+    {
+        return PelicanR.nextInt();
     }
 
 
