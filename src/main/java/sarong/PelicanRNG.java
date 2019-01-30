@@ -54,11 +54,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(int bits)
     {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return (int)((z ^ z >> 28) >>> (64 - bits));
     }
 
@@ -69,11 +67,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return (z ^ z >>> 28);
     }
 
@@ -95,11 +91,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 28);
     }
 
@@ -111,11 +105,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return (int)((bound * ((z ^ z >>> 28) & 0xFFFFFFFFL)) >> 32);
     }
 
@@ -143,20 +135,18 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random long between 0 (inclusive) and bound (exclusive)
      */
     public long nextLong(long bound) {
-        long rand = ++state;
-        rand ^= (rand << 39 | rand >>> 25) ^ (rand << 14 | rand >>> 50) ^ 0xD1B54A32D192ED03L;
-        rand *= 0xAEF17502108EF2D9L;
-        rand ^= (rand << 40 | rand >>> 24) ^ (rand << 15 | rand >>> 49);
-        rand *= 0xDB4F0B9175AE2165L;
-        rand ^= rand >>> 28;
-        final long randLow = rand & 0xFFFFFFFFL;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z ^= z >>> 28;
+        final long randLow = z & 0xFFFFFFFFL;
         final long boundLow = bound & 0xFFFFFFFFL;
-        rand >>>= 32;
+        z >>>= 32;
         bound >>= 32;
-        final long z = (randLow * boundLow >> 32);
-        final long t = rand * boundLow + z;
+        final long carry = (randLow * boundLow >> 32);
+        final long t = z * boundLow + carry;
         final long tLow = t & 0xFFFFFFFFL;
-        return rand * bound + (t >>> 32) + (tLow + randLow * bound >> 32) - (z >> 63) - (bound >> 63);
+        return z * bound + (t >>> 32) + (tLow + randLow * bound >> 32) - (carry >> 63) - (bound >> 63);
     }
     /**
      * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
@@ -176,11 +166,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
@@ -193,11 +181,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        z *= 0xDB4F0B9175AE2165L;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
@@ -207,11 +193,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        return (z * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        return ((z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -221,11 +205,9 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        long z = ++state;
-        z ^= (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50) ^ 0xD1B54A32D192ED03L;
-        z *= 0xAEF17502108EF2D9L;
-        z ^= (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49);
-        return z * 0xDB4F0B9175AE2165L < 0;
+        long z = state++;
+        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
+        return  (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L < 0;
     }
 
     /**
@@ -290,11 +272,7 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public static long determine(long state)
     {
-        state ^= (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L;
-        state *= 0xAEF17502108EF2D9L;
-        state ^= (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49);
-        state *= 0xDB4F0B9175AE2165L;
-        return (state ^ state >>> 28);
+        return ((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28);
     }
     
     /**
@@ -311,11 +289,7 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public static int determineBounded(long state, final int bound)
     {
-        state ^= (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L;
-        state *= 0xAEF17502108EF2D9L;
-        state ^= (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49);
-        state *= 0xDB4F0B9175AE2165L;
-        return (int)((bound * ((state ^ state >>> 28) & 0xFFFFFFFFL)) >> 32);
+        return (int)((bound * (((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0xFFFFFFFFL)) >> 32);
     }
 //    public static int determineBounded(long state, final int bound)
 //    {
@@ -334,10 +308,7 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
     public static float determineFloat(long state) {
-        state ^= (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L;
-        state *= 0xAEF17502108EF2D9L;
-        state ^= (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49);
-        return (state * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
+        return (((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
 //        return (
 //            (((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f;
@@ -372,10 +343,6 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
      */
     public static double determineDouble(long state) {
-        state ^= (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L;
-        state *= 0xAEF17502108EF2D9L;
-        state ^= (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49);
-        state *= 0xDB4F0B9175AE2165L;
-        return ((state ^ state >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        return (((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
     }
 }

@@ -350,8 +350,8 @@ import java.util.concurrent.TimeUnit;
  * The two slowest methods here are also the most robust, standing up to unusual patterns in the input that will cause
  * LightRNG.determine(), LinnormRNG.determine(), and DiverRNG.pelican3() to fail. PelicanRNG.determine() appears to be
  * the most robust of all of these and is faster than DiverRNG.determine(). LinnormRNG.determine() is the fastest, but
- * incrementing by some values will cause it to fail after a few GB of testing, and rotating a counter almost certainly
- * will cause it to fail for some rotations because it wasn't built to handle that.
+ * incrementing by some values will cause it to fail after a few GB of testing, and rotating a counter given as input
+ * almost certainly will cause it to fail for some rotations, because it wasn't built to handle that.
  */
 
 @State(Scope.Thread)
