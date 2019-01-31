@@ -367,7 +367,7 @@ public class RNGBenchmark {
     private static volatile long[] inputs = new long[0x100000];
     static {
         for (int i = 0; i < 0x100000; i++) {
-            inputs[i] = LinnormRNG.determine(i) + i;
+            inputs[i] = PelicanRNG.determine(i);
         }
     }
     
