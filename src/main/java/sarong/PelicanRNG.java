@@ -10,22 +10,39 @@ import java.io.Serializable;
  * state changes, and is built around the strongest determine() method in this library. PelicanRNG is one-dimensionally
  * equidistributed across all 64-bit outputs, has 64 bits of state, natively outputs 64 bits at a time, and can be
  * inverted (it transforms its state with a bijection, and the state is a counter incremented by 1 each time). It is
- * mostly the work of Pelle Evensen, who discovered one of the seemingly-very-rare combinations of bitwise rotations
- * that allow not just a counter that adds 1 to work as a state change, but rotations and reversals of such a counter.
- * He found that the combination of rotations {@code n ^ rotateLeft(n, 39) ^ rotateLeft(n, 14)} and
- * {@code n ^ rotateLeft(n, 40) ^ rotateLeft(n, 15)}, with multiplications between and ended with {@code n ^ n >>> 28},
- * can pass very large amounts of PractRand testing on rotations and reversals of a {@code ++n} counter. The test
- * procedure he uses takes several days on my hardware, and is described <a href="https://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">here</a>.
- * The multipliers he found (through great perseverance) do very well, but one rotation has issues in PractRand at the
- * end of his tested period, considered "suspicious" at 1TB, though this doesn't mean it has failed or will fail soon.
- * The multipliers I found here (through sheer luck) are {@code 0xAEF17502108EF2D9L}, which was already used by
- * PCG-Random, and {@code 0xDB4F0B9175AE2165L}, which is 2 to the 64 divided by a generalization of the golden ratio
- * (specifically, the fourth in the sequence described as Harmonious Numbers <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">here under Generalizing the Golden Ratio</a>).
- * Using these two multipliers instead of the earlier (still good) multipliers used by Evensen (which are
- * {@code 0xA24BAED4963EE407L} and {@code 9FB21C651E98DF25L}) allows the test he recommends to pass for at least the 64
- * reversed rotations and 27 or more of the non-reversed rotations of a counter. Rotating by 19 without reversing has
- * one "suspicious" result early on that dissipates into no anomalies later on. This may turn out to be weaker than
- * Evensen's multipliers if flaws are found in the last 37 of 128 tests, but it also passes 32TB of PractRand normally.
+ * mostly the work of Pelle Evensen, who discovered that where a unary hash (called a determine() method here) can start
+ * with the XOR of the input and two rotations of that input, and that sometimes acts as a better randomization
+ * procedure than multiplying by a large constant (which is what {@link LightRNG#determine(long)}, 
+ * {@link LinnormRNG#determine(long)}, and even {@link ThrustAltRNG#determine(long)} do). Evensen also crunched the
+ * numbers to figure out that {@code n ^ n >>> A ^ n >>> B ^ n >>> C} is a bijection for all distinct non-zero values
+ * for A, B,and C, though this wasn't used in his unary hash rrxmrrxmsx_0. That hash took the following steps:
+ * <ol>
+ *     <li>XOR the input with two different bitwise rotations: {@code n ^ (n << 14 | n >>> 50) ^ (n << 39 | n >>> 25)}</li>
+ *     <li>Multiply by a large constant, {@code 0xA24BAED4963EE407L}, and store it in n</li>
+ *     <li>XOR n with two different bitwise rotations: {@code n ^ (n << 15 | n >>> 49) ^ (n << 40 | n >>> 24)}</li>
+ *     <li>Multiply by a large constant, {@code 0x9FB21C651E98DF25L}, and store it in n</li>
+ *     <li>XOR n with n right-shifted by 28, and return</li>
+ * </ol>
+ * This procedure can pass very large amounts of PractRand testing on rotations and reversals of a {@code ++n} counter,
+ * but it isn't bulletproof. The test procedure Evensen used for this hash takes several days on my hardware, and is
+ * described <a href="https://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">here</a>.
+ * Since then, the test has been expanded to include all 64 rotations of a counter starting at 0, all bit-reversals of
+ * those rotations, all of those rotations with a bitwise NOT applied, and all of those rotations with a bit-reversal
+ * and a bitwise NOT applied.
+ * The multipliers he found (through great perseverance) do very well, but one rotation fails PractRand testing at 1TB,
+ * and the expanded tests (adding bitwise NOT to the inputs) may have found more issues.
+ * <br>
+ * The hash used here changes the rotations in step 1, the multipliers in steps 2 and 4, and most importantly changes
+ * step 3 to use the XOR of n with three right shifts of n. It also incorporates a XOR with a large constant into step
+ * 1, which makes an input of 0 to {@link #determine(long)} return a non-0 result, and may improve some test results.
+ * The multipliers I found here (through sheer luck) are {@code 0xAEF17502108EF2D9L} for step 2, which was already used
+ * by PCG-Random, and {@code 0xDB4F0B9175AE2165L} for step 4, which is 2 to the 64 divided by a generalization of the
+ * golden ratio (specifically, the fourth in the sequence described as Harmonious Numbers
+ * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">here under Generalizing
+ * the Golden Ratio</a>). The rotations changed to
+ * {@code n ^ (n << 17 | n >>> 47) ^ (n << 41 | n >>> 23) ^ 0xD1B54A32D192ED03L} in step 1. The shifts in step 3 are
+ * different entirely: {@code n ^ n >>> 43 ^ n >>> 31 ^ n >>> 23}. Making these changes allows the test Evensen
+ * recommends to pass in full, including the expanded tests, with no failures. The tests took roughly 12 days to run.
  * @author Pelle Evensen
  * @author Tommy Ettinger
  */
@@ -55,8 +72,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
     public final int next(int bits)
     {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return (int)((z ^ z >> 28) >>> (64 - bits));
     }
 
@@ -68,8 +85,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return (z ^ z >>> 28);
     }
 
@@ -92,8 +109,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt() {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return (int)(z ^ z >>> 28);
     }
 
@@ -106,8 +123,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt(final int bound) {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return (int)((bound * ((z ^ z >>> 28) & 0xFFFFFFFFL)) >> 32);
     }
 
@@ -136,8 +153,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public long nextLong(long bound) {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         z ^= z >>> 28;
         final long randLow = z & 0xFFFFFFFFL;
         final long boundLow = bound & 0xFFFFFFFFL;
@@ -167,8 +184,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble() {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
@@ -182,8 +199,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final double nextDouble(final double outer) {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        z = (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
         return ((z ^ z >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
@@ -194,8 +211,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final float nextFloat() {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        return ((z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        return ((z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -206,8 +223,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public final boolean nextBoolean() {
         long z = state++;
-        z = (z ^ (z << 39 | z >>> 25) ^ (z << 14 | z >>> 50)) * 0xAEF17502108EF2D9L;
-        return  (z ^ (z << 40 | z >>> 24) ^ (z << 15 | z >>> 49)) * 0xDB4F0B9175AE2165L < 0;
+        z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+        return (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L < 0;
     }
 
     /**
@@ -272,15 +289,15 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public static long determine(long state)
     {
-        return ((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28);
+        return (state = ((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) ^ state >>> 28;
     }
     
     /**
      * Static randomizing method that takes its state as a parameter and limits output to an int between 0 (inclusive)
      * and bound (exclusive); state is expected to change between calls to this. It is recommended that you use
-     * {@code DiverRNG.determineBounded(++state, bound)} or {@code DiverRNG.determineBounded(--state, bound)} to
+     * {@code PelicanRNG.determineBounded(++state, bound)} or {@code PelicanRNG.determineBounded(--state, bound)} to
      * produce a sequence of different numbers, but you can also use
-     * {@code DiverRNG.determineBounded(state += 12345L, bound)} or any odd-number increment. All longs are accepted
+     * {@code PelicanRNG.determineBounded(state += 12345L, bound)} or any odd-number increment. All longs are accepted
      * by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
      * odd-number values for bound, this isn't possible for most generators). The bound can be negative.
      * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
@@ -289,7 +306,7 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      */
     public static int determineBounded(long state, final int bound)
     {
-        return (int)((bound * (((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0xFFFFFFFFL)) >> 32);
+        return (int)((bound * (((state = ((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0xFFFFFFFFL)) >> 32);
     }
 //    public static int determineBounded(long state, final int bound)
 //    {
@@ -308,14 +325,8 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
     public static float determineFloat(long state) {
-        return (((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
+        return (((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L >>> 40) * 0x1p-24f;
     }
-//        return (
-//            (((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xAEF17502108EF2D9L) >>> 40) * 0x1p-24f;
-
-//    public static float determineFloat(long state) {
-//        return ((((state = ((state ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >>> 27) * 0xDB4F0B9175AE2165L) >>> 40) * 0x1p-24f; 
-//    }
 
     /**
      * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -323,26 +334,12 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
      * {@code determine(++state)}, where the increment for state should be odd but otherwise doesn't really matter. This
      * should tolerate just about any increment, as long as it is odd. The period is 2 to the 64 if you increment or
      * decrement by 1, but there are only 2 to the 62 possible doubles between 0 and 1.
-     * <br>
-     * This was the same as {@link LinnormRNG#determineDouble(long)}, but was changed to a slightly-faster method
-     * that also has the advantage of being much harder to accidentally disrupt the input sequence. With LinnormRNG's
-     * version, some odd-number increments will affect the sequence badly, such as 0xCB2C135370DC7C29, and using such an
-     * increment there would ruin the quality of the determine() calls. That's because 0xCB2C135370DC7C29 is the
-     * modular multiplicative inverse of 0x632BE59BD9B4E019, which LinnormRNG.determine() multiplies the input by as its
-     * first step. Incrementing by 0xCB2C135370DC7C29 and then multiplying by 0x632BE59BD9B4E019 is the same as
-     * incrementing by 1 every time, which LinnormRNG can handle only up to about 16GB in PractRand tests before failing
-     * in a hurry. The algorithm used by DiverRNG is much more robust to unusual inputs (as long as they are odd), using
-     * PCG-Random's style of random xorshift both to the left (to adjust the input) and to the right (after a large
-     * multiplication, to bring more-random bits down to the less-significant end). Like LinnormRNG, this determine()
-     * method is reversible, though it isn't easy to do. The algorithm used here is unrelated to DiverRNG, LinnormRNG,
-     * and LinnormRNG.determine(), and passes PractRand to at least 2TB with no anomalies (extremely similar versions
-     * have passed to 16TB and 32TB with no anomalies as well).
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
      *              generate numbers in reverse order
      * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
      */
     public static double determineDouble(long state) {
-        return (((state = ((state = (state ^ (state << 39 | state >>> 25) ^ (state << 14 | state >>> 50) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ (state << 40 | state >>> 24) ^ (state << 15 | state >>> 49)) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        return (((state = ((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) ^ state >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
     }
 }

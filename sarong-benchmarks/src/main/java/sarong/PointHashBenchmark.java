@@ -705,76 +705,155 @@ public class PointHashBenchmark {
 
     public static final class PelotonPointHash {
         /**
-         * A 32-bit point hash that smashes x and y into s using XOR and multiplications by 21-bit harmonious numbers,
+         * A 32-bit point hash that smashes x and y into s using XOR and multiplications by harmonious numbers,
          * then runs a simple unary hash on s and returns it. Has better performance than HastyPointHash, especially for
-         * ints, and has slightly fewer collisions in a hash table of points.
+         * ints, and has slightly fewer collisions in a hash table of points. GWT-optimized. Inspired by Pelle Evensen's
+         * rrxmrrxmsx_0 unary hash, though this doesn't use its code or its full algorithm. The unary hash used here has
+         * been stripped down heavily, both for speed and because unless points are selected specifically to target
+         * flaws in the hash, it doesn't need the intense resistance to bad inputs that rrxmrrxmsx_0 has.
          * @param x x position, as an int
          * @param y y position, as an int
-         * @param s any int
+         * @param s any int, a seed to be able to produce many hashes for a given point
          * @return 32-bit hash of the x,y point with the given state s
          */
         public static int hashAll(int x, int y, int s) {
-            s ^= 0x1827F5 * (x ^ y * 0x123C21);
-            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+            s ^= x * 0x1827F5 ^ y * 0x123C21;
+            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0x125493) ^ s >>> 15;
         }
-//            s ^= x + y;
-//            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1827F5;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x123C21;
-//            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s ^= x * 0x1827F5 ^ y * 0x123C21;
-        //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
-
+        /**
+         * A 32-bit point hash that smashes x, y, and z into s using XOR and multiplications by harmonious numbers,
+         * then runs a simple unary hash on s and returns it. Has better performance than HastyPointHash, especially for
+         * ints, and has slightly fewer collisions in a hash table of points. GWT-optimized. Inspired by Pelle Evensen's
+         * rrxmrrxmsx_0 unary hash, though this doesn't use its code or its full algorithm. The unary hash used here has
+         * been stripped down heavily, both for speed and because unless points are selected specifically to target
+         flaws in the hash, it doesn't need the intense resistance to bad inputs that rrxmrrxmsx_0 has.
+         * @param x x position, as an int
+         * @param y y position, as an int
+         * @param z z position, as an int
+         * @param s any int, a seed to be able to produce many hashes for a given point
+         * @return 32-bit hash of the x,y,z point with the given state s
+         */
         public static int hashAll(int x, int y, int z, int s) {
-            s ^= 0x1A36A9 * (x ^ 0x157931 * (y ^ z * 0x119725));
-            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+            s ^= x * 0x1A36A9 ^ y * 0x157931 ^ z * 0x119725;
+            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0x125493) ^ s >>> 15;
         }
-//            s ^= x + y + z;
-//            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1A36A9;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x157931;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * 0x119725;
-//            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s ^= x * 0x1A36A9 ^ y * 0x157931 ^ z * 0x119725;
-        //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
 
+        /**
+         * A 32-bit point hash that smashes x, y, z, and w into s using XOR and multiplications by harmonious numbers,
+         * then runs a simple unary hash on s and returns it. Has better performance than HastyPointHash, especially for
+         * ints, and has slightly fewer collisions in a hash table of points. GWT-optimized. Inspired by Pelle Evensen's
+         * rrxmrrxmsx_0 unary hash, though this doesn't use its code or its full algorithm. The unary hash used here has
+         * been stripped down heavily, both for speed and because unless points are selected specifically to target
+         * flaws in the hash, it doesn't need the intense resistance to bad inputs that rrxmrrxmsx_0 has.
+         * @param x x position, as an int
+         * @param y y position, as an int
+         * @param z z position, as an int
+         * @param w w position, as an int
+         * @param s any int, a seed to be able to produce many hashes for a given point
+         * @return 32-bit hash of the x,y,z,w point with the given state s
+         */
         public static int hashAll(int x, int y, int z, int w, int s) {
-//            s ^= x + y + z + w;
-//            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1B69E1;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x177C0B;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * 0x141E5D;
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (w ^ (w << 13 | w >>> 19) ^ (w << 25 | w >>> 7) ^ s) * 0x113C31;
-//            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s ^= x * 0x1B69E1 ^ y * 0x177C0B ^ z * 0x141E5D ^ w * 0x113C31;
-            s ^= 0x1B69E1 * (x ^ 0x177C0B * (y ^ 0x141E5D * (z ^ w * 0x113C31)));
-            //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
-            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+            s ^= x * 0x1B69E1 ^ y * 0x177C0B ^ z * 0x141E5D ^ w * 0x113C31;
+            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0x125493) ^ s >>> 15;
         }
 
-
+        /**
+         * A 32-bit point hash that smashes x, y, z, w, u, and v into s using XOR and multiplications by harmonious
+         * numbers, then runs a simple unary hash on s and returns it. Has better performance than HastyPointHash,
+         * especially for ints, and has slightly fewer collisions in a hash table of points. GWT-optimized. Inspired by
+         * Pelle Evensen's rrxmrrxmsx_0 unary hash, though this doesn't use its code or its full algorithm. The unary
+         * hash used here has been stripped down heavily, both for speed and because unless points are selected
+         * specifically to target flaws in the hash, it doesn't need the intense resistance to bad inputs that
+         * rrxmrrxmsx_0 has.
+         * @param x x position, as an int
+         * @param y y position, as an int
+         * @param z z position, as an int
+         * @param w w position, as an int
+         * @param u u position, as an int
+         * @param v v position, as an int
+         * @param s any int, a seed to be able to produce many hashes for a given point 
+         * @return 32-bit hash of the x,y,z,w,u,v point with the given state s
+         */
         public static int hashAll(int x, int y, int z, int w, int u, int v, int s) {
-//            s ^= x + y + z + w + u + v;
-//            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * (0x1CC1C5);
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * (0x19D7AF);
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * (0x173935);
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (w ^ (w << 13 | w >>> 19) ^ (w << 25 | w >>> 7) ^ s) * (0x14DEAF);
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (z ^ (z << 15 | z >>> 17) ^ (z << 27 | z >>> 5) ^ s) * (0x12C139);
-//            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s = (w ^ (w << 17 | w >>> 15) ^ (w << 29 | w >>> 3) ^ s) * (0x10DAA3);
-//            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
-//            s ^= x * 0x1CC1C5 ^ y * 0x19D7AF ^ z * 0x173935 ^ w * 0x14DEAF ^ u * 0x12C139 ^ v * 0x10DAA3;
-            s ^= 0x1CC1C5 * (x ^ 0x19D7AF * (y ^ 0x173935 * (z ^ 0x14DEAF * (w ^ 0x12C139 * (u ^ v * 0x10DAA3)))));
-            //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
-            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+            s ^= x * 0x1CC1C5 ^ y * 0x19D7AF ^ z * 0x173935 ^ w * 0x14DEAF ^ u * 0x12C139 ^ v * 0x10DAA3;
+            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0x125493) ^ s >>> 15;
         }
+
+//        /**
+//         * A 32-bit point hash that smashes x and y into s using XOR and multiplications by 21-bit harmonious numbers,
+//         * then runs a simple unary hash on s and returns it. Has better performance than HastyPointHash, especially for
+//         * ints, and has slightly fewer collisions in a hash table of points. GWT-optimized. Inspired by Pelle Evensen's
+//         * rrxmrrxmsx_0 unary hash, though this doesn't use its code or its full algorithm. The  unary hash used here
+//         * has been stripped down heavily, both for speed and because unless points are selected specifically to target
+//         * flaws in the hash, it doesn't need the intense resistance to bad inputs that rrxmrrxmsx_0 has.
+//         * @param x x position, as an int
+//         * @param y y position, as an int
+//         * @param s any int
+//         * @return 32-bit hash of the x,y point with the given state s
+//         */
+//        public static int hashAll(int x, int y, int s) {
+//            s ^= 0x1827F5 * (x ^ y * 0x123C21);
+//            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+//        }
+////            s ^= x + y;
+////            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1827F5;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x123C21;
+////            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s ^= x * 0x1827F5 ^ y * 0x123C21;
+//        //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
+//
+//        public static int hashAll(int x, int y, int z, int s) {
+//            s ^= 0x1A36A9 * (x ^ 0x157931 * (y ^ z * 0x119725));
+//            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+//        }
+////            s ^= x + y + z;
+////            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1A36A9;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x157931;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * 0x119725;
+////            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s ^= x * 0x1A36A9 ^ y * 0x157931 ^ z * 0x119725;
+//        //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
+//
+//        public static int hashAll(int x, int y, int z, int w, int s) {
+////            s ^= x + y + z + w;
+////            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * 0x1B69E1;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * 0x177C0B;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * 0x141E5D;
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (w ^ (w << 13 | w >>> 19) ^ (w << 25 | w >>> 7) ^ s) * 0x113C31;
+////            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s ^= x * 0x1B69E1 ^ y * 0x177C0B ^ z * 0x141E5D ^ w * 0x113C31;
+//            //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
+//            s ^= 0x1B69E1 * (x ^ 0x177C0B * (y ^ 0x141E5D * (z ^ w * 0x113C31)));
+//            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+//        }
+//
+//
+//        public static int hashAll(int x, int y, int z, int w, int u, int v, int s) {
+////            s ^= x + y + z + w + u + v;
+////            s = (x ^ (x << 7 | x >>> 25) ^ (x << 19 | x >>> 13) ^ s) * (0x1CC1C5);
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (y ^ (y << 9 | y >>> 23) ^ (y << 21 | y >>> 11) ^ s) * (0x19D7AF);
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (z ^ (z << 11 | z >>> 21) ^ (z << 23 | z >>> 9) ^ s) * (0x173935);
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (w ^ (w << 13 | w >>> 19) ^ (w << 25 | w >>> 7) ^ s) * (0x14DEAF);
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (z ^ (z << 15 | z >>> 17) ^ (z << 27 | z >>> 5) ^ s) * (0x12C139);
+////            s ^= s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s = (w ^ (w << 17 | w >>> 15) ^ (w << 29 | w >>> 3) ^ s) * (0x10DAA3);
+////            return s ^ s >>> 10 ^ s >>> 15 ^ s << 7;
+////            s ^= x * 0x1CC1C5 ^ y * 0x19D7AF ^ z * 0x173935 ^ w * 0x14DEAF ^ u * 0x12C139 ^ v * 0x10DAA3;
+//            //return ((s = ((s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ (s << 20 | s >>> 12) ^ (s << 8 | s >>> 24)) * 0xDB4F) ^ s >>> 14);
+//            s ^= 0x1CC1C5 * (x ^ 0x19D7AF * (y ^ 0x173935 * (z ^ 0x14DEAF * (w ^ 0x12C139 * (u ^ v * 0x10DAA3)))));
+//            return (s = (s ^ (s << 19 | s >>> 13) ^ (s << 7 | s >>> 25) ^ 0xD1B54A35) * 0xAEF17) ^ s >>> 15;
+//        }
+        
     }
     
     public static final class LathePointHash {

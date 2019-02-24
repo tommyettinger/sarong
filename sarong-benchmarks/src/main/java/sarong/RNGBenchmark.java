@@ -765,7 +765,7 @@ public class RNGBenchmark {
     }
 
 //    @Benchmark
-//    public long measureAltThrustDetermine() {
+//    public long measureThrustAltDetermine() {
 //        return ThrustAltRNG.determine(state++);
 //    }
     @Benchmark
@@ -780,15 +780,6 @@ public class RNGBenchmark {
     public long measureDiverDetermine() {
         return DiverRNG.determine(state++);
     }
-
-    @Benchmark
-    public long measureDonutDetermine() {
-        return DiverRNG.donut(state++);
-    }
-    @Benchmark
-    public long measureGlowDetermine() {
-        return DiverRNG.glowDetermine(state++);
-    }
     
     // strikes down at PractRand and slays its ruin on the mountain-side 
     @Benchmark
@@ -796,19 +787,8 @@ public class RNGBenchmark {
         return PelicanRNG.determine(state++);
     }
     
-    // fails PractRand eventually
     @Benchmark
-    public long measurePelican2Determine() {
-        return DiverRNG.pelican2(state++);
-    }
-    
-    // does well on PractRand usually
-    @Benchmark
-    public long measurePelican3Determine() {
-        return DiverRNG.pelican3(state++);
-    }
-    @Benchmark
-    public int measureThrustAlt32Determine() {
+    public int measureThrustAlt32DetermineInt() {
         return ThrustAlt32RNG.determineInt(istate++);
     }
 
