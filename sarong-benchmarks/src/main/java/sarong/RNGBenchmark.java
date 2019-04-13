@@ -1300,6 +1300,32 @@ public class RNGBenchmark {
         return TangleD.nextLong4();
     }
 
+    private DuelistRNG Duelist = new DuelistRNG(9999L, 1337L);
+    private RNG DuelistR = new RNG(Duelist);
+
+    @Benchmark
+    public long measureDuelist()
+    {
+        return Duelist.nextLong();
+    }
+
+    @Benchmark
+    public int measureDuelistInt()
+    {
+        return Duelist.next(32);
+    }
+    @Benchmark
+    public long measureDuelistR()
+    {
+        return DuelistR.nextLong();
+    }
+
+    @Benchmark
+    public int measureDuelistIntR()
+    {
+        return DuelistR.nextInt();
+    }
+
 
     private Mover32RNG Mover32 = new Mover32RNG(0);
     private RNG Mover32R = new RNG(Mover32);

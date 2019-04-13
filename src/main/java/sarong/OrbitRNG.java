@@ -32,7 +32,9 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
      * Can be any long value.
      */
     public long stateA;
-    
+    /**
+     * Can be any long value.
+     */
     public long stateB;
 
     /**
