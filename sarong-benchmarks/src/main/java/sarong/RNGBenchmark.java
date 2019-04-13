@@ -730,6 +730,32 @@ public class RNGBenchmark {
         return SeaSlater64R.nextInt();
     }
 
+    private VelvetRNG Velvet = new VelvetRNG(9999L);
+    private RNG VelvetR = new RNG(Velvet);
+    @Benchmark
+    public long measureVelvet()
+    {
+        return Velvet.nextLong();
+    }
+
+    @Benchmark
+    public int measureVelvetInt()
+    {
+        return Velvet.next(32);
+    }
+    @Benchmark
+    public long measureVelvetR()
+    {
+        return VelvetR.nextLong();
+    }
+
+    @Benchmark
+    public int measureVelvetIntR()
+    {
+        return VelvetR.nextInt();
+    }
+
+
 
     private ThrustRNG Thrust = new ThrustRNG(9999L);
     private RNG ThrustR = new RNG(Thrust);
