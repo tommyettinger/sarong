@@ -1,0 +1,2 @@
+Uses code from https://github.com/AdoptOpenJDK/bumblebench to help round out the set of benchmarks we can run.
+The bumblebench project is Apache-2.0 licensed; see LICENSE.txt in this directory for details.
