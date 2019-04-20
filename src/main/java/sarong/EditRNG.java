@@ -375,7 +375,7 @@ public class EditRNG extends StatefulRNG implements Serializable {
      * @return a copy of this StatefulRNG
      */
     @Override
-    public RNG copy() {
+    public EditRNG copy() {
         EditRNG next = new EditRNG(random.copy(), expected, centrality);
         next.rawLatest = rawLatest;
         return next;

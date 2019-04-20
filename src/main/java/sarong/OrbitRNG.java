@@ -5,21 +5,26 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A variant on {@link ThrustAltRNG} that gives up some speed to gain a much better period and the ability to produce
- * all possible long values over that period. Its period is 2 to the 128, and it produces all long outputs with equal
- * likelihood. Its closest competitor on speed and period is {@link Lathe64RNG}, and its quality should be similar or
- * slightly better than Lathe64. Lathe32 has some troubling anomalies near the end of PractRand testing at 32TB, and
- * there may be issues with Lathe64 then or later on. OrbitRNG is close to ThrustAltRNG in implementation, and
- * ThrustAltRNG passes PractRand and TestU01 just fine, but OrbitRNG should actually be more robust. For some purposes
+ * A larger-period generator with 128 bits of state, that gives up some speed to gain a much better period and the
+ * ability to produce all possible long values over that period (with equal likelihood for each long, but it is only
+ * 1-dimensionally equidistributed). Its closest competitor on speed and period is {@link Lathe64RNG}, and its quality
+ * should be similar or slightly better than Lathe64. Lathe32 has some troubling anomalies near the end of PractRand
+ * testing at 32TB, and there may be issues with Lathe64 then or later on. OrbitRNG is somewhat similar to LightRNG or
+ * ThrustAltRNG in implementation, but unlike ThrustAltRNG, OrbitRNG can produce all possible outputs. For some purposes
  * you may want to instead consider {@link TangleRNG}, which also has two states and uses a very similar algorithm, but
  * it skips some work Orbit does and in doing so speeds up a lot and drops its period down to 2 to the 64. An individual
  * TangleRNG can't produce all possible long outputs and can produce some duplicates, but each pair of states for a
  * TangleRNG has a different set of which outputs will be skipped and which will be duplicated. Since it would require
  * months of solid number generation to exhaust the period of a TangleRNG, and that's the only time an output can be
  * confirmed as skipped, it's probably fine for most usage to use many different TangleRNGs, all seeded differently.
- * In other cases you could use one OrbitRNG, {@link LinnormRNG} (if you don't mind that it never produces a duplicate
+ * In other cases you could use one OrbitRNG, {@link DiverRNG} (if you don't mind that it never produces a duplicate
  * output), {@link IsaacRNG} (if speed is less important but more secure output is), or Lathe64RNG, though all of those
  * are probably slower than using many TangleRNG objects.
+ * <br>
+ * The algorithm here changed on April 20, 2019 after finding the previous set of constants reliably produced
+ * "suspicious" or worse results in PractRand at the 32TB mark (although it never failed). With the PractRand arguments
+ * {@code -tf 2 -seed 0}, which enables some extra tests and uses a specific seed, OrbitRNG now passes 32TB with no
+ * anomalies at any point.
  * <br>
  * The name comes from how the pair of states act like two planets orbiting a star at different rates, and also evokes
  * the larger-scale period relative to {@link TangleRNG}.
@@ -27,7 +32,7 @@ import java.io.Serializable;
  * Created by Tommy Ettinger on 7/9/2018.
  */
 public final class OrbitRNG implements RandomnessSource, Serializable {
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
     /**
      * Can be any long value.
      */
@@ -46,8 +51,8 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
     }
 
     public OrbitRNG(long seed) {
-        stateA = (seed = ((seed = (((seed * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ seed >>> 27) * 0xAEF17502108EF2D9L) ^ seed >>> 25;
-        stateB = (seed = ((seed = (((seed * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ seed >>> 27) * 0xAEF17502108EF2D9L) ^ seed >>> 25;
+        stateA = (seed = (seed = ((seed = (((seed * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ seed >>> 27) * 0xAEF17502108EF2D9L) ^ seed >>> 25);
+        stateB =         (seed = ((seed = (((seed * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ seed >>> 27) * 0xAEF17502108EF2D9L) ^ seed >>> 25;
     }
 
     public OrbitRNG(final long seedA, final long seedB) {
@@ -101,11 +106,10 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final int next(final int bits) {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        if(s == 0L)
-            stateB += 0x9E3779B97F4A7C15L;
-        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
-        return (int)(z ^ (z >>> 25)) >>> (32 - bits);
+        final long s = (stateA += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 27) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        if (s == 0L) stateB -= 0x9E3779B97F4A7C15L;
+        return (int)(z ^ (z >>> 27)) >>> (32 - bits);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -117,11 +121,16 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
      */
     @Override
     public final long nextLong() {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        if(s == 0L)
-            stateB += 0x9E3779B97F4A7C15L;
-        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
-        return z ^ (z >>> 25);
+//        final long s = (stateA += 0x6C8E9CF570932BD5L);
+//        if(s == 0L)
+//            stateB += 0x9E3779B97F4A7C15L;
+//        final long z = (s ^ (s >>> 27)) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+//        return z ^ (z >>> 25);
+
+        final long s = (stateA += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 27) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        if (s == 0L) stateB -= 0x9E3779B97F4A7C15L;
+        return z ^ z >>> 27;
     }
     public final long nextLong1() {
         final long s = (stateA += 0x6C8E9CF570932BD5L);
@@ -131,10 +140,16 @@ public final class OrbitRNG implements RandomnessSource, Serializable {
         return z ^ (z >>> 25);
     }
     public final long nextLong2() {
-        final long b = (stateB += 0x9E3779B97F4A7C15L);
-        final long s = (stateA += b > 0x1000000000000L ? 0x6C8E9CF570932BD5L : 0xD91D39EAE12657AAL);
-        final long z = (s ^ (s >>> 27)) * (b | 1L);
-        return z ^ (z >>> 25);
+//        final long b = (stateB += 0x9E3779B97F4A7C15L);
+//        final long s = (stateA += b > 0x1000000000000L ? 0x6C8E9CF570932BD5L : 0xD91D39EAE12657AAL);
+//        final long z = (s ^ (s >>> 27)) * (b | 1L);
+//        return z ^ (z >>> 25);
+        final long s = (stateA += 0xC6BC279692B5C323L);
+        final long z;
+        if(s == 0L) z = (s ^ s >>> 27) * ((stateB + 0x9E3779B97F4A7C15L) | 1L);
+        else z = (s ^ s >>> 27) * ((stateB += 0x9E3779B97F4A7C15L) | 1L);
+        return z ^ z >>> 27;
+
     }
     public final long nextLong3() {
         final long s = (stateA += (stateB += 0x9E3779B97F4A7C15L) == 0L ? 0x6C8E9CF570932BD5L : 0xD91D39EAE12657AAL);

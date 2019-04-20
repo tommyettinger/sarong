@@ -207,29 +207,6 @@ public class DeckRNG extends StatefulRNG implements Serializable{
         return t;
     }
 
-
-    /**
-     * @return a value from the gaussian distribution
-     */
-    @Override
-    public synchronized double nextGaussian() {
-        if (haveNextNextGaussian) {
-            haveNextNextGaussian = false;
-            return nextNextGaussian;
-        } else {
-            double v1, v2, s;
-            do {
-                v1 = 2 * nextDouble() - 1; // between -1 and 1
-                v2 = 2 * nextDouble() - 1; // between -1 and 1
-                s = v1 * v1 + v2 * v2;
-            } while (s >= 1 || s == 0);
-            double multiplier = Math.sqrt(-2 * Math.log(s) / s);
-            nextNextGaussian = v2 * multiplier;
-            haveNextNextGaussian = true;
-            return v1 * multiplier;
-        }
-    }
-
     /**
      * Returns a random integer below the given bound, or 0 if the bound is 0 or
      * negative. Affects the current fortune.
@@ -354,7 +331,7 @@ public class DeckRNG extends StatefulRNG implements Serializable{
      *
      * @return a copy of this DeckRNG
      */
-    public RNG copy() {
+    public DeckRNG copy() {
         DeckRNG next = new DeckRNG(lastShuffledState);
         next.random = random.copy();
         System.arraycopy(deck, 0, next.deck, 0, deck.length);
