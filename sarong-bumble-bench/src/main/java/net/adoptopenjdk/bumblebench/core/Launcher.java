@@ -66,17 +66,7 @@ public class Launcher extends Util {
 	}
 
 	static final String defaultPackagePath = ":"
-		+ ":net.adoptopenjdk.bumblebench.collections"
-		+ ":net.adoptopenjdk.bumblebench.crypto"
 		+ ":net.adoptopenjdk.bumblebench.examples"
-		+ ":net.adoptopenjdk.bumblebench.gpu"
-		+ ":net.adoptopenjdk.bumblebench.lambda"
-		+ ":net.adoptopenjdk.bumblebench.math"
-		+ ":net.adoptopenjdk.bumblebench.indy"
-		+ ":net.adoptopenjdk.bumblebench.daa"
-		+ ":net.adoptopenjdk.bumblebench.json"
-		+ ":net.adoptopenjdk.bumblebench.string"
-		+ ":net.adoptopenjdk.bumblebench.humble"
 		;
 
 	public static Class loadTestClass(String[] packageNames, String name) throws ClassNotFoundException, IOException {
