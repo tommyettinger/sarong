@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -308,25 +307,33 @@ public class PeriodTest {
         // 0xFF42E24AF92DCD8C, 63.995831
         //BigInteger result = BigInteger.valueOf(0xFF6B3AF7L), tmp = BigInteger.valueOf(0xFFD78FD4L);
 
-        int stateA, i;
-        DiverRNG div = new DiverRNG();
-        System.out.println(div.getState());
-        Random rand = new RNG(div).asRandom();
-        for (int c = 1; c <= 800; c++) {
-            final int r = BigInteger.probablePrime(32, rand).intValue();
-            System.out.printf("%03d/200, testing r = 0x%08X\n", c, r);
-            for (int j = 1; j < 32; j++) {
-                i = 0;
-                stateA = 1;
-                for (; ; i++) {
-                    if ((stateA = Integer.rotateLeft(stateA, j) + r) == 1) {
-                        if (i >>> 20 == 0xFFF)
-                            System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
-                        break;
-                    }
-                }
-            }
+//        int stateA, i;
+//        int r = 0x80001;
+//        for (int c = 1; c <= 262144; c++) {
+//            r += 2;
+//            System.out.printf("%05d/262144, testing r = 0x%08X\n", c, r);
+//            for (int j = 1; j < 32; j++) {
+//                i = 0;
+//                stateA = 1;
+//                for (; ; i++) {
+//                    if ((stateA = Integer.rotateLeft(stateA, j) * r) == 1) {
+//                        if (i >>> 20 == 0xFFF)
+//                            System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        try {
+            executor.invokeAll(Arrays.asList(cmr32Runner(1), cmr32Runner(0x40001), cmr32Runner(0x80001), cmr32Runner(0xC0001)));
+            executor.awaitTermination(10, TimeUnit.DAYS); // it won't take this long
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
+
 //        int target;
 //            for (int s = 1; s < 32; s++) {
 //                for (int r = 1; r < 32; r++) {
@@ -376,7 +383,35 @@ public class PeriodTest {
 //        System.out.printf("\n0x%016X\n", result.longValue());
 
     }
-/////// END subcycle finder code and period evaluator
+
+    private static Callable<Integer> cmr32Runner(final int start)
+    {
+        return new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                int stateA, i;
+                int r = start;
+                for (int c = 1; c <= 131072; c++) {
+                    r += 2;
+                    System.out.printf("%05d/131072, testing r = 0x%08X\n", c, r);
+                    for (int j = 1; j < 32; j++) {
+                        i = 0;
+                        stateA = 1;
+                        for (; ; i++) {
+                            if ((stateA = Integer.rotateLeft(stateA, j) * r) == 1) {
+                                if (i >>> 20 == 0xFFF)
+                                    System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return r;
+            }
+        };
+    }
+
+    /////// END subcycle finder code and period evaluator
     @Test
     public void showCombined()
     {
