@@ -1379,6 +1379,32 @@ public class RNGBenchmark {
         return Mover32R.nextInt();
     }
 
+    private Cake32RNG Cake32 = new Cake32RNG(0);
+    private RNG Cake32R = new RNG(Cake32);
+
+    @Benchmark
+    public long measureCake32()
+    {
+        return Cake32.nextLong();
+    }
+
+    @Benchmark
+    public int measureCake32Int()
+    {
+        return Cake32.next(32);
+    }
+    @Benchmark
+    public long measureCake32R()
+    {
+        return Cake32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureCake32IntR()
+    {
+        return Cake32R.nextInt();
+    }
+
     private MoverCounter32RNG MoverCounter32 = new MoverCounter32RNG(0);
     private RNG MoverCounter32R = new RNG(MoverCounter32);
 

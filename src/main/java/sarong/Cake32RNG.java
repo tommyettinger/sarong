@@ -12,8 +12,8 @@ import java.io.Serializable;
  * 2 to the 64).
  * <br>
  * This generator is still being evaluated, and can be considered "alpha" quality. There are fallbacks that can be used
- * with either more state or a smaller period that are known to pass PractRand in full; this is likely to but it isn't a
- * sure bet that it will.
+ * with either more state or a smaller period that are known to pass PractRand in full; this is likely to pass all of
+ * PractRand, but it isn't a sure bet that it will.
  * <br>
  * The name comes from how it was first implemented in this library on my birthday (Tommy Ettinger). Coincidentally, it
  * should pass birthday spacing tests, where several others in this library do not.
