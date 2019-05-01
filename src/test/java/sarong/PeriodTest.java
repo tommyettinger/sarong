@@ -194,6 +194,18 @@ public class PeriodTest {
         // 0xC2B9
         // rotation 16: 0xFFEA9001
 
+        // slightly larger multiplications, GWT-safe
+        // 0x402AB, rotation 23: 0xFFFFD5A9
+        // 0x808E9, rotation 24: 0xFFFF2E45
+        // 0x40809, rotation 05: 0xFFFF1928
+        // 0x8012D, rotation 29: 0xFFFEAB53
+        // 0x805D1, rotation 13: 0xFFFD966F
+        // 0x0023F, rotation 21: 0xFFFD9550
+        // 0x80455, rotation 22: 0xFFFD7792
+        // 0x40113, rotation 09: 0xFFFD71A1
+        // 0x4062D, rotation 16: 0xFFFD43FA
+        // 0x00D09, rotation 19: 0xFFFD015D
+
 
         // adding
         // 0x9E3779B9
@@ -400,7 +412,7 @@ public class PeriodTest {
                         for (; ; i++) {
                             if ((stateA = Integer.rotateLeft(stateA, j) * r) == 1) {
                                 if (i >>> 20 == 0xFFF)
-                                    System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
+                                    System.out.printf("state * 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
                                 break;
                             }
                         }
