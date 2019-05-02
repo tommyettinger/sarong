@@ -199,7 +199,7 @@ public final class Cake32RNG implements RandomnessSource, Serializable {
 
     @Override
     public String toString() {
-        return "Mover32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
+        return "Cake32RNG with stateA 0x" + StringKit.hex(stateA) + ", stateB 0x" + StringKit.hex(stateB) + ", and stateC 0x" + StringKit.hex(stateC);
     }
 
     @Override
@@ -207,16 +207,15 @@ public final class Cake32RNG implements RandomnessSource, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Cake32RNG mover32RNG = (Cake32RNG) o;
+        Cake32RNG cake32RNG = (Cake32RNG) o;
 
-        return stateA == mover32RNG.stateA && stateB == mover32RNG.stateB;
+        return stateA == cake32RNG.stateA && stateB == cake32RNG.stateB && stateC == cake32RNG.stateC;
     }
 
     @Override
     public int hashCode() {
-        return 31 * stateA + stateB | 0;
+        return (961 * stateA + 31 * stateB + stateC) | 0;
     }
-
 
 //    public final int nextIntA()
 //    {
@@ -280,31 +279,31 @@ public final class Cake32RNG implements RandomnessSource, Serializable {
 //
 //    }
 
-    public static void main(String[] args)
-    {
-        int stateA = 0, stateB = 0;
-        System.out.println("int[] startingA = {");
-        for (int ctr = 0; ctr < 128; ctr++) {
-            for (int s = 0; s < 0x200; s++) {
-                stateA += 0xC4DE9951;
-                stateA = (stateA << 7 | stateA >>> 25);
-            }
-            System.out.printf("0x%08X, ", stateA);
-            if((ctr & 7) == 7)
-                System.out.println();
-        }
-        System.out.println("}, startingB = {");
-        for (int ctr = 0; ctr < 128; ctr++) {
-            for (int s = 0; s < 0x200; s++) {
-                stateB += 0xAA78EDD7;
-                stateB = (stateB << 1 | stateB >>> 31);
-            }
-            System.out.printf("0x%08X, ", stateB);
-            if((ctr & 7) == 7)
-                System.out.println();
-        }
-        System.out.println("};");
-    }
+//    public static void main(String[] args)
+//    {
+//        int stateA = 0, stateB = 0;
+//        System.out.println("int[] startingA = {");
+//        for (int ctr = 0; ctr < 128; ctr++) {
+//            for (int s = 0; s < 0x200; s++) {
+//                stateA += 0xC4DE9951;
+//                stateA = (stateA << 7 | stateA >>> 25);
+//            }
+//            System.out.printf("0x%08X, ", stateA);
+//            if((ctr & 7) == 7)
+//                System.out.println();
+//        }
+//        System.out.println("}, startingB = {");
+//        for (int ctr = 0; ctr < 128; ctr++) {
+//            for (int s = 0; s < 0x200; s++) {
+//                stateB += 0xAA78EDD7;
+//                stateB = (stateB << 1 | stateB >>> 31);
+//            }
+//            System.out.printf("0x%08X, ", stateB);
+//            if((ctr & 7) == 7)
+//                System.out.println();
+//        }
+//        System.out.println("};");
+//    }
     
 ///////// BEGIN subcycle finder code and period evaluator
 //    public static void main(String[] args)
