@@ -196,14 +196,31 @@ public class PeriodTest {
 
         // slightly larger multiplications, GWT-safe
         // 0x402AB, rotation 23: 0xFFFFD5A9
+        // 0x01621, rotation 28: 0xFFFF687B
         // 0x808E9, rotation 24: 0xFFFF2E45
         // 0x40809, rotation 05: 0xFFFF1928
+        // 0xC134D, rotation 31: 0xFFFF04B2
+        // 0x81411, rotation 09: 0xFFFEF47E
+        // 0xC15DF, rotation 28: 0xFFFEE5E1
         // 0x8012D, rotation 29: 0xFFFEAB53
+        // 0xC122D, rotation 19: 0xFFFE9CA7
+        // 0x02323, rotation 24: 0xFFFE9916
+        // 0x82245, rotation 02: 0xFFFE7A52
+        // 0xC22C7, rotation 21: 0xFFFE6D98
+        // 0x420DD, rotation 18: 0xFFFE3E93
+        // 0x01F59, rotation 28: 0xFFFDFE3F
+        // 0x01681, rotation 16: 0xFFFDEE49
+        // 0x01ADD, rotation 21: 0xFFFDBC12
+        // 0x41B85, rotation 13: 0xFFFD9F0D
         // 0x805D1, rotation 13: 0xFFFD966F
         // 0x0023F, rotation 21: 0xFFFD9550
+        // 0xC14B7, rotation 26: 0xFFFD94BD
+        // 0xC20AF, rotation 01: 0xFFFD7A4A
         // 0x80455, rotation 22: 0xFFFD7792
         // 0x40113, rotation 09: 0xFFFD71A1
         // 0x4062D, rotation 16: 0xFFFD43FA
+        // 0x016CB, rotation 23: 0xFFFD3678
+        // 0x41625, rotation 01: 0xFFFD23A9
         // 0x00D09, rotation 19: 0xFFFD015D
 
 
