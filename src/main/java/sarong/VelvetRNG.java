@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * A small-ish generator that should be comparable to {@link LightRNG} but is a little slower. It passes all
- * 32TB of PractRand without any anomalies.
+ * 32TB of PractRand with one anomaly.
  * <br>
  * Created by Tommy Ettinger on 4/2/2019.
  */
@@ -58,9 +58,12 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      */
     @Override
     public final int next(final int bits) {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ (z << 23 | z >>> 41) ^ (z << 41 | z >>> 23)) * 0x369DEA0F31A53F85L;
-        return (int)(z ^ z >>> 34 ^ z >>> 26) >>> (32 - bits);
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ (z << 23 | z >>> 41) ^ (z << 41 | z >>> 23)) * 0x369DEA0F31A53F85L;
+//        return (int)(z ^ z >>> 34 ^ z >>> 26) >>> (32 - bits);
+        final long s = (state += 0x9E3779B97F4A7C15L);
+        final long z = (s ^ s >>> 43 ^ s >>> 31 ^ s >>> 23 ^ s << 30) * 0xD1B54A32D192ED03L;
+        return (int) (z ^ z >>> 28) >>> (32 - bits);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -72,9 +75,12 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      */
     @Override
     public final long nextLong() {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ (z << 23 | z >>> 41) ^ (z << 41 | z >>> 23)) * 0x369DEA0F31A53F85L;
-        return z ^ z >>> 34 ^ z >>> 26;
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ (z << 23 | z >>> 41) ^ (z << 41 | z >>> 23)) * 0x369DEA0F31A53F85L;
+//        return z ^ z >>> 34 ^ z >>> 26;
+        final long s = (state += 0x9E3779B97F4A7C15L);
+        final long z = (s ^ s >>> 43 ^ s >>> 31 ^ s >>> 23 ^ s << 30) * 0xD1B54A32D192ED03L;
+        return z ^ z >>> 28;
     }
 
     /**
@@ -87,9 +93,9 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      */
     @Override
     public final long skip(long advance) {
-        long z = (state += 0x9E3779B97F4A7C15L * advance);
-        z = (z ^ (z << 23 | z >>> 41) ^ (z << 41 | z >>> 23)) * 0x369DEA0F31A53F85L;
-        return z ^ z >>> 34 ^ z >>> 26;
+        final long s = (state += 0x9E3779B97F4A7C15L * advance);
+        final long z = (s ^ s >>> 43 ^ s >>> 31 ^ s >>> 23 ^ s << 30) * 0xD1B54A32D192ED03L;
+        return z ^ z >>> 28;
     }
 
 
@@ -136,10 +142,9 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      * @return a pseudo-random permutation of state
      */
     public static long determine(long state) {
-        return ((state = ((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26);
+        return (state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23 ^ state << 30) * 0xD1B54A32D192ED03L) ^ state >>> 28;
     }
-    //for quick one-line pastes of how the algo can be used with "randomize(++s)"
-    //public static long randomize(long s) { return ((s = ((s *= 0x9E3779B97F4A7C15L) ^ (s << 23 | s >>> 41) ^ (s << 41 | s >>> 23)) * 0x369DEA0F31A53F85L) ^ s >>> 34 ^ s >>> 26); }
+//        return ((state = ((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26);
 
     /**
      * Limited-use; when called with successive state values that differ by 0x9E3779B97F4A7C15L, this produces fairly
@@ -150,7 +155,10 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      *              you should probably use {@code VelvetRNG.randomize(state += 0x9E3779B97F4A7C15L)}
      * @return a pseudo-random number generated from state
      */
-    public static long randomize(long state) { return ((state = (state ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26); }
+    public static long randomize(long state) {
+        return (state = (state ^ state >>> 43 ^ state >>> 31 ^ state >>> 23 ^ state << 30) * 0xD1B54A32D192ED03L) ^ state >>> 28;
+    }
+//        return ((state = (state ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26);
     /**
      * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
      * return the same float. This is expected to be called with a changing variable, e.g. {@code determine(++state)},
@@ -163,7 +171,10 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      *              generate numbers in reverse order
      * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
      */
-    public static float determineFloat(long state) { return (((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L >>> 40) * 0x1p-24f; }
+    public static float determineFloat(long state) {
+        return (((state *= 0x9E3779B97F4A7C15L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23 ^ state << 30) * 0xD1B54A32D192ED03L >>> 40) * 0x1p-24f;
+    }
+//        return (((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L >>> 40) * 0x1p-24f;
 
 
     /**
@@ -178,7 +189,10 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
      *              generate numbers in reverse order
      * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
      */
-    public static double determineDouble(long state) { return (((state = ((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53; }
+    public static double determineDouble(long state) {
+        return (((state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23 ^ state << 30) * 0xD1B54A32D192ED03L) ^ state >>> 28) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+    }
+    //return (((state = ((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     /**
      * Given a state that should usually change each time this is called, and a bound that limits the result to some
@@ -197,17 +211,17 @@ public final class VelvetRNG implements StatefulRandomness, SkippingRandomness, 
     public static int determineBounded(long state, final int bound)
     {
         return (int)((bound * (
-                ((state = ((state *= 0x9E3779B97F4A7C15L) ^ (state << 23 | state >>> 41) ^ (state << 41 | state >>> 23)) * 0x369DEA0F31A53F85L) ^ state >>> 34 ^ state >>> 26)
+                ((state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23 ^ state << 30) * 0xD1B54A32D192ED03L) ^ state >>> 28)
                         & 0xFFFFFFFFL)) >> 32);
     }
 //    public static void main(String[] args)
 //    {
 //        /*
 //        cd target/classes
-//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/ThrustAltRNG > ../../thrustalt_asm.txt
+//        java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly sarong/VelvetRNG > ../../velvet_asm.txt
 //         */
 //        long seed = 1L;
-//        ThrustAltRNG rng = new ThrustAltRNG(seed);
+//        VelvetRNG rng = new VelvetRNG(seed);
 //
 //        for (int i = 0; i < 1000000007; i++) {
 //            seed += rng.nextLong();
