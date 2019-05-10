@@ -260,7 +260,7 @@ public final class XoshiroAra32RNG implements RandomnessSource, Serializable {
     }
 
     /**
-     * Sets the second part of the state to the given int. As a special case, if the parameter is 0 and this would set
+     * Sets the fourth part of the state to the given int. As a special case, if the parameter is 0 and this would set
      * all states to be 0, this will set stateA to 1 in addition to setting stateD to 0. Usually, you should use
      * {@link #setState(int, int, int, int)} to set all four states at once, but the result will be the same if you set
      * the four states individually.

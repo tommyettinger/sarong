@@ -4,6 +4,7 @@ import org.huldra.math.BigInt;
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
+import sarong.util.StringKit;
 
 /**
  * Created by Tommy Ettinger on 8/31/2018.
@@ -89,6 +90,7 @@ public class TestDistribution {
 //        BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
         int i = 0x80000000;
+        r = 1;
         for (; i < 0x7FFFFFFF; i++) {
 //            result = (i << 6) + (i << 28 | i >>> 4);
 //            result = i - (i << 11 | i >>> 21);
@@ -98,13 +100,24 @@ public class TestDistribution {
 //            sum.add(result);
 //            r = (i >>> 12) ^ (i << 19 | i >>> 13);
             //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
-            r = (i << 27 | i >>> 5) ^ (i >>> 7);
-            if(all.contains(r))
+//            r = (i << 27 | i >>> 5) ^ (i >>> 7);
+            //(a = (a << 23 | a >>> 9) * 0x402AB) 
+            //(b = (b << 28 | b >>> 4) * 0x01621)
+            //(c = (c << 24 | c >>> 8) * 0x808E9)
+            //(d = (d << 29 | d >>> 3) * 0x8012D)
+            
+            //r = (r << 23 | r >>> 9) * 0x402AB; //start at 0x00000001, stop at 0x0003A96B
+            //r = (r << 28 | r >>> 4) * 0x01621; //start at 0x00000001, stop at 0x0002973F
+            //r = (r << 24 | r >>> 8) * 0x808E9; //start at 0x00001D79, stop at 0x000664C8
+            //r = (r << 29 | r >>> 3) * 0x8012D; //start at 0x0001682B, stop at 0x0003219A
+            //r = (r << 13 | r >>> 19) * 0x89A7;  //start at 0x000015D5, stop at 0x00017DDE
+            r = (r << 17 | r >>> 15) * 0xBCFD;  //start at 0x000015D5, stop at 
+            if(!all.checkedAdd(r))
             {
-                System.out.println("UH OH, duplicate " + r + " at " + (i + 0x80000000L));
-                return;
+                break;
+//                System.out.println("UH OH, duplicate " + r + " at " + (i + 0x80000000L));
+//                return;
             }
-            all.add(r);
         }
 //        t = 0x7FFFFFFF + 0x9E3779B9;
 //        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
@@ -115,10 +128,21 @@ public class TestDistribution {
 //        xor ^= result;
 //        r = (i >>> 12) ^ (i << 19 | i >>> 13);
         //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
-        r = (i << 27 | i >>> 5) ^ (i >>> 7);
-        if(all.contains(r))
-            System.out.println("TROUBLE AT THE END!");
-        all.add(r);
+//        r = (i << 27 | i >>> 5) ^ (i >>> 7);
+//        r = (r << 23 | r >>> 9) * 0x402AB;
+//        if(!all.checkedAdd(r))
+//            System.out.println("TROUBLE AT THE END!");
+        all.flip(1L, 0x100000000L);
+        System.out.println("[0] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(0)));
+        System.out.println("[1] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(1)));
+        System.out.println("[2] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(2)));
+        System.out.println("[3] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(3)));
+        System.out.println("[4] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(4)));
+        System.out.println("[5] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(5)));
+        System.out.println("[6] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(6)));
+        System.out.println("[7] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(7)));
+        System.out.println("[8] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(8)));
+        System.out.println("[9] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(9)));
 //        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
