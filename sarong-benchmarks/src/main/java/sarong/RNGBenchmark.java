@@ -1458,6 +1458,16 @@ public class RNGBenchmark {
     {
         return MegaMover32.next(32);
     }
+//    @Benchmark
+//    public int measureMegaMoverB32Int()
+//    {
+//        return MegaMover32.next2(32);
+//    }
+//    @Benchmark
+//    public int measureMegaMoverC32Int()
+//    {
+//        return MegaMover32.next3(32);
+//    }
     @Benchmark
     public long measureMegaMover32R()
     {
