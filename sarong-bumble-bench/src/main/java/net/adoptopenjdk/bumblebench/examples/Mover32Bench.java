@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.Mover32RNG;
 
+/**
+ * Mover32Bench score: 1004768512.000000 (1.005G 2072.8%)
+ *          uncertainty:   0.1%
+ */
 public final class Mover32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

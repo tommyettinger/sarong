@@ -15,12 +15,16 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.Cake32RNG;
+import sarong.MegaMover32RNG;
 
-public final class Cake32Bench extends MicroBench {
+/**
+ * MegaMover32Bench score: 870159168.000000 (870.2M 2058.4%)
+ *              uncertainty:   0.3%
+ */
+public final class MegaMover32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		Cake32RNG rng = new Cake32RNG(0x12345678);
+		MegaMover32RNG rng = new MegaMover32RNG(0x12345678);
 		int sum = 0;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextInt();

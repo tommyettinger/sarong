@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.ThrustAltRNG;
 
+/**
+ * ThrustAltBench score: 1155033344.000000 (1.155G 2086.7%)
+ *            uncertainty:   0.1%
+ */
 public final class ThrustAltBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

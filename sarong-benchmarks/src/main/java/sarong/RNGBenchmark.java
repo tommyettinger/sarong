@@ -352,6 +352,45 @@ import java.util.concurrent.TimeUnit;
  * the most robust of all of these and is faster than DiverRNG.determine(). LinnormRNG.determine() is the fastest, but
  * incrementing by some values will cause it to fail after a few GB of testing, and rotating a counter given as input
  * almost certainly will cause it to fail for some rotations, because it wasn't built to handle that.
+ * <br>
+ * The 32-bit generators are mostly intended for usage on GWT, but their performance on desktop and mobile platforms can
+ * also be relevant to their general usefulness. A benchmark of the {@link RandomnessSource#next(int)} method of all
+ * 32-bit generators currently in Sarong:
+ * <pre>
+ * Benchmark                                 Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureBasicRandom32Int      avgt    5  2.162 ± 0.008  ns/op
+ * RNGBenchmark.measureCake32Int             avgt    5  4.493 ± 0.012  ns/op
+ * RNGBenchmark.measureChurro32Int           avgt    5  3.636 ± 0.021  ns/op
+ * RNGBenchmark.measureDizzy32Int            avgt    5  3.355 ± 0.024  ns/op
+ * RNGBenchmark.measureIsaac32Int            avgt    5  5.216 ± 0.033  ns/op
+ * RNGBenchmark.measureLathe32Int            avgt    5  2.898 ± 0.006  ns/op
+ * RNGBenchmark.measureLight32Int            avgt    5  2.858 ± 0.666  ns/op
+ * RNGBenchmark.measureLobster32Int          avgt    5  3.016 ± 0.007  ns/op
+ * RNGBenchmark.measureMegaMover32Int        avgt    5  3.274 ± 0.007  ns/op
+ * RNGBenchmark.measureMolerat32Int          avgt    5  3.022 ± 0.043  ns/op
+ * RNGBenchmark.measureMover32Int            avgt    5  2.599 ± 0.034  ns/op
+ * RNGBenchmark.measureMoverCounter32Int     avgt    5  2.584 ± 0.020  ns/op
+ * RNGBenchmark.measureOriole32Int           avgt    5  3.105 ± 0.013  ns/op
+ * RNGBenchmark.measureOtter32Int            avgt    5  3.091 ± 0.029  ns/op
+ * RNGBenchmark.measureSeaSlater32Int        avgt    5  3.034 ± 0.008  ns/op
+ * RNGBenchmark.measureStarfish32Int         avgt    5  2.989 ± 0.011  ns/op
+ * RNGBenchmark.measureThrustAlt32Int        avgt    5  2.884 ± 0.007  ns/op
+ * RNGBenchmark.measureXoRo32Int             avgt    5  2.748 ± 0.016  ns/op
+ * RNGBenchmark.measureXoshiroAra32Int       avgt    5  3.222 ± 0.016  ns/op
+ * RNGBenchmark.measureXoshiroStarPhi32Int   avgt    5  3.348 ± 0.006  ns/op
+ * RNGBenchmark.measureXoshiroStarStar32Int  avgt    5  3.439 ± 0.016  ns/op
+ * RNGBenchmark.measureXoshiroXara32Int      avgt    5  3.288 ± 0.039  ns/op
+ * RNGBenchmark.measureZag32Int              avgt    5  3.331 ± 0.035  ns/op
+ * RNGBenchmark.measureZig32Int              avgt    5  3.480 ± 0.015  ns/op
+ * RNGBenchmark.measureZog32Int              avgt    5  3.181 ± 0.008  ns/op
+ * </pre>
+ * It should be noted that not all of these pass PractRand or other tests; BasicRandom32 fails tests all over,
+ * ThrustAlt32RNG fails some tests, XoRo32RNG fails binary matrix rank tests as well as some others, and so on.
+ * The fastest ones that reliably pass tests appears to be Mover32RNG and MoverCounter32RNG, both of which
+ * have somewhat-challenging seeding requirements. Starfish32RNG is 2-dimensionally equidistributed, and all of the
+ * Xoshiro-based generators are 4-dimensionally equidistributed; not many of the others are even 1-dimensionally
+ * equidistributed.
+ *
  */
 
 @State(Scope.Thread)
@@ -1404,6 +1443,33 @@ public class RNGBenchmark {
     {
         return Cake32R.nextInt();
     }
+
+    private MegaMover32RNG MegaMover32 = new MegaMover32RNG(0);
+    private RNG MegaMover32R = new RNG(MegaMover32);
+
+    @Benchmark
+    public long measureMegaMover32()
+    {
+        return MegaMover32.nextLong();
+    }
+
+    @Benchmark
+    public int measureMegaMover32Int()
+    {
+        return MegaMover32.next(32);
+    }
+    @Benchmark
+    public long measureMegaMover32R()
+    {
+        return MegaMover32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureMegaMover32IntR()
+    {
+        return MegaMover32R.nextInt();
+    }
+
 
     private MoverCounter32RNG MoverCounter32 = new MoverCounter32RNG(0);
     private RNG MoverCounter32R = new RNG(MoverCounter32);

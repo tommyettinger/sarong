@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.Cake32RNG;
 
+/**
+ * Cake32Bench score: 641974976.000000 (642.0M 2028.0%)
+ *         uncertainty:   0.1%
+ */
 public final class Cake32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

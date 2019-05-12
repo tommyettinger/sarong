@@ -195,6 +195,9 @@ public class PeriodTest {
         // rotation 16: 0xFFEA9001
 
         // slightly larger multiplications, GWT-safe
+        //// 0xFFFFD5A9 0xFFFF687B 0xFFFF2E45 0xFFFF1928 0xFFFEE5E1 0xFFFEAB53 0xFFFE9CA7
+        // (a = (a << 23 | a >>> 9) * 0x402AB) ^ (b = (b << 28 | b >>> 4) * 0x01621) ^
+        // (c = (c << 24 | c >>> 8) * 0x808E9) ^ (d = (d << 29 | d >>> 3) * 0x8012D)
         // 0x402AB, rotation 23: 0xFFFFD5A9
         // 0x01621, rotation 28: 0xFFFF687B
         // 0x808E9, rotation 24: 0xFFFF2E45
@@ -444,10 +447,15 @@ public class PeriodTest {
     @Test
     public void showCombined()
     {
+        //// 0xFFFFD5A9 0xFFFF687B 0xFFFF2E45 0xFFFF1928 0xFFFEE5E1 0xFFFEAB53 0xFFFE9CA7
+
         // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
-        BigInteger result = BigInteger.valueOf(0xFFFEEAA9L), tmp = BigInteger.valueOf(0xFFFF9C61L); // 5/1, 6/-4
+        BigInteger result = BigInteger.valueOf(0xFFFFD5A9L), tmp = BigInteger.valueOf(0xFFFF687BL); // 5/1, 6/-4
 //        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFD6D7E76L); // 5/1, 9/8 
-//        result = tmp.divide(result.gcd(tmp)).multiply(result);
+        result = tmp.divide(result.gcd(tmp)).multiply(result);
+        tmp = BigInteger.valueOf(0xFFFF2E45L);
+        result = tmp.divide(result.gcd(tmp)).multiply(result);
+        tmp = BigInteger.valueOf(0xFFFEAB53L);
 //        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
 //        tmp = BigInteger.valueOf(0xFBD0F379L); // 27/20
         result = tmp.divide(result.gcd(tmp)).multiply(result);

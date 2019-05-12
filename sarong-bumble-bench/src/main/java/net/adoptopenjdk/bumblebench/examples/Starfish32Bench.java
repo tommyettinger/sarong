@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.Starfish32RNG;
 
+/**
+ * Starfish32Bench score: 846931008.000000 (846.9M 2055.7%)
+ *             uncertainty:   0.4%
+ */
 public final class Starfish32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

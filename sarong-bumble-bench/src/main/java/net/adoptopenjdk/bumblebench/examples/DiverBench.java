@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.DiverRNG;
 
+/**
+ * DiverBench score: 799732992.000000 (799.7M 2050.0%)
+ *        uncertainty:   0.1%
+ */
 public final class DiverBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
