@@ -2264,6 +2264,32 @@ public class RNGBenchmark {
         return XoshiroAra32R.nextInt();
     }
 
+    private XoshiroSushi32RNG XoshiroSushi32 = new XoshiroSushi32RNG(9999);
+    private RNG XoshiroSushi32R = new RNG(XoshiroSushi32);
+
+    @Benchmark
+    public long measureXoshiroSushi32()
+    {
+        return XoshiroSushi32.nextLong();
+    }
+
+    @Benchmark
+    public int measureXoshiroSushi32Int()
+    {
+        return XoshiroSushi32.next(32);
+    }
+    @Benchmark
+    public long measureXoshiroSushi32R()
+    {
+        return XoshiroSushi32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureXoshiroSushi32IntR()
+    {
+        return XoshiroSushi32R.nextInt();
+    }
+
     private DervishRNG Dervish = new DervishRNG(9999L);
     private RNG DervishR = new RNG(Dervish);
     @Benchmark
