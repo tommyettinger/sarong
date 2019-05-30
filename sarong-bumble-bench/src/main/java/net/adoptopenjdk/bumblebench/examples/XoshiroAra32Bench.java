@@ -15,19 +15,19 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.DiverRNG;
+import sarong.XoshiroAra32RNG;
 
 /**
- * DiverBench score: 799732992.000000 (799.7M 2050.0%)
- *        uncertainty:   0.1%
+ * XoshiroAra32Bench score: 891977536.000000 (892.0M 2060.9%)
+ *               uncertainty:   0.2%
  */
-public final class DiverBench extends MicroBench {
+public final class XoshiroAra32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		DiverRNG rng = new DiverRNG(0x12345678);
-		long sum = 0L;
+		XoshiroAra32RNG rng = new XoshiroAra32RNG(0x12345678);
+		int sum = 0;
 		for (long i = 0; i < numIterations; i++)
-			sum += rng.nextLong();
+			sum += rng.nextInt();
 		return numIterations;
 	}
 }

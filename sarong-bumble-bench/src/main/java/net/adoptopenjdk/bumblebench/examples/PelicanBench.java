@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.PelicanRNG;
 
+/**
+ * PelicanBench score: 554514112.000000 (554.5M 2013.4%)
+ *          uncertainty:   0.1%
+ */
 public final class PelicanBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

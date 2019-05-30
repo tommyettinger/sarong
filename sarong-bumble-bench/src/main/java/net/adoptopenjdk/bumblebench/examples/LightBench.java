@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.LightRNG;
 
+/**
+ * LightBench score: 978743296.000000 (978.7M 2070.2%)
+ *        uncertainty:   0.4%
+ */
 public final class LightBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

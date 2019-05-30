@@ -17,6 +17,10 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.XoRoRNG;
 
+/**
+ * XoRoBench score: 1025016000.000000 (1.025G 2074.8%)
+ *       uncertainty:   0.2%
+ */
 public final class XoRoBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {

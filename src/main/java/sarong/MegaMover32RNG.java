@@ -5,14 +5,18 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A higher-quality 32-bit GWT-safe generator that combines 4 of Mark Overton's subcycle generators from
+ * A high-quality 32-bit GWT-safe generator that combines 4 of Mark Overton's subcycle generators from
  * <a href="http://www.drdobbs.com/tools/229625477">this article</a>, specifically different CMR each with a 32-bit
  * state, that has all generator results XORed together. Its period is 0xFFFD17BED0F5C7B680C162E3671157ED, or
  * approximately 2 to the 127.999936, and all states that can be produced using {@link #seed(long)} have that same
  * maximal period. Quality seems very strong so far, since {@link Mover32RNG} has two component generators and can pass
- * PractRand to 32TB (with different constants), while this has four component generators. So far, MegaMover32RNG has
- * passed 4TB of PractRand with no anomalies, and it has more theoretical capabilities, like being able to possibly
- * generate all 64-bit values (it might not generate some, though, and they will have different frequencies).
+ * PractRand to 32TB (with different constants), while this has four component generators. MegaMover32RNG has passed all
+ * 32TB of PractRand with no anomalies, and it has more theoretical capabilities, like being able to possibly
+ * generate all 64-bit values (it might not generate some, though, and they will have different frequencies). However,
+ * it is in most regards a weaker generator than {@link XoshiroAra32RNG}, which has the same state size, a larger
+ * period, simpler seeding, and guarantees about its distribution, while being a little faster than MegaMover32RNG.
+ * If you want a "Bob-Jenkins-style no-nice-math" generator, following the same principles as Jenkins' {@link IsaacRNG},
+ * you might prefer MegaMover32RNG, though.
  * <br>
  * The choice of constants for the multipliers and for the rotation just need to be checked for the period of each
  * component generator, which doesn't take much time, and for the period of all generators to be checked to make sure
@@ -96,6 +100,46 @@ public final class MegaMover32RNG implements RandomnessSource, Serializable {
     {
         return ((stateA = (stateA << 23 | stateA >>> 9) * 0x402AB) ^ (stateB = (stateB << 28 | stateB >>> 4) * 0x01621) ^ (stateC = (stateC << 24 | stateC >>> 8) * 0x808E9) ^ (stateD = (stateD << 29 | stateD >>> 3) * 0x8012D)) >>> (32 - bits);
     }
+
+//    public final int nextInt2()
+//    {
+//        stateA = (stateA << 23 | stateA >>> 9);
+//        stateA *= 0x402AB;
+//        stateB = (stateB << 28 | stateB >>> 4);
+//        stateB *= 0x01621;
+//        stateC = (stateC << 24 | stateC >>> 8);
+//        stateC *= 0x808E9;
+//        stateD = (stateD << 29 | stateD >>> 3);
+//        stateD *= 0x8012D;
+//        return (stateA ^ stateB ^ stateC ^ stateD);
+//    }
+//
+//    public final int next2(final int bits)
+//    {
+//        stateA = (stateA << 23 | stateA >>> 9);
+//        stateA *= 0x402AB;
+//        stateB = (stateB << 28 | stateB >>> 4);
+//        stateB *= 0x01621;
+//        stateC = (stateC << 24 | stateC >>> 8);
+//        stateC *= 0x808E9;
+//        stateD = (stateD << 29 | stateD >>> 3);
+//        stateD *= 0x8012D;
+//        return (stateA ^ stateB ^ stateC ^ stateD) >>> (32 - bits);
+//    }
+//
+//    public final int next3(final int bits)
+//    {
+//        stateA = (stateA << 23 | stateA >>> 9);
+//        stateB = (stateB << 28 | stateB >>> 4);
+//        stateC = (stateC << 24 | stateC >>> 8);
+//        stateD = (stateD << 29 | stateD >>> 3);
+//        stateA *= 0x402AB;
+//        stateB *= 0x01621;
+//        stateC *= 0x808E9;
+//        stateD *= 0x8012D;
+//        return (stateA ^ stateB ^ stateC ^ stateD) >>> (32 - bits);
+//    }
+
     @Override
     public final long nextLong() {
         
