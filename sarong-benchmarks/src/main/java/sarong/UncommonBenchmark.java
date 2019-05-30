@@ -145,10 +145,12 @@ public class UncommonBenchmark {
 
     private final double[] inputs = new double[65536];
     private final float[] floatInputs = new float[65536];
+    private final double[] arcInputs = new double[65536];
     {
         for (int i = 0; i < 65536; i++) {
             floatInputs[i] = (float) (inputs[i] =
-                    (LinnormRNG.determine(i) >> 11) * 0x1p-40);
+                    (DiverRNG.determine(i) >> 11) * 0x1p-40);
+            arcInputs[i] = (DiverRNG.determine(i) >> 9) * 0x1p-54;
         }
     }
 
@@ -432,6 +434,10 @@ public class UncommonBenchmark {
     private short atan2ApproxY = -0x8000;
     private short atan2ApproxXF = -0x4000;
     private short atan2ApproxYF = -0x8000;
+    private short asinDKC = -0x8000;
+    private short acosDKC = -0x8000;
+    private short asinJOH = -0x8000;
+    private short acosJOH = -0x8000;
 
 
     @Benchmark
@@ -797,65 +803,150 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
 
         new Runner(opt).run();
     }
+    
+    public static double asinJOH(final double n)
+    {
+        if(n == 0.0) return 0.0;
+        final double ax = Math.sqrt(1.0 - n * n), ay = Math.abs(n);
+        if(ax < ay)
+        {
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? -r : r;
+        }
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? -r : r;
+        }
+    }
+    
+    public static double acosJOH(final double n)
+    {
+        if(n == 1.0 || n == -1.0) return 0.0;
+        final double ax = Math.abs(n), ay = Math.sqrt((1.0 + n) * (1.0 - n));
+        if(ax < ay)
+        {
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? 3.14159274 - r : r;
+        }
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? 3.14159274 - r : r;
+        }
+
+    }
+    
+    public static double asinDKC(double a) {
+        return (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
+    public static double acosDKC(double a) {
+        return 1.5707963267948966 - (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
+    @Benchmark
+    public double measureAsinDKC()
+    {
+        return asinDKC(arcInputs[asinDKC++ & 0xFFFF]);
+    }
+    @Benchmark
+    public double measureAcosDKC()
+    {
+        return acosDKC(arcInputs[acosDKC++ & 0xFFFF]);
+    }
+    @Benchmark
+    public double measureAsinJOH()
+    {
+        return asinJOH(arcInputs[asinJOH++ & 0xFFFF]);
+    }
+    @Benchmark
+    public double measureAcosJOH()
+    {
+        return acosJOH(arcInputs[acosJOH++ & 0xFFFF]);
+    }
+
     public static void main(String[] args)
     {
         UncommonBenchmark u = new UncommonBenchmark();
-        double cosOldError = 0.0, approxFError = 0.0, climatianoError = 0.0, clLPError = 0.0, cosNickError = 0.0,
-                sinOldError = 0.0, sinOldFError = 0.0,  sinNickError = 0.0,
-                floatError = 0.0, cosBitError = 0.0, sinBitError = 0.0, cosBitFError = 0.0, sinBitFError = 0.0;
-        System.out.println("Math.sin()       : " + u.measureMathSin());
-        System.out.println("Math.sin()       : " + u.measureMathSin());
-        System.out.println("Math.cos()       : " + u.measureMathCos());
-        System.out.println("double sin approx: " + u.measureSinApprox());
-        System.out.println("double cos approx: " + u.measureCosApprox());
+        double cosOldError = 0.0, cosNickFError = 0.0, climatianoError = 0.0, clLPError = 0.0, cosNickError = 0.0,
+                sinOldError = 0.0, sinNickFError = 0.0,  sinNickError = 0.0,
+                floatError = 0.0, cosBitError = 0.0, sinBitError = 0.0, cosBitFError = 0.0, sinBitFError = 0.0,
+                asinDennis = 0.0, acosDennis = 0.0, asinJohn = 0.0, acosJohn = 0.0;
+        ;
+        final double iroot2 = 1.0 / Math.sqrt(2.0);
+        System.out.println("Math.sin()       :  " + Math.sin(iroot2));
+        System.out.println("Math.cos()       :  " + Math.cos(iroot2));
+        System.out.println("Math.asin()       : " + Math.asin(iroot2));
+        System.out.println("Math.acos()       : " + Math.acos(iroot2));
+
+        System.out.println("double sin approx:  " + NumberTools.sin(iroot2));
+        System.out.println("double cos approx:  " + NumberTools.cos(iroot2));
+
+        System.out.println("asin approx Dennis: " + asinDKC(iroot2));
+        System.out.println("acos approx Dennis: " + acosDKC(iroot2));
+
+        System.out.println("asin approx John  : " + asinJOH(iroot2));
+        System.out.println("acos approx John  : " + acosJOH(iroot2));
+
 //        System.out.println("float approx     : " + u.measureCosApproxFloat());
 //        System.out.println("Climatiano       : " + u.measureCosApproxClimatiano());
 //        System.out.println("ClimatianoLP     : " + u.measureCosApproxClimatianoLP());
-        for (long r = 100L; r < 4197; r++) {
+        for (int r = 0; r < 65536; r++) {
             //margin += 0.0001;
-            short i = (short) (ThrustAltRNG.determine(r) & 0xFFFF);
+            short i = (short) r;//(DiverRNG.determine(r) & 0xFFFF);
             u.mathCos = i;
             u.mathSin = i;
-            u.cosOld = i;
-            u.sinOld = i;
+//            u.cosOld = i;
+//            u.sinOld = i;
             u.sinNick = i;
             u.cosNick = i;
-            u.sinBit = i;
-            u.cosBit = i;
-            u.sinBitF = i;
-            u.cosBitF = i;
+//            u.sinBit = i;
+//            u.cosBit = i;
+//            u.sinBitF = i;
+//            u.cosBitF = i;
             u.cosFloat = i;
             u.sinFloat = i;
-            u.cosClimatiano = i;
-            u.cosClimatianoLP = i;
-            double c = u.measureMathCos(), s = u.measureMathSin();
+//            u.cosClimatiano = i;
+//            u.cosClimatianoLP = i;
+            double c = u.measureMathCos(), s = u.measureMathSin(), ac = Math.acos(c), as = Math.asin(s);
             floatError += Math.abs(c - (float)c);
-            cosOldError += Math.abs(u.measureCosApproxOld() - c);
-            approxFError += Math.abs(u.measureCosApproxFloat() - c);
-            climatianoError += Math.abs(u.measureCosApproxClimatiano() - c);
-            clLPError += Math.abs(u.measureCosApproxClimatianoLP() - c);
+//            cosOldError += Math.abs(u.measureCosApproxOld() - c);
+            cosNickFError += Math.abs(u.measureCosApproxFloat() - c);
+//            climatianoError += Math.abs(u.measureCosApproxClimatiano() - c);
+//            clLPError += Math.abs(u.measureCosApproxClimatianoLP() - c);
             cosNickError += Math.abs(u.measureCosApprox() - c);
-            sinOldError += Math.abs(u.measureSinApproxOld() - s);
+//            sinOldError += Math.abs(u.measureSinApproxOld() - s);
             sinNickError += Math.abs(u.measureSinApprox() - s);
-            sinOldFError += Math.abs(u.measureSinApproxFloat() - s);
-            cosBitError += Math.abs(u.measureCosApproxNickBit() - c);
-            sinBitError += Math.abs(u.measureSinApproxNickBit() - s);
-            cosBitFError += Math.abs(u.measureCosApproxNickBitF() - c);
-            sinBitFError += Math.abs(u.measureSinApproxNickBitF() - s);
+            sinNickFError += Math.abs(u.measureSinApproxFloat() - s);
+            asinDennis += Math.abs(asinDKC(s) - as);
+            acosDennis += Math.abs(acosDKC(c) - ac);
+            asinJohn += Math.abs(asinJOH(s) - as);
+            acosJohn += Math.abs(acosJOH(c) - ac);
+//            cosBitError += Math.abs(u.measureCosApproxNickBit() - c);
+//            sinBitError += Math.abs(u.measureSinApproxNickBit() - s);
+//            cosBitFError += Math.abs(u.measureCosApproxNickBitF() - c);
+//            sinBitFError += Math.abs(u.measureSinApproxNickBitF() - s);
         }
         //System.out.println("Margin allowed   : " + margin);
-        System.out.println("double approx    : " + cosOldError);
+//        System.out.println("double approx    : " + cosOldError);
         System.out.println("base float error : " + floatError);
-        System.out.println("float approx     : " + approxFError);
-        System.out.println("Climatiano       : " + climatianoError);
-        System.out.println("Climatiano LP    : " + clLPError);
-        System.out.println("sin approx       : " + sinOldError);
-        System.out.println("sin approx float : " + sinOldFError);
+//        System.out.println("Climatiano       : " + climatianoError);
+//        System.out.println("Climatiano LP    : " + clLPError);
+//        System.out.println("sin approx       : " + sinOldError);
         System.out.println("sin Nick approx  : " + sinNickError);
+        System.out.println("sin approx float : " + sinNickFError);
         System.out.println("cos Nick approx  : " + cosNickError);
-        System.out.println("sin Bit approx   : " + sinBitError);
-        System.out.println("cos Bit approx   : " + cosBitError);
-        System.out.println("sin BitF approx  : " + sinBitFError);
-        System.out.println("cos BitF approx  : " + cosBitFError);
+        System.out.println("cos approx float : " + cosNickFError);
+        System.out.println("asin Dennis      : " + asinDennis);
+        System.out.println("acos Dennis      : " + acosDennis);
+        System.out.println("asin John        : " + asinJohn);
+        System.out.println("acos John        : " + acosJohn);
+//        System.out.println("sin Bit approx   : " + sinBitError);
+//        System.out.println("cos Bit approx   : " + cosBitError);
+//        System.out.println("sin BitF approx  : " + sinBitFError);
+//        System.out.println("cos BitF approx  : " + cosBitFError);
     }
 }

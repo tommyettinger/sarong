@@ -133,16 +133,30 @@ public class TestDistribution {
 //        if(!all.checkedAdd(r))
 //            System.out.println("TROUBLE AT THE END!");
         all.flip(1L, 0x100000000L);
-        System.out.println("[0] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(0)));
-        System.out.println("[1] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(1)));
-        System.out.println("[2] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(2)));
-        System.out.println("[3] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(3)));
-        System.out.println("[4] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(4)));
-        System.out.println("[5] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(5)));
-        System.out.println("[6] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(6)));
-        System.out.println("[7] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(7)));
-        System.out.println("[8] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(8)));
-        System.out.println("[9] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(9)));
+        System.out.println("[10] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(10)));
+        System.out.println("[11] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(11)));
+        System.out.println("[12] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(12)));
+        System.out.println("[13] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(13)));
+        System.out.println("[14] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(14)));
+        System.out.println("[15] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(15)));
+        System.out.println("[16] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(16)));
+        System.out.println("[17] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(17)));
+        System.out.println("[18] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(18)));
+        System.out.println("[19] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(19)));
+        System.out.println("[20] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(20)));
+        System.out.println("[21] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(21)));
+        System.out.println("[22] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(22)));
+        System.out.println("[23] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(23)));
+        System.out.println("[24] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(24)));
+        System.out.println("[25] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(25)));
+        System.out.println("[26] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(26)));
+        System.out.println("[27] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(27)));
+        System.out.println("[28] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(28)));
+        System.out.println("[29] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(29)));
+        
+        
+        
+        
 //        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
 //        sum.add(result);
 //        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));

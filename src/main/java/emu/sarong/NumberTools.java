@@ -316,67 +316,53 @@ public class NumberTools {
         radians *= 2f - radians;
         return radians * (-0.775f - 0.225f * radians) * ((floor & 2) - 1);
     }
-    /**
-     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
-     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
-     * Takes y and x (in that unusual order) as doubles, and returns the angle from the origin to that point in radians.
-     * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
-     * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
-     * @return the angle to the given point, in radians as a double
-     */
     public static double atan2(double y, double x) {
-        if(y == 0.0)
+        if(y == 0.0 && x >= 0.0) return 0.0;
+        final double ax = Math.abs(x), ay = Math.abs(y);
+        if(ax < ay)
         {
-            return x < 0 ? 3.141592653589793 : 0.0;
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (x < 0.0) ? (y < 0.0) ? -3.14159274 + r : 3.14159274 - r : (y < 0.0) ? -r : r;
         }
-        else if(y < 0.0)
-        {
-            if (x >= 0.0) {
-                return 0.7853981633974483 - 0.7853981633974483 * ((x + y) / (x - y));
-            } else {
-                return 2.3561944901923453 - 0.7853981633974483 * ((x - y) / (-y - x));
-            }
-        }
-        else
-        {
-            if (x >= 0.0) {
-                return 0.7853981633974483 - 0.7853981633974483 * ((x - y) / (x + y));
-            } else {
-                return 2.3561944901923453 - 0.7853981633974483 * ((x + y) / (y - x));
-            }
-
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (x < 0.0) ? (y < 0.0) ? -3.14159274 + r : 3.14159274 - r : (y < 0.0) ? -r : r;
         }
     }
-    /**
-     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
-     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
-     * Takes y and x (in that unusual order) as floats, and returns the angle from the origin to that point in radians.
-     * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
-     * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
-     * @return the angle to the given point, in radians as a float
-     */
-    public static float atan2(float y, float x) {
-        if(y == 0f)
+    public static float atan2(final float y, final float x)
+    {
+        if(y == 0f && x >= 0f) return 0f;
+        final float ax = Math.abs(x), ay = Math.abs(y);
+        if(ax < ay)
         {
-            return x < 0f ? 3.141592653589793f : 0.0f;
+            final float a = ax / ay, s = a * a,
+                    r = 1.57079637f - (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
+            return (x < 0f) ? (y < 0f) ? -3.14159274f + r : 3.14159274f - r : (y < 0f) ? -r : r;
         }
-        else if(y < 0.0f)
-        {
-            if (x >= 0.0f) {
-                return 0.7853981633974483f - 0.7853981633974483f * ((x + y) / (x - y));
-            } else {
-                return 2.3561944901923453f - 0.7853981633974483f * ((x - y) / (-y - x));
-            }
+        else {
+            final float a = ay / ax, s = a * a,
+                    r = (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
+            return (x < 0f) ? (y < 0f) ? -3.14159274f + r : 3.14159274f - r : (y < 0f) ? -r : r;
         }
-        else
-        {
-            if (x >= 0.0f) {
-                return 0.7853981633974483f - 0.7853981633974483f * ((x - y) / (x + y));
-            } else {
-                return 2.3561944901923453f - 0.7853981633974483f * ((x + y) / (y - x));
-            }
+    }
+    public static double asin(double a) {
+        return (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
 
-        }
+    public static float asin(float a) {
+        return (a * (1f + (a *= a) * (-0.141514171442891431f + a * -0.719110791477959357f))) /
+                (1f + a * (-0.439110389941411144f + a * -0.471306172023844527f));
+    }
+    public static double acos(double a) {
+        return 1.5707963267948966 - (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
+    public static float acos(float a) {
+        return 1.5707963267948966f - (a * (1f + (a *= a) * (-0.141514171442891431f + a * -0.719110791477959357f))) /
+                (1f + a * (-0.439110389941411144f + a * -0.471306172023844527f));
     }
 
 }
