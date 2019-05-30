@@ -97,6 +97,27 @@ import java.util.concurrent.TimeUnit;
  * for a comparison of how closely the approximation matches; Math.sin() is in green and the approximation is in black.
  * The green and black lines should almost overlap except at extremely high zoom levels.
  * <br>
+ * For the inverse trigonometric functions asin() and acos(), using an approximation can really help on performance.
+ * There's two options tested here as approximations, DKC from formula 201 in
+ * <a href="http://www.fastcode.dk/fastcodeproject/articles/index.htm">Dennis Kjaer Christensen's ArcSin approximations</a>,
+ * and JOH, from apparently a well-known trigonometric identity but learned from John O'Harrow's submissions to
+ * <a href="http://www.fastcode.dk/fastcodeproject/fastcodeproject/55.htm">a Delphi coding challenge to optimize ArcSin and ArcCos</a>.
+ * They are compared to {@link Math#asin(double)} in measureAsinJDK() and similarly for acos().
+ * <pre>
+ * Benchmark                         Mode  Cnt    Score   Error  Units
+ * UncommonBenchmark.measureAcosDKC  avgt    5    7.298 ± 0.074  ns/op
+ * UncommonBenchmark.measureAcosJDK  avgt    5  344.364 ± 1.904  ns/op
+ * UncommonBenchmark.measureAcosJOH  avgt    5   20.739 ± 1.329  ns/op
+ * UncommonBenchmark.measureAsinDKC  avgt    5    6.316 ± 0.058  ns/op
+ * UncommonBenchmark.measureAsinJDK  avgt    5  355.110 ± 2.817  ns/op
+ * UncommonBenchmark.measureAsinJOH  avgt    5   19.720 ± 0.499  ns/op
+ * </pre>
+ * <br>
+ * Yeah, the JDK versions are <i>really slow</i>. The JOH version has almost no total error on 65536 tested floats, with
+ * an absolute total error of 4.2537 radians, while DKC is faster but has a much higher absolute total error, 562.7881
+ * radians for acos(). The JOH version is built on an optimized version of an atan2() approximation that doesn't check
+ * for cases that are impossible with asin() or acos(). The DKC version is based on a complicated polynomial.
+ * <br>
  * Shuffling distinct int sequences:
  * <br>
  * <pre>
@@ -438,6 +459,8 @@ public class UncommonBenchmark {
     private short acosDKC = -0x8000;
     private short asinJOH = -0x8000;
     private short acosJOH = -0x8000;
+    private short asinJDK = -0x8000;
+    private short acosJDK = -0x8000;
 
 
     @Benchmark
@@ -806,6 +829,9 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
     
     public static double asinJOH(final double n)
     {
+//        return n * (-1.050945493114464180 + 0.900914677765651878 * (n *= n))
+//                / (0.877542778908727804 * n - 0.974519962631629395);
+
         if(n == 0.0) return 0.0;
         final double ax = Math.sqrt(1.0 - n * n), ay = Math.abs(n);
         if(ax < ay)
@@ -823,6 +849,9 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
     
     public static double acosJOH(final double n)
     {
+//        return 1.5707963267948966 - n * (-1.050945493114464180 + 0.900914677765651878 * (n *= n))
+//                / (0.877542778908727804 * n - 0.974519962631629395);
+
         if(n == 1.0 || n == -1.0) return 0.0;
         final double ax = Math.abs(n), ay = Math.sqrt((1.0 + n) * (1.0 - n));
         if(ax < ay)
@@ -836,7 +865,6 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
                     r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
             return (n < 0.0) ? 3.14159274 - r : r;
         }
-
     }
     
     public static double asinDKC(double a) {
@@ -867,6 +895,16 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
     {
         return acosJOH(arcInputs[acosJOH++ & 0xFFFF]);
     }
+    @Benchmark
+    public double measureAsinJDK()
+    {
+        return Math.asin(arcInputs[asinJDK++ & 0xFFFF]);
+    }
+    @Benchmark
+    public double measureAcosJDK()
+    {
+        return Math.acos(arcInputs[acosJDK++ & 0xFFFF]);
+    }
 
     public static void main(String[] args)
     {
@@ -876,20 +914,20 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
                 floatError = 0.0, cosBitError = 0.0, sinBitError = 0.0, cosBitFError = 0.0, sinBitFError = 0.0,
                 asinDennis = 0.0, acosDennis = 0.0, asinJohn = 0.0, acosJohn = 0.0;
         ;
-        final double iroot2 = 1.0 / Math.sqrt(2.0);
-        System.out.println("Math.sin()       :  " + Math.sin(iroot2));
-        System.out.println("Math.cos()       :  " + Math.cos(iroot2));
-        System.out.println("Math.asin()       : " + Math.asin(iroot2));
-        System.out.println("Math.acos()       : " + Math.acos(iroot2));
+        final double iroot3 = 1.0 / Math.sqrt(3.0);
+        System.out.println("Math.sin()        : " + Math.sin(iroot3));
+        System.out.println("Math.cos()        : " + Math.cos(iroot3));
+        System.out.println("Math.asin()       : " + Math.asin(iroot3));
+        System.out.println("Math.acos()       : " + Math.acos(iroot3));
 
-        System.out.println("double sin approx:  " + NumberTools.sin(iroot2));
-        System.out.println("double cos approx:  " + NumberTools.cos(iroot2));
+        System.out.println("double sin approx:  " + NumberTools.sin(iroot3));
+        System.out.println("double cos approx:  " + NumberTools.cos(iroot3));
 
-        System.out.println("asin approx Dennis: " + asinDKC(iroot2));
-        System.out.println("acos approx Dennis: " + acosDKC(iroot2));
+        System.out.println("asin approx Dennis: " + asinDKC(iroot3));
+        System.out.println("acos approx Dennis: " + acosDKC(iroot3));
 
-        System.out.println("asin approx John  : " + asinJOH(iroot2));
-        System.out.println("acos approx John  : " + acosJOH(iroot2));
+        System.out.println("asin approx John  : " + asinJOH(iroot3));
+        System.out.println("acos approx John  : " + acosJOH(iroot3));
 
 //        System.out.println("float approx     : " + u.measureCosApproxFloat());
 //        System.out.println("Climatiano       : " + u.measureCosApproxClimatiano());
