@@ -406,7 +406,7 @@ public final class NumberTools {
      */
     public static double randomDouble(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
     }
     /**
      * Generates a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given long seed, passing it
@@ -420,7 +420,7 @@ public final class NumberTools {
      */
     public static float randomFloat(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) & 0xFFFFFF) * 0x1p-24f;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) & 0xFFFFFF) * 0x1p-24f;
     }
     /**
      * Generates a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given long seed, passing
@@ -436,7 +436,7 @@ public final class NumberTools {
      */
     public static float randomSignedFloat(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) >> 39) * 0x1p-24f;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) >> 39) * 0x1p-24f;
     }
 
     /**
@@ -453,7 +453,7 @@ public final class NumberTools {
      */
     public static float randomFloatCurved(long seed)
     {
-        return formCurvedFloat(((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)));
+        return formCurvedFloat(((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)));
     }
 
     /**

@@ -935,14 +935,14 @@ public class RNGBenchmark {
 //    {
 //        final long s = (state += 0x6C8E9CF570932BD5L);
 //        final long z = (s ^ (s >>> 25)) * (s | 0xA529L);
-//        return z ^ (z >>> 22);
+//        return z ^ (z >>> 23);
 //    }
 //    @Benchmark
 //    public long measureInlineThrustAltOther()
 //    {
 //        long z = (state += 0x6C8E9CF570932BD5L);
 //        z = (z ^ (z >>> 25)) * (z | 0xA529L);
-//        return z ^ (z >>> 22);
+//        return z ^ (z >>> 23);
 //    }
 
     private Jab63RNG Jab63 = new Jab63RNG(9999L);
@@ -2654,7 +2654,7 @@ public class RNGBenchmark {
 //        seed = 9000;
 //        long running = seed, state = 9000L;
 //        for (int i = 0; i < 1000000007; i++) {
-//            seed += ((state = ((running += 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 22));
+//            seed += ((state = ((running += 0x6C8E9CF570932BD5L) ^ (state >>> 25)) * (state | 0xA529L)) ^ (state >>> 23));
 //        }
 //    }
     @Benchmark

@@ -829,9 +829,6 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
     
     public static double asinJOH(final double n)
     {
-//        return n * (-1.050945493114464180 + 0.900914677765651878 * (n *= n))
-//                / (0.877542778908727804 * n - 0.974519962631629395);
-
         if(n == 0.0) return 0.0;
         final double ax = Math.sqrt(1.0 - n * n), ay = Math.abs(n);
         if(ax < ay)
@@ -849,9 +846,6 @@ java -jar target/benchmarks.jar UncommonBenchmark -wi 5 -i 5 -f 1 -gc true
     
     public static double acosJOH(final double n)
     {
-//        return 1.5707963267948966 - n * (-1.050945493114464180 + 0.900914677765651878 * (n *= n))
-//                / (0.877542778908727804 * n - 0.974519962631629395);
-
         if(n == 1.0 || n == -1.0) return 0.0;
         final double ax = Math.abs(n), ay = Math.sqrt((1.0 + n) * (1.0 - n));
         if(ax < ay)
