@@ -74,7 +74,7 @@ public final class PelicanRNG implements StatefulRandomness, Serializable {
         long z = state++;
         z = (z ^ (z << 41 | z >>> 23) ^ (z << 17 | z >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
         z = (z ^ z >>> 43 ^ z >>> 31 ^ z >>> 23) * 0xDB4F0B9175AE2165L;
-        return (int)((z ^ z >> 28) >>> (64 - bits));
+        return (int)((z ^ z >>> 28) >>> (64 - bits));
     }
 
     /**
