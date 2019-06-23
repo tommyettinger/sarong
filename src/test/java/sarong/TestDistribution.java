@@ -82,6 +82,25 @@ public class TestDistribution {
     //<< 12, rotl 10
     //<< 15, rotl 11
     //<< 17, rotl 13
+    
+    @Test
+    public void test16BitLanyard()
+    {
+        int r, a = 10, b = 21;
+        RoaringBitmap all = new RoaringBitmap();
+        int i = -0x80000;
+        for (; i <= 0x7FFFF; i++) { 
+            r = ((a << 7 | a >>> 9) + b & 0xFFFF);
+            final long t = a >>> 12;
+            r = (r << t | r >>> 16 - t) & 0xFFFF;
+//            r = r * 0x251D & 0xFFFF;
+            a = a * 0x2C55 + r & 0xFFFF;
+            b = b * 0x3685 + 0xABCD & 0xFFFF;
+            all.add(r ^ r >>> 8);
+        }
+        System.out.println(all.getCardinality());
+    }
+    
     @Test
     public void test32Bit()
     {
