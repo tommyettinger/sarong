@@ -406,7 +406,7 @@ public final class NumberTools {
      */
     public static double randomDouble(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
     }
     /**
      * Generates a pseudo-random float between 0f (inclusive) and 1f (exclusive) using the given long seed, passing it
@@ -420,7 +420,7 @@ public final class NumberTools {
      */
     public static float randomFloat(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) & 0xFFFFFF) * 0x1p-24f;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) & 0xFFFFFF) * 0x1p-24f;
     }
     /**
      * Generates a pseudo-random float between -1f (inclusive) and 1f (exclusive) using the given long seed, passing
@@ -436,7 +436,7 @@ public final class NumberTools {
      */
     public static float randomSignedFloat(long seed)
     {
-        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)) >> 39) * 0x1p-24f;
+        return (((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)) >> 39) * 0x1p-24f;
     }
 
     /**
@@ -453,7 +453,7 @@ public final class NumberTools {
      */
     public static float randomFloatCurved(long seed)
     {
-        return formCurvedFloat(((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 22)));
+        return formCurvedFloat(((seed = ((seed *= 0x6C8E9CF570932BD5L) ^ (seed >>> 25)) * (seed | 0xA529L)) ^ (seed >>> 23)));
     }
 
     /**
@@ -915,68 +915,129 @@ public final class NumberTools {
         return radians * (-0.775f - 0.225f * radians) * ((floor & 2) - 1);
     }
     /**
-     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
-     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
+     * Close approximation of the frequently-used trigonometric method atan2, with higher precision than LibGDX's atan2
+     * approximation. Maximum error is below 0.001 radians.
      * Takes y and x (in that unusual order) as doubles, and returns the angle from the origin to that point in radians.
-     * It is between 10 and 20 times faster than {@link Math#atan2(double, double)} (roughly 3-4 ns instead of roughly
-     * 77 ns for Math). Somewhat surprisingly, it is also 3 to 4 times faster than LibGDX' MathUtils approximation of
-     * the same method (this is true for both the double and float overloads); MathUtils has significantly lower maximum
-     * and average error, though. Credit to Jim Shima, who posted this to Usenet in 1999 and placed it in the public
-     * domain: <a href="http://dspguru.com/dsp/tricks/fixed-point-atan2-with-self-normalization/">archive here</a>.
+     * It is about 5 times faster than {@link Math#atan2(double, double)} (roughly 17 ns instead of roughly 88 ns for
+     * Math, though the computer was under some load during testing). It is almost identical in speed to LibGDX'
+     * MathUtils approximation of the same method; MathUtils seems to have worse average error, though.
+     * Credit to StackExchange user njuffa, who gave
+     * <a href="https://math.stackexchange.com/a/1105038">this useful answer</a>. This method changed from an earlier
+     * technique that was twice as fast but had very poor quality, enough to be visually noticeable.
      * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
      * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
      * @return the angle to the given point, in radians as a double
      */
-    public static double atan2(double y, double x) {
-        if(y == 0.0)
+    public static double atan2(final double y, final double x)
+    {
+        /*
+a := min (|x|, |y|) / max (|x|, |y|)
+s := a * a
+r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a
+if |y| > |x| then r := 1.57079637 - r
+if x < 0 then r := 3.14159274 - r
+if y < 0 then r := -r
+         */
+        if(y == 0.0 && x >= 0.0) return 0.0;
+        final double ax = Math.abs(x), ay = Math.abs(y);
+        if(ax < ay)
         {
-            return x < 0 ? 3.141592653589793 : 0.0;
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (x < 0.0) ? (y < 0.0) ? -3.14159274 + r : 3.14159274 - r : (y < 0.0) ? -r : r;
         }
-        else if(y < 0.0)
-        {
-            return (x >= 0.0)
-                    ? 0.7853981633974483 * ((x + y) / (x - y)) - 0.7853981633974483
-                    : 0.7853981633974483 * ((x - y) / (-y - x)) - 2.3561944901923453;
-        }
-        else
-        {
-            return (x >= 0.0)
-                    ? 0.7853981633974483 - 0.7853981633974483 * ((x - y) / (x + y))
-                    : 2.3561944901923453 - 0.7853981633974483 * ((x + y) / (y - x));
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (x < 0.0) ? (y < 0.0) ? -3.14159274 + r : 3.14159274 - r : (y < 0.0) ? -r : r;
         }
     }
 
     /**
-     * Rather rough approximation of the frequently-used trigonometric method atan2, meant for speed rather than high
-     * precision. Maximum error is below 0.07 radians, though most angles apparently have a much lower average error.
+     * Close approximation of the frequently-used trigonometric method atan2, with higher precision than LibGDX's atan2
+     * approximation. Maximum error is below 0.001 radians.
      * Takes y and x (in that unusual order) as floats, and returns the angle from the origin to that point in radians.
-     * It is between 10 and 20 times faster than {@link Math#atan2(double, double)} (roughly 3-4 ns instead of roughly
-     * 77 ns for Math), even ignoring the double to float to double conversions needed to use float parameters and get a
-     * float returned. Somewhat surprisingly, it is also 3 to 4 times faster than LibGDX' MathUtils approximation of the
-     * same method (this is true for both the double and float overloads); MathUtils has significantly lower maximum and
-     * average error, though. Credit to Jim Shima, who posted this to Usenet in 1999 and placed it in the public domain:
-     * <a href="http://dspguru.com/dsp/tricks/fixed-point-atan2-with-self-normalization/">archive here</a>.
+     * It is about 5 times faster than {@link Math#atan2(double, double)} (roughly 17 ns instead of roughly 88 ns for
+     * Math, though the computer was under some load during testing). It is almost identical in speed to LibGDX'
+     * MathUtils approximation of the same method; MathUtils seems to have worse average error, though.
+     * Credit to StackExchange user njuffa, who gave
+     * <a href="https://math.stackexchange.com/a/1105038">this useful answer</a>. This method changed from an earlier
+     * technique that was twice as fast but had very poor quality, enough to be visually noticeable.
      * @param y y-component of the point to find the angle towards; note the parameter order is unusual by convention
      * @param x x-component of the point to find the angle towards; note the parameter order is unusual by convention
      * @return the angle to the given point, in radians as a float
      */
-    public static float atan2(float y, float x) {
-        if(y == 0f)
+    public static float atan2(final float y, final float x)
+    {
+        /*
+a := min (|x|, |y|) / max (|x|, |y|)
+s := a * a
+r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a
+if |y| > |x| then r := 1.57079637 - r
+if x < 0 then r := 3.14159274 - r
+if y < 0 then r := -r
+         */
+        if(y == 0f && x >= 0f) return 0f;
+        final float ax = Math.abs(x), ay = Math.abs(y);
+        if(ax < ay)
         {
-            return x < 0f ? 3.141592653589793f : 0.0f;
+            final float a = ax / ay, s = a * a,
+                    r = 1.57079637f - (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
+            return (x < 0f) ? (y < 0f) ? -3.14159274f + r : 3.14159274f - r : (y < 0f) ? -r : r;
         }
-        else if(y < 0.0f)
-        {
-            return (x >= 0.0f)
-                    ? 0.7853981633974483f * ((x + y) / (x - y)) - 0.7853981633974483f
-                    : 0.7853981633974483f * ((x - y) / (-y - x)) - 2.3561944901923453f;
-        }
-        else
-        {
-            return (x >= 0.0f)
-                    ? 0.7853981633974483f - 0.7853981633974483f * ((x - y) / (x + y))
-                    : 2.3561944901923453f - 0.7853981633974483f * ((x + y) / (y - x));
+        else {
+            final float a = ay / ax, s = a * a,
+                    r = (((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a);
+            return (x < 0f) ? (y < 0f) ? -3.14159274f + r : 3.14159274f - r : (y < 0f) ? -r : r;
         }
     }
-
+    /**
+     * Arc sine approximation with fairly low error while still being faster than {@link NumberTools#sin(double)}.
+     * This formula is number 201 in <a href=">http://www.fastcode.dk/fastcodeproject/articles/index.htm">Dennis
+     * Kjaer Christensen's unfinished math work on arc sine approximation</a>. This method is about 40 times faster
+     * than {@link Math#asin(double)}.
+     * @param a an input to the inverse sine function, from -1 to 1 inclusive (error is higher approaching -1 or 1)
+     * @return an output from the inverse sine function, from -PI/2 to PI/2 inclusive.
+     */
+    public static double asin(double a) {
+        return (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
+    
+    /**
+     * Arc sine approximation with fairly low error while still being faster than {@link NumberTools#sin(float)}.
+     * This formula is number 201 in <a href=">http://www.fastcode.dk/fastcodeproject/articles/index.htm">Dennis
+     * Kjaer Christensen's unfinished math work on arc sine approximation</a>. This method is about 40 times faster
+     * than {@link Math#asin(double)}, and takes and returns a float.
+     * @param a an input to the inverse sine function, from -1 to 1 inclusive (error is higher approaching -1 or 1)
+     * @return an output from the inverse sine function, from -PI/2 to PI/2 inclusive.
+     */
+    public static float asin(float a) {
+        return (a * (1f + (a *= a) * (-0.141514171442891431f + a * -0.719110791477959357f))) /
+                (1f + a * (-0.439110389941411144f + a * -0.471306172023844527f));
+    }
+    /**
+     * Arc cosine approximation with fairly low error while still being faster than {@link NumberTools#cos(double)}.
+     * This formula is number 201 in <a href=">http://www.fastcode.dk/fastcodeproject/articles/index.htm">Dennis
+     * Kjaer Christensen's unfinished math work on arc sine approximation</a>, with a basic change to go from arc sine
+     * to arc cosine. This method is faster than {@link Math#acos(double)}.
+     * @param a an input to the inverse cosine function, from -1 to 1 inclusive (error is higher approaching -1 or 1)
+     * @return an output from the inverse cosine function, from 0 to PI inclusive.
+     */
+    public static double acos(double a) {
+        return 1.5707963267948966 - (a * (1.0 + (a *= a) * (-0.141514171442891431 + a * -0.719110791477959357))) /
+                (1.0 + a * (-0.439110389941411144 + a * -0.471306172023844527));
+    }
+    /**
+     * Arc cosine approximation with fairly low error while still being faster than {@link NumberTools#cos(float)}.
+     * This formula is number 201 in <a href=">http://www.fastcode.dk/fastcodeproject/articles/index.htm">Dennis
+     * Kjaer Christensen's unfinished math work on arc sine approximation</a>, with a basic change to go from arc sine
+     * to arc cosine. This method is faster than {@link Math#acos(double)}, and takes and returns a float.
+     * @param a an input to the inverse cosine function, from -1 to 1 inclusive (error is higher approaching -1 or 1)
+     * @return an output from the inverse cosine function, from 0 to PI inclusive.
+     */
+    public static float acos(float a) {
+        return 1.5707963267948966f - (a * (1f + (a *= a) * (-0.141514171442891431f + a * -0.719110791477959357f))) /
+                (1f + a * (-0.439110389941411144f + a * -0.471306172023844527f));
+    }
 }

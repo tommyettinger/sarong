@@ -105,8 +105,8 @@ public final class DuelistRNG implements RandomnessSource, Serializable {
     public final long nextLong() { 
         final long b = (stateB += 0x9E3779B97F4A7C15L) | 1L, z;
         if(b <= 0xBC6EF372FE94F82CL) stateA += 0x6C8E9CF570932BD5L;
-        z = (stateA ^ stateA >> 28) * b;
-        return z ^ z >> 28;
+        z = (stateA ^ stateA >>> 28) * b;
+        return z ^ z >>> 28;
 //        final long s = (stateA += 0x9E3779B97F4A7C15L);
 //        if(s == 0L)
 //            stateB -= 0x6C8E9CF570932BD5L;

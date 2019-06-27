@@ -64,12 +64,12 @@ public interface IDeterminer {
             return state ^ state >>> 28;
         }
     }
-    class ThrustAlt extends  ADeterminer
+    class ThrustAlt extends ADeterminer
     {
         @Override
         public long determine(long state) {
-            state = ((state *= 0x6A5D39EAE12657A9L) ^ (state >>> 26)) * (state | 3L);
-            return state ^ (state >>> 22);
+            state = ((state *= 0x6A5D39EAE12657A9L) ^ (state >>> 25)) * (state | 0xA529L);
+            return state ^ (state >>> 23);
         }
     }
     class ThrustAltOld extends ADeterminer
