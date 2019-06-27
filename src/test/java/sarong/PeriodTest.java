@@ -448,14 +448,14 @@ public class PeriodTest {
     public void showCombined()
     {
         //// 0xFFFFD5A9 0xFFFF687B 0xFFFF2E45 0xFFFF1928 0xFFFEE5E1 0xFFFEAB53 0xFFFE9CA7
-
+        // add 0xFFFF9C61L 0xFFFEEAA9L
         // mul 0xFFFDBF50L 0xFFF43787L 0xFFFD3B83L 0xFFF60EDDL : 127.999411
-        BigInteger result = BigInteger.valueOf(0xFFFFD5A9L), tmp = BigInteger.valueOf(0xFFFF687BL); // 5/1, 6/-4
+        BigInteger result = BigInteger.valueOf(0xFFFF9C61L), tmp = BigInteger.valueOf(0xFFFEEAA9L); // 5/1, 6/-4
 //        BigInteger result = BigInteger.valueOf(0xFF8F603FL), tmp = BigInteger.valueOf(0xFD6D7E76L); // 5/1, 9/8 
-        result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFFFF2E45L);
-        result = tmp.divide(result.gcd(tmp)).multiply(result);
-        tmp = BigInteger.valueOf(0xFFFEAB53L);
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        tmp = BigInteger.valueOf(0xFFFF2E45L);
+//        result = tmp.divide(result.gcd(tmp)).multiply(result);
+//        tmp = BigInteger.valueOf(0xFFFEAB53L);
 //        tmp = BigInteger.valueOf(0xFDD16277L); // 27/-14
 //        tmp = BigInteger.valueOf(0xFBD0F379L); // 27/20
         result = tmp.divide(result.gcd(tmp)).multiply(result);
