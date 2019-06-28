@@ -390,6 +390,17 @@ import java.util.concurrent.TimeUnit;
  * have somewhat-challenging seeding requirements. Starfish32RNG is 2-dimensionally equidistributed, and all of the
  * Xoshiro-based generators are 4-dimensionally equidistributed; not many of the others are even 1-dimensionally
  * equidistributed.
+ * <br>
+ * Of the recently-added 32-bit generators, Mover32RNG remains the fastest, with GWTRNG (which uses Starfish32RNG) in
+ * second place. GWTRNG has better seeding properties and a slightly longer period than Mover32RNG.
+ * <pre>
+ * Benchmark                           Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureCake32Int       avgt    6  3.540 ± 0.013  ns/op
+ * RNGBenchmark.measureGWTInt          avgt    6  2.980 ± 0.021  ns/op
+ * RNGBenchmark.measureLadder32Int     avgt    6  3.095 ± 0.020  ns/op
+ * RNGBenchmark.measureMegaMover32Int  avgt    6  3.275 ± 0.004  ns/op
+ * RNGBenchmark.measureMover32Int      avgt    6  2.590 ± 0.021  ns/op
+ * </pre>
  *
  */
 
@@ -1478,6 +1489,32 @@ public class RNGBenchmark {
     public int measureMegaMover32IntR()
     {
         return MegaMover32R.nextInt();
+    }
+
+    private Ladder32RNG Ladder32 = new Ladder32RNG(0);
+    private RNG Ladder32R = new RNG(Ladder32);
+
+    @Benchmark
+    public long measureLadder32()
+    {
+        return Ladder32.nextLong();
+    }
+
+    @Benchmark
+    public int measureLadder32Int()
+    {
+        return Ladder32.next(32);
+    }
+    @Benchmark
+    public long measureLadder32R()
+    {
+        return Ladder32R.nextLong();
+    }
+
+    @Benchmark
+    public int measureLadder32IntR()
+    {
+        return Ladder32R.nextInt();
     }
 
 
