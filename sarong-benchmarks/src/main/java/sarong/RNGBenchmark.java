@@ -679,6 +679,32 @@ public class RNGBenchmark {
         return PaperweightR.nextInt();
     }
     
+    private BrightRNG Bright = new BrightRNG(9999L);
+    private RNG BrightR = new RNG(Bright);
+    @Benchmark
+    public long measureBright()
+    {
+        return Bright.nextLong();
+    }
+
+    @Benchmark
+    public int measureBrightInt()
+    {
+        return Bright.next(32);
+    }
+    @Benchmark
+    public long measureBrightR()
+    {
+        return BrightR.nextLong();
+    }
+
+    @Benchmark
+    public int measureBrightIntR()
+    {
+        return BrightR.nextInt();
+    }
+
+
     private FlapRNG Flap = new FlapRNG(9999L);
     private RNG FlapR = new RNG(Flap);
     @Benchmark

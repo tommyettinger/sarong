@@ -19,7 +19,11 @@ import java.io.Serializable;
  * 32TB (at least) of PractRand testing with no failures or even anomalies. The generator uses a simple large-increment
  * counter (also called a Weyl sequence) to change its state, and runs the current state through a small but complex
  * unary hash to make the obvious patterns in a Weyl sequence disappear. It is modeled after SplitMix64, but does not
- * permit changing the counter like SplitMix64 does, and involves less multiplication but more bitwise operations.
+ * permit changing the counter like SplitMix64 does, and involves less multiplication but more bitwise operations. On
+ * recent Intel processors, it is somewhat slower than {@link LightRNG}, which is a standard SplitMix64 generator
+ * (BrightRNG takes 3.295 ns per nextLong() call, while LightRNG takes 2.802 ns per nextLong() call, when tested one
+ * call at a time in JMH; the pattern is more pronounced in BumbleBench speed tests, where BrightRNG gets 669.0M ops per
+ * second and LightRNG gets 977.5M ops per second).
  * <br>
  * If you're reading the source, you may have doubts that the generator can produce all longs; although the counter is
  * fairly clear that it will traverse the whole span of 2 to the 64 states, and the last step is a garden-variety
