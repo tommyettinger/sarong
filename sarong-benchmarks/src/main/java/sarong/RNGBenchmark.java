@@ -401,6 +401,28 @@ import java.util.concurrent.TimeUnit;
  * RNGBenchmark.measureMegaMover32Int  avgt    6  3.275 ± 0.004  ns/op
  * RNGBenchmark.measureMover32Int      avgt    6  2.590 ± 0.021  ns/op
  * </pre>
+ * Here's a quick comparison of the higher-quality SkippingRandomness implementations, plus DiverRNG as a reference.
+ * <pre>
+ * Benchmark                    Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDiver    avgt    6  2.597 ± 0.012  ns/op // not skippable
+ * RNGBenchmark.measureLight    avgt    6  2.804 ± 0.008  ns/op
+ * RNGBenchmark.measurePelican  avgt    6  3.837 ± 0.012  ns/op
+ * RNGBenchmark.measurePulley   avgt    6  3.409 ± 0.014  ns/op
+ * </pre>
+ * Comparing to their determine() methods:
+ * <pre>
+ * Benchmark                             Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDiverDetermine    avgt    6  2.746 ± 0.006  ns/op // same as LinnormRNG.determine(), bad gammas possible
+ * RNGBenchmark.measureLightDetermine    avgt    6  2.774 ± 0.012  ns/op // bad gammas possible
+ * RNGBenchmark.measureLinnormDetermine  avgt    6  2.742 ± 0.014  ns/op // same as DiverRNG.determine(), bad gammas possible
+ * RNGBenchmark.measurePelicanDetermine  avgt    6  3.501 ± 0.017  ns/op
+ * RNGBenchmark.measurePulleyDetermine   avgt    6  3.103 ± 0.020  ns/op
+ * </pre>
+ * Some of the determine() methods are marked as having "bad gammas possible;" this means that if the inputs change by a
+ * certain amount (there are often many bad gamma values for a given generator), the generator's output will have lower
+ * quality. Pelican and Pulley are meant to avoid this, with more effort in Pelican applied to avoiding bad gammas in
+ * higher bit positions (an unusual occurrence). Generators without bad gammas should be suitable to use for the same
+ * purpose as SplitMix64 in SplittableRandom.
  *
  */
 
@@ -888,7 +910,11 @@ public class RNGBenchmark {
     public long measurePelicanDetermine() {
         return PelicanRNG.determine(state++);
     }
-    
+    @Benchmark
+    public long measurePulleyDetermine() {
+        return PulleyRNG.determine(state++);
+    }
+
     @Benchmark
     public int measureThrustAlt32DetermineInt() {
         return ThrustAlt32RNG.determineInt(istate++);
@@ -2505,6 +2531,32 @@ public class RNGBenchmark {
     public int measurePelicanIntR()
     {
         return PelicanR.nextInt();
+    }
+
+
+    private PulleyRNG Pulley = new PulleyRNG(9999L);
+    private RNG PulleyR = new RNG(Pulley);
+    @Benchmark
+    public long measurePulley()
+    {
+        return Pulley.nextLong();
+    }
+
+    @Benchmark
+    public int measurePulleyInt()
+    {
+        return Pulley.next(32);
+    }
+    @Benchmark
+    public long measurePulleyR()
+    {
+        return PulleyR.nextLong();
+    }
+
+    @Benchmark
+    public int measurePulleyIntR()
+    {
+        return PulleyR.nextInt();
     }
 
 
