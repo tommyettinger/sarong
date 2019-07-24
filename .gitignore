@@ -227,10 +227,11 @@ target/
 
 *.jar
 
+.attach_pid*
+
 # javadoc
 *.html
 *.css
-
 
 # jEdit garbage
 *~
