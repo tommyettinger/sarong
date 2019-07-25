@@ -232,6 +232,36 @@ public final class ToppingRNG implements StatefulRandomness, SkippingRandomness,
         return z ^ (z >>> 31);
     }
 
+    /**
+     * Given the output of a call to {@link #nextLong()} as {@code out}, this finds the state of the ToppingRNG that
+     * produce that output. If you set the state of a ToppingRNG with {@link #setState(long)} to the result of this
+     * method and then call {@link #nextLong()} on it, you should get back {@code out}. This can also reverse
+     * {@link #determine(long)}; it uses the same algorithm as nextLong().
+     * <br>
+     * This isn't as fast as {@link #nextLong()}, but both run in constant time.
+     * <br>
+     * This will not necessarily work if out was produced by a generator other than a ToppingRNG, or if it was produced
+     * with the bounded {@link #nextLong(long)} method by any generator.
+     * @param out a long as produced by {@link #nextLong()}, without changes
+     * @return the state of the RNG that will produce the given long
+     */
+    public static long inverseNextLong(long out)
+    {
+        out ^= out >>> 31;
+        out ^= out >>> 62;
+        out *= 0x319642B2D24D8EC3L; // inverse of 0x94D049BB133111EBL
+        out ^= out >>> 27;
+        out ^= out >>> 54;
+        out *= 0x96DE1B173F119089L; // inverse of 0xBF58476D1CE4E5B9L
+        out ^= out >>> 30;
+        out ^= out >>> 60;
+        out *= 0xD9935FF5E66CF86DL; // inverse of 0xEB44ACCAB455D165L
+        // follow the steps from http://marc-b-reynolds.github.io/math/2017/10/13/XorRotate.html
+        // this is the inverse of (0, 23, 47), working on 64-bit numbers.
+        out ^= (out << 23 | out >>> 41) ^ (out << 47 | out >>> 17);
+        out ^= (out << 46 | out >>> 18) ^ (out << 30 | out >>> 34);
+        return out ^ (out << 28 | out >>> 36) ^ (out << 60 | out >>> 4);
+    }
 
     @Override
     public String toString() {
