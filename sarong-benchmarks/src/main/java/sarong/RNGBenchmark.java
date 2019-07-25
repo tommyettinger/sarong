@@ -411,18 +411,27 @@ import java.util.concurrent.TimeUnit;
  * </pre>
  * Comparing to their determine() methods:
  * <pre>
+ * // run on Java 8, OpenJDK
  * Benchmark                             Mode  Cnt  Score   Error  Units
- * RNGBenchmark.measureDiverDetermine    avgt    6  2.746 ± 0.006  ns/op // same as LinnormRNG.determine(), bad gammas possible
- * RNGBenchmark.measureLightDetermine    avgt    6  2.774 ± 0.012  ns/op // bad gammas possible
- * RNGBenchmark.measureLinnormDetermine  avgt    6  2.742 ± 0.014  ns/op // same as DiverRNG.determine(), bad gammas possible
- * RNGBenchmark.measurePelicanDetermine  avgt    6  3.501 ± 0.017  ns/op
- * RNGBenchmark.measurePulleyDetermine   avgt    6  3.103 ± 0.020  ns/op
+ * RNGBenchmark.measureDiverDetermine    avgt    6  2.744 ± 0.012  ns/op // same as LinnormRNG.determine(), bad gammas possible
+ * RNGBenchmark.measureLightDetermine    avgt    6  2.777 ± 0.009  ns/op // bad gammas possible
+ * RNGBenchmark.measurePelicanDetermine  avgt    6  3.506 ± 0.007  ns/op
+ * RNGBenchmark.measurePulleyDetermine   avgt    6  3.116 ± 0.003  ns/op
+ * RNGBenchmark.measureToppingDetermine  avgt    6  3.261 ± 0.006  ns/op
+ * // same run on Java 11, also OpenJDK
+ * Benchmark                             Mode  Cnt  Score   Error  Units
+ * RNGBenchmark.measureDiverDetermine    avgt    6  2.864 ± 0.016  ns/op
+ * RNGBenchmark.measureLightDetermine    avgt    6  2.983 ± 0.007  ns/op
+ * RNGBenchmark.measurePelicanDetermine  avgt    6  3.524 ± 0.009  ns/op
+ * RNGBenchmark.measurePulleyDetermine   avgt    6  3.231 ± 0.024  ns/op
+ * RNGBenchmark.measureToppingDetermine  avgt    6  3.383 ± 0.022  ns/op
  * </pre>
  * Some of the determine() methods are marked as having "bad gammas possible;" this means that if the inputs change by a
  * certain amount (there are often many bad gamma values for a given generator), the generator's output will have lower
- * quality. Pelican and Pulley are meant to avoid this, with more effort in Pelican applied to avoiding bad gammas in
- * higher bit positions (an unusual occurrence). Generators without bad gammas should be suitable to use for the same
- * purpose as SplitMix64 in SplittableRandom.
+ * quality. Pelican, Topping, and Pulley are meant to avoid this, with the most effort in Pelican applied to avoiding
+ * bad gammas in higher bit positions (an unusual occurrence). Generators without bad gammas should be suitable to use
+ * for the same purpose as SplitMix64 in SplittableRandom. PulleyRNG may have some bad gammas, while ToppingRNG is much
+ * less likely to have any.
  *
  */
 
@@ -913,6 +922,11 @@ public class RNGBenchmark {
     @Benchmark
     public long measurePulleyDetermine() {
         return PulleyRNG.determine(state++);
+    }
+
+    @Benchmark
+    public long measureToppingDetermine() {
+        return ToppingRNG.determine(state++);
     }
 
     @Benchmark
@@ -2557,6 +2571,31 @@ public class RNGBenchmark {
     public int measurePulleyIntR()
     {
         return PulleyR.nextInt();
+    }
+
+    private ToppingRNG Topping = new ToppingRNG(9999L);
+    private RNG ToppingR = new RNG(Topping);
+    @Benchmark
+    public long measureTopping()
+    {
+        return Topping.nextLong();
+    }
+
+    @Benchmark
+    public int measureToppingInt()
+    {
+        return Topping.next(32);
+    }
+    @Benchmark
+    public long measureToppingR()
+    {
+        return ToppingR.nextLong();
+    }
+
+    @Benchmark
+    public int measureToppingIntR()
+    {
+        return ToppingR.nextInt();
     }
 
 
