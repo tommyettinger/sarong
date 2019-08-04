@@ -267,6 +267,34 @@ public final class PulleyRNG implements StatefulRandomness, SkippingRandomness, 
         return state;
     }
 
+    /**
+     * Given the output of a call to {@link #nextLong()} as {@code out}, this finds the state of the PulleyRNG that
+     * produce that output. If you set the state of a PulleyRNG with {@link #setState(long)} to the result of this
+     * method and then call {@link #nextLong()} on it, you should get back {@code out}. This can also reverse
+     * {@link #determine(long)}; it uses the same algorithm as nextLong().
+     * <br>
+     * This isn't as fast as {@link #nextLong()}, but both run in constant time.
+     * <br>
+     * This will not necessarily work if out was produced by a generator other than a PulleyRNG, or if it was produced
+     * with the bounded {@link #nextLong(long)} method by any generator.
+     * @param out a long as produced by {@link #nextLong()}, without changes
+     * @return the state of the RNG that will produce the given long
+     */
+    public static long inverseNextLong(long out)
+    {
+        out ^= out >>> 28 ^ out >>> 56; // inverts xorshift by 28
+        out *= 0xF179F93568D4286DL; // inverse of 0xDB4F0B9175AE2165L
+        out ^= out >>> 25 ^ out >>> 50 ^ out >>> 37; // inverts paired xorshift by 25, 37
+        out *= 0xBE21F44C6018E14DL; // inverse of 0x369DEA0F31A53F85L
+        // follow the steps from http://marc-b-reynolds.github.io/math/2017/10/13/XorRotate.html
+        // this is the inverse of (0, 17, 41), working on 64-bit numbers.
+        out ^= (out << 17 | out >>> 47) ^ (out << 41 | out >>> 23);
+        out ^= (out << 34 | out >>> 30) ^ (out << 18 | out >>> 46);
+        out ^= (out << 4  | out >>> 60) ^ (out << 36 | out >>> 28);
+        return out;
+    }
+
+
     @Override
     public String toString() {
         return "PulleyRNG with state 0x" + StringKit.hex(state) + 'L';
