@@ -331,4 +331,4 @@ public class LFSR implements StatefulRandomness, Serializable {
 //        }while (!(a == 1 && b == 1));
 //        System.out.println(ctr);
 //    }
-//}
+}
