@@ -221,7 +221,7 @@ public class LFSR implements StatefulRandomness, Serializable {
      */
     public static int determineByte(final byte state)
     {
-        return state >>> 1 ^ (-(state & 1) & 0xB8);
+        return (state & 0xFF) >>> 1 ^ (-(state & 1) & 0xB8);
     }
 
     /**
@@ -320,4 +320,15 @@ public class LFSR implements StatefulRandomness, Serializable {
     {
         return (int)((bound * ((state >>> 1 ^ (-(state & 1) & 0xA3000000)) & 0xFFFFFFFFL)) >> 32);
     }
-}
+    
+//    public static void main(String[] args)
+//    {
+//        byte a = 1, b = 1;
+//        long ctr = 0L;
+//        do {
+//            a += (b = (byte)((b&0xFF) >>> 1 ^ (-(b & 1) & 0xB8))) + 0x95;
+//            ctr++;
+//        }while (!(a == 1 && b == 1));
+//        System.out.println(ctr);
+//    }
+//}

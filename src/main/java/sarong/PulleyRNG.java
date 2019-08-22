@@ -11,34 +11,34 @@ import java.io.Serializable;
  * calling {@link #determine(long)} on two different sequences of inputs (one that added 3 each time, and one that added
  * 5 each time) showed no failures on 32TB of data produced by XORing calls to determine() on both sequences. PulleyRNG
  * is one-dimensionally equidistributed across all 64-bit outputs, has 64 bits of state, natively outputs 64 bits at a
- * time, can have its state set and skipped over as a {@link StatefulRandomness} and {@link SkippingRandomness}. It can
- * theoretically be inverted (it transforms its state with a bijection, and the state is a counter incremented by 1 each
- * time), but I haven't calculated the inverse yet (each of the operations used permits inversion, however). It is
- * mostly the work of Pelle Evensen, who discovered that where a unary hash (called a determine() method here) can start
- * with the XOR of the input and two rotations of that input, and that sometimes acts as a better randomization
+ * time, can have its state set and skipped over as a {@link StatefulRandomness} and {@link SkippingRandomness}. It has
+ * a 1-to-1 correspondence between inputs and outputs for {@link #determine(long)}, and you can get the input to
+ * determine() that produced a particular long output by passing that output to {@link #inverseNextLong(long)}. It is
+ * largely the work of Pelle Evensen, who discovered that where a unary hash (called a determine() method here) can
+ * start with the XOR of the input and two rotations of that input, and that sometimes acts as a better randomization
  * procedure than multiplying by a large constant (which is what {@link LightRNG#determine(long)},
  * {@link LinnormRNG#determine(long)}, and even {@link ThrustAltRNG#determine(long)} do). Evensen also crunched the
  * numbers to figure out that {@code n ^ n >>> A ^ n >>> B} is a bijection for all distinct non-zero values for A and B,
- * though this wasn't used in his unary hash rrxmrrxmsx_0. That hash took the following steps:
+ * though this wasn't used in his unary hash rrxmrrxmsx_0.
+ * <br>
+ * The algorithm for {@link #determine(long)} looks like this ({@link #nextLong()} just calls determine() on a counter):
  * <ol>
- *     <li>XOR the input with two different bitwise rotations: {@code n ^ (n << 14 | n >>> 50) ^ (n << 39 | n >>> 25)}</li>
- *     <li>Multiply by a large constant, {@code 0xA24BAED4963EE407L}, and store it in n</li>
- *     <li>XOR n with two different bitwise rotations: {@code n ^ (n << 15 | n >>> 49) ^ (n << 40 | n >>> 24)}</li>
- *     <li>Multiply by a large constant, {@code 0x9FB21C651E98DF25L}, and store it in n</li>
+ *     <li>XOR the input with two different bitwise rotations: {@code n ^ (n << 41 | n >>> 23) ^ (n << 17 | n >>> 47)}</li>
+ *     <li>Multiply by a large constant, {@code 0x369DEA0F31A53F85L}, and store it in n</li>
+ *     <li>XOR n with two different unsigned bitwise right shifts: {@code n ^ n >>> 25 ^ n >>> 37}</li>
+ *     <li>Multiply by a large constant, {@code 0xDB4F0B9175AE2165L}, and store it in n</li>
  *     <li>XOR n with n right-shifted by 28, and return</li>
  * </ol>
- * This procedure can pass very large amounts of PractRand testing on rotations and reversals of a {@code n++} counter,
- * but does have occasional issues on stringent tests. Later revisions I did resulted in {@link PelicanRNG}, which is
- * ridiculously strong (passing the full battery of tests that rrxmrrxmsx_0 only narrowly failed) but not especially
- * fast. PulleyRNG is an effort to speed up PelicanRNG just a little, but without doing the extensive testing that
- * ensure virtually any bit pattern given to PelicanRNG will produce pseudo-random outputs. PulleyRNG does well in tough
- * tests. Other than the input stream
+ * This is the result of some simplifications on {@link PelicanRNG}, which is ridiculously strong (passing the full
+ * battery of tests that rrxmrrxmsx_0 only narrowly failed) but not especially fast. PulleyRNG is an effort to speed up
+ * PelicanRNG just a little, but without doing the extensive testing that ensure virtually any bit pattern given to
+ * PelicanRNG will produce pseudo-random outputs. PulleyRNG does well in tough tests. Other than the input stream
  * correlation test mentioned earlier, this also passes tests if the inputs are incremented by what is normally one of
  * the worst-case scenarios for other generators -- using an increment that is the multiplicative inverse (mod 2 to the
- * 64 in this case) of one of the fixed constants in the generator. The first multiplication performed here is by
+ * 64 in this case) of one of the fixed constants in the generator. The first  multiplication performed here is by
  * {@code 0x369DEA0F31A53F85L}, and {@code 0xBE21F44C6018E14DL * 0x369DEA0F31A53F85L == 1L}, so testing determine() with
- * inputs that change by 0xBE21F44C6018E14DL should stress the generator, but instead it does fine (at 4TB and counting
- * with only one "unusual" anomaly rather early on).
+ * inputs that change by 0xBE21F44C6018E14DL should stress the generator, but instead it does fine through 32TB, with
+ * only one "unusual" anomaly rather early on.
  * <br>
  * @author Pelle Evensen
  * @author Tommy Ettinger
