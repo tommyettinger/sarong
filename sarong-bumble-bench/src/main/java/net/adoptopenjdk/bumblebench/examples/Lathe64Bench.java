@@ -15,16 +15,16 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.BellRNG;
+import sarong.Lathe64RNG;
 
 /**
- * BellBench score: 643930880.000000 (643.9M 2028.3%)
- *       uncertainty:   0.2%
+ * Lathe64Bench score: 872807296.000000 (872.8M 2058.7%)
+ *          uncertainty:   0.2%
  */
-public final class BellBench extends MicroBench {
+public final class Lathe64Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		BellRNG rng = new BellRNG(0x12345678);
+		Lathe64RNG rng = new Lathe64RNG(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();

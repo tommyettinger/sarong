@@ -15,16 +15,16 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.BellRNG;
+import sarong.TangleRNG;
 
 /**
- * BellBench score: 643930880.000000 (643.9M 2028.3%)
- *       uncertainty:   0.2%
+ * TangleBench score: 1177518848.000000 (1.178G 2088.7%)
+ *         uncertainty:   0.1%
  */
-public final class BellBench extends MicroBench {
+public final class TangleBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		BellRNG rng = new BellRNG(0x12345678);
+		TangleRNG rng = new TangleRNG(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();

@@ -15,16 +15,16 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.BellRNG;
+import sarong.OrbitRNG;
 
 /**
- * BellBench score: 643930880.000000 (643.9M 2028.3%)
- *       uncertainty:   0.2%
+ * OrbitBench score: 996650624.000000 (996.7M 2072.0%)
+ *        uncertainty:   0.2%
  */
-public final class BellBench extends MicroBench {
+public final class OrbitBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		BellRNG rng = new BellRNG(0x12345678);
+		OrbitRNG rng = new OrbitRNG(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();
