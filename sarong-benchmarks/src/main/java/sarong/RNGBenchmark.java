@@ -1416,31 +1416,31 @@ public class RNGBenchmark {
     }
 
 
-    private TangleRNG TangleA = new TangleRNG(9999L, 1337L),
-            TangleB = new TangleRNG(9999L, 1337L),
-            TangleC = new TangleRNG(9999L, 1337L),
-            TangleD = new TangleRNG(9999L, 1337L);
-    @Benchmark
-    public long measureTangleA()
-    {
-        return TangleA.nextLong1();
-    }
-    @Benchmark
-    public long measureTangleB()
-    {
-        return TangleB.nextLong2();
-    }
-    @Benchmark
-    public long measureTangleC()
-    {
-        return TangleC.nextLong3();
-    }
-
-    @Benchmark
-    public long measureTangleD()
-    {
-        return TangleD.nextLong4();
-    }
+//    private TangleRNG TangleA = new TangleRNG(9999L, 1337L),
+//            TangleB = new TangleRNG(9999L, 1337L),
+//            TangleC = new TangleRNG(9999L, 1337L),
+//            TangleD = new TangleRNG(9999L, 1337L);
+//    @Benchmark
+//    public long measureTangleA()
+//    {
+//        return TangleA.nextLong1();
+//    }
+//    @Benchmark
+//    public long measureTangleB()
+//    {
+//        return TangleB.nextLong2();
+//    }
+//    @Benchmark
+//    public long measureTangleC()
+//    {
+//        return TangleC.nextLong3();
+//    }
+//
+//    @Benchmark
+//    public long measureTangleD()
+//    {
+//        return TangleD.nextLong4();
+//    }
 
     private DuelistRNG Duelist = new DuelistRNG(9999L, 1337L);
     private RNG DuelistR = new RNG(Duelist);

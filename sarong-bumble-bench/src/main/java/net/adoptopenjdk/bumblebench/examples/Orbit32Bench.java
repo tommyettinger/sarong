@@ -15,19 +15,19 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.TangleRNG;
+import sarong.Orbit32RNG;
 
 /**
- * TangleBench score: 1201761280.000000 (1.202G 2090.7%)
- *         uncertainty:   0.2%
+ * Orbit32Bench score: 811839488.000000 (811.8M 2051.5%)
+ *          uncertainty:   0.2%
  */
-public final class TangleBench extends MicroBench {
+public final class Orbit32Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		TangleRNG rng = new TangleRNG(0x1234L, 5678L);
-		long sum = 0L;
+		Orbit32RNG rng = new Orbit32RNG(0x1234, 0x5678);
+		int sum = 0;
 		for (long i = 0; i < numIterations; i++)
-			sum += rng.nextLong();
+			sum += rng.nextInt();
 		return numIterations;
 	}
 }

@@ -5,11 +5,11 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A variant on {@link ThrustAltRNG} that gives up some speed, but allows choosing any of 2 to the 63 odd-number streams
- * that change the set of possible outputs this can produce (amending the main flaw of ThrustAltRNG). This does well in
- * PractRand quality tests, passing at least 8TB and probably more (it shares a lot of structure with ThrustAltRNG,
- * which does very well in PractRand's testing as well as TestU01's BigCrush). It also outperforms LinnormRNG and comes
- * close to ThrustAltRNG in JMH benchmarks, making it arguably the fastest random number generator algorithm here that
+ * A very fast generator on 64-bit systems that allows choosing any of 2 to the 63 odd-number streams. Each stream
+ * changes the set of possible outputs this can produce (amending the main flaw of ThrustAltRNG). This does well in
+ * PractRand quality tests, passing 32TB with one minor anomaly (it shares a lot of structure with ThrustAltRNG,
+ * which does very well in PractRand's testing as well as TestU01's BigCrush). It also outperforms just about everything
+ * in BumbleBench benchmarks, making it arguably the fastest random number generator algorithm here that
  * can produce all long values (it just needs multiple generator objects to do so, all seeded differently).
  * <br>
  * Because this can produce multiple occurrences of any number in its sequence (except 0, which it should always produce
@@ -33,8 +33,6 @@ import java.io.Serializable;
  * <br>
  * See also {@link OrbitRNG}, which gives up more speed but moves through all 2 to the 64 long values as streams over
  * its full period, which is 2 to the 128 (with one stream) instead of the 2 to the 64 (with 2 to the 63 streams) here.
- * Orbit hasn't been evaluated for quality as fully as Tangle, but reduced-word-size variants show it should have a full
- * period of 2 to the 128.
  * <br>
  * Created by Tommy Ettinger on 7/9/2018.
  */
@@ -115,9 +113,9 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
      */
     @Override
     public final int next(final int bits) {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ (s >>> 25)) * (stateB += 0x9E3779B97F4A7C16L);
-        return (int)(z ^ (z >>> 22)) >>> (32 - bits);
+        final long s = (stateA += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 31) * (stateB += 0x9E3779B97F4A7C16L);
+        return (int)(z ^ z >>> 26) >>> (32 - bits);
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -129,29 +127,9 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
      */
     @Override
     public final long nextLong() {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ s >>> 25) * (stateB += 0x9E3779B97F4A7C16L);
-        return z ^ z >>> 22;
-    }
-    public final long nextLong1() {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        final long z = (s ^ s >>> 27) * (stateB += 0x9E3779B97F4A7C16L);
-        return z ^ z >>> 25;
-    }
-    public final long nextLong2() {
-        final long s = (stateA = stateA * 0x41C64E6DL + 1L);
-        final long z = (s ^ s >>> 27) * (stateB += 0x9E3779B97F4A7C16L);
-        return z ^ z >>> 25;
-    }
-    public final long nextLong3() {
-        final long s = (stateA += 0x6C8E9CF570932BD5L);
-        final long b = (stateB += 0x9E3779B97F4A7C16L);
-        return s * b ^ (s - b) >>> 32;
-    }
-    public final long nextLong4() {
-        final long s = (stateA = stateA * 0x41C64E6DL + 1L);
-        final long b = (stateB += 0x9E3779B97F4A7C16L);
-        return s * b ^ (s - b) >>> 32;
+        final long s = (stateA += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 31) * (stateB += 0x9E3779B97F4A7C16L);
+        return z ^ z >>> 26;
     }
 
     /**
@@ -196,8 +174,8 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
      */
     @Override
     public long skip(long advance) {
-        final long s = (stateA += 0x6C8E9CF570932BD5L * advance);
-        final long z = (s ^ (s >>> 25)) * (stateB += 0x9E3779B97F4A7C16L * advance);
-        return z ^ (z >>> 22);
+        final long s = (stateA += 0xC6BC279692B5C323L * advance);
+        final long z = (s ^ s >>> 31) * (stateB += 0x9E3779B97F4A7C16L * advance);
+        return z ^ z >>> 26;
     }
 }
