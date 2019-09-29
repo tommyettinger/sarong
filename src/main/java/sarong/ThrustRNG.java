@@ -5,43 +5,11 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A hybrid of the type of algorithm LightRNG uses with some of the specific steps of a linear congruential generator.
- * This RandomnessSource has no failures or even anomalies when tested with PractRand (even LightRNG has anomalies),
- * allows all longs as states (including 0), implements StatefulRandomness, and is measurably faster than LightRNG at
- * generating both ints and longs. This is very similar in capabilities to LightRNG because the algorithm is similar,
- * with both able to skip forward and backward about as quickly as they can generate numbers normally. ThrustRNG should
- * be a good general-purpose substitute for or complement to LightRNG. The period for a ThrustRNG should be 2 to the 64,
- * because it is based on the same concept LightRNG uses, where it increments its state by an odd number and uses a very
- * different permutation of the state as its returned random result. It only repeats a cycle of numbers after the state
- * has wrapped around the modulus for long addition enough times to come back to the original starting state, which
- * should take exactly 2 to the 64 generated numbers. The main weakness ThrustRNG has compared to LightRNG is that it is
- * sensitive to the increment used to change the state, so ThrustRNG uses a fixed size for the changes it makes to the
- * state (adding {@code 0x9E3779B97F4A7C15L} if going forward with the normal RandomnessSource methods, or adding or
- * subtracting a multiple of that if using {@link #skip(long)} to go forwards or backwards by some amount of steps).
- * Because the SplitMix64 algorithm that LightRNG uses goes through more steps to randomize the state, it can use any
- * odd increment, but this also makes it somewhat slower, and LightRNG doesn't use other increments anyway (but, Java 8
- * provides the random number generator SplittableRandom, which uses SplitMix64 and does use different increments).
- * <br>
- * The speed of this generator is fairly good, and it is the fastest generator in this library that passes BigCrush.
- * It succeeds on a mid-sized amount of data with PractRand (it easily passes with the 64MB that other generators have
- * been tested with, and also 256MB), but fails on 32GB or more of random data, or sometimes on 16GB. LapRNG, FlapRNG
- * (when FlapRNG produces ints), and (narrowly) ThunderRNG are faster, but all have significant amounts of PractRand
- * testing failures and wouldn't possibly pass BigCrush, indicating flaws in quality. You may want {@link ThrustAltRNG},
- * which is slower (on par with SplitMix64, called LightRNG here), but has much better quality on large amounts of test
- * data (it can pass PractRand with 32TB of random data, and beats LightRNG on gjrand's tests with 100GB of data, but
- * can't produce all possible long values and produces some long values more often).
- * <br>
- * The performance of this RandomnessSource has been surprisingly reasonable to improve beyond the baseline of
- * SplitMix64; where LightRNG takes 1.385 seconds to generate a billion pseudo-random long values, this takes just under
- * a second (0.958 seconds, to be exact) to generate the same quantity. This speed will vary depending on hardware, and
- * was benchmarked using JMH on a relatively-recent laptop (with a i7-6700HQ processor and DDR4 RAM, using a Zulu build
- * of OpenJDK 8); you can expect better performance on most desktops or dedicated "gaming PCs," or potentially much
- * slower speeds on Android or especially GWT (still, while GWT's emulation of the long data type is not fast, this
- * generator should yield the same results on GWT as on desktop or Android if the seed given is the same). A C port of
- * Thrust is available <a href="https://gist.github.com/tommyettinger/e6d3e8816da79b45bfe582384c2fe14a">here</a>; it is
- * the fastest generator I can run on this Windows machine (using MinGW64) that still does well on quality (it is
- * slightly faster than the C version of Xoroshiro128+, which is a very fast generator). It is bare-bones and meant for
- * incorporation into a larger test or program.
+ * Currently a work in progress; do not use for important tasks. This generator is very, very fast, however. It is known
+ * to pass at least 4TB of PractRand testing; an earlier version couldn't pass 32GB. The generation is based on a unary
+ * hash (this is reversible) called on a counter, which can be optimized to an astounding extent when it is used in a
+ * tight loop. Speed is comparable to {@link ThrustAltRNG}, but this is reversible and equidistributed, while
+ * ThrustAltRNG certainly is not.
  * <br>
  * Thanks to Ashiren, for advice on this in #libgdx on Freenode, and to Pierre L'Ecuyer and Donald Knuth for finding the
  * constants used (originally for linear congruential generators).
@@ -95,10 +63,14 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      */
     @Override
     public final int next(int bits) {
+        final long s = (state += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 31 ^ s >>> 15) * 0xE7037ED1A0B428DBL;
+        return (int) ((z ^ z >>> 26) >>> 64 - bits);
+
         //return (int)(((state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)) >>> (64 - bits));
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return (int)(z ^ z >>> 28) >>> (32 - bits);
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+//        return (int)(z ^ z >>> 28) >>> (32 - bits);
                 //(state = state * 0x5851F42D4C957F2DL + 0x14057B7EF767814FL) + (state >> 28)
 
                 //(state *= 0x2545F4914F6CDD1DL) + (state >> 28)
@@ -116,9 +88,13 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      */
     @Override
     public final long nextLong() {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return z ^ z >>> 28;
+        final long s = (state += 0xC6BC279692B5C323L);
+        final long z = (s ^ s >>> 31 ^ s >>> 15) * 0xE7037ED1A0B428DBL;
+        return z ^ z >>> 26;
+
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+//        return z ^ z >>> 28;
         // the first multiplier that worked fairly well was 0x5851F42D4C957F2DL ; its source is unclear so I'm trying
         // other numbers with better evidence for their strength
         // the multiplier 0x6A5D39EAE116586DL did not work very well (L'Ecuyer, best found MCG constant for modulus
@@ -143,9 +119,13 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      * @return the random long generated after skipping forward or backwards by {@code advance} numbers
      */
     public final long skip(long advance) {
-        long z = (state += 0x9E3779B97F4A7C15L * advance);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return z ^ z >>> 28;
+        final long s = (state += 0xC6BC279692B5C323L * advance);
+        final long z = (s ^ s >>> 31 ^ s >>> 15) * 0xE7037ED1A0B428DBL;
+        return z ^ z >>> 26;
+
+//        long z = (state += 0x9E3779B97F4A7C15L * advance);
+//        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+//        return z ^ z >>> 28;
     }
 
 
@@ -184,7 +164,7 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      * Returns a random permutation of state; if state is the same on two calls to this, this will return the same
      * number. This is expected to be called with some changing variable, e.g. {@code determine(++state)}, where
      * the increment for state should be odd but otherwise doesn't really matter. This multiplies state by
-     * {@code 0x9E3779B97F4A7C15L} within this method, so using a small increment won't be much different from using a
+     * {@code 0xC6BC279692B5C323L} within this method, so using a small increment won't be much different from using a
      * very large one, as long as it is odd.
      * @param state a variable that should be different every time you want a different random result;
      *              using {@code determine(++state)} is recommended to go forwards or {@code determine(--state)} to
@@ -193,8 +173,10 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      */
     public static long determine(long state)
     {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
-        return state ^ state >>> 28;
+        return (state = ((state *= 0xC6BC279692B5C323L) ^ state >>> 31 ^ state >>> 15) * 0xE7037ED1A0B428DBL) ^ state >>> 26;
+
+//        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
+//        return state ^ state >>> 28;
     }
 
     /**
@@ -210,9 +192,10 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      * @return a pseudo-random int between 0 (inclusive) and bound (exclusive)
      */
     public static int determineBounded(long state, final int bound)
-    {
-        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
-        return (int)((bound * ((state ^ state >>> 28) & 0x7FFFFFFFL)) >> 31);
+    { 
+        return (int)((bound * ((state = ((state *= 0xC6BC279692B5C323L) ^ state >>> 31 ^ state >>> 15) * 0xE7037ED1A0B428DBL) ^ state >>> 26 & 0xFFFFFFFFL)) >> 32);
+//        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
+//        return (int)((bound * ((state ^ state >>> 28) & 0x7FFFFFFFL)) >> 31);
     }
 
 }
