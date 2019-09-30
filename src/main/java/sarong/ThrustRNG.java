@@ -171,13 +171,11 @@ public final class ThrustRNG implements StatefulRandomness, SkippingRandomness, 
      *              generate numbers in reverse order
      * @return a pseudo-random permutation of state
      */
-    public static long determine(long state)
-    {
+    public static long determine(long state) {
         return (state = ((state *= 0xC6BC279692B5C323L) ^ state >>> 31 ^ state >>> 15) * 0xE7037ED1A0B428DBL) ^ state >>> 26;
-
+    }
 //        state = ((state *= 0x9E3779B97F4A7C15L) ^ state >>> 26) * 0x2545F4914F6CDD1DL;
 //        return state ^ state >>> 28;
-    }
 
     /**
      * Given a state that should usually change each time this is called, and a bound that limits the result to some

@@ -18,8 +18,18 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.Orbit32RNG;
 
 /**
+ * Older code; probably not as high-quality. Tested on a newer Linux machine
+ * running OpenJDK 8 with Hotspot:
+ * <br>
  * Orbit32Bench score: 811839488.000000 (811.8M 2051.5%)
  *          uncertainty:   0.2%
+ * <br>
+ * Tested on an older Windows machine running OpenJDK 13 with OpenJ9:
+ * <br>
+ * Orbit32Bench score: 1089068160.000000 (1.089G 2080.9%)
+ *          uncertainty:   0.9%
+ * <br>
+ * That's the fastest a 32-bit generator I've tested has gotten.
  */
 public final class Orbit32Bench extends MicroBench {
 

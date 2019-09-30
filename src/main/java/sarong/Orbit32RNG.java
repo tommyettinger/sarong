@@ -62,7 +62,8 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
     public final int next(final int bits) {
         final int s = (stateA += 0xC1C64E6D);
         int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        if(s == 0) stateB -= 0x9E3779BB;
+        //if(s == 0) stateB -= 0x9E3779BB;
+        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         return (x ^ x >>> 15) >>> (32 - bits);
     }
@@ -74,21 +75,22 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
     public final int nextInt() {
         final int s = (stateA += 0xC1C64E6D);
         int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        if(s == 0) stateB -= 0x9E3779BB;
+        //if(s == 0) stateB -= 0x9E3779BB;
+        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
-        return (x ^ x >>> 15);
+        return x ^ x >>> 15;
     }
 
     @Override
     public final long nextLong() {
         int s = (stateA + 0xC1C64E6D);
         int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        if(s == 0) stateB -= 0x9E3779BB;
+        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         final long high = (x ^ x >>> 15);
         s = (stateA += 0x838C9CDA);
         x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        if(s == 0) stateB -= 0x9E3779BB;
+        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         return (high << 32) | ((x ^ x >>> 15) & 0xFFFFFFFFL);
     }
