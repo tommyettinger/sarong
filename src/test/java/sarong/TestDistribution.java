@@ -241,5 +241,23 @@ public class TestDistribution {
         }
         System.out.println("No 32-bit collisions in 2 to the 40 generated longs");
     }
+    
+    @Test
+    public void testOrbit8Bit()
+    {
+        byte stateA = 0, stateB = 0;
+        short[] counts = new short[256];
+        for (int i = 0; i < 0x10000; i++) {
+            final int s = (stateA += 0xCD) & 0xFF;
+            if(s != 0) stateB += 0x9B;
+            counts[(s ^ s >>> 5) * (stateB | 1) & 0xFF]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
 
 }

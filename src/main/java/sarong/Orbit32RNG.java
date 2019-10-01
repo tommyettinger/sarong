@@ -17,6 +17,8 @@ import java.io.Serializable;
  * on OpenJDK 13 using OpenJ9, specifically, this generator is the fastest 32-bit-math generator that passes 32TB of
  * PractRand tests, at over a billion ints a second, where Starfish32RNG gets about 721 million ints a second.
  * <br>
+ * It is one-dimensionally equidistributed over a period of 2 to the 64 exactly.
+ * <br>
  * Written in 2019 by Tommy Ettinger.
  * @author Tommy Ettinger
  */
