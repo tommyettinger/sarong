@@ -12,11 +12,12 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A StatefulRandomness that has 2 32-bit states and allows all values for both of them; it has a period of 2 to the 64
- * and passes PractRand tests to 32TB with no anomalies or failures. Speed is unclear at this point, but since this uses
- * an additive recurrence (two big-increment counters, really) to update its states, it may have advantages in loops.
+ * A very fast StatefulRandomness that has 2 32-bit states and allows all values for both of them; it has a period of 2
+ * to the 64 and passes PractRand tests to 32TB with no anomalies or failures. Speed is extremely good on certain JVMs;
+ * on OpenJDK 13 using OpenJ9, specifically, this generator is the fastest 32-bit-math generator that passes 32TB of
+ * PractRand tests, at over a billion ints a second, where Starfish32RNG gets about 721 million ints a second.
  * <br>
- * Written in 2019 by Tommy Ettinger
+ * Written in 2019 by Tommy Ettinger.
  * @author Tommy Ettinger
  */
 public final class Orbit32RNG implements StatefulRandomness, Serializable {
@@ -61,9 +62,10 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(final int bits) {
         final int s = (stateA += 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        //if(s == 0) stateB -= 0x9E3779BB;
-        stateB -= (s & -s) >> 31 & 0x9E3779BB;
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
+//        int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
+////        if(s == 0) stateB -= 0x9E3779BB;
+//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         return (x ^ x >>> 15) >>> (32 - bits);
     }
@@ -74,9 +76,8 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
      */
     public final int nextInt() {
         final int s = (stateA += 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
         //if(s == 0) stateB -= 0x9E3779BB;
-        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         return x ^ x >>> 15;
     }
@@ -84,13 +85,13 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
     @Override
     public final long nextLong() {
         int s = (stateA + 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        stateB -= (s & -s) >> 31 & 0x9E3779BB;
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
+//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         final long high = (x ^ x >>> 15);
         s = (stateA += 0x838C9CDA);
-        x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-        stateB -= (s & -s) >> 31 & 0x9E3779BB;
+        x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
+//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
         x = (x ^ x >>> 16) * 0xAC4C1B51;
         return (high << 32) | ((x ^ x >>> 15) & 0xFFFFFFFFL);
     }
