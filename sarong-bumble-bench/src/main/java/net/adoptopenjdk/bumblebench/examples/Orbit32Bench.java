@@ -26,10 +26,31 @@ import sarong.Orbit32RNG;
  * <br>
  * Tested on an older Windows machine running OpenJDK 13 with OpenJ9:
  * <br>
- * Orbit32Bench score: 1089068160.000000 (1.089G 2080.9%)
- *          uncertainty:   0.9%
+ * Orbit32Bench score: 1147231744.000000 (1.147G 2086.1%)
+ *          uncertainty:   0.1%
  * <br>
- * That's the fastest a 32-bit generator I've tested has gotten.
+ * That's the fastest a 32-bit generator I've tested has gotten. An earlier version wasn't
+ * GWT-safe (it would produce different results on GWT than on desktop JVMs), but making the
+ * generator more compatible also sped it up, because it has to avoid large multipliers.
+ * <br>
+ * It isn't as fast on older non-J9 JDKs; on the same older machine running OpenJDK 8 with Hotspot:
+ * <br>
+ * Orbit32Bench score: 427554944.000000 (427.6M 1987.4%)
+ *          uncertainty:   0.2%
+ * <br>
+ * It isn't as fast on older JDKs in general; on the same older machine running OpenJDK 12 with OpenJ9:
+ * <br>
+ * Orbit32Bench score: 402202656.000000 (402.2M 1981.2%)
+ *          uncertainty:   0.3%
+ * <br>
+ * Just as an extra note, here this is benchmarked on IBM J9 for JDK 8 (before OpenJ9):
+ * <br>
+ * Orbit32Bench score: 11511290880.000000 (11.51G 2316.7%)
+ *          uncertainty:   0.2%
+ * <br>
+ * I'm almost certain that speed is misleading, and some optimization is eliminating the loop contents.
+ * I think this because GWTRNGBench on the same version of J9 showed its throughput as a 27-digit (base
+ * 10) number, before crashing for entirely predictable reasons.
  */
 public final class Orbit32Bench extends MicroBench {
 

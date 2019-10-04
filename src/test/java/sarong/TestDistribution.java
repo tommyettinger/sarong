@@ -250,7 +250,7 @@ public class TestDistribution {
         for (int i = 0; i < 0x10000; i++) {
             final int s = (stateA += 0xCD) & 0xFF;
             if(s != 0) stateB += 0x9B;
-            counts[(s ^ s >>> 5) * (stateB | 1) & 0xFF]++;
+            counts[(s ^ s >>> 5) * ((stateB & 0xFF) >>> 3 | 1) & 0xFF]++;
         }
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {

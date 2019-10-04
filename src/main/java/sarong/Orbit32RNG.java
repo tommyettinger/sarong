@@ -17,6 +17,10 @@ import java.io.Serializable;
  * on OpenJDK 13 using OpenJ9, specifically, this generator is the fastest 32-bit-math generator that passes 32TB of
  * PractRand tests, at over a billion ints a second, where Starfish32RNG gets about 721 million ints a second.
  * <br>
+ * It is designed so that it can be GWT-safe; this version isn't right now but a super-sourced variant would just need
+ * to ensure the counters (anywhere {@code +=} is used) are changed to use a bitwise operation before assigning. The
+ * same algorithm is used by SquidLib as SilkRNG, where a super-sourced variant is already present.
+ * <br>
  * It is one-dimensionally equidistributed over a period of 2 to the 64 exactly.
  * <br>
  * Written in 2019 by Tommy Ettinger.
@@ -24,7 +28,7 @@ import java.io.Serializable;
  */
 public final class Orbit32RNG implements StatefulRandomness, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private int stateA, stateB;
 
@@ -32,8 +36,8 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
      * Creates a new Orbit32RNG seeded using two calls to Math.random().
      */
     public Orbit32RNG() {
-        stateA = (int)((Math.random() * 2.0 - 1.0) * 0x80000000);
-        stateB = (int)((Math.random() * 2.0 - 1.0) * 0x80000000);
+        stateA = (int)((Math.random() - 0.5) * 0x1p32);
+        stateB = (int)((Math.random() - 0.5) * 0x1p32);
     }
     /**
      * Constructs this Orbit32RNG by dispersing the bits of seed using {@link #setSeed(int)} across the two parts of
@@ -61,40 +65,60 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
         this.stateB = stateB;
     }
 
+    /**
+     * Get up to 32 bits (inclusive) of random output; the int this produces
+     * will not require more than {@code bits} bits to represent.
+     *
+     * @param bits an int between 1 and 32, both inclusive
+     * @return a random number that fits in the specified number of bits
+     */
     @Override
-    public final int next(final int bits) {
+    public final int next(int bits) {
         final int s = (stateA += 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
-//        int x = (s ^ s >>> 17) * ((stateB += 0x9E3779BB) | 1);
-////        if(s == 0) stateB -= 0x9E3779BB;
-//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
-        x = (x ^ x >>> 16) * 0xAC4C1B51;
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+        x = (x ^ x >>> 16) * 0xAC451;
         return (x ^ x >>> 15) >>> (32 - bits);
     }
 
     /**
-     * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
-     * @return any int, all 32 bits are random
+     * Get a random integer between Integer.MIN_VALUE to Integer.MAX_VALUE (both inclusive).
+     *
+     * @return a 32-bit random int.
      */
     public final int nextInt() {
         final int s = (stateA += 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
-        //if(s == 0) stateB -= 0x9E3779BB;
-        x = (x ^ x >>> 16) * 0xAC4C1B51;
-        return x ^ x >>> 15;
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+        x = (x ^ x >>> 16) * 0xAC451;
+        return (x ^ x >>> 15);
+    }
+    /**
+     * Returns a random non-negative integer below the given bound, or 0 if the bound is 0 or
+     * negative.
+     *
+     * @param bound the upper bound (exclusive)
+     * @return the found number
+     */
+    public final int nextInt(final int bound) {
+        final int s = (stateA += 0xC1C64E6D);
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+        x = (x ^ x >>> 16) * 0xAC451;
+        return (int) ((bound * ((x ^ x >>> 15) & 0xFFFFFFFFL)) >>> 32) & ~(bound >> 31);
     }
 
+    /**
+     * Get a random long between Long.MIN_VALUE to Long.MAX_VALUE (both inclusive).
+     *
+     * @return a 64-bit random long.
+     */
     @Override
     public final long nextLong() {
         int s = (stateA + 0xC1C64E6D);
-        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
-//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
-        x = (x ^ x >>> 16) * 0xAC4C1B51;
+        int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+        x = (x ^ x >>> 16) * 0xAC451;
         final long high = (x ^ x >>> 15);
         s = (stateA += 0x838C9CDA);
-        x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) | 1);
-//        stateB -= (s & -s) >> 31 & 0x9E3779BB;
-        x = (x ^ x >>> 16) * 0xAC4C1B51;
+        x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+        x = (x ^ x >>> 16) * 0xAC451;
         return (high << 32) | ((x ^ x >>> 15) & 0xFFFFFFFFL);
     }
 
@@ -189,7 +213,7 @@ public final class Orbit32RNG implements StatefulRandomness, Serializable {
 
     @Override
     public String toString() {
-        return "Orbit2RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
+        return "Orbit32RNG with stateA 0x" + StringKit.hex(stateA) + " and stateB 0x" + StringKit.hex(stateB);
     }
 
     @Override
