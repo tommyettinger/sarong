@@ -10,15 +10,16 @@ import java.io.Serializable;
  * PractRand quality tests, passing 32TB with one minor anomaly (it shares a lot of structure with ThrustAltRNG,
  * which does very well in PractRand's testing as well as TestU01's BigCrush). It also outperforms just about everything
  * in BumbleBench benchmarks, making it arguably the fastest random number generator algorithm here that
- * can produce all long values (it just needs multiple generator objects to do so, all seeded differently).
+ * can produce all long values (it just needs multiple generator objects to do so, all seeded differently). LightRNG is
+ * close in BumbleBench benchmarks, which use a tight loop, but not as close in JMH benchmarks, which test single calls.
  * <br>
  * Because this can produce multiple occurrences of any number in its sequence (except 0, which it should always produce
  * once over its period of 2 to the 64), it can be considered as passing the "birthday problem" test; after running
  * <a href="http://www.pcg-random.org/posts/birthday-test.html">this test provided by Melissa E. O'Neill</a> on Tangle,
  * it correctly has 9 repeats compared to an expected 10, using the Skipping adapter to check one out of every 65536
  * outputs for duplicates. A generator that failed that test would have 0 repeats or more than 20, so Tangle passes.
- * ThrustAltRNG probably also passes (or its structure allows it to potentially do so), but LightRNG, LinnormRNG,
- * MizuchiRNG, and even ThrustRNG will fail it by never repeating an output. Truncating the output bits of any of these
+ * ThrustAltRNG probably also passes (or its structure allows it to potentially do so), but LinnormRNG, MizuchiRNG,
+ * LightRNG, DiverRNG, and more will fail it by never repeating an output. Truncating the output bits of any of these
  * generators will allow them to pass this test, at the cost of reducing the size of the output to an int instead of a
  * long (less than ideal). Notably, an individual Tangle generator tends to be able to produce about 2/3 of all possible
  * long outputs, with roughly 1/3 of all outputs not possible to produce and another 1/3 produced exactly once. These
@@ -31,7 +32,10 @@ import java.io.Serializable;
  * to the name, Tangle isn't slowed down at all by this, but the period length of the generator is less than the maximum
  * possible (which OrbitRNG has, though that one is slowed down).
  * <br>
- * See also {@link OrbitRNG}, which gives up more speed but moves through all 2 to the 64 long values as streams over
+ * You can identify which stream this generator is using with {@link #getStream()}, where the stream can be determined
+ * by the relationship between stateA and stateB, but should be very challenging to figure out from the output.
+ * <br>
+ * See also {@link OrbitRNG}, which gives up some speed but moves through all 2 to the 64 long values as streams over
  * its full period, which is 2 to the 128 (with one stream) instead of the 2 to the 64 (with 2 to the 63 streams) here.
  * <br>
  * Created by Tommy Ettinger on 7/9/2018.
@@ -177,5 +181,19 @@ public final class TangleRNG implements RandomnessSource, SkippingRandomness, Se
         final long s = (stateA += 0xC6BC279692B5C323L * advance);
         final long z = (s ^ s >>> 31) * (stateB += 0x9E3779B97F4A7C16L * advance);
         return z ^ z >>> 26;
+    }
+
+    /**
+     * Gets a long that identifies which stream of numbers this generator is producing; this stream identifier is always
+     * an odd long and won't change by generating numbers. It is determined at construction and will usually (not
+     * always) change if {@link #setStateA(long)} or {@link #setStateB(long)} are called. Each stream is a
+     * probably-unique sequence of 2 to the 64 longs, where approximately 1/3 of all possible longs will not ever occur,
+     * but this set of impossible results is different for every stream. There are 2 to the 63 possible streams, one for
+     * every odd long.
+     * @return an odd long that identifies which stream this TangleRNG is generating from
+     */
+    public long getStream()
+    {
+        return stateB - (stateA * 0x1743CE5C6E1B848BL) * 0x9E3779B97F4A7C16L;
     }
 }

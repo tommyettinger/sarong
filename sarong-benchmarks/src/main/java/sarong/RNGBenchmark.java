@@ -443,14 +443,14 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 5)
 public class RNGBenchmark {
 
-    private long state = 9000, stream = 9001, oddState = 9999L;
+    private long state = 9000;//, stream = 9001, oddState = 9999L;
     private int istate = 9000;
-    private static volatile long[] inputs = new long[0x100000];
-    static {
-        for (int i = 0; i < 0x100000; i++) {
-            inputs[i] = PelicanRNG.determine(i);
-        }
-    }
+//    private static volatile long[] inputs = new long[0x100000];
+//    static {
+//        for (int i = 0; i < 0x100000; i++) {
+//            inputs[i] = PelicanRNG.determine(i);
+//        }
+//    }
     
 //    public long doThunder()
 //    {
@@ -890,12 +890,12 @@ public class RNGBenchmark {
     }
 
     //@Benchmark
-    public long measureInlineThrust()
-    {
-        long z = (state += 0x9E3779B97F4A7C15L);
-        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
-        return z ^ z >>> 28;
-    }
+//    public long measureInlineThrust()
+//    {
+//        long z = (state += 0x9E3779B97F4A7C15L);
+//        z = (z ^ z >>> 26) * 0x2545F4914F6CDD1DL;
+//        return z ^ z >>> 28;
+//    }
 
 //    @Benchmark
 //    public long measureThrustAltDetermine() {
