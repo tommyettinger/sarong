@@ -14,17 +14,29 @@
 
 package net.adoptopenjdk.bumblebench.examples;
 
-import net.adoptopenjdk.bumblebench.core.MicroBench;
+import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.NumberTools;
 
-public final class SquidSinBench extends MicroBench {
-
-	protected long doBatch(long numIterations) throws InterruptedException {
-		double argument = 0.1;
-		for (long i = 0; i < numIterations; i++)
-			argument = 4.6 * NumberTools.sin(argument);
-		return numIterations;
+/**
+ * SquidSinBench score: 62497104.000000 (62.50M 1795.1%)
+ *           uncertainty:   1.0%
+ */
+public final class SquidSinBench extends MiniBench {
+	protected int maxIterationsPerLoop(){ return 10000007; }
+	
+	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
+		startTimer();
+		//MathUtils.initialize();
+		double argument = NumberTools.sin(0.1);
+		pauseTimer();
+		for (long i = 0; i < numLoops; i++) {
+			for (int j = 0; j < numIterationsPerLoop; j++) {
+				startTimer();
+				argument += NumberTools.sin((i + argument));
+				pauseTimer();
+			}
+		}
+		return numLoops * numIterationsPerLoop;
 	}
-
 }
 

@@ -14,25 +14,25 @@
 
 package net.adoptopenjdk.bumblebench.examples;
 
+import com.badlogic.gdx.math.MathUtils;
 import net.adoptopenjdk.bumblebench.core.MiniBench;
-import sarong.NumberTools;
 
 /**
- * SquidSinFloatBench score: 44797520.000000 (44.80M 1761.8%)
- *                uncertainty:   0.2%
+ * GdxSinFloatModBench score: 61241308.000000 (61.24M 1793.0%)
+ *                 uncertainty:   0.5%
  */
-public final class SquidSinFloatBench extends MiniBench {
+public final class GdxSinFloatModBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
 	
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		startTimer();
-		//MathUtils.initialize();
-		float argument = NumberTools.sin(0.1f);
+		MathUtils.initialize();
+		float argument = MathUtils.sin(0.1f);
 		pauseTimer();
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				argument += NumberTools.sin((i + argument));
+				argument += MathUtils.sin((i + argument) % MathUtils.PI2);
 				pauseTimer();
 			}
 		}
