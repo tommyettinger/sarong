@@ -15,19 +15,21 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MiniBench;
+import sarong.NumberTools;
 
-public final class MathSinBench extends MiniBench {
+public final class SquidASinBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		startTimer();
 		//MathUtils.initialize();
-		double argument = Math.sin(0.1);
+		double argument = NumberTools.asin(0.1);
 		pauseTimer();
+		double shrink = 1.99 / numIterationsPerLoop;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				argument += Math.sin(j + argument);
+				argument += NumberTools.asin(j * shrink - 1);
 				pauseTimer();
 			}
 		}

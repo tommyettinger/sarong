@@ -32,7 +32,7 @@ public final class GdxSinFloatModBench extends MiniBench {
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				argument += MathUtils.sin((i + argument) % MathUtils.PI2);
+				argument += MathUtils.sin((j + argument) % MathUtils.PI2);
 				pauseTimer();
 			}
 		}
