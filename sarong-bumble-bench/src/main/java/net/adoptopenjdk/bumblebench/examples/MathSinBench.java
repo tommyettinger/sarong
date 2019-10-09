@@ -14,16 +14,24 @@
 
 package net.adoptopenjdk.bumblebench.examples;
 
-import net.adoptopenjdk.bumblebench.core.MicroBench;
+import net.adoptopenjdk.bumblebench.core.MiniBench;
 
-public final class MathSinBench extends MicroBench {
+public final class MathSinBench extends MiniBench {
+	protected int maxIterationsPerLoop(){ return 10000007; }
 
-	protected long doBatch(long numIterations) throws InterruptedException {
-		double argument = 0.1;
-		for (long i = 0; i < numIterations; i++)
-			argument = 4.6 * Math.sin(argument);
-		return numIterations;
+	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
+		startTimer();
+		//MathUtils.initialize();
+		double argument = Math.sin(0.1);
+		pauseTimer();
+		for (long i = 0; i < numLoops; i++) {
+			for (int j = 0; j < numIterationsPerLoop; j++) {
+				startTimer();
+				argument += Math.sin((i + argument));
+				pauseTimer();
+			}
+		}
+		return numLoops * numIterationsPerLoop;
 	}
-
 }
 
