@@ -20,6 +20,12 @@ import sarong.LightRNG;
 /**
  * LightBench score: 978743296.000000 (978.7M 2070.2%)
  *        uncertainty:   0.4%
+ * <br>
+ * On OpenJ9 version of OpenJDK 13, recent Linux laptop:
+ * <br>
+ * LightBench score: 5127391744.000000 (5.127G 2235.8%)
+ *        uncertainty:   0.2%
+ *
  */
 public final class LightBench extends MicroBench {
 

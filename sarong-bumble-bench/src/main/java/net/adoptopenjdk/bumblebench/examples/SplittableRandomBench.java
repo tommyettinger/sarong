@@ -15,21 +15,20 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.TangleRNG;
+import sarong.LightRNG;
+
+import java.util.SplittableRandom;
 
 /**
- * TangleBench score: 1201761280.000000 (1.202G 2090.7%)
- *         uncertainty:   0.2%
+ * On OpenJ9 version of OpenJDK 13, recent Linux laptop:
  * <br>
- * OpenJ9 OpenJDK 13 on linux:
- * <br>
- * TangleBench score: 3837962240.000000 (3.838G 2206.8%)
- *         uncertainty:   1.3%
+ * SplittableRandomBench score: 1919019648.000000 (1.919G 2137.5%)
+ *                   uncertainty:   1.7%
  */
-public final class TangleBench extends MicroBench {
+public final class SplittableRandomBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		TangleRNG rng = new TangleRNG(0x1234L, 5678L);
+		SplittableRandom rng = new SplittableRandom(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();

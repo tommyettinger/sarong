@@ -17,8 +17,8 @@
         <maven.resources.version>3.1.0</maven.resources.version>
         <maven.source.version>3.1.1</maven.source.version>
         <maven.gpg.version>1.6</maven.gpg.version>
-        <jdk.version>1.8</jdk.version>
         <gdx.version>1.9.10</gdx.version>
+        <jdk.version>12</jdk.version>
     </properties>
     <licenses>
         <license>
@@ -52,13 +52,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
                     <compilerVersion>${jdk.version}</compilerVersion>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                    <excludes>
+                        <exclude>**/emu/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
