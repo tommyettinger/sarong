@@ -1040,4 +1040,36 @@ if y < 0 then r := -r
         return 1.5707963267948966f - (a * (1f + (a *= a) * (-0.141514171442891431f + a * -0.719110791477959357f))) /
                 (1f + a * (-0.439110389941411144f + a * -0.471306172023844527f));
     }
+
+    public static double asinAlt(final double n)
+    {
+        final double ax = StrictMath.sqrt(1.0 - n * n), ay = Math.abs(n);
+        if(ax < ay)
+        {
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? -r : r;
+        }
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? -r : r;
+        }
+    }
+    public static double acosAlt(final double n)
+    {
+        final double ax = Math.abs(n), ay = StrictMath.sqrt(1.0 - n * n);
+        if(ax < ay)
+        {
+            final double a = ax / ay, s = a * a,
+                    r = 1.57079637 - (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? Math.PI - r : r;
+        }
+        else {
+            final double a = ay / ax, s = a * a,
+                    r = (((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a);
+            return (n < 0.0) ? Math.PI - r : r;
+        }
+    }
+
 }
