@@ -79,8 +79,8 @@ uint32_t splitmix32(uint32_t *x) {
     /**
      * Uses the given String or other CharSequence as the basis for the 64 ints this uses as state, assigning choice to
      * be the sum of the rest of state.
-     * Internally, this gets a 32-bit hash for seed with 48 different variations on the {@link CrossHash.Mist} hashing
-     * algorithm and 16 variations on the {@link CrossHash.Storm} algorithm, and uses one for each int in state. This
+     * Internally, this gets a 32-bit hash for seed with 16 different variations on the {@link CrossHash.Mist} hashing
+     * algorithm, and uses one for each int in state. This
      * tolerates null and empty-String values for seed.
      * @param seed a String or other CharSequence; may be null
      */

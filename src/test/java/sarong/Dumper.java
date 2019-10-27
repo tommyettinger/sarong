@@ -146,23 +146,6 @@ public class Dumper {
             e.printStackTrace();
         }
     }
-    public static void blastIntSpecial(String filename, BardRNG rng)
-    {
-        DataOutputStream dos;
-        try {
-            dos = new DataOutputStream(new FileOutputStream("target/" + filename + ".dat", false));
-
-            for (int i = 0; i < 64; i++) {
-                for (int j = 0; j < 0x40000; j++) {
-                    dos.writeInt(rng.nextInt());
-                }
-            }
-            dos.flush();
-            dos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     public static long[] seeds = new long[64];
     public static int[] iSeeds = new int[64];
     public static void main(String[] args)

@@ -54,14 +54,12 @@ import java.util.Arrays;
  * not the best to use because of known statistical problems and low speed, but its period
  * is absurdly high, {@code pow(2, 19937) - 1}. {@link LongPeriodRNG} has significantly
  * better speed and statistical quality, and also has a large period, {@code pow(2, 1024) - 1}.
- * {@link BeardRNG} could have a period as high as {@code pow(2, 4096)}, but there are no
- * guarantees on its period, though statistically it tests well. {@link IsaacRNG} is slower, but
- * offers impeccable quality, and from its webpage, "Cycles are guaranteed to be at least
- * {@code pow(2, 40)} values long, and they are {@code pow(2, 8295)} values long on average."
- * IsaacRNG should be your choice if security is a concern, LongPeriodRNG if quality and speed
- * are important (BeardRNG may be good to evaluate as well), and MT64RNG should be used if
- * period is the only criterion to judge an RNG on. There may be a CMWC generator added at some
- * point, which would have potentially a greater period than the Mersenne Twister.
+ * {@link IsaacRNG} is slower, but offers impeccable quality, and from its webpage, "Cycles
+ * are guaranteed to be at least {@code pow(2, 40)} values long, and they are {@code pow(2, 8295)}
+ * values long on average." IsaacRNG should be your choice if security is a concern, LongPeriodRNG
+ * if quality and speed are important, and MT64RNG should be used if period is the only criterion
+ * to judge an RNG on. There may be a CMWC generator added at some point, which would have
+ * potentially a greater period than the Mersenne Twister.
  * <br>
  * This is mostly a straight port of the
  * <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/mt19937-64.c">
@@ -179,7 +177,7 @@ public final class MT64RNG implements Serializable, RandomnessSource {
             return;
         int i = 1;
         int j = 0;
-        int k = (NN > array.length ? NN : array.length);
+        int k = (Math.max(NN, array.length));
         for (; k != 0; k--) {
             mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >>> 62)) * 3935559000370003845L))
                     + array[j] + j;

@@ -1043,7 +1043,7 @@ if y < 0 then r := -r
 
     public static double asinAlt(final double n)
     {
-        final double ax = StrictMath.sqrt(1.0 - n * n), ay = Math.abs(n);
+        final double ax = Math.sqrt(1.0 - n * n), ay = Math.abs(n);
         if(ax < ay)
         {
             final double a = ax / ay, s = a * a,
@@ -1058,7 +1058,7 @@ if y < 0 then r := -r
     }
     public static double acosAlt(final double n)
     {
-        final double ax = Math.abs(n), ay = StrictMath.sqrt(1.0 - n * n);
+        final double ax = Math.abs(n), ay = Math.sqrt(1.0 - n * n);
         if(ax < ay)
         {
             final double a = ax / ay, s = a * a,
