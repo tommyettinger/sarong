@@ -14,23 +14,24 @@
 
 package net.adoptopenjdk.bumblebench.examples;
 
-import com.badlogic.gdx.math.MathUtils;
 import net.adoptopenjdk.bumblebench.core.MiniBench;
+import net.openhft.hashing.LongHashFunction;
 import sarong.util.CrossHash;
 
 /**
  */
-public final class WaterHashBench extends MiniBench {
+public final class XX64HashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		final long[] data = new long[2100];
 		LargeArrayGenerator.generate(-1L, data);
+		LongHashFunction xx = LongHashFunction.xx();
 		long result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += CrossHash.Water.hash64(data);
+				result += xx.hashLongs(data);
 				pauseTimer();
 				LargeArrayGenerator.generate(j, data);
 			}

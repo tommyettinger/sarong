@@ -25,11 +25,11 @@ public final class WispHashBench extends MiniBench {
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		final long[] data = new long[2100];
 		LargeArrayGenerator.generate(-1L, data);
-		int result = 0;
+		long result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += CrossHash.Wisp.hash(data);
+				result += CrossHash.Wisp.hash64(data);
 				pauseTimer();
 				LargeArrayGenerator.generate(j, data);
 			}
