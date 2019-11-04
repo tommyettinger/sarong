@@ -64,9 +64,9 @@ public final class JSF32RNG implements RandomnessSource, Serializable {
         this.stateD = stateD;
     }
     /**
-     * Seeds the state using all bits of the given long {@code s}. This is guaranteed to put the generator on its
-     * longest subcycle, and 2 to the 64 states are possible.
-     * @param s all bits are used, none verbatim (0 is tolerated)
+     * Seeds the state using all bits of the given int {@code s}. This is guaranteed to put the generator on its
+     * longest subcycle, and 2 to the 32 states are possible.
+     * @param s all bits are used to affect 3 of 4 states verbatim (0 is tolerated, and one state is unaffected by seed)
      */
     public final void seed(final int s) {
         stateA = 0xf1ea5eed;
@@ -99,45 +99,6 @@ public final class JSF32RNG implements RandomnessSource, Serializable {
         stateC = stateD + e;
         return (stateD = e + stateA) >>> 32 - bits;
     }
-
-//    public final int nextInt2()
-//    {
-//        stateA = (stateA << 23 | stateA >>> 9);
-//        stateA *= 0x402AB;
-//        stateB = (stateB << 28 | stateB >>> 4);
-//        stateB *= 0x01621;
-//        stateC = (stateC << 24 | stateC >>> 8);
-//        stateC *= 0x808E9;
-//        stateD = (stateD << 29 | stateD >>> 3);
-//        stateD *= 0x8012D;
-//        return (stateA ^ stateB ^ stateC ^ stateD);
-//    }
-//
-//    public final int next2(final int bits)
-//    {
-//        stateA = (stateA << 23 | stateA >>> 9);
-//        stateA *= 0x402AB;
-//        stateB = (stateB << 28 | stateB >>> 4);
-//        stateB *= 0x01621;
-//        stateC = (stateC << 24 | stateC >>> 8);
-//        stateC *= 0x808E9;
-//        stateD = (stateD << 29 | stateD >>> 3);
-//        stateD *= 0x8012D;
-//        return (stateA ^ stateB ^ stateC ^ stateD) >>> (32 - bits);
-//    }
-//
-//    public final int next3(final int bits)
-//    {
-//        stateA = (stateA << 23 | stateA >>> 9);
-//        stateB = (stateB << 28 | stateB >>> 4);
-//        stateC = (stateC << 24 | stateC >>> 8);
-//        stateD = (stateD << 29 | stateD >>> 3);
-//        stateA *= 0x402AB;
-//        stateB *= 0x01621;
-//        stateC *= 0x808E9;
-//        stateD *= 0x8012D;
-//        return (stateA ^ stateB ^ stateC ^ stateD) >>> (32 - bits);
-//    }
 
     @Override
     public final long nextLong() {
