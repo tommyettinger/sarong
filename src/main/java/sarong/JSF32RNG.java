@@ -140,7 +140,7 @@ public final class JSF32RNG implements RandomnessSource, Serializable {
         stateA = stateB ^ (stateC << 17 | stateC >>> 15);
         stateB = stateC + stateD;
         stateC = stateD + e;
-        return ((stateD = e + stateA) & 0xffffffL) * 0x1p-24f;
+        return ((stateD = e + stateA) & 0xffffff) * 0x1p-24f;
     }
 
     /**

@@ -161,7 +161,7 @@ public final class MegaMover32RNG implements RandomnessSource, Serializable {
      * @return a pseudo-random float between 0.0f (inclusive) and 1.0f (exclusive)
      */
     public final float nextFloat() {
-        return (((stateA = (stateA << 23 | stateA >>> 9) * 0x402AB) ^ (stateB = (stateB << 28 | stateB >>> 4) * 0x01621) ^ (stateC = (stateC << 24 | stateC >>> 8) * 0x808E9) ^ (stateD = (stateD << 29 | stateD >>> 3) * 0x8012D)) & 0xffffffL) * 0x1p-24f;
+        return (((stateA = (stateA << 23 | stateA >>> 9) * 0x402AB) ^ (stateB = (stateB << 28 | stateB >>> 4) * 0x01621) ^ (stateC = (stateC << 24 | stateC >>> 8) * 0x808E9) ^ (stateD = (stateD << 29 | stateD >>> 3) * 0x8012D)) & 0xffffff) * 0x1p-24f;
     }
 
     /**

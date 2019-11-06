@@ -60,9 +60,6 @@ public final class PaperweightRNG implements StatefulRandomness, SkippingRandomn
     @Override
     public final long nextLong() {
         long z = (state -= 0x9E3779B97F4A7C15L);
-//        z = (z ^ z >>> 13) * 0x7FFFF;
-//        z = (z ^ z >>> 12) * 0x1FFFF;
-//        z = (z ^ z >>> 14) * 0x1FFF;
         z ^= z >>> 13;
         z = (z << 19) - z;
         z ^= z >>> 12;
@@ -70,7 +67,9 @@ public final class PaperweightRNG implements StatefulRandomness, SkippingRandomn
         z ^= z >>> 14;
         z = (z << 13) - z;
         return z ^ z >>> 24;
-
+//        z = (z ^ z >>> 13) * 0x7FFFF;
+//        z = (z ^ z >>> 12) * 0x1FFFF;
+//        z = (z ^ z >>> 14) * 0x1FFF;
     }
 
     /**
