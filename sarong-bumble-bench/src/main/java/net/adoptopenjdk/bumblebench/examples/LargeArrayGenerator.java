@@ -9,4 +9,15 @@ public final class LargeArrayGenerator {
         }
         return data;
     }
+    public static int[] generate(int stateA, int stateB, final int[] data)
+    {
+        for (int i = 0; i < data.length; i++) 
+        {
+            final int s = (stateA += 0xC1C64E6D);
+            int x = (s ^ s >>> 17) * ((stateB += (s | -s) >> 31 & 0x9E3779BB) >>> 12 | 1);
+            x = (x ^ x >>> 16) * 0xAC451;
+            data[i] = (x ^ x >>> 15);
+        }
+        return data;
+    }
 }

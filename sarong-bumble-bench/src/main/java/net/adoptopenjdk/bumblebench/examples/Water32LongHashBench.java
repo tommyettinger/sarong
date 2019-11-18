@@ -20,20 +20,20 @@ import sarong.util.CrossHash;
 /**
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * WaterHashBench score: 598332.500000 (598.3K 1330.2%)
- *            uncertainty:   0.2%
+ * Water32LongHashBench score: 662400.437500 (662.4K 1340.4%)
+ *                  uncertainty:   0.4%
  */
-public final class WaterHashBench extends MiniBench {
+public final class Water32LongHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		final long[] data = new long[2100];
 		LargeArrayGenerator.generate(-1L, data);
-		long result = 0;
+		int result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += CrossHash.Water.hash64(data);
+				result += CrossHash.Water.hash(data);
 				pauseTimer();
 				LargeArrayGenerator.generate(j, data);
 			}

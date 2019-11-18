@@ -18,6 +18,10 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.util.CrossHash;
 
 /**
+ * On Windows laptop, 6th gen i7 processor:
+ * <br>
+ * HiveHashBench score: 604310.500000 (604.3K 1331.2%)
+ *           uncertainty:   0.4%
  */
 public final class HiveHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
