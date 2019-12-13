@@ -180,7 +180,7 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# Mac crap
+# Mac junk
 .DS_Store
 
 
@@ -234,7 +234,6 @@ target/
 *.css
 
 # jEdit garbage
-*~
 *#*#
 *#*.*#
 /bin/

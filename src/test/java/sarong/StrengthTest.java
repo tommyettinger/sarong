@@ -790,4 +790,20 @@ public class StrengthTest {
         }*/
 
     }
+
+    public final int altAbs(final int a) {
+        return (a ^ a >> 31) + (a >>> 31);
+    }
+
+    @Test
+    public void testAltAbs()
+    {
+        int diff;
+        for (int i = 0x80000000; i < 0; i++) {
+            if((diff = Math.abs(i) - altAbs(i)) != 0)
+                System.out.println("On " + i + " vs. " + altAbs(i) + ": diff is " + diff);
+            if((diff = Math.abs(~i) - altAbs(~i)) != 0)
+                System.out.println("On " + ~i + " vs. " + altAbs(~i) + ": diff is " + diff);
+        }
+    }
 }
