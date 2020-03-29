@@ -245,12 +245,13 @@ public class TestDistribution {
     @Test
     public void testOrbit8Bit()
     {
-        byte stateA = 0, stateB = 0;
+        byte stateA = 0, stateB = 1;
         short[] counts = new short[256];
-        for (int i = 0; i < 0x10000; i++) {
-            final int s = (stateA += 0xCD) & 0xFF;
-            if(s != 0) stateB += 0x9B;
-            counts[(s ^ s >>> 5) * ((stateB & 0xFF) >>> 3 | 1) & 0xFF]++;
+        for (int i = 0; i < 0x8000; i++) {
+            int s = (stateA += 0xCD) & 0xFF;
+            if(s >= 11) stateB += 0x96;
+            s = (s ^ s >>> 3) * (stateB & 0xFF) & 0xFF;
+            counts[s ^ s >>> 3]++;
         }
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {

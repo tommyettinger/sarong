@@ -17,9 +17,9 @@ public class PeriodTest {
     public void checkPeriod32(){
         int stateA = 1, i = 0;
         //final int r = 13, m = 0x89A7;
-        final int r = 25, m = 0xA5F152BF;
+        final int r = 17, m = 0xBCFD, a = 0xA5F152BF;
         for (; i != -1; i++) {
-            if ((stateA = Integer.rotateLeft(stateA, 25) + 0xA5F152BF) == 1) {
+            if ((stateA = Integer.rotateLeft(stateA, r) * m + a) == 1) {
                 //if (i >>> 24 == 0xFF)
                 System.out.printf("(state + 0x%08X, rotation %02d: 0x%08X\n", m, r, i);
                 break;
@@ -339,38 +339,41 @@ public class PeriodTest {
         // 0xFF42E24AF92DCD8C, 63.995831
         //BigInteger result = BigInteger.valueOf(0xFF6B3AF7L), tmp = BigInteger.valueOf(0xFFD78FD4L);
 
-//        int stateA, i;
-//        int r = 0x80001;
-//        for (int c = 1; c <= 262144; c++) {
-//            r += 2;
-//            System.out.printf("%05d/262144, testing r = 0x%08X\n", c, r);
-//            for (int j = 1; j < 32; j++) {
-//                i = 0;
-//                stateA = 1;
-//                for (; ; i++) {
-//                    if ((stateA = Integer.rotateLeft(stateA, j) * r) == 1) {
-//                        if (i >>> 20 == 0xFFF)
-//                            System.out.printf("state + 0x%08X, rotation %02d: 0x%08X\n", r, j, i);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        try {
-            executor.invokeAll(Arrays.asList(cmr32Runner(1), cmr32Runner(0x40001), cmr32Runner(0x80001), cmr32Runner(0xC0001)));
-            executor.awaitTermination(10, TimeUnit.DAYS); // it won't take this long
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        int stateA, i;
+        int r = 0x80001;
+        for (int c = 1; c <= 262144; c++) {
+            r = ((int)DiverRNG.determine(c) >>> 11) | 1;
+//            a = (int)DiverRNG.determine(r + c) | 1;
+            System.out.printf("%05d/262144, testing r = 0x%08X\n", c, r);
+//            System.out.printf("%05d/262144, testing r = 0x%08X, a = 0x%08X\n", c, r, a);
+            for (int j = 1; j < 32; j++) {
+                i = 1;
+                stateA = 1;
+                for (; ; i++) {
+                    if ((stateA = Integer.rotateLeft(stateA, j) * r) == 1) {
+//                    if ((stateA = stateA * r + Integer.rotateLeft(a, j)) == 1) {
+                        if (i >>> 20 == 0xFFF || i == 0)
+                            System.out.printf("state = rotl(state, %02d) * 0x%08X): 0x%08X\n", j, r, i);
+                        break;
+                    }
+                }
+            }
         }
+
+//        ExecutorService executor = Executors.newFixedThreadPool(4);
+//        try {
+//            executor.invokeAll(Arrays.asList(cmr32Runner(1), cmr32Runner(0x40001), cmr32Runner(0x80001), cmr32Runner(0xC0001)));
+//            executor.awaitTermination(10, TimeUnit.DAYS); // it won't take this long
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
 
 //        int target;
 //            for (int s = 1; s < 32; s++) {
 //                for (int r = 1; r < 32; r++) {
-//            for (int s : new int[]{5, 9, 27}) {
-//                for (int r : new int[]{1, 8, 20}) {
+////            for (int s : new int[]{5, 9, 27}) {
+////                for (int r : new int[]{1, 8, 20}) {
 //                    System.out.printf("testing (x << %d) + rotl(x, %d) ... ", s, r);
 //                    stateA = 1;
 //                    i = 0;
