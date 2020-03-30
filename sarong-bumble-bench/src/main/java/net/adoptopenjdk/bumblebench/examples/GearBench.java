@@ -18,13 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.GearRNG;
 
 /**
- * (On that slower laptop, Windows 7, AdoptOpenJDK 8):
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
  * <br>
- * GearBench score: 785985920.000000 (786.0M 2048.2%)
- *       uncertainty:   0.3%
+ * GearBench score: 1154149120.000000 (1.154G 2086.7%)
+ *       uncertainty:   0.0%
  * <br>
- * This is quite a bit faster than Orbit or Tangle on the same old machine!
- * I need to bench all three on the newer machine to get a fair comparison.
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * GearBench score: 815058944.000000 (815.1M 2051.9%)
+ *       uncertainty:   0.0%
  */
 public final class GearBench extends MicroBench {
 

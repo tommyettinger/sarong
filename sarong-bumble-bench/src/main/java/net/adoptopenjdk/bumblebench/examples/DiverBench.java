@@ -18,8 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.DiverRNG;
 
 /**
- * DiverBench score: 799732992.000000 (799.7M 2050.0%)
- *        uncertainty:   0.1%
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
+ * <br>
+ * DiverBench score: 811113472.000000 (811.1M 2051.4%)
+ *       uncertainty:   0.2%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * DiverBench score: 783783552.000000 (783.8M 2048.0%)
+ *       uncertainty:   0.8%
  */
 public final class DiverBench extends MicroBench {
 

@@ -18,8 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.MiniMover64RNG;
 
 /**
- * MiniMover64Bench score: 1003335680.000000 (1.003G 2072.7%)
- *              uncertainty:   0.2%
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
+ * <br>
+ * MiniMover64Bench score: 1020576192.000000 (1.021G 2074.4%)
+ *       uncertainty:   0.0%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * MiniMover64Bench score: 1014203072.000000 (1.014G 2073.7%)
+ *       uncertainty:   0.0%
  */
 public final class MiniMover64Bench extends MicroBench {
 

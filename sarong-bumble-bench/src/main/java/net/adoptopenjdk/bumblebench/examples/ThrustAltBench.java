@@ -18,8 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.ThrustAltRNG;
 
 /**
- * ThrustAltBench score: 1155033344.000000 (1.155G 2086.7%)
- *            uncertainty:   0.1%
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
+ * <br>
+ * ThrustAltBench score: 1165149568.000000 (1.165G 2087.6%)
+ *       uncertainty:   0.1%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * ThrustAltBench score: 999410752.000000 (999.4M 2072.3%)
+ *       uncertainty:   0.1%
  */
 public final class ThrustAltBench extends MicroBench {
 

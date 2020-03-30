@@ -18,15 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.JSF64RNG;
 
 /**
- * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor:
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
  * <br>
- * JSF64Bench score: 871743680.000000 (871.7M 2058.6%)
- *        uncertainty:   0.2%
+ * JSF64Bench score: 902049728.000000 (902.0M 2062.0%)
+ *       uncertainty:   0.1%
  * <br>
- * With Java 13, OpenJ9 nightly build (should be similar to OpenJ9 0.18.0), same hardware:
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
  * <br>
- * JSF64Bench score: 1029769728.000000 (1.030G 2075.3%)
- *        uncertainty:   0.2%
+ * JSF64Bench score: 1035410816.000000 (1.035G 2075.8%)
+ *       uncertainty:   0.1%
  */
 public final class JSF64Bench extends MicroBench {
 

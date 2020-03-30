@@ -18,8 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MicroBench;
 import sarong.XoRoRNG;
 
 /**
- * XoRoBench score: 1025016000.000000 (1.025G 2074.8%)
- *       uncertainty:   0.2%
+ * With Java 8, HotSpot, on an 8th-gen i7 hexacore mobile processor running Manjaro Linux:
+ * <br>
+ * XoRoBench score: 1033620544.000000 (1.034G 2075.6%)
+ *       uncertainty:   0.1%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * XoRoBench score: 691192832.000000 (691.2M 2035.4%)
+ *       uncertainty:   0.1%
  */
 public final class XoRoBench extends MicroBench {
 
