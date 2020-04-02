@@ -1,15 +1,16 @@
 package sarong;
 
+import java.util.Arrays;
+
 /**
  * An improvement on the performance of http://extremelearning.com.au/isotropic-blue-noise-point-sets/ .
- * Does not currently validate that the permutations it has found are distinct from each other.
  */
 public class PermutationEtc {
 
 	/**
 	 * Change SIZE to increase the size of the balanced permutations.
 	 */
-	public static final int SIZE = 30, HALF_SIZE = SIZE >>> 1;
+	public static final int SIZE = 52, HALF_SIZE = SIZE >>> 1, COUNT = 100;
 
 	public PermutationEtc(){}
 	public PermutationEtc(long state){
@@ -55,12 +56,17 @@ public class PermutationEtc {
 	}
 
 	public static void main(String[] args){
+		PermutationEtc p = new PermutationEtc(System.nanoTime());
+		final int[][] allItems = new int[COUNT][SIZE];
+		final int[] delta = new int[SIZE], targets = new int[SIZE];
+		final int LIMIT = 10000 * COUNT * COUNT;
 		long startTime = System.currentTimeMillis();
-		PermutationEtc p = new PermutationEtc(startTime);
-		final int[] items = new int[SIZE], delta = new int[SIZE], targets = new int[SIZE];
-		for (int g = 0; g < 100; g++) {
+		for (int g = 0; g < COUNT; g++) {
+			int[] items = allItems[g];
+			// this is limited to 10000 * COUNT * COUNT runs as an emergency stop in case we run out of distinct permutations
 			BIG_LOOP:
-			while (true) {
+			for (int repeat = 0; repeat < LIMIT; repeat++)
+			{
 				for (int i = 0; i < HALF_SIZE; i++) {
 					delta[i] = i + 1;
 					delta[i + HALF_SIZE] = ~i;
@@ -89,6 +95,10 @@ public class PermutationEtc {
 				int d = items[0] - items[SIZE - 1];
 				for (int j = 0; j < SIZE; j++) {
 					if(d == delta[j]) {
+						// distinct array check
+						for (int i = 0; i < g; i++) {
+							if(Arrays.equals(allItems[i], items)) continue BIG_LOOP;
+						}
 						System.out.print(items[0]);
 						for (int i = 1; i < SIZE; i++) {
 							System.out.print(", " + items[i]);
@@ -97,7 +107,6 @@ public class PermutationEtc {
 						break BIG_LOOP;
 					}
 				}
-				break;
 			}
 		}
 		System.out.println("Took " + (System.currentTimeMillis() - startTime) * 0.001 +
