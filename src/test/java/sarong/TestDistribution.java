@@ -100,94 +100,30 @@ public class TestDistribution {
         }
         System.out.println(all.getCardinality());
     }
-    
+    private static int hiXorLo(final int a, final int b){
+        final long r = (a & 0xFFFFFFFFL) * (b & 0xFFFFFFFFL);
+        return (int)(r ^ r >>> 32);
+    }
     @Test
     public void test32Bit()
     {
-//        int result, xor = 0;
-        int r;
-//        BigInt sum = new BigInt(0);
-        RoaringBitmap all = new RoaringBitmap();
+        final RoaringBitmap all = new RoaringBitmap();
         int i = 0x80000000;
-        r = 1;
-        for (; i < 0x7FFFFFFF; i++) {
-//            result = (i << 6) + (i << 28 | i >>> 4);
-//            result = i - (i << 11 | i >>> 21);
-//            result = (result << 28 | result >>> 4);
-//            result = (i ^ i >>> 15) + (i << 23);
-//            xor ^= result;
-//            sum.add(result);
-//            r = (i >>> 12) ^ (i << 19 | i >>> 13);
-            //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
-//            r = (i << 27 | i >>> 5) ^ (i >>> 7);
-            //(a = (a << 23 | a >>> 9) * 0x402AB) 
-            //(b = (b << 28 | b >>> 4) * 0x01621)
-            //(c = (c << 24 | c >>> 8) * 0x808E9)
-            //(d = (d << 29 | d >>> 3) * 0x8012D)
-            
-            //r = (r << 23 | r >>> 9) * 0x402AB; //start at 0x00000001, stop at 0x0003A96B
-            //r = (r << 28 | r >>> 4) * 0x01621; //start at 0x00000001, stop at 0x0002973F
-            //r = (r << 24 | r >>> 8) * 0x808E9; //start at 0x00001D79, stop at 0x000664C8
-            //r = (r << 29 | r >>> 3) * 0x8012D; //start at 0x0001682B, stop at 0x0003219A
-            //r = (r << 13 | r >>> 19) * 0x89A7;  //start at 0x000015D5, stop at 0x00017DDE
-            r = (r << 17 | r >>> 15) * 0xBCFD;  //start at 0x000015D5, stop at 
-            if(!all.checkedAdd(r))
-            {
-                break;
-//                System.out.println("UH OH, duplicate " + r + " at " + (i + 0x80000000L));
-//                return;
-            }
+        //// testing this:
+//  const P0 = 0xa0761d6478bd642f'u64
+//  const P1 = 0xe7037ed1a0b428db'u64
+//  const P5x8 = 0xeb44accab455d1e5'u64
+//  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
+        //// 2011632872/4294967296 outputs were present.
+        //// 53.16302236169577% of outputs were missing.
+        for (; i < 0; i++) {
+            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5));
         }
-//        t = 0x7FFFFFFF + 0x9E3779B9;
-//        result = (0x7FFFFFFF << 17 | 0x7FFFFFFF >>> 15) ^ t;
-//        result = (0x7FFFFFFF << 6) + (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4);
-//        result = 0x7FFFFFFF - (0x7FFFFFFF << 11 | 0x7FFFFFFF >>> 21);
-//        result = (result << 28 | result >>> 4);
-//        result = (0x7FFFFFFF ^ 0x7FFFFFFF >>> 15) + (0x7FFFFFF << 23);
-//        xor ^= result;
-//        r = (i >>> 12) ^ (i << 19 | i >>> 13);
-        //r = (i << 5 | i >>> 27) ^ (i << 7); // full range
-//        r = (i << 27 | i >>> 5) ^ (i >>> 7);
-//        r = (r << 23 | r >>> 9) * 0x402AB;
-//        if(!all.checkedAdd(r))
-//            System.out.println("TROUBLE AT THE END!");
-        all.flip(1L, 0x100000000L);
-        System.out.println("[10] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(10)));
-        System.out.println("[11] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(11)));
-        System.out.println("[12] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(12)));
-        System.out.println("[13] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(13)));
-        System.out.println("[14] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(14)));
-        System.out.println("[15] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(15)));
-        System.out.println("[16] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(16)));
-        System.out.println("[17] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(17)));
-        System.out.println("[18] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(18)));
-        System.out.println("[19] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(19)));
-        System.out.println("[20] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(20)));
-        System.out.println("[21] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(21)));
-        System.out.println("[22] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(22)));
-        System.out.println("[23] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(23)));
-        System.out.println("[24] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(24)));
-        System.out.println("[25] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(25)));
-        System.out.println("[26] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(26)));
-        System.out.println("[27] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(27)));
-        System.out.println("[28] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(28)));
-        System.out.println("[29] non-zero integer not in largest cycle: 0x" + StringKit.hex(all.select(29)));
-        
-        
-        
-        
-//        all.addInt((0x7FFFFFFF >>> 6) ^ (0x7FFFFFFF << 28 | 0x7FFFFFFF >>> 4));
-//        sum.add(result);
-//        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
-//        System.out.println(sum.toString() + ", should be -" + (0x80000000L));
-//        System.out.println(Integer.toBinaryString(xor) + " " + xor);
-        System.out.println(all.getLongCardinality());
-//        int b = -1;
-//        for (int i = 0; i < 32; i++) {
-//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
-//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
-//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
-//        }
+        for (; i >= 0; i++) {
+            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5));
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
     @Test
