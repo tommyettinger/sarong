@@ -5720,5 +5720,352 @@ public class CrossHash {
         }
     }
 
+    @SuppressWarnings("NumericOverflow")
+    public static final class Olm {
+
+        public static long hash64(final boolean[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length; 
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft((data[i] ? 0x9E3779B97F4A7C15L : 0x61C8864680B583EAL) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final byte[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final short[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final char[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final int[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final long[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L, d;
+            for (int i = 0; i < len; i++) {
+                d = data[i];
+                h ^= Long.rotateLeft((d ^ d >>> 32) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final float[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(NumberTools.floatToIntBits(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final double[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(NumberTools.doubleToMixedIntBits(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        /**
+         * Hashes only a subsection of the given data, starting at start (inclusive) and ending before end (exclusive).
+         *
+         * @param data  the char array to hash
+         * @param start the start of the section to hash (inclusive)
+         * @param end   the end of the section to hash (exclusive)
+         * @return a 64-bit hash code for the requested section of data
+         */
+        public static long hash64(final char[] data, final int start, final int end) {
+            if (data == null || start >= end)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = start; i < end && i < len; i++) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+        /**
+         * Hashes only a subsection of the given data, starting at start (inclusive), ending before end (exclusive), and
+         * moving between chars in increments of step (which is always greater than 0).
+         *
+         * @param data  the char array to hash
+         * @param start the start of the section to hash (inclusive)
+         * @param end   the end of the section to hash (exclusive)
+         * @param step  how many elements to advance after using one element from data; must be greater than 0
+         * @return a 64-bit hash code for the requested section of data
+         */
+        public static long hash64(final char[] data, final int start, final int end, final int step) {
+            if (data == null || start >= end || step <= 0)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = start; i < end && i < len; i += step) {
+                h ^= Long.rotateLeft(data[i] * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final CharSequence data) {
+            if (data == null)
+                return 0;
+            final int len = data.length();
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(data.charAt(i) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final char[][] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(hash64(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final long[][] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(hash64(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final CharSequence[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(hash64(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final Iterable<? extends CharSequence> data) {
+            if (data == null)
+                return 0;
+            long m = 0x632BE59BD9B4E019L, h = 0xC6BC279692B5C323L;
+            for (CharSequence datum : data) {
+                h ^= Long.rotateLeft(hash64(datum) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final CharSequence[]... data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(hash64(data[i]) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static long hash64(final Object[] data) {
+            if (data == null)
+                return 0;
+            final int len = data.length;
+            long m = 0x632BE59BD9B4E019L, h = len ^ 0xC6BC279692B5C323L;
+            Object o;
+            for (int i = 0; i < len; i++) {
+                h ^= Long.rotateLeft(((o = data[i]) == null ? 0 : o.hashCode()) * m, (int)((m += 0x9479D2858AF899E6L) >>> 58));
+            }
+            h = (h ^ h >>> 27) * 0x3C79AC492BA7B653L;
+            h = (h ^ h >>> 33) * 0x1C69B3F74AC4AE35L;
+            return h ^ h >>> 27;
+        }
+
+        public static int hash(final boolean[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final byte[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final short[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final char[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final int[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final long[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final float[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final double[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        /**
+         * Hashes only a subsection of the given data, starting at start (inclusive) and ending before end (exclusive).
+         *
+         * @param data  the char array to hash
+         * @param start the start of the section to hash (inclusive)
+         * @param end   the end of the section to hash (exclusive)
+         * @return a 32-bit hash code for the requested section of data
+         */
+        public static int hash(final char[] data, final int start, final int end) {
+            if (data == null || start >= end)
+                return 0;
+            return (int) hash64(data);
+        }
+        /**
+         * Hashes only a subsection of the given data, starting at start (inclusive), ending before end (exclusive), and
+         * moving between chars in increments of step (which is always greater than 0).
+         *
+         * @param data  the char array to hash
+         * @param start the start of the section to hash (inclusive)
+         * @param end   the end of the section to hash (exclusive)
+         * @param step  how many elements to advance after using one element from data; must be greater than 0
+         * @return a 32-bit hash code for the requested section of data
+         */
+        public static int hash(final char[] data, final int start, final int end, final int step) {
+            if (data == null || start >= end || step <= 0)
+                return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final CharSequence data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final char[][] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final long[][] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final CharSequence[] data) {
+            if (data == null)return 0;
+            return (int) hash64(data);
+
+        }
+
+        public static int hash(final Iterable<? extends CharSequence> data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final CharSequence[]... data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+
+        public static int hash(final Object[] data) {
+            if (data == null) return 0;
+            return (int) hash64(data);
+        }
+    }
 
 }
