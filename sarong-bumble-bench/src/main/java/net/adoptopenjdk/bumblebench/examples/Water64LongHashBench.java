@@ -22,6 +22,11 @@ import sarong.util.CrossHash;
  * <br>
  * Water64LongHashBench score: 598332.500000 (598.3K 1330.2%)
  *            uncertainty:   0.2%
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Water64LongHashBench score: 761040.437500 (761.0K 1354.2%)
+ *                  uncertainty:   0.1%
  */
 public final class Water64LongHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }

@@ -18,10 +18,15 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.util.CrossHash;
 
 /**
- * On Windows laptop, 6th gen i7 processor:
+ * On Windows laptop, 6th gen i7 processor (JDK 8 HotSpot)
  * <br>
  * Water64IntHashBench score: 682480.937500 (682.5K 1343.3%)
  *                 uncertainty:   0.2%
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Water64IntHashBench score: 947780.437500 (947.8K 1376.2%)
+ *                 uncertainty:   0.1%
  */
 public final class Water64IntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }

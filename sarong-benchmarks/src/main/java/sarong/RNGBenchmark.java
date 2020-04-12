@@ -519,6 +519,32 @@ public class RNGBenchmark {
 //        doThunderIntR();
 //    }
 
+    private GearRNG Gear = new GearRNG(9999L);
+    private RNG GearR = new RNG(Gear);
+    @Benchmark
+    public long measureGear()
+    {
+        return Gear.nextLong();
+    }
+
+    @Benchmark
+    public int measureGearInt()
+    {
+        return Gear.next(32);
+    }
+    @Benchmark
+    public long measureGearR()
+    {
+        return GearR.nextLong();
+    }
+
+    @Benchmark
+    public int measureGearIntR()
+    {
+        return GearR.nextInt();
+    }
+
+
     private XoRoRNG XoRo = new XoRoRNG(9999L);
     private RNG XoRoR = new RNG(XoRo);
     @Benchmark
@@ -1217,60 +1243,60 @@ public class RNGBenchmark {
         return SpiralR.nextInt();
     }
 
-    private SpiralRNG spiralA = new SpiralRNG(9999L, 1337L),
-            spiralB = new SpiralRNG(9999L, 1337L),
-            spiralC = new SpiralRNG(9999L, 1337L),
-            spiralD = new SpiralRNG(9999L, 1337L),
-            spiralE = new SpiralRNG(9999L, 1337L),
-            spiralF = new SpiralRNG(9999L, 1337L),
-            spiralG = new SpiralRNG(9999L, 1337L),
-            spiralH = new SpiralRNG(9999L, 1337L),
-            spiralI = new SpiralRNG(9999L, 1337L);
-    @Benchmark
-    public long measureSpiralA()
-    {
-        return spiralA.nextLongOld();
-    }
-    @Benchmark
-    public long measureSpiralB()
-    {
-        return spiralB.nextLongAlt();
-    }
-    @Benchmark
-    public long measureSpiralC()
-    {
-        return spiralC.nextLongNew();
-    }
-    @Benchmark
-    public long measureSpiralD()
-    {
-        return spiralD.nextLongAgain();
-    }
-    @Benchmark
-    public long measureSpiralE()
-    {
-        return spiralE.nextLongAgain3();
-    }
-    @Benchmark
-    public long measureSpiralF()
-    {
-        return spiralF.nextLongAgain4();
-    }
-    @Benchmark
-    public long measureSpiralG()
-    {
-        return spiralG.nextLongAgain5();
-    }
-    @Benchmark
-    public long measureSpiralH()
-    {
-        return spiralH.nextLongAgain6();
-    }
-    @Benchmark
-    public long measureSpiralI()
-    {
-        return spiralI.nextLongAgain7();
-    }
+//    private SpiralRNG spiralA = new SpiralRNG(9999L, 1337L),
+//            spiralB = new SpiralRNG(9999L, 1337L),
+//            spiralC = new SpiralRNG(9999L, 1337L),
+//            spiralD = new SpiralRNG(9999L, 1337L),
+//            spiralE = new SpiralRNG(9999L, 1337L),
+//            spiralF = new SpiralRNG(9999L, 1337L),
+//            spiralG = new SpiralRNG(9999L, 1337L),
+//            spiralH = new SpiralRNG(9999L, 1337L),
+//            spiralI = new SpiralRNG(9999L, 1337L);
+//    @Benchmark
+//    public long measureSpiralA()
+//    {
+//        return spiralA.nextLongOld();
+//    }
+//    @Benchmark
+//    public long measureSpiralB()
+//    {
+//        return spiralB.nextLongAlt();
+//    }
+//    @Benchmark
+//    public long measureSpiralC()
+//    {
+//        return spiralC.nextLongNew();
+//    }
+//    @Benchmark
+//    public long measureSpiralD()
+//    {
+//        return spiralD.nextLongAgain();
+//    }
+//    @Benchmark
+//    public long measureSpiralE()
+//    {
+//        return spiralE.nextLongAgain3();
+//    }
+//    @Benchmark
+//    public long measureSpiralF()
+//    {
+//        return spiralF.nextLongAgain4();
+//    }
+//    @Benchmark
+//    public long measureSpiralG()
+//    {
+//        return spiralG.nextLongAgain5();
+//    }
+//    @Benchmark
+//    public long measureSpiralH()
+//    {
+//        return spiralH.nextLongAgain6();
+//    }
+//    @Benchmark
+//    public long measureSpiralI()
+//    {
+//        return spiralI.nextLongAgain7();
+//    }
 
     private OrbitRNG Orbit = new OrbitRNG(9999L, 1337L);
     private RNG OrbitR = new RNG(Orbit);
@@ -1324,96 +1350,96 @@ public class RNGBenchmark {
         return TangleR.nextInt();
     }
 
-    private OrbitRNG OrbitA = new OrbitRNG(9999L, 1337L),
-            OrbitB = new OrbitRNG(9999L, 1337L),
-            OrbitC = new OrbitRNG(9999L, 1337L),
-            OrbitD = new OrbitRNG(9999L, 1337L),
-            OrbitE = new OrbitRNG(9999L, 1337L),
-            OrbitF = new OrbitRNG(9999L, 1337L),
-            OrbitG = new OrbitRNG(9999L, 1337L),
-            OrbitH = new OrbitRNG(9999L, 1337L),
-            OrbitI = new OrbitRNG(9999L, 1337L),
-            OrbitJ = new OrbitRNG(9999L, 1337L),
-            OrbitK = new OrbitRNG(9999L, 1337L),
-            OrbitL = new OrbitRNG(9999L, 1337L),
-            OrbitM = new OrbitRNG(9999L, 1337L),
-            OrbitN = new OrbitRNG(9999L, 1337L),
-            OrbitO = new OrbitRNG(9999L, 1337L);
-    @Benchmark
-    public long measureOrbitA()
-    {
-        return OrbitA.nextLong1();
-    }
-    @Benchmark
-    public long measureOrbitB()
-    {
-        return OrbitB.nextLong2();
-    }
-    @Benchmark
-    public long measureOrbitC()
-    {
-        return OrbitC.nextLong3();
-    }
-    @Benchmark
-    public long measureOrbitD()
-    {
-        return OrbitD.nextLong4();
-    }
-    @Benchmark
-    public long measureOrbitE()
-    {
-        return OrbitE.nextLong5();
-    }
-    @Benchmark
-    public long measureOrbitF()
-    {
-        return OrbitF.nextLong6();
-    }
-    @Benchmark
-    public long measureOrbitG()
-    {
-        return OrbitG.nextLong7();
-    }
-    @Benchmark
-    public long measureOrbitH()
-    {
-        return OrbitH.nextLong8();
-    }
-    @Benchmark
-    public long measureOrbitI()
-    {
-        return OrbitI.nextLong9();
-    }
-    @Benchmark
-    public long measureOrbitJ()
-    {
-        return OrbitJ.nextLong10();
-    }
-    @Benchmark
-    public long measureOrbitK()
-    {
-        return OrbitK.nextLong11();
-    }
-    @Benchmark
-    public long measureOrbitL()
-    {
-        return OrbitL.nextLong12();
-    }
-    @Benchmark
-    public long measureOrbitM()
-    {
-        return OrbitM.nextLong13();
-    }
-    @Benchmark
-    public long measureOrbitN()
-    {
-        return OrbitN.nextLong14();
-    }
-    @Benchmark
-    public long measureOrbitO()
-    {
-        return OrbitO.nextLong15();
-    }
+//    private OrbitRNG OrbitA = new OrbitRNG(9999L, 1337L),
+//            OrbitB = new OrbitRNG(9999L, 1337L),
+//            OrbitC = new OrbitRNG(9999L, 1337L),
+//            OrbitD = new OrbitRNG(9999L, 1337L),
+//            OrbitE = new OrbitRNG(9999L, 1337L),
+//            OrbitF = new OrbitRNG(9999L, 1337L),
+//            OrbitG = new OrbitRNG(9999L, 1337L),
+//            OrbitH = new OrbitRNG(9999L, 1337L),
+//            OrbitI = new OrbitRNG(9999L, 1337L),
+//            OrbitJ = new OrbitRNG(9999L, 1337L),
+//            OrbitK = new OrbitRNG(9999L, 1337L),
+//            OrbitL = new OrbitRNG(9999L, 1337L),
+//            OrbitM = new OrbitRNG(9999L, 1337L),
+//            OrbitN = new OrbitRNG(9999L, 1337L),
+//            OrbitO = new OrbitRNG(9999L, 1337L);
+//    @Benchmark
+//    public long measureOrbitA()
+//    {
+//        return OrbitA.nextLong1();
+//    }
+//    @Benchmark
+//    public long measureOrbitB()
+//    {
+//        return OrbitB.nextLong2();
+//    }
+//    @Benchmark
+//    public long measureOrbitC()
+//    {
+//        return OrbitC.nextLong3();
+//    }
+//    @Benchmark
+//    public long measureOrbitD()
+//    {
+//        return OrbitD.nextLong4();
+//    }
+//    @Benchmark
+//    public long measureOrbitE()
+//    {
+//        return OrbitE.nextLong5();
+//    }
+//    @Benchmark
+//    public long measureOrbitF()
+//    {
+//        return OrbitF.nextLong6();
+//    }
+//    @Benchmark
+//    public long measureOrbitG()
+//    {
+//        return OrbitG.nextLong7();
+//    }
+//    @Benchmark
+//    public long measureOrbitH()
+//    {
+//        return OrbitH.nextLong8();
+//    }
+//    @Benchmark
+//    public long measureOrbitI()
+//    {
+//        return OrbitI.nextLong9();
+//    }
+//    @Benchmark
+//    public long measureOrbitJ()
+//    {
+//        return OrbitJ.nextLong10();
+//    }
+//    @Benchmark
+//    public long measureOrbitK()
+//    {
+//        return OrbitK.nextLong11();
+//    }
+//    @Benchmark
+//    public long measureOrbitL()
+//    {
+//        return OrbitL.nextLong12();
+//    }
+//    @Benchmark
+//    public long measureOrbitM()
+//    {
+//        return OrbitM.nextLong13();
+//    }
+//    @Benchmark
+//    public long measureOrbitN()
+//    {
+//        return OrbitN.nextLong14();
+//    }
+//    @Benchmark
+//    public long measureOrbitO()
+//    {
+//        return OrbitO.nextLong15();
+//    }
 
 
 //    private TangleRNG TangleA = new TangleRNG(9999L, 1337L),
