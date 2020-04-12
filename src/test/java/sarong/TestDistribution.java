@@ -126,6 +126,28 @@ public class TestDistribution {
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
+    public static void main(String[] args)
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        //// testing this:
+//  const P0 = 0xa0761d6478bd642f'u64
+//  const P1 = 0xe7037ed1a0b428db'u64
+//  const P5x8 = 0xeb44accab455d1e5'u64
+//  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
+//// (using the lower 31 bits of the 32-bit output)
+        //// 1539997854/2147483648 outputs were present.
+        //// 28.28826168552041% of outputs were missing.
+        for (; i < 0; i++) {
+            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5) & 0x7FFFFFFF);
+        }
+        for (; i >= 0; i++) {
+            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5) & 0x7FFFFFFF);
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x80000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-31 + "% of outputs were missing.");
+    }
+
     @Test
     public void test16Bit()
     {
