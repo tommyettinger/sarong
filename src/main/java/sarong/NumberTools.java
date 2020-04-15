@@ -1452,10 +1452,9 @@ if y < 0 then r := -r
      */
     public static double sinq(double quarters)
     {
-        int floor = (--quarters >= 0f ? (int) quarters : (int) quarters - 1);
+        int floor = (quarters >= 0f ? (int) quarters : (int) quarters - 1);
         quarters -= floor;
-        floor &= 3;
-        return (Integer.bitCount(floor ^ floor >>> 1) - 1 << 1) * quarters + 1 - (floor & 2);
+        return (((floor & 2) - 1 & -(floor & 1)) << 1) * quarters + 1 - (floor & 2);
     }
 
     /**
@@ -1468,9 +1467,9 @@ if y < 0 then r := -r
      */
     public static double cosq(double quarters)
     {
-        int floor = (quarters >= 0f ? (int) quarters : (int) quarters - 1);
+        int floor = (++quarters >= 0f ? (int) quarters : (int) quarters - 1);
         quarters -= floor;
-        return (Integer.bitCount((floor & 3) ^ (floor >>> 1 & 1)) - 1 << 1) * quarters + 1 - (floor & 2);
+        return (((floor & 2) - 1 & -(floor & 1)) << 1) * quarters + 1 - (floor & 2);
     }
 
     /**
@@ -1483,10 +1482,9 @@ if y < 0 then r := -r
      */
     public static float sinq(float quarters)
     {
-        int floor = (--quarters >= 0f ? (int) quarters : (int) quarters - 1);
+        int floor = (quarters >= 0f ? (int) quarters : (int) quarters - 1);
         quarters -= floor;
-        floor &= 3;
-        return (Integer.bitCount(floor ^ floor >>> 1) - 1 << 1) * quarters + 1 - (floor & 2);
+        return (((floor & 2) - 1 & -(floor & 1)) << 1) * quarters + 1 - (floor & 2);
     }
 
     /**
@@ -1499,9 +1497,9 @@ if y < 0 then r := -r
      */
     public static float cosq(float quarters)
     {
-        int floor = (quarters >= 0f ? (int) quarters : (int) quarters - 1);
+        int floor = (++quarters >= 0f ? (int) quarters : (int) quarters - 1);
         quarters -= floor;
-        return (Integer.bitCount((floor & 3) ^ (floor >>> 1 & 1)) - 1 << 1) * quarters + 1 - (floor & 2);
+        return (((floor & 2) - 1 & -(floor & 1)) << 1) * quarters + 1 - (floor & 2);
     }
 
 }

@@ -18,8 +18,8 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.NumberTools;
 
 /**
- * SquidSinqFloatBench score: 46424136.000000 (46.42M 1765.3%)
- *                 uncertainty:   0.2%
+ * SquidSinqFloatBench score: 46334364.000000 (46.33M 1765.1%)
+ *                 uncertainty:   0.1%
  */
 public final class SquidSinqFloatBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
