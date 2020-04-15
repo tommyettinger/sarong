@@ -18,8 +18,8 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.NumberTools;
 
 /**
- * SquidSinFloatBench score: 44797520.000000 (44.80M 1761.8%)
- *                uncertainty:   0.2%
+ * SquidSinFloatBench score: 44307408.000000 (44.31M 1760.7%)
+ *                uncertainty:   0.1%
  */
 public final class SquidSinFloatBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
@@ -32,7 +32,7 @@ public final class SquidSinFloatBench extends MiniBench {
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				argument += NumberTools.sin(j + argument);
+				argument += NumberTools.sin(argument) + 1.6180339887498949f;
 				pauseTimer();
 			}
 		}

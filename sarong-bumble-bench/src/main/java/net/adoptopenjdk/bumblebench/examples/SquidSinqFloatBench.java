@@ -18,21 +18,20 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import sarong.NumberTools;
 
 /**
- * SquidSinBench score: 44262144.000000 (44.26M 1760.6%)
- *           uncertainty:   0.2%
+ * SquidSinqFloatBench score: 46424136.000000 (46.42M 1765.3%)
+ *                 uncertainty:   0.2%
  */
-public final class SquidSinBench extends MiniBench {
+public final class SquidSinqFloatBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
 	
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		startTimer();
-		//MathUtils.initialize();
-		double argument = NumberTools.sin(0.1);
+		float argument = NumberTools.sin(0.1f);
 		pauseTimer();
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				argument += NumberTools.sin( argument) + 1.6180339887498949;
+				argument += NumberTools.sinq( argument) + 1.6180339887498949f;
 				pauseTimer();
 			}
 		}
