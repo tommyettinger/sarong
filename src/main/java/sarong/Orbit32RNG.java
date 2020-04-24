@@ -1,10 +1,3 @@
-/*  Written in 2016 by David Blackman and Sebastiano Vigna (vigna@acm.org)
-
-To the extent possible under law, the author has dedicated all copyright
-and related and neighboring rights to this software to the public domain
-worldwide. This software is distributed without any warranty.
-
-See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 package sarong;
 
 import sarong.util.StringKit;
@@ -13,12 +6,12 @@ import java.io.Serializable;
 
 /**
  * A very fast StatefulRandomness that has 2 32-bit states and allows all values for both of them; it has a period of 2
- * to the 64 and passes PractRand tests to 32TB with no anomalies or failures. Speed is extremely good on certain JVMs;
- * on OpenJDK 13 using OpenJ9, specifically, this generator is the fastest 32-bit-math generator that passes 32TB of
- * PractRand tests, at over a billion ints a second, where Starfish32RNG gets about 721 million ints a second.
+ * to the 64 and passes PractRand tests to 32TB with no anomalies or failures. Speed appeared extremely good on certain
+ * JVMs; a specific revision of OpenJDK 13 using OpenJ9, specifically, considered this one of the fastest generators
+ * using BumbleBench benchmarks with over a billion ints generated a second on not-too-great hardware. This result
+ * doesn't appear to hold with current stable OpenJDK versions, though Orbit32RNG is still quite fast.
  * <br>
- * It is designed so that it can be GWT-safe; this version isn't right now but a super-sourced variant would just need
- * to ensure the counters (anywhere {@code +=} is used) are changed to use a bitwise operation before assigning. The
+ * It is designed so that it can be GWT-safe, and this version has a super-sourced variant to be used on GWT. The
  * same algorithm is used by SquidLib as SilkRNG, where a super-sourced variant is already present.
  * <br>
  * It is one-dimensionally equidistributed over a period of 2 to the 64 exactly.

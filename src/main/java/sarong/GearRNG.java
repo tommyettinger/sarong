@@ -11,6 +11,7 @@ import java.io.Serializable;
  * stateA, and at one point to multiply a value based on stateA by stateB, which is always odd. The trick is that stateB
  * usually updates by adding a large even number, but about once every 10 billion generated numbers, decided by a
  * comparison between a constant and stateA's value, it "shifts gears" and stays on the same value while stateA updates.
+ * This is one-dimensionally equidistributed, returning each long result 2 to the 63 times over its period.
  * <br>
  * For some purposes you may want to instead consider {@link TangleRNG}, which also has two states (one odd) and uses a
  * very similar algorithm, but it never "shifts gears," which drops its period down to 2 to the 64, makes it a
@@ -21,8 +22,8 @@ import java.io.Serializable;
  * that's the only time an output can be confirmed as skipped, it's probably fine for most usage to use many different
  * TangleRNGs, all seeded differently. Other choices: you could use one {@link OrbitRNG} (which technically has a longer
  * period, but some states produce very similar output), {@link DiverRNG} (if you don't mind that it never produces a
- * duplicate output), {@link IsaacRNG} (if speed is less important but more secure output is), or Lathe64RNG, though all
- * of those are probably slower than using one GearRNG object or even many TangleRNG objects.
+ * duplicate output), {@link IsaacRNG} (if speed is less important but more secure output is), or {@link Lathe64RNG},
+ * though all of those are probably slower than using one GearRNG object or even many TangleRNG objects.
  * <br>
  * The name comes from shifting gears; pretty straightforward here.
  * <br>
