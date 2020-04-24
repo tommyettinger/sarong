@@ -3,6 +3,11 @@ package sarong;
 import org.huldra.math.BigInt;
 import org.junit.Ignore;
 import org.junit.Test;
+import sarong.discouraged.LapRNG;
+import sarong.discouraged.MeshRNG;
+import sarong.discouraged.ThrustRNG;
+import sarong.discouraged.ThunderRNG;
+import sarong.discouraged.VortexRNG;
 import sarong.util.StringKit;
 
 import java.math.BigInteger;

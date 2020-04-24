@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * One of Mark Overton's subcycle generators from <a href="http://www.drdobbs.com/tools/229625477">this article</a>
  * (specifically, an un-investigated generator mentioned in the code attached to the article), a lera^lera^lera with
- * three 32-bit states; it has high quality, passing PractRand's 32TB battery with at one anomaly, uses no
+ * three 32-bit states; it has high quality, passing PractRand's 32TB battery with one anomaly, uses no
  * multiplication in its core operations, and is optimized for GWT. It has a period of somewhat under 2 to the 96,
  * 0xF8DB896393AF9CD31D8B69BA, which is roughly 2 to the 95.959176, and allows 2 to the 32 initial seeds. It is not
  * especially fast on desktop JVMs, but may do better on GWT in some browsers because it avoids multiplication. You may

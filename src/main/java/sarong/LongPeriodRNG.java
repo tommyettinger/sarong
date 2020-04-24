@@ -19,7 +19,7 @@ import java.util.Arrays;
  * 586,298,239,947,245,938,479,716,304,835,356,329,624,224,137,215). While that number is preposterously large, there's
  * always some application that seems to need more; if you really need more than that, look into CMWC generators, which
  * can have even larger state and also even larger periods. There isn't one of those in Sarong currently, though there
- * is a possibility of one being added in the future. There is a 64-bit Mersenne Twister in MT64RNG, which has an even
+ * is a possibility of one being added in the future. There is the 64-bit {@link MersenneTwister}, which has an even
  * larger period than this one, but it might not have optimal quality for some applications (notably, the game Dungeon
  * Crawl Stone Soup used Mersenne Twister and found that some players in a competition could predict impending random
  * events, despite the generator seeming bulletproof).

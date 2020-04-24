@@ -1,5 +1,6 @@
 package sarong;
 
+import sarong.discouraged.ThrustAlt32RNG;
 import sarong.util.StringKit;
 
 import java.io.Serializable;

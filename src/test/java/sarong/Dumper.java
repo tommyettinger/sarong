@@ -1,5 +1,6 @@
 package sarong;
 
+import sarong.discouraged.Lunge32RNG;
 import sarong.util.CrossHash;
 
 import java.io.DataOutputStream;

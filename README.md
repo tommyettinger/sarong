@@ -13,7 +13,7 @@ it can be addressed. For platform and version support, `sarong.LightRNG` uses th
 SplittableRandom, called SplitMix64, and is similarly fast, but is additionally available on Java 6
 or 7 (plus GWT and Android) because sarong is highly compatible. As for the low period, you can switch
 to `sarong.XoRoRNG` (which implements XoRoShiRo 128+, one of the best generators in C but about the
-same speed as LightRNG here on the JVM) to get a period of `(2^128)-1`, or `sarong.ThunderRNG` (which
+same speed as LightRNG here on the JVM) to get a period of `(2^128)-1`, or `sarong.discouraged.ThunderRNG` (which
 is pretty much a novel algorithm, and is a good deal faster than LightRNG but has worse statistical
 traits) to get a period of about `2^127`, although the period is definitely lower for less-significant
 bits in the generated numbers and probably lower for some of the higher bits as well. At the extreme

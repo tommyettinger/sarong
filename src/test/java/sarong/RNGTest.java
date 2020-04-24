@@ -1,4 +1,6 @@
 package sarong;
+import sarong.discouraged.ThunderRNG;
+
 import java.math.BigInteger;
 import java.util.Random;
 
