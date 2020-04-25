@@ -17,6 +17,8 @@ Table of Notable Properties
 | BrightRNG      | none      | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Step/Jump Anywhere |
 | DirkRNG        | 1 unusual | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Step/Jump Anywhere |
 | DiverRNG       | 1 unusual | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Step/Jump Anywhere |
+| LinnormRNG     | 1 unusual | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Possible Internally, NYI |
+| MizuchiRNG     | none      | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>63</sup>   | Possible Internally, NYI |
 | PelicanRNG     | none      | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Step/Jump Anywhere |
 | PulleyRNG      | 1 unusual | 2<sup>64</sup> | 2<sup>64</sup> | 2<sup>64</sup> | 1                | Step/Jump Anywhere |
 

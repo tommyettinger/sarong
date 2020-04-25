@@ -8,21 +8,22 @@ import java.io.Serializable;
 /**
  * A mid-high-quality StatefulRandomness that is the second-fastest 64-bit generator in this library that is
  * 1-dimensionally equidistributed across its 64-bit outputs. Has a period of 2 to the 64, and permits all states.
- * Passes all but one statistical test in PractRand, only failing the recently-added TMFn test (Triple Mirror Frequency)
- * at 16TB. {@link DiverRNG} does not fail at that point and is faster, while keeping the same other qualities, so it is
- * currently recommended over LinnormRNG. Has 64 bits of state and natively outputs 64 bits at a time, changing the
- * state with a basic linear congruential generator (it is simply {@code state = state * 1103515245 + 1}). Starting with
- * that LCG's output, it xorshifts that output, multiplies by a very large negative long, then returns another xorshift.
- * Considering that it needs analysis of 8TB to even find an anomaly in Linnorm, the quality is probably fine, and
- * PractRand 0.93 didn't find any failures in it (PractRand 0.94 added the TMFn test, which detects LCGs).
+ * Passes all statistical tests in PractRand up to 32TB of data. {@link DiverRNG} is a variant that is a little faster,
+ * while keeping the same other qualities, so it is currently recommended over LinnormRNG (however, the same structure
+ * is shared between LinnormRNG and {@link MizuchiRNG}, and Mizuchi has some extra features that Diver lacks). Has 64
+ * bits of state and natively outputs 64 bits at a time, changing the state with a basic linear congruential generator
+ * (it is simply {@code state = state * 3935559000370003845L + 1L}, with the large multiplier found by L'Ecuyer in a
+ * 1999 paper). Starting with that LCG's output, it xorshifts that output twice (using
+ * {@code z ^= (z >>> 23) ^ (z >>> 47);}), multiplies by a very large negative long, then returns another xorshift.
+ * Considering that some seeds don't have any anomalies in 8TB with Linnorm, the quality is probably fine except for the
+ * known potential issue that it can't return duplicate outputs until its period has cycled.
  * {@link ThrustAltRNG} and {@link MiniMover64RNG} are faster (tied for first place), but unlike those, Linnorm can
  * produce all long values as output; ThrustAltRNG bunches some outputs and makes producing them more likely while
  * others can't be produced at all, while MiniMover64RNG cycles at some point before 2 to the 64 but after 2 to the 42
  * (it doesn't produce any duplicates until then, but it also can't produce all values). Notably, this generator is
- * faster than {@link LightRNG} with similar quality other than the TMFn failure, and also faster than {@link XoRoRNG}
- * while passing tests that XoRoRNG always or frequently fails (and fails early), such as binary matrix rank tests. It
- * is slower than {@link DiverRNG}, which is a variant on the structure of LinnormRNG, and DiverRNG passes PractRand to
- * a further point than LinnormRNG (Diver passes 32TB, and doesn't show any of the problems where Linnorm fails).
+ * faster than {@link LightRNG} with similar quality, and also faster than {@link XoRoRNG} while passing tests that
+ * XoRoRNG always or frequently fails (and fails early), such as binary matrix rank tests. It is slower than
+ * {@link DiverRNG}, which is a variant on the structure of LinnormRNG.
  * <br>
  * This generator is a StatefulRandomness but not a SkippingRandomness, so it can't (efficiently) have the skip() method
  * that LightRNG has. A method could be written to run the generator's state backwards, though, as well as to get the
@@ -37,14 +38,15 @@ import java.io.Serializable;
  * The name comes from LINear congruential generator this uses to change it state, while the rest is a NORMal
  * SplitMix64-like generator. "Linnorm" is a Norwegian name for a kind of dragon, as well. 
  * <br>
- * Written May 19, 2018 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators both
+ * Written June 29, 2019 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators both
  * this and her PCG-Random fall into, and to the team that worked on SplitMix64 for SplittableRandom in JDK 8. Chris
- * Doty-Humphrey's work on PractRand has been invaluable, and the LCG multiplier this uses is the same one used by
- * PractRand in its "varqual" LCGs (the other, longer multiplier is from PCG-Random, and that's both the
- * nothing-up-my-sleeve numbers used here). Thanks also to Sebastiano Vigna and David Blackwell for creating the
- * incredibly fast xoroshiro128+ generator and also very fast <a href="http://xoshiro.di.unimi.it/hwd.php">HWD tool</a>;
- * the former inspired me to make my code even faster and the latter tool seems useful so far in proving the quality of
- * the generator (LinnormRNG passes over 100TB of HWD, and probably would pass much more if I gave it more days to run).
+ * Doty-Humphrey's work on PractRand has been invaluable. The LCG state multiplier is listed in a paper by L'Ecuyer from
+ * 1999, Tables of Linear Congruential Generators of Different Sizes and Good Lattice Structure. The other
+ * multiplier is from PCG-Random, and that's both the nothing-up-my-sleeve numbers used here. Thanks also to Sebastiano
+ * Vigna and David Blackwell for creating the incredibly fast xoroshiro128+ generator and also very fast
+ * <a href="http://xoshiro.di.unimi.it/hwd.php">HWD tool</a>; the former inspired me to make my code even faster and the
+ * latter tool seems useful so far in proving the quality of the generator (LinnormRNG passes over 100TB of HWD, and
+ * probably would pass much more if I gave it more days to run).
  * @author Tommy Ettinger
  */
 public final class LinnormRNG implements StatefulRandomness, Serializable {
@@ -72,8 +74,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     @Override
     public final int next(int bits)
     {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return (int)(z ^ z >>> 25) >>> (32 - bits);
     }
 
@@ -84,17 +86,17 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      */
     @Override
     public final long nextLong() {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return (z ^ z >>> 25);
     }
 
     /**
-     * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
+     * Produces a copy of this LinnormRNG that, if next() and/or nextLong() are called on this object and the
      * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
      * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
      *
-     * @return a copy of this RandomnessSource
+     * @return a copy of this LinnormRNG
      */
     @Override
     public LinnormRNG copy() {
@@ -107,8 +109,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return any int, all 32 bits are random
      */
     public final int nextInt() {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return (int)(z ^ z >>> 25);
     }
 
@@ -120,8 +122,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random int between 0 (inclusive) and bound (exclusive)
      */
     public final int nextInt(final int bound) {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return (int)((bound * ((z ^ z >>> 25) & 0xFFFFFFFFL)) >> 32);
     }
 
@@ -139,28 +141,33 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     /**
      * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
      * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
-     * can even be 0, which will cause this to return 0L every time.
+     * can even be 0, which will cause this to return 0L every time. This uses a biased technique to get numbers from
+     * large ranges, but the amount of bias is incredibly small (expected to be under 1/1000 if enough random ranged
+     * numbers are requested, which is about the same as an unbiased method that was also considered). It may have
+     * noticeable bias if the LinnormRNG's period is exhausted by only calls to this method, which would take months on
+     * 2018-era consumer hardware. Unlike all unbiased methods, this advances the state by an equivalent to exactly one
+     * call to {@link #nextLong()}, where rejection sampling would sometimes advance by one call, but other times by
+     * arbitrarily many more.
      * <br>
-     * Credit for this method goes to <a href="https://oroboro.com/large-random-in-range/">Rafael Baptista's blog</a>,
-     * with some adaptation for signed long values and a 64-bit generator. This method is drastically faster than the
-     * previous implementation when the bound varies often (roughly 4x faster, possibly more). It also always gets at
-     * most one random number, so it advances the state as much as {@link #nextInt(int)}.
+     * Credit for this method goes to <a href="https://oroboro.com/large-random-in-range/">Rafael Baptista's blog</a>
+     * for the original idea, and the JDK10 Math class' usage of Hacker's Delight code for the current algorithm. 
+     * This method is drastically faster than the previous implementation when the bound varies often (roughly 4x
+     * faster, possibly more). It also always gets exactly one random long, so by default it advances the state as much
+     * as {@link #nextLong()}.
+     *
      * @param bound the outer exclusive bound; can be positive or negative
      * @return a random long between 0 (inclusive) and bound (exclusive)
      */
     public long nextLong(long bound) {
-        long rand = (state = state * 0x41C64E6DL + 1L);
-        rand = (rand ^ rand >>> 27) * 0xAEF17502108EF2D9L;
+        long rand = (state = state * 0x369DEA0F31A53F85L + 1L);
+        rand = (rand ^ rand >>> 23 ^ rand >>> 47) * 0xAEF17502108EF2D9L;
         rand ^= rand >>> 25;
         final long randLow = rand & 0xFFFFFFFFL;
         final long boundLow = bound & 0xFFFFFFFFL;
         rand >>>= 32;
         bound >>= 32;
-        final long z = (randLow * boundLow >> 32);
-        long t = rand * boundLow + z;
-        final long tLow = t & 0xFFFFFFFFL;
-        t >>>= 32;
-        return rand * bound + t + (tLow + randLow * bound >> 32) - (z >> 63) - (bound >> 63);
+        final long t = rand * boundLow + (randLow * boundLow >>> 32);
+        return rand * bound + (t >> 32) + (randLow * bound + (t & 0xFFFFFFFFL) >> 32);
     }
     /**
      * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
@@ -174,58 +181,14 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
         return lower + nextLong(upper - lower);
     }
 
-    
-    
-//    public final long nextLong(final long bound) {
-//        if (bound <= 0) return 0;
-//        long threshold = (0x7fffffffffffffffL - bound + 1) % bound;
-//        for (; ; ) {
-//            long bits = nextLong() & 0x7fffffffffffffffL;
-//            if (bits >= threshold)
-//                return bits % bound;
-//        }
-//    }
-    public final long nextLongOld(final long bound) {
-        if (bound <= 0) return 0;
-        long bits, value, z;
-        do {
-            z = (state = state * 0x41C64E6DL + 1L);
-            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
-            bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
-            value = bits % bound;
-        }while(bits - value + bound <= 0);
-        return value;
-    }
-    public final long nextLongOther(final long bound) {
-        if (bound <= 0) return 0;
-        final long threshold = (0x8000000000000000L - bound) % bound;
-        long z, bits;
-        do {
-            z = (state = state * 0x41C64E6DL + 1L);
-            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
-            bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
-        }while (bits < threshold);
-        return bits % bound;
-    }
-    public final long nextLongOriginal(final long bound) {
-        if (bound <= 0) return 0;
-        for (;;) {
-            long z = (state = state * 0x41C64E6DL + 1L);
-            z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
-            final long bits = (z ^ z >>> 25) & 0x7fffffffffffffffL;
-            final long value = bits % bound;
-            if (bits - value + bound > 0) return value;
-        }
-    }
-    
     /**
      * Gets a uniform random double in the range [0.0,1.0)
      *
      * @return a random double at least equal to 0.0 and less than 1.0
      */
     public final double nextDouble() {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53;
 
     }
@@ -238,8 +201,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random double between 0.0 (inclusive) and outer (exclusive)
      */
     public final double nextDouble(final double outer) {
-        long z = (state = state * 0x41C64E6DL + 1L);
-        z = (z ^ z >>> 27) * 0xAEF17502108EF2D9L;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        z = (z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L;
         return ((z ^ z >>> 25) & 0x1FFFFFFFFFFFFFL) * 0x1p-53 * outer;
     }
 
@@ -249,8 +212,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random float at least equal to 0.0 and less than 1.0
      */
     public final float nextFloat() {
-        final long z = (state = state * 0x41C64E6DL + 1L);
-        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        return ((z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L >>> 40) * 0x1p-24f;
     }
 
     /**
@@ -260,8 +223,8 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
      * @return a random true or false value.
      */
     public final boolean nextBoolean() {
-        final long z = (state = state * 0x41C64E6DL + 1L);
-        return ((z ^ z >>> 27) * 0xAEF17502108EF2D9L) < 0;
+        long z = (state = state * 0x369DEA0F31A53F85L + 1L);
+        return ((z ^ z >>> 23 ^ z >>> 47) * 0xAEF17502108EF2D9L) < 0;
     }
 
     /**
@@ -281,7 +244,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     /**
      * Sets the seed (also the current state) of this generator.
      *
-     * @param seed the seed to use for this LightRNG, as if it was constructed with this seed.
+     * @param seed the seed to use for this LinnormRNG, as if it was constructed with this seed.
      */
     @Override
     public final void setState(final long seed) {
@@ -291,7 +254,7 @@ public final class LinnormRNG implements StatefulRandomness, Serializable {
     /**
      * Gets the current state of this generator.
      *
-     * @return the current seed of this LightRNG, changed once per call to nextLong()
+     * @return the current seed of this LinnormRNG, changed once per call to nextLong()
      */
     @Override
     public final long getState() {
