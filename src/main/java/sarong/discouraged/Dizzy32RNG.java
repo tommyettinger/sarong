@@ -7,7 +7,6 @@ worldwide. This software is distributed without any warranty.
 See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 package sarong.discouraged;
 
-import sarong.Churro32RNG;
 import sarong.RandomnessSource;
 import sarong.util.StringKit;
 

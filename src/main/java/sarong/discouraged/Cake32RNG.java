@@ -1,5 +1,6 @@
-package sarong;
+package sarong.discouraged;
 
+import sarong.RandomnessSource;
 import sarong.util.StringKit;
 
 import java.io.Serializable;
