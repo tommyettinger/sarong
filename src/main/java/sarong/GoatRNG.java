@@ -5,8 +5,19 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A larger-period generator with 128 bits of state, very good speed, and high quality in PractRand testing; it is
- * 1-dimensionally equidistributed).
+ * A larger-period generator with 128 bits of state, good speed, and high quality in PractRand testing; it is
+ * 1-dimensionally equidistributed. It appears to be slightly faster than a Xorshift128+ generator, like RandomXS128 in
+ * libGDX, with practically the same period (this has a period of 2 to the 128), but it isn't as fast as as
+ * {@link OrbitRNG} or {@link GearRNG} (Goat seems to have higher statistical quality than either of those late in
+ * testing, though). Unlike most RNGs from outside Goat, Gear, and Orbit's family, this relies on a conditional and
+ * comparison to achieve both its period and randomness goals. All of these generators use two additive sequences for
+ * their states, and stall one of the state updates when the other state matches a criterion. For Orbit, it stalls only
+ * when stateA is 0 (roughly 1 in 18 quintillion generated numbers); for Gear, stateA must be less than 1863783533 away
+ * from the minimum long value (roughly 1 in 10 billion generated numbers), and here, stateA must be greater than or
+ * equal to 3594208773157001109 to stall (roughly 5 in 16 generated numbers).
+ * <br>
+ * Unlike GearRNG, this allows all long values for both states; unlike OrbitRNG, there shouldn't be significant
+ * correlation between an even value for stateB and the value 1 greater than that (such as 4 and 5, or 100 and 101). 
  * <br>
  * The name comes from how goats are reliably hard to predict, like an RNG should be.
  * <br>
@@ -90,9 +101,17 @@ public final class GoatRNG implements RandomnessSource, Serializable {
     @Override
     public final int next(final int bits) {
         long s = (stateA += 0xD1342543DE82EF95L);
-        final long t = ((s ^= s >>> 31) < 0x31E131D6149D9795L ? (stateB += 0xC6BC279692B5C323L) : stateB);
-        s *= (t ^ t >>> 29 ^ t << 11) | 1L;
-        return (int)(s ^ s >>> 25) >>> (32 - bits);
+        s ^= s >>> 31;
+        if(s < 0x31E131D6149D9795L) {
+            final long t = (stateB += 0xC6BC279692B5C323L);
+            s *= ((t ^ t >>> 29 ^ t << 11) | 1L);
+            return (int)(s ^ s >>> 25) >>> (32 - bits);
+        }
+        else {
+            final long t = stateB;
+            s *= ((t ^ t >>> 29 ^ t << 11) | 1L);
+            return (int)(s ^ s >>> 25) >>> (32 - bits);
+        }
     }
     /**
      * Using this method, any algorithm that needs to efficiently generate more
@@ -105,9 +124,17 @@ public final class GoatRNG implements RandomnessSource, Serializable {
     @Override
     public final long nextLong() {
         long s = (stateA += 0xD1342543DE82EF95L);
-        final long t = ((s ^= s >>> 31) < 0x31E131D6149D9795L ? (stateB += 0xC6BC279692B5C323L) : stateB);
-        s *= (t ^ t >>> 29 ^ t << 11) | 1L;
-        return s ^ s >>> 25;
+        s ^= s >>> 31;
+        if(s < 0x31E131D6149D9795L) {
+            final long t = (stateB += 0xC6BC279692B5C323L);
+            s *= ((t ^ t >>> 29 ^ t << 11) | 1L);
+            return s ^ s >>> 25;
+        }
+        else {
+            final long t = stateB;
+            s *= ((t ^ t >>> 29 ^ t << 11) | 1L);
+            return s ^ s >>> 25;
+        }
     }
 
     /**

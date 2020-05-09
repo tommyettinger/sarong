@@ -20,12 +20,12 @@ import sarong.GoatRNG;
 /**
  * With Java 8, HotSpot, on an 6th-gen i7 quadcore mobile processor running Windows 7:
  * <br>
- * GoatBench score: 475911008.000000 (475.9M 1998.1%)
- *       uncertainty:   0.6%
+ * GoatBench score: 525908224.000000 (525.9M 2008.1%)
+ *       uncertainty:   0.3%
  * <br>
  * With Java 14, OpenJ9 (build 20200327_17), same hardware:
  * <br>
- * GoatBench score: 465791072.000000 (465.8M 1995.9%)
+ * GoatBench score: 464595072.000000 (464.6M 1995.7%)
  *       uncertainty:   0.4%
  */
 public final class GoatBench extends MicroBench {
