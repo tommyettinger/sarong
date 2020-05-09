@@ -15,18 +15,23 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.discouraged.ThrustRNG;
+import sarong.GoatRNG;
 
 /**
- * ThrustBench score: 4356944384.000000 (4.357G 2219.5%)
- *         uncertainty:   0.5%
- * Note, ThrustRNG hasn't yet passed PractRand, and may need adjustments,
- * but this is a good result!
+ * With Java 8, HotSpot, on an 6th-gen i7 quadcore mobile processor running Windows 7:
+ * <br>
+ * GoatBench score: 475911008.000000 (475.9M 1998.1%)
+ *       uncertainty:   0.6%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * GoatBench score: 465791072.000000 (465.8M 1995.9%)
+ *       uncertainty:   0.4%
  */
-public final class ThrustBench extends MicroBench {
+public final class GoatBench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		ThrustRNG rng = new ThrustRNG(0x12345678);
+		GoatRNG rng = new GoatRNG(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();

@@ -15,7 +15,7 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.Ladder32RNG;
+import sarong.discouraged.Ladder32RNG;
 
 /**
  * Ladder32Bench score: 670412992.000000 (670.4M 2032.3%)

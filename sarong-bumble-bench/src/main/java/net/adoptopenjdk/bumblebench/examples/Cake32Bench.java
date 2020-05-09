@@ -15,7 +15,7 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.Cake32RNG;
+import sarong.discouraged.Cake32RNG;
 
 /**
  * Cake32Bench score: 641974976.000000 (642.0M 2028.0%)

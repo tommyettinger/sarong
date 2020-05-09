@@ -7,7 +7,6 @@ import sarong.NumberTools;
  */
 public class SinPrecisionTest {
     public static void main(String[] args) {
-        MathUtils.initialize();
         long expo = 1;
         for (int i = 0; i < 16; i++) {
             expo *= 5;

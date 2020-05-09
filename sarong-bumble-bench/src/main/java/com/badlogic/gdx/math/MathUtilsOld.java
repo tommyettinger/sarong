@@ -20,7 +20,7 @@ package com.badlogic.gdx.math;
  * <p>
  * Thanks to Riven on JavaGaming.org for the basis of sin/cos/floor/ceil.
  * @author Nathan Sweet */
-public final class MathUtils {
+public final class MathUtilsOld {
 	static public final float nanoToSec = 1 / 1000000000f;
 
 	// ---

@@ -14,19 +14,24 @@
 
 package net.adoptopenjdk.bumblebench.examples;
 
+import com.badlogic.gdx.math.RandomXS128;
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.discouraged.ThrustRNG;
 
 /**
- * ThrustBench score: 4356944384.000000 (4.357G 2219.5%)
- *         uncertainty:   0.5%
- * Note, ThrustRNG hasn't yet passed PractRand, and may need adjustments,
- * but this is a good result!
+ * With Java 8, HotSpot, on an 6th-gen i7 quadcore mobile processor running Windows 7:
+ * <br>
+ * RandomXS128Bench score: 508509184.000000 (508.5M 2004.7%)
+ *              uncertainty:   0.6%
+ * <br>
+ * With Java 14, OpenJ9 (build 20200327_17), same hardware:
+ * <br>
+ * RandomXS128Bench score: 660909504.000000 (660.9M 2030.9%)
+ *              uncertainty:   0.2%
  */
-public final class ThrustBench extends MicroBench {
+public final class RandomXS128Bench extends MicroBench {
 
 	protected long doBatch(long numIterations) throws InterruptedException {
-		ThrustRNG rng = new ThrustRNG(0x12345678);
+		RandomXS128 rng = new RandomXS128(0x12345678);
 		long sum = 0L;
 		for (long i = 0; i < numIterations; i++)
 			sum += rng.nextLong();

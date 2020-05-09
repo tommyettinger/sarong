@@ -15,7 +15,7 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
-import sarong.LanyardRNG;
+import sarong.discouraged.LanyardRNG;
 
 /**
  *   LanyardBench score: 313181472.000000 (313.2M 1956.2%)

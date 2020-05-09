@@ -25,10 +25,7 @@ public final class GdxSinFloatModBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 10000007; }
 	
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		startTimer();
-		MathUtils.initialize();
 		float argument = MathUtils.sin(0.1f);
-		pauseTimer();
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
