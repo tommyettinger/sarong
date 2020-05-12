@@ -15,20 +15,21 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MiniBench;
-import sarong.util.CrossHash;
+
+import java.util.Arrays;
 
 /**
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * Water32LongHashBench score: 662400.437500 (662.4K 1340.4%)
- *                  uncertainty:   0.4%
+ * ArraysHashcodeLongBench score: 443152.718750 (443.2K 1300.2%)
+ *                     uncertainty:   1.5%
  * <br>
  * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>
  * Water32LongHashBench score: 842132.125000 (842.1K 1364.4%)
  *                  uncertainty:   0.2%
  */
-public final class Water32LongHashBench extends MiniBench {
+public final class ArraysHashcodeLongBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
@@ -38,7 +39,7 @@ public final class Water32LongHashBench extends MiniBench {
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += CrossHash.Water.hash(data);
+				result += Arrays.hashCode(data);
 				pauseTimer();
 				LargeArrayGenerator.generate(j + result, data);
 			}

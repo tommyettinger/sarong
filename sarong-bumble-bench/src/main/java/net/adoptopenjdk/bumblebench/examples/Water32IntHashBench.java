@@ -40,7 +40,7 @@ public final class Water32IntHashBench extends MiniBench {
 				startTimer();
 				result += CrossHash.Water.hash(data);
 				pauseTimer();
-				LargeArrayGenerator.generate(j, 9999 - j, data);
+				LargeArrayGenerator.generate(j + result, 9999 - j, data);
 			}
 		}
 		return numLoops * numIterationsPerLoop;
