@@ -21,7 +21,7 @@ import static net.openhft.hashing.LongHashFunction.NATIVE_LITTLE_ENDIAN;
 
 /**
  * Adapted version of xxHash implementation from https://github.com/Cyan4973/xxHash.
- * This implementation provides endian-independant hash values, but it's slower on big-endian platforms.
+ * This implementation provides endian-independent hash values, but it's slower on big-endian platforms.
  */
 public class WaterHash {
     private static final WaterHash INSTANCE = new WaterHash();
