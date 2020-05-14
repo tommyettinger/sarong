@@ -19,8 +19,8 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 /**
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * DumbLongHashBench score: 538281.875000 (538.3K 1319.6%)
- *               uncertainty:   0.7%
+ * DumbLongHashBench score: 551484.125000 (551.5K 1322.0%)
+ *               uncertainty:   0.4%
  * <br>
  * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>
@@ -32,7 +32,7 @@ public final class DumbLongHashBench extends MiniBench {
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
 		final long[] data = new long[2100];
 		LargeArrayGenerator.generate(-1L, data);
-		final DumbHash hash = new DumbHash(1L);
+		final DumbHash hash = new DumbHash(1);
 		int result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
