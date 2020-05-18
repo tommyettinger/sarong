@@ -15,33 +15,29 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MiniBench;
-
-import java.util.Arrays;
+import sarong.util.CrossHash;
 
 /**
+ * Note that Wisp has a tendency to collide more often than most other hashes.
+ * <br>
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * ArraysHashcodeLongBench score: 443152.718750 (443.2K 1300.2%)
- *                     uncertainty:   1.5%
- * <br>
- * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
- * <br>
- * Water32LongHashBench score: 842132.125000 (842.1K 1364.4%)
- *                  uncertainty:   0.2%
+ * Wisp32IntHashBench score: 887869.000000 (887.9K 1369.7%)
+ *                uncertainty:   0.4%
  */
-public final class ArraysHashcodeLongBench extends MiniBench {
+public final class Wisp32IntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final long[] data = new long[SharedConstants.DATA_SIZE];
-		LargeArrayGenerator.generate(-1L, data);
+		final int[] data = new int[SharedConstants.DATA_SIZE];
+		LargeArrayGenerator.generate(-1, 10000, data);
 		int result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += Arrays.hashCode(data);
+				result += CrossHash.Wisp.hash(data);
 				pauseTimer();
-				LargeArrayGenerator.generate(j + result, data);
+				LargeArrayGenerator.generate(j + result, 9999 - j, data);
 			}
 		}
 		return numLoops * numIterationsPerLoop;

@@ -30,7 +30,7 @@ public final class DumbIntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final int[] data = new int[2100];
+		final int[] data = new int[SharedConstants.DATA_SIZE];
 		LargeArrayGenerator.generate(-1, 10000, data);
 		final DumbHash hash = new DumbHash(1);
 		int result = 0;

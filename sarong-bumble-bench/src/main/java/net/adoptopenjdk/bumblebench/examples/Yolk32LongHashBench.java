@@ -31,7 +31,7 @@ public final class Yolk32LongHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final long[] data = new long[2100];
+		final long[] data = new long[SharedConstants.DATA_SIZE];
 		LargeArrayGenerator.generate(-1L, data);
 		final CrossHash.Yolk hash = new CrossHash.Yolk(1L);
 		int result = 0;

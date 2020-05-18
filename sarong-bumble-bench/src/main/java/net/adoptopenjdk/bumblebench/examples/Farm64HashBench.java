@@ -23,7 +23,7 @@ public final class Farm64HashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final long[] data = new long[2100];
+		final long[] data = new long[SharedConstants.DATA_SIZE];
 		LargeArrayGenerator.generate(-1L, data);
 		LongHashFunction farm = LongHashFunction.farmUo();
 		long result = 0;

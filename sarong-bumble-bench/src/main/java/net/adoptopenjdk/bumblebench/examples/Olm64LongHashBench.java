@@ -27,7 +27,7 @@ public final class Olm64LongHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final long[] data = new long[2100];
+		final long[] data = new long[SharedConstants.DATA_SIZE];
 		LargeArrayGenerator.generate(-1L, data);
 		long result = 0;
 		for (long i = 0; i < numLoops; i++) {
