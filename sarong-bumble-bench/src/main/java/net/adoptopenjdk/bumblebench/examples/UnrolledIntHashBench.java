@@ -19,8 +19,8 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 /**
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * UnrolledIntHashBench score: 965127.437500 (965.1K 1378.0%)
- *                  uncertainty:   0.4%
+ * UnrolledIntHashBench score: 967759.750000 (967.8K 1378.3%)
+ *                  uncertainty:   2.2%
  * <br>
  * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>

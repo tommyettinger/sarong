@@ -26,13 +26,16 @@ public final class DumbHash {
         }
         return (int) (r ^ r >>> 25 ^ r >>> 37);
     }
-    
+
+    /**
+     * This one isn't like the other hash algo here; it passes SMHasher and is quite fast.
+     * @param data an int array; checked for null, so you can pass null and get 0
+     * @return a good hash code, as an int
+     */
     public int unrolledHash(int[] data) {
         if (data == null)
             return 0;
-        //// seed can be any long.
-        //// the final step of the hash should handle avalanche decently-well.
-        long result = seed;
+        long result = seed ^ data.length * 0x9E3779B97F4A7C15L;
         int i = 0;
         for (; i + 7 < data.length; i += 8) {
             result = 0xEBEDEED9D803C815L * result
@@ -49,8 +52,12 @@ public final class DumbHash {
         for (; i < data.length; i++) {
             result = 0x9E3779B97F4A7C15L * result + data[i];
         }
-        // similar to LinnormRNG and its determine() method
-        return (int) ((result = ((result = (((result * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ result >>> 23 ^ result >>> 47) * 0xAEF17502108EF2D9L) ^ result >>> 25);
+        result *= 0x94D049BB133111EBL;
+        result ^= (result << 41 | result >>> 23) ^ (result << 17 | result >>> 47);
+        result *= 0x369DEA0F31A53F85L;
+        result ^= result >>> 31;
+        result *= 0xDB4F0B9175AE2165L;
+        return (int)(result ^ result >>> 28);
     }
 
     public int hash(long[] data) {
