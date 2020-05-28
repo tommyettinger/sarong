@@ -76,12 +76,12 @@ public final class DumbHash {
                     + 0xD1B54A32D192ED03L * data[i + 7]
             ;
         }
+        result ^= result >>> 37;
         for (; i < data.length; i++) {
             result = 0xCC62FCEB9202FAADL * (result + data[i]);
         }
 //        result *= 0xCB9C59B3F9F87D4DL;
-        result ^= result >>> 31;
-        result *= 0xDB4F0B9175AE2165L;
+        result = (result ^ result >>> 31) * 0xDB4F0B9175AE2165L;
         return (int)(result ^ result >>> 28);
     }
 

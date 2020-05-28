@@ -17,6 +17,7 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MiniBench;
 
 /**
+ * With data size 2100:
  * On Windows laptop, 6th gen i7 processor:
  * <br>
  * UnrolledIntHashBench score: 967759.750000 (967.8K 1378.3%)
@@ -24,7 +25,29 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
  * <br>
  * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>
- * 
+ * UnrolledIntHashBench score: 1254688.125000 (1.255M 1404.2%)
+ *                  uncertainty:   0.1%
+ * <br>
+ * With much smaller data size (10):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * UnrolledIntHashBench score: 49564372.000000 (49.56M 1771.9%)
+ *                  uncertainty:   0.1%
+ * <br>
+ * With mid-range data size (50):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * UnrolledIntHashBench score: 28316184.000000 (28.32M 1715.9%)
+ *                  uncertainty:   0.5%
+ * <br>
+ * With larger data size (10000):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * UnrolledIntHashBench score: 269041.781250 (269.0K 1250.3%)
+ *                  uncertainty:   0.1%
  */
 public final class UnrolledIntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }

@@ -22,6 +22,30 @@ import sarong.util.CrossHash;
  * <br>
  * Hive32IntHashBench score: 321823.625000 (321.8K 1268.2%)
  *                uncertainty:   0.3%
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Unrolled2IntHashBench score: 1255585.375000 (1.256M 1404.3%)
+ *                   uncertainty:   0.1%
+ * <br>
+ * With much smaller data size (10):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Hive32IntHashBench score: 52656432.000000 (52.66M 1777.9%)
+ *                uncertainty:   0.4%
+ * <br>
+ * With mid-range data size (50):
+ * <br>
+ * Hive32IntHashBench score: 14193711.000000 (14.19M 1646.8%)
+ *                uncertainty:   0.1%
+ * <br>
+ * With larger data size (10000):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Hive32IntHashBench score: 77463.421875 (77.46K 1125.8%)
+ *                uncertainty:   0.2%
  */
 public final class Hive32IntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }

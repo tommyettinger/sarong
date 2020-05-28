@@ -17,12 +17,20 @@ package net.adoptopenjdk.bumblebench.examples;
 import net.adoptopenjdk.bumblebench.core.MiniBench;
 
 /**
+ * With data size 2100:
  * On Windows laptop, 6th gen i7 processor:
  * <br>
  * <br>
- * On Linux laptop, 8th gen i7 processor (JDK 14 HotSpot)
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>
- * Unrolled2IntHashBench score: 1254683.250000 (1.255M 1404.2%)
+ * Unrolled2IntHashBench score: 1255585.375000 (1.256M 1404.3%)
+ *                   uncertainty:   0.1%
+ * <br>
+ * With much smaller data size (10):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Unrolled2IntHashBench score: 49594004.000000 (49.59M 1771.9%)
  *                   uncertainty:   0.1%
  */
 public final class Unrolled2IntHashBench extends MiniBench {

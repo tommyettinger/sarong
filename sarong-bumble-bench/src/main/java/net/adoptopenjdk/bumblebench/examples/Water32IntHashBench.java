@@ -27,6 +27,27 @@ import sarong.util.CrossHash;
  * <br>
  * Water32IntHashBench score: 951661.437500 (951.7K 1376.6%)
  *                 uncertainty:   0.1%
+ * <br>
+ * With much smaller data size (10):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Water32IntHashBench score: 55216020.000000 (55.22M 1782.7%)
+ *                 uncertainty:   0.3%
+ * <br>
+ * With mid-range data size (50):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Water32IntHashBench score: 25330418.000000 (25.33M 1704.8%)
+ *                 uncertainty:   0.1%
+ * <br>
+ * With larger data size (10000):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * Water32IntHashBench score: 202117.140625 (202.1K 1221.7%)
+ *                 uncertainty:   0.2%
  */
 public final class Water32IntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }

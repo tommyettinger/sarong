@@ -19,6 +19,8 @@ import net.adoptopenjdk.bumblebench.core.MiniBench;
 import java.util.Arrays;
 
 /**
+ * With data size 2100:
+ * <br>
  * On Windows laptop, 6th gen i7 processor:
  * <br>
  * ArraysHashcodeIntBench score: 452305.968750 (452.3K 1302.2%)
@@ -26,8 +28,29 @@ import java.util.Arrays;
  * <br>
  * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
  * <br>
- * Water32IntHashBench score: 951661.437500 (951.7K 1376.6%)
- *                 uncertainty:   0.1%
+ * ArraysHashcodeIntBench score: 639157.562500 (639.2K 1336.8%)
+ *                    uncertainty:   0.1%
+ * <br>
+ * With much smaller data size (10):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * ArraysHashcodeIntBench score: 54962792.000000 (54.96M 1782.2%)
+ *                    uncertainty:   0.0%
+ * <br>
+ * With mid-range data size (50):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * ArraysHashcodeIntBench score: 18998726.000000 (19.00M 1676.0%)
+ *                    uncertainty:   0.1%
+ * <br>
+ * With larger data size (10000):
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 8 HotSpot)
+ * <br>
+ * ArraysHashcodeIntBench score: 135304.781250 (135.3K 1181.5%)
+ *                    uncertainty:   0.2%
  */
 public final class ArraysHashcodeIntBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
