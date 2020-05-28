@@ -15,27 +15,30 @@
 package net.adoptopenjdk.bumblebench.examples;
 
 import net.adoptopenjdk.bumblebench.core.MiniBench;
-import sarong.util.CrossHash;
 
 /**
  * On Windows laptop, 6th gen i7 processor:
  * <br>
- * Olm64LongHashBench score: 224579.500000 (224.6K 1232.2%)
- *                uncertainty:   3.6%
+ * <br>
+ * On Linux laptop, 8th gen i7 processor (JDK 14 HotSpot)
+ * <br>
+ * Unrolled2IntHashBench score: 1254683.250000 (1.255M 1404.2%)
+ *                   uncertainty:   0.1%
  */
-public final class Olm64LongHashBench extends MiniBench {
+public final class Unrolled2IntHashBench extends MiniBench {
 	protected int maxIterationsPerLoop(){ return 300007; }
 
 	protected long doBatch(long numLoops, int numIterationsPerLoop) throws InterruptedException {
-		final long[] data = new long[SharedConstants.DATA_SIZE];
-		LargeArrayGenerator.generate(-1L, data);
-		long result = 0;
+		final int[] data = new int[SharedConstants.DATA_SIZE];
+		LargeArrayGenerator.generate(-1, 10000, data);
+		final DumbHash hash = new DumbHash(1);
+		int result = 0;
 		for (long i = 0; i < numLoops; i++) {
 			for (int j = 0; j < numIterationsPerLoop; j++) {
 				startTimer();
-				result += CrossHash.Olm.hash64(data);
+				result += hash.unrolledHash2(data);
 				pauseTimer();
-				LargeArrayGenerator.generate(j, data);
+				LargeArrayGenerator.generate(j + result, 9999 - j, data);
 			}
 		}
 		return numLoops * numIterationsPerLoop;
