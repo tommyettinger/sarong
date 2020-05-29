@@ -5,12 +5,14 @@ import sarong.util.StringKit;
 import java.io.Serializable;
 
 /**
- * A larger-period generator with 128 bits of state, good speed, and high quality in PractRand testing; it is
+ * A larger-period generator with 128 bits of state, good speed, and high quality in PractRand testing; it is at least
  * 1-dimensionally equidistributed. It appears to be slightly faster than a Xorshift128+ generator, like RandomXS128 in
  * libGDX, with practically the same period (this has a period of 2 to the 128), but it isn't as fast as as
  * {@link OrbitRNG} or {@link GearRNG} (Goat seems to have higher statistical quality than either of those late in
- * testing, though). It passes 32TB of PractRand testing with no anomalies, and might be able to endure tests past the
- * normal default of 32TB.
+ * testing, though). It passes 64TB of PractRand testing with no anomalies, and might be able to endure tests past even
+ * that (the default setting stops at 32TB); I had set up PractRand to test up to 128TB but it ran out of memory after
+ * 5 days of nonstop testing on all 6 cores. If 16GB of RAM isn't enough to find even an anomaly in GoatRNG, then it is
+ * probably quite good.
  * <br>
  * Unlike most RNGs from outside Goat, Gear, and Orbit's family, this relies on a conditional and comparison to achieve
  * both its period and randomness goals. All of these generators use two additive sequences for their states, and stall
@@ -26,7 +28,7 @@ import java.io.Serializable;
  * It is called GhoulRNG in some tests run on it; an earlier version of GoatRNG also exists
  * that does well in testing for the first 32TB and then suddenly has serious issues.
  * <br>
- * Created by Tommy Ettinger on 7/9/2018.
+ * Created by Tommy Ettinger on 5/8/2020.
  */
 public final class GoatRNG implements RandomnessSource, Serializable {
     private static final long serialVersionUID = 1L;
