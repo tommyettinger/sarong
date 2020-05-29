@@ -33,12 +33,11 @@ public final class DumbHash {
      * @return a good hash code, as an int
      */
     public int unrolledHash(int[] data) {
-        if (data == null)
-            return 0;
+        if (data == null) return 0;
         long result = seed ^ data.length * 0x9E3779B97F4A7C15L;
         int i = 0;
         for (; i + 7 < data.length; i += 8) {
-            result = 0xEBEDEED9D803C815L * result
+            result =  0xEBEDEED9D803C815L * result
                     + 0xD96EB1A810CAAF5FL * data[i]
                     + 0xC862B36DAF790DD5L * data[i + 1]
                     + 0xB8ACD90C142FE10BL * data[i + 2]
