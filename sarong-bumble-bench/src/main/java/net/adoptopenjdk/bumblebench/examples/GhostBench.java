@@ -63,10 +63,10 @@ public final class GhostBench extends MicroBench {
 
 		@Override
 		public final int next(final int bits) {
-			long s = (stateA += 0xCB9C59B3F9F87D4DL);
-			final long t = s == 0L ? stateB : (stateB += 0x3463A64C060782B1L);
-			s = (s ^ s >>> 31) * ((t ^ t << 9) | 1L);
-			return (int)(s ^ s >>> 27) >>> -bits;
+			final long s = (stateA += 0xCB9C59B3F9F87D4DL);
+			long t = (stateB += 0x3463A64C060782B2L) * (s ^ s >>> 31);
+			t ^= t >>> 23;
+			return (int)(t ^ t >>> 27) >>> -bits;
 		}
 		
 		@Override
@@ -90,8 +90,13 @@ public final class GhostBench extends MicroBench {
             //        if (s > 0x3000000000000000L) stateB += 0xB1E131D6149D9795L;
             //        return z ^ z >>> 25;
 
+
+//			final long s = (stateA += 0xCB9C59B3F9F87D4DL);
+//			final long t = (s == 0L ? 0L : (stateB += 0x3463A64C060782B2L) * (s ^ s >>> 31));
+//			return t ^ t >>> 27;
 			final long s = (stateA += 0xCB9C59B3F9F87D4DL);
-			final long t = (s == 0L ? 0L : (stateB += 0x3463A64C060782B2L) * (s ^ s >>> 31));
+			long t = (stateB += 0x3463A64C060782B2L) * (s ^ s >>> 31);
+			t ^= t >>> 23;
 			return t ^ t >>> 27;
 		}
 

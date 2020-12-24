@@ -25,7 +25,24 @@ public class PeriodTest {
                 break;
             }
         }
+    }
 
+    /**
+     * Testing a 16-bit Galois LFSR, in stateB, as the changing increment for a 16-bit counter, stateA.
+     * The total period is 0xFFFF0000, or (2 to the 16) times ((2 to the 16) minus 1); as long as stateB isn't set to 0,
+     * it won't have any smaller subcycles.
+     */
+    @Test
+    public void checkPeriod32_Ginger(){
+        short stateA = 1, stateB = 1;
+        long i = 0;
+        while (++i < 0x200000000L) {
+//            if ((stateB = (short) (0x81 + ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
+            if ((stateA += ~(stateB = (short) ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
+                System.out.printf("Ginger: 0x%08X\n", i);
+                break;
+            }
+        }
     }
 
     @Test
