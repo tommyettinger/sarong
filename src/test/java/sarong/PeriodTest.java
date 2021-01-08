@@ -44,6 +44,22 @@ public class PeriodTest {
             }
         }
     }
+    @Test
+    public void checkPeriod32_Giblet(){
+        short stateA = 1, stateB = 1;
+        long i = 0;
+        while (++i < 0x200000000L) {
+            //					uint64_t s = (stateA += 0xCC62FCEB9202FAADUL);
+            //					s = (s ^ s >> 31 ^ (stateB = s < 0xD1342543DE82EF95UL ? stateB : (stateB >> 1UL ^ (0UL - (stateB & 1UL) & 0xD800000000000000UL)))) * 0xC6BC279692B5C323UL;
+            //					return s ^ s >> 28;
+            short s = (stateA += 0xFAAB);
+            if(s < 0x5195) stateB = (short) ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400));
+            if (s == 1 && stateB == 1) {
+                System.out.printf("Giblet: 0x%08X\n", i);
+                break;
+            }
+        }
+    }
 
     @Test
     public void checkPeriod64() {
