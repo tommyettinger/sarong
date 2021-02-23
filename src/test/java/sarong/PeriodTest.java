@@ -75,13 +75,13 @@ public class PeriodTest {
     }
 
     /**
-     * Best multiplier for an 8-bit result MWC generator is 122, with a period of 0x3CFF. Not equidistributed at all.
+     * Best multiplier for an 8-bit result MWC generator is 249, with a period of 0x7C7F. Not equidistributed at all.
      */
     @Test
     public void optimize16_MWC(){
         final short initial = 1;
         int bestMul = 1, bestPeriod = 0;
-        for (int m = 2; m < 128; m++) {
+        for (int m = 2; m < 256; m++) {
             short state = initial;
             int i = 0;
             while (++i < 0x10001L) {

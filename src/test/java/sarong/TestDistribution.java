@@ -224,8 +224,8 @@ public class TestDistribution {
     {
         short state = 1;
         short[] counts = new short[256];
-        for (int i = 0; i < 0x3CFF; i++) {
-            int s = (state = (short) (122 * (state & 0xFF) + (state >>> 8 & 0xFF))) & 0xFF;
+        for (int i = 0; i < 0x7C7F; i++) {
+            int s = (state = (short) (249 * (state & 0xFF) + (state >>> 8 & 0xFF))) & 0xFF;
             counts[s]++;
         }
         for (int y = 0, i = 0; y < 16; y++) {
