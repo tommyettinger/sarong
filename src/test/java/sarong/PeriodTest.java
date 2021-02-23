@@ -60,6 +60,44 @@ public class PeriodTest {
             }
         }
     }
+    @Test
+    public void checkPeriod32_MWC(){
+        final int initial = 1;
+        int state = initial;
+        long i = 0;
+        while (++i < 0x100000001L) {
+            state = 36969 * (state & 0xFFFF) + (state >>> 16);
+            if (state == initial) {
+                System.out.printf("MWC: 0x%08X\n", i);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Best multiplier for an 8-bit result MWC generator is 122, with a period of 0x3CFF. Not equidistributed at all.
+     */
+    @Test
+    public void optimize16_MWC(){
+        final short initial = 1;
+        int bestMul = 1, bestPeriod = 0;
+        for (int m = 2; m < 128; m++) {
+            short state = initial;
+            int i = 0;
+            while (++i < 0x10001L) {
+                state = (short) ((0xFFFF & m * (state & 0xFF)) + (state >>> 8 & 0xFF));
+                if (state == initial) {
+                    System.out.printf("multiplier=%3d has period=0x%04X\n", m, i);
+                    if(i > bestPeriod) {
+                        bestMul = m;
+                        bestPeriod = i;
+                    }
+                    break;
+                }
+            }
+        }
+        System.out.printf("Best multiplier=%d with period=0x%04X\n", bestMul, bestPeriod);
+    }
 
     @Test
     public void checkPeriod64() {

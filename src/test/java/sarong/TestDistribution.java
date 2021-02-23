@@ -219,4 +219,21 @@ public class TestDistribution {
         }
     }
 
+    @Test
+    public void testMWC8Bit()
+    {
+        short state = 1;
+        short[] counts = new short[256];
+        for (int i = 0; i < 0x3CFF; i++) {
+            int s = (state = (short) (122 * (state & 0xFF) + (state >>> 8 & 0xFF))) & 0xFF;
+            counts[s]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
 }
