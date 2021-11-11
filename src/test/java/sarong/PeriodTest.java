@@ -44,6 +44,7 @@ public class PeriodTest {
             }
         }
     }
+
     @Test
     public void checkPeriod32_Giblet(){
         short stateA = 1, stateB = 1;
@@ -60,6 +61,38 @@ public class PeriodTest {
             }
         }
     }
+
+    @Test
+    public void checkPeriod32_Slide(){
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1;
+        int bestInc = 1;
+        for (int b = 1; b < 256; b+=2) {
+            long i = 0;
+            while (++i <= 0x100000100L) {
+                final int fa = stateA;
+                final int fb = stateB;
+                final int fc = stateC;
+                final int fd = stateD;
+                stateA = fc ^ fd; // best b is 227, 0xFEF72B34
+//                stateA = fb ^ fc ^ fd; // best b is 155, 0xFE1803FB
+                stateB = (fa << 5 | fa >>> 3) & 255;
+                stateC = fa + fb & 255;
+                stateD = fc + b & 255;
+                if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
+                    System.out.printf(b + ": 0x%08X\n", i);
+                    if(i > best)
+                    {
+                        best = i;
+                        bestInc = b;
+                    }
+                    break;
+                }
+            }
+        }
+        System.out.println("Best addend was " + bestInc);
+    }
+
     @Test
     public void checkPeriod32_MWC(){
         final int initial = 1;
