@@ -80,7 +80,9 @@ public class PeriodTest {
 //                stateB = (fa << 5 | fa >>> 3) & 255;
 //                stateC = fa + fb & 255;
 //                stateD = fc + b & 255;
-                stateA = (fc + fd) & 255; // best b is
+
+//                stateA = (fc + fd) & 255; // best b is 34, 0xFFCA0B79, worst cycle is 5, from [20 254 127 19]
+                stateA = fc ^ fd; // best b is 18, 0xFF7A48C6, worst cycle is , from []
                 stateB = (fa << 5 | fa >>> 3) & 255;
                 stateC = fa + fb & 255;
                 stateD = fc ^ b;
@@ -96,6 +98,36 @@ public class PeriodTest {
             }
         }
         System.out.println("Best addend was " + bestInc);
+    }
+
+    @Test
+    public void checkPeriod32_Slip(){
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1;
+        int bestInc = 1;
+        for (int b = 1; b < 256; b+=2) {
+            long i = 0;
+            while (++i <= 0x100000100L) {
+                final int fa = stateA;
+                final int fb = stateB;
+                final int fc = stateC;
+                final int fd = stateD;
+                stateA = fc ^ fd; // best b is 189, 0xFB0A5400, worst cycle is 768, from [0 132 3 118]
+                stateB = (fa << 5 | fa >>> 3) & 255;
+                stateC = fa + fb & 255;
+                stateD = fd + b & 255;
+                if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
+                    System.out.printf(b + ": 0x%08X\n", i);
+                    if(i > best)
+                    {
+                        best = i;
+                        bestInc = b;
+                    }
+                    break;
+                }
+            }
+        }
+        System.out.println("Best increment was " + bestInc);
     }
 
     @Test
@@ -122,10 +154,52 @@ public class PeriodTest {
 //                            stateB = (fa << 5 | fa >>> 3) & 255;
 //                            stateC = fa + fb & 255;
 //                            stateD = fc + 233 & 255;
-                            stateA = (fc + fd) & 255; // best b is 34, 0xFFCA0B79, worst cycle is 5, from [20 254 127 19]
+
+//                            stateA = (fc + fd) & 255; // best b is 34, 0xFFCA0B79, worst cycle is 5, from [20 254 127 19]
+                            stateA = fc ^ fd; // best b is 18, 0xFF7A48C6, worst cycle is 1, from [18 66 84 70]
                             stateB = (fa << 5 | fa >>> 3) & 255;
                             stateC = fa + fb & 255;
-                            stateD = fc ^ 34;
+                            stateD = fc ^ 18;
+                            if (stateA == sa && stateB == sb && stateC == sc && stateD == sd) {
+                                if (i < worst) {
+                                    worst = i;
+                                    wa = sa;
+                                    wb = sb;
+                                    wc = sc;
+                                    wd = sd;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        System.out.printf("Worst cycle was %d with states %d %d %d %d\n", worst, wa, wb, wc, wd);
+    }
+
+    @Test
+    public void checkWorstPeriod32_Slip(){
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, wa = 0, wb = 0, wc = 0, wd = 0;
+        long worst = ~0xFB0A5400;
+        for (int sa = 0; sa < 256; sa++) {
+            for (int sb = 0; sb < 256; sb++) {
+                for (int sc = 0; sc < 256; sc++) {
+                    for (int sd = 0; sd < 256; sd++) {
+                        stateA = sa;
+                        stateB = sb;
+                        stateC = sc;
+                        stateD = sd;
+                        long i = 0;
+                        while (++i <= worst) {
+                            final int fa = stateA;
+                            final int fb = stateB;
+                            final int fc = stateC;
+                            final int fd = stateD;
+                            stateA = fc ^ fd; // best b is 189, 0xFB0A5400, worst cycle is 768, from [0 132 3 118]
+                            stateB = (fa << 5 | fa >>> 3) & 255;
+                            stateC = fa + fb & 255;
+                            stateD = fd + 189 & 255;
                             if (stateA == sa && stateB == sb && stateC == sc && stateD == sd) {
                                 if (i < worst) {
                                     worst = i;
