@@ -289,6 +289,38 @@ public class PeriodTest {
     }
 
     @Test
+    public void checkPeriod32_Xoshiro4x8(){
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1;
+        int bestShift = 1, bestRot = 1;
+        for (int shift = 1; shift < 8; shift++) {
+            for (int rot = 1; rot < 8; rot++) {
+                long i = 0;
+                while (++i <= 0x100000100L) {
+                    int t = stateB << shift & 255;
+                    stateC ^= stateA;
+                    stateD ^= stateB;
+                    stateB ^= stateC;
+                    stateA ^= stateD;
+                    stateC ^= t;
+                    stateD = (stateD << rot | stateD >>> 8 - rot) & 255;
+
+                    if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
+                        System.out.printf("shift %d, rot %d: 0x%08X\n", shift, rot, i);
+                        if (i > best) {
+                            best = i;
+                            bestShift = shift;
+                            bestRot = rot;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        System.out.printf("Best shift was %d, best rotation was %d, with period %08X", bestShift, bestRot, best);
+    }
+
+    @Test
     public void checkPeriod32_MWC(){
         final int initial = 1;
         int state = initial;
