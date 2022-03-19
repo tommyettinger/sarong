@@ -27,6 +27,44 @@ public class PeriodTest {
         }
     }
 
+    @Test
+    public void checkPeriod32_Weird(){
+        int stateA = 1;
+        long i = 0;
+        final int a = 3;
+        for (; i != -1; i++) {
+            if ((stateA = Integer.rotateLeft(~stateA, 1)) == 1) {
+                System.out.printf("(~(state + 0x%08X): 0x%08X\n", a, i);
+                break;
+            }
+        }
+    }
+
+    @Test
+    public void checkPeriod32_LFSR(){
+        int state = 1, i = 1;
+        for (; i != -1; i++) {
+//            if ((state = state >>> 1 ^ (-(state & 1) & 0xA3000000)) == 1) {
+            if ((state = state << 1 ^ ((state >> 31) & 0x000000C5)) == 1) {
+                System.out.printf("LFSR: 0x%08X\n", i);
+                return;
+            }
+        }
+        System.out.printf("Full period: %08X", i);
+    }
+    @Test
+    public void checkPeriod32_Sprig(){
+        short stateA = 1, stateB = 1;
+        long i = 0;
+        while (++i < 0x200000000L) {
+//            if ((stateB = (short) (0x81 + ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
+            if ((stateA = (short) ((stateB += 0xDE4D) + (stateA << 10 | (stateA & 0xFFFF) >>> 6))) == 1 && stateB == 1) {
+                System.out.printf("Sprig: 0x%08X\n", i);
+                break;
+            }
+        }
+    }
+
     /**
      * Testing a 16-bit Galois LFSR, in stateB, as the changing increment for a 16-bit counter, stateA.
      * The total period is 0xFFFF0000, or (2 to the 16) times ((2 to the 16) minus 1); as long as stateB isn't set to 0,
@@ -329,7 +367,7 @@ public class PeriodTest {
         }
 //        System.out.printf("(state -= Long.rotateLeft(state * 8997361904524633241L, 35)): 0x%08X\n", i);
 //        System.out.printf("(state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)): 0x%08X\n", i);
-        System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
+        System.out.printf("(state += state >>> 47; state += state << 16): 0x%08X\n", i);
     }
     @Test
     public void checkPeriod64_cmr() {
