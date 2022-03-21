@@ -320,6 +320,61 @@ public class PeriodTest {
         System.out.printf("Best shift was %d, best rotation was %d, with period %08X", bestShift, bestRot, best);
     }
 
+    /**
+     * This at least shows that the bottom 4 bits of a combined xoshiro ^ weyl sequence generator are 4-dimensionally
+     * equidistributed.
+     * @param args
+     */
+//    public void checkDistributionOverload40(String[] args) {
+    public static void main(String[] args) {
+        long[] counts = new long[0x10000];
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1, t, join;
+        final int inc = 5;
+        for (long i = 0; i < 0x3FFFFFFFC0L; i++) {
+            join = (stateB ^ (stateE = stateE + inc & 255)) & 0x000F;
+            t = stateB << 3 & 255;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 7) & 255;
+            join |= (stateB ^ (stateE = stateE + inc & 255)) << 4 & 0x00F0;
+            t = stateB << 3 & 255;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 7) & 255;
+            join |= (stateB ^ (stateE = stateE + inc & 255)) << 8 & 0x0F00;
+            t = stateB << 3 & 255;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 7) & 255;
+            counts[join | ((stateB ^ (stateE = stateE + inc & 255)) << 12 & 0xF000)]++;
+            t = stateB << 3 & 255;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 7) & 255;
+        }
+        for (int i = 0; i < 0x100;) {
+            System.out.printf("%10X: %010X %010X %010X %010X %010X %010X %010X %010X\n            %010X %010X %010X %010X %010X %010X %010X %010X\n", i
+                    , counts[i++], counts[i++], counts[i++], counts[i++]
+                    , counts[i++], counts[i++], counts[i++], counts[i++]
+                    , counts[i++], counts[i++], counts[i++], counts[i++]
+                    , counts[i++], counts[i++], counts[i++], counts[i++]
+            );
+        }
+    }
+
+
     @Test
     public void checkPeriod32_MWC(){
         final int initial = 1;
@@ -458,7 +513,7 @@ public class PeriodTest {
         System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
     }
     ///////// BEGIN subcycle finder code and period evaluator
-    public static void main(String[] args)
+    public static void subcycleFinder(String[] args)
 //    @Test
 //    public void testSubcycle32()
     {
