@@ -236,4 +236,32 @@ public class TestDistribution {
         }
     }
 
+    @Test
+    public void test16BitMulShift()
+    {
+        short result, xor = 0;
+        BigInt sum = new BigInt(0);
+        //long[] counts = new long[256];
+        RoaringBitmap all = new RoaringBitmap();
+        for (int i = 0; i < 0x10000; i++) {
+            //t = (short)(i + 0x9E37);
+            //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
+            final long n = i * 0x9E3779B9L;
+            result = (short) (n >>> 16);
+            xor ^= result;
+            sum.add(result);
+            all.flip(result & 0xFFFF);
+        }
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+        System.out.println(sum + ", should be -" + (0x8000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
+//        int b = -1;
+//        for (int i = 0; i < 32; i++) {
+//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
+//        }
+    }
+
 }
