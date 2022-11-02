@@ -268,6 +268,10 @@ public class TestDistribution {
         final int h = (((x * 0x1827F5) + (y * 0x123C21) - n ^ 0xD1B54A35) * 0x9E373 ^ 0x91E10DA5) * 0x125493;
         return h ^ (h & 0xFFFF) >>> 11 ^ (h & 0xFFFF) >>> 5;
     }
+    public static int iphCoord(int x, int y, int s) {
+        s ^= x * 0x1827F5 ^ y * 0x123C21;
+        return (s = (s ^ (s << 9 | (s & 0xFFFF) >>> 7) ^ (s << 3 | (s & 0xFFFF) >>> 13) ^ 0xD1B54A35) * 0x125493) ^ (s & 0xFFFF) >>> 5;
+    }
 
     @Test
     public void test16BitHashDist()
@@ -287,7 +291,7 @@ public class TestDistribution {
 //                result = (short) (n ^ (n << 11 | (n & 0xFFFF) >>> 5) ^ (n << 3 | (n & 0xFFFF) >>> 13));
                 //scratcherCoord was found and apparently forgotten about, despite colliding less in tables?
                 // it is also evenly distributed when adapted for shorts.
-                result = (short)scratcherCoord(x, y);
+                result = (short)iphCoord(x, y, 123);
                 xor ^= result;
                 sum.add(result);
                 all.add(result & 0xFFFF);
