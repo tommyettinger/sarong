@@ -246,7 +246,7 @@ public class TestDistribution {
         for (int i = 0; i < 0x10000; i++) {
             //t = (short)(i + 0x9E37);
             //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
-            final long n = i * 0x9E3779B9L;
+            final long n = i * 0x9E3779B9L & 0xFFFFFFFFL;
             result = (short) (n >>> 16);
             xor ^= result;
             sum.add(result);
@@ -254,6 +254,38 @@ public class TestDistribution {
         }
         System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
         System.out.println(sum + ", should be -" + (0x8000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
+//        int b = -1;
+//        for (int i = 0; i < 32; i++) {
+//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
+//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
+//        }
+    }
+
+    @Test
+    public void test16BitHashDist()
+    {
+        short result, xor = 0;
+        BigInt sum = new BigInt(0);
+        //long[] counts = new long[256];
+        RoaringBitmap all = new RoaringBitmap();
+        ALL:
+        for (int x = 0; x < 0x10000; x++) {
+            for (int y = 0; y < 0x10000; y++) {
+                // surprisingly, this isn't at all evenly distributed... It does produce all hash codes.
+                final long n = x * 0xC13FA9A9L + y * 0x91E10DA5L & 0xFFFFFFFFL;
+                result = (short) (n ^ n >>> 16);
+                xor ^= result;
+                sum.add(result);
+                all.add(result & 0xFFFF);
+//                if (all.cardinalityExceeds(0xFFFF))
+//                    break ALL;
+            }
+        }
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+        System.out.println(sum + ", should be " + (0L));
         System.out.println(Integer.toBinaryString(xor) + " " + xor);
         System.out.println(all.getLongCardinality());
 //        int b = -1;
