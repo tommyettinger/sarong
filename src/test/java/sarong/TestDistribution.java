@@ -274,9 +274,12 @@ public class TestDistribution {
         ALL:
         for (int x = 0; x < 0x10000; x++) {
             for (int y = 0; y < 0x10000; y++) {
-                // surprisingly, this isn't at all evenly distributed... It does produce all hash codes.
-                final long n = x * 0xC13FA9A9L + y * 0x91E10DA5L & 0xFFFFFFFFL;
-                result = (short) (n ^ n >>> 16);
+//                // surprisingly, this isn't at all evenly distributed... It does produce all hash codes.
+//                final long n = x * 0xC13FA9A9L + y * 0x91E10DA5L & 0xFFFFFFFFL;
+//                result = (short) (n ^ n >>> 16);
+                // however, this one is evenly distributed, producing all shorts equally often.
+                final long n = (x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L & 0xFFFFFFFFL;
+                result = (short) (n ^ (n << 11 | (n & 0xFFFF) >>> 5) ^ (n << 3 | (n & 0xFFFF) >>> 13));
                 xor ^= result;
                 sum.add(result);
                 all.add(result & 0xFFFF);
@@ -284,8 +287,8 @@ public class TestDistribution {
 //                    break ALL;
             }
         }
-        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
-        System.out.println(sum + ", should be " + (0L));
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x80000000L));
+        System.out.println(sum + ", should be -" + (0x80000000L));
         System.out.println(Integer.toBinaryString(xor) + " " + xor);
         System.out.println(all.getLongCardinality());
 //        int b = -1;
