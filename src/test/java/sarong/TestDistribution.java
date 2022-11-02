@@ -263,6 +263,11 @@ public class TestDistribution {
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
 //        }
     }
+    public static int scratcherCoord(final int x, final int y) {
+        final int n = 123;
+        final int h = (((x * 0x1827F5) + (y * 0x123C21) - n ^ 0xD1B54A35) * 0x9E373 ^ 0x91E10DA5) * 0x125493;
+        return h ^ (h & 0xFFFF) >>> 11 ^ (h & 0xFFFF) >>> 5;
+    }
 
     @Test
     public void test16BitHashDist()
@@ -277,9 +282,12 @@ public class TestDistribution {
 //                // surprisingly, this isn't at all evenly distributed... It does produce all hash codes.
 //                final long n = x * 0xC13FA9A9L + y * 0x91E10DA5L & 0xFFFFFFFFL;
 //                result = (short) (n ^ n >>> 16);
-                // however, this one is evenly distributed, producing all shorts equally often.
-                final long n = (x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L & 0xFFFFFFFFL;
-                result = (short) (n ^ (n << 11 | (n & 0xFFFF) >>> 5) ^ (n << 3 | (n & 0xFFFF) >>> 13));
+//                // however, this one is evenly distributed, producing all shorts equally often.
+//                final long n = (x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L & 0xFFFFFFFFL;
+//                result = (short) (n ^ (n << 11 | (n & 0xFFFF) >>> 5) ^ (n << 3 | (n & 0xFFFF) >>> 13));
+                //scratcherCoord was found and apparently forgotten about, despite colliding less in tables?
+                // it is also evenly distributed when adapted for shorts.
+                result = (short)scratcherCoord(x, y);
                 xor ^= result;
                 sum.add(result);
                 all.add(result & 0xFFFF);
