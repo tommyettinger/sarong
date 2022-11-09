@@ -236,32 +236,41 @@ public class TestDistribution {
         }
     }
 
+    public static int rotl16(int n, int amount) {
+        return (n << (amount & 15) & 0xFFFF) | (n & 0xFFFF) >>> (16 - amount & 15);
+    }
     @Test
     public void test16BitMulShift()
     {
         short result, xor = 0;
-        BigInt sum = new BigInt(0);
+        BigInt sum = new BigInt(0), ZERO = new BigInt(0);
         //long[] counts = new long[256];
         RoaringBitmap all = new RoaringBitmap();
-        for (int i = 0; i < 0x10000; i++) {
-            //t = (short)(i + 0x9E37);
-            //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
-            final long n = i * 0x9E3779B9L & 0xFFFFFFFFL;
-            result = (short) (n >>> 16);
-            xor ^= result;
-            sum.add(result);
-            all.flip(result & 0xFFFF);
+        for (int s = 1; s <= 16; s++) {
+            sum.and(ZERO);
+            all.clear();
+            result = 0;
+            xor = 0;
+            int mask = (1 << s) - 1;
+            for (int i = 0; i <= 0xFFFF; i++) {
+                //t = (short)(i + 0x9E37);
+                //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
+//                final long n = i * 0x9E3779B97F4A7C15L;
+                final int n = (i * (0x4F1) & 0xFFFF);
+//                result = (short) (n);
+                result = (short) ((n ^ n >>> 5 ^ n >>> 11) & mask);
+//                result = (short) ((n ^ rotl16(n, 5) ^ rotl16(n, 11))>>> 16 - s);
+//                result = (short) (n >>> 64 - s);
+                xor ^= result;
+                sum.add(result);
+                all.add(result & 0xFFFF);
+            }
+            System.out.println("\nWith " + s + " bits:");
+            System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+            System.out.println(sum + ", should be -" + (0x8000L));
+            System.out.println(Integer.toBinaryString(xor) + " " + xor);
+            System.out.println(all.getLongCardinality());
         }
-        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
-        System.out.println(sum + ", should be -" + (0x8000L));
-        System.out.println(Integer.toBinaryString(xor) + " " + xor);
-        System.out.println(all.getLongCardinality());
-//        int b = -1;
-//        for (int i = 0; i < 32; i++) {
-//            System.out.printf("%03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X  %03d: %08X\n",
-//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
-//                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
-//        }
     }
     public static int scratcherCoord(final int x, final int y) {
         final int n = 123;
