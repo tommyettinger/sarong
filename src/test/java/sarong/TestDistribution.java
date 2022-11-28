@@ -348,11 +348,17 @@ public class TestDistribution {
     @Test
     public void test16BitXorSquareOr()
     {
-        short result, xor = 0;
+        short result, xor = 0, state = 0;
         BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
         for (int i = 0; i < 0x10000; i++) {
-            result = (short) (i ^ (i * i | 1)); // works, no fixed-points
+//            result = (short) (i ^ (i * i | 1)); // works, no fixed-points
+            state ^= (state * state | 1);
+            result = ++state; //Repeats after 16384 iterations
+            if(state == 0) {
+                System.out.println("Repeats after " + (i+1) + " iterations");
+                break;
+            }
             xor ^= result;
             sum.add(result);
             all.flip(result & 0xFFFF);
