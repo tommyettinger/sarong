@@ -154,7 +154,7 @@ public class TestDistribution {
         short t, result, xor = 0;
         BigInt sum = new BigInt(0);
         //long[] counts = new long[256];
-        Roaring64NavigableMap all = new Roaring64NavigableMap();
+        RoaringBitmap all = new RoaringBitmap();
         for (int i = 0; i < 0x10000; i++) {
             //t = (short)(i + 0x9E37);
             //result = (short) ((t << 9 | (t & 0xFFFF) >>> 7) + 0xADE5);
@@ -318,6 +318,49 @@ public class TestDistribution {
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b],
 //                    ++b, counts[b], ++b, counts[b], ++b, counts[b], ++b, counts[b]);
 //        }
+    }
+    @Test
+    public void test32BitXorSquareOr()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        //// testing this:
+//  const P0 = 0xa0761d6478bd642f'u64
+//  const P1 = 0xe7037ed1a0b428db'u64
+//  const P5x8 = 0xeb44accab455d1e5'u64
+//  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
+        //// 2011632872/4294967296 outputs were present.
+        //// 53.16302236169577% of outputs were missing.
+        for (; i < 0; i++) {
+            all.add(i ^ (i * i | 1));
+        }
+        for (; i >= 0; i++) {
+            all.add(i ^ (i * i | 1));
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
+    /**
+     * Testing <a href="https://github.com/skeeto/hash-prospector/issues/23">the xorsquare function</a>, or at least
+     * a previously-unproven variant on it.
+     */
+    @Test
+    public void test16BitXorSquareOr()
+    {
+        short result, xor = 0;
+        BigInt sum = new BigInt(0);
+        RoaringBitmap all = new RoaringBitmap();
+        for (int i = 0; i < 0x10000; i++) {
+            result = (short) (i ^ (i * i | 1)); // works, no fixed-points
+            xor ^= result;
+            sum.add(result);
+            all.flip(result & 0xFFFF);
+        }
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+        System.out.println(sum.toString() + ", should be -" + (0x8000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
     }
 
 }
