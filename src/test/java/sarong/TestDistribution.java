@@ -371,17 +371,23 @@ public class TestDistribution {
 
     /**
      * Testing <a href="https://github.com/skeeto/hash-prospector/issues/23">the xorsquare function</a>, or at least
-     * a previously-unproven variant on it.
+     * a previously-unproven variant on it. This is called XQO in my fork of hash-prospector, and there it currently
+     * only tests {@code x ^= x * x | 1;}, but this tries out other variants on xorsquare.
      */
     @Test
-    public void test16BitXorSquareOrShift()
+    public void test16BitXorSquareOrVariants()
     {
         short result, xor = 0, state = 0;
         BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
         for (int i = 0; i < 0x10000; i++) {
 //            result = (short) (i ^ (i * i | 1) ^ i >>> 1); // using a shift of 1, and only 1, generates only half of all results
-            result = (short) (i ^ (i * i * i * i | 1)); // using the 4th power instead of the 2nd still works (generates all results)
+//            result = (short) (i ^ (i * i * i * i | 1)); // using the 4th power instead of the 2nd still works (generates all results)
+//            result = (short) (i ^ (i * i | 3)); // not just 1 works for the OR operand!
+//            result = (short) (i ^ (i * i | 5)); // any odd number appears to work
+//            result = (short) (i ^ (i * i | 7)); // it isn't clear yet how much improvement could be expected by non-1 operands...
+            result = (short) (i ^ (i * i | 9)); // but that this does work is surprising and interesting.
+//            result = (short) (i ^ (i * i | 2)); // however, even operands don't work.
 //            state ^= (state * state | 1);
 //            result = ++state; //Repeats after 16384 iterations
 //            if(state == 0) {
@@ -390,11 +396,11 @@ public class TestDistribution {
 //            }
             xor ^= result;
             sum.add(result);
-            all.flip(result & 0xFFFF);
+            all.add(result & 0xFFFF);
         }
         System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
         System.out.println(sum + ", should be -" + (0x8000L));
         System.out.println(Integer.toBinaryString(xor) + " " + xor);
-        System.out.println(all.getLongCardinality());
+        System.out.println(all.getLongCardinality() + ", should be " + (0x10000L));
     }
 }
