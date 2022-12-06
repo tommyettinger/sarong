@@ -369,4 +369,31 @@ public class TestDistribution {
         System.out.println(all.getLongCardinality());
     }
 
+    /**
+     * Testing <a href="https://github.com/skeeto/hash-prospector/issues/23">the xorsquare function</a>, or at least
+     * a previously-unproven variant on it.
+     */
+    @Test
+    public void test16BitXorSquareOrShift()
+    {
+        short result, xor = 0, state = 0;
+        BigInt sum = new BigInt(0);
+        RoaringBitmap all = new RoaringBitmap();
+        for (int i = 0; i < 0x10000; i++) {
+            result = (short) (i ^ (i * i | 1) ^ i >>> 1); // using a shift of 1, and only 1, seems correct
+//            state ^= (state * state | 1);
+//            result = ++state; //Repeats after 16384 iterations
+//            if(state == 0) {
+//                System.out.println("Repeats after " + (i+1) + " iterations");
+//                break;
+//            }
+            xor ^= result;
+            sum.add(result);
+            all.flip(result & 0xFFFF);
+        }
+        System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
+        System.out.println(sum.toString() + ", should be -" + (0x8000L));
+        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+        System.out.println(all.getLongCardinality());
+    }
 }
