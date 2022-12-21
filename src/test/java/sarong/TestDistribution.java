@@ -324,18 +324,16 @@ public class TestDistribution {
     {
         final RoaringBitmap all = new RoaringBitmap();
         int i = 0x80000000;
-        //// testing this:
-//  const P0 = 0xa0761d6478bd642f'u64
-//  const P1 = 0xe7037ed1a0b428db'u64
-//  const P5x8 = 0xeb44accab455d1e5'u64
-//  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
-        //// 2011632872/4294967296 outputs were present.
-        //// 53.16302236169577% of outputs were missing.
+        int state = 0;
         for (; i < 0; i++) {
-            all.add(i ^ (i * i | 1));
+//            all.add(i ^ (i * i | 1));
+            all.add(state = (state ^ (state * state | 5)) * 259);
+            //4294967296/4294967296 outputs were present.
+            //0.0% of outputs were missing.
         }
         for (; i >= 0; i++) {
-            all.add(i ^ (i * i | 1));
+//            all.add(i ^ (i * i | 1));
+            all.add(state = (state ^ (state * state | 5)) * 259);
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
