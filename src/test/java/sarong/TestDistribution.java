@@ -418,4 +418,37 @@ public class TestDistribution {
         System.out.println(Integer.toBinaryString(xor) + " " + xor);
         System.out.println(all.getLongCardinality() + ", should be " + (0x10000L));
     }
+    @Test
+    public void test16BitXorSquareOrPeriods() {
+        short result = 0, xor = 0, state = 0;
+        BigInt sum = new BigInt(0);
+        RoaringBitmap all = new RoaringBitmap();
+        for (int j = 1; j < 0x10000; j += 2) { // when (j & 7) equals 5 or 7, this is full-period.
+            sum.assign(0);
+            all.clear();
+            xor = state = 0;
+            for (int i = 0; i < 0x10000; i++) {
+                // This (multiplier & 3) must equal 3.
+                // This includes all powers of two minus 1 that are greater than 2, and many LEA constants.
+                state ^= (state * state | j);
+                state *= 7;
+                //state = (state ^ (state * state | o5o7)) * m3;
+                result = state;
+                xor ^= result;
+                sum.add(result);
+                all.add(result & 0xFFFF);
+                if (state == 0) {
+                    if(i == 65535)
+//                    if(i > 16383)
+                    {
+                        System.out.println("Using j=" + j + " repeats after " + (i) + " iterations");
+                        System.out.println(sum + ", should be -" + (0x8000L));
+                        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+                        System.out.println(all.getLongCardinality() + ", should be " + (0x10000L));
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
