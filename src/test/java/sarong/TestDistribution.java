@@ -377,23 +377,38 @@ public class TestDistribution {
     @Test
     public void test16BitXorSquareOrVariants()
     {
-        short result, xor = 0, state = 0;
+        short result = 0, xor = 0, state = 0, m = 1;
+        int i = -0x80000000;
         BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
-        for (int i = 0; i < 0x10000; i++) {
+        for (; i < 0; i++) {
 //            result = (short) (i ^ (i * i | 1) ^ i >>> 1); // using a shift of 1, and only 1, generates only half of all results
 //            result = (short) (i ^ (i * i * i * i | 1)); // using the 4th power instead of the 2nd still works (generates all results)
 //            result = (short) (i ^ (i * i | 3)); // not just 1 works for the OR operand!
 //            result = (short) (i ^ (i * i | 5)); // any odd number appears to work
 //            result = (short) (i ^ (i * i | 7)); // it isn't clear yet how much improvement could be expected by non-1 operands...
-            result = (short) (i ^ (i * i | 9)); // but that this does work is surprising and interesting.
+//            result = (short) (i ^ (i * i | 9)); // but that this does work is surprising and interesting.
 //            result = (short) (i ^ (i * i | 2)); // however, even operands don't work.
+//            result = (state ^= (state * state | ((m += 0x666))));
 //            state ^= (state * state | 1);
+            result += state ^= (state * state | 1); //Repeats after 131072 iterations
 //            result = ++state; //Repeats after 16384 iterations
-//            if(state == 0) {
-//                System.out.println("Repeats after " + (i+1) + " iterations");
-//                break;
-//            }
+            if(state == 0 && result == 0) {
+                System.out.println("Repeats after " + (i+0x80000001L) + " iterations");
+                break;
+            }
+            xor ^= result;
+            sum.add(result);
+            all.add(result & 0xFFFF);
+        }
+        for (; i >= 0; i++) {
+//            result = (state ^= (state * state | ((m += 0x666))));
+//            state ^= (state * state | 1);
+            result += state ^= (state * state | 1);
+            if(state == 0 && result == 0) {
+                System.out.println("Repeats after " + (i+0x80000001L) + " iterations");
+                break;
+            }
             xor ^= result;
             sum.add(result);
             all.add(result & 0xFFFF);
