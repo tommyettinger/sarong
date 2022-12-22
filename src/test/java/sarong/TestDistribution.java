@@ -327,13 +327,16 @@ public class TestDistribution {
         int state = 0;
         for (; i < 0; i++) {
 //            all.add(i ^ (i * i | 1));
-            all.add(state = (state ^ (state * state | 5)) * 259);
+//            all.add(state = (state ^ (state * state | 5)) * 259);
+            all.add(state = -(state ^ (state * state | 5)));
+            //For each of the above three lines,
             //4294967296/4294967296 outputs were present.
             //0.0% of outputs were missing.
         }
         for (; i >= 0; i++) {
 //            all.add(i ^ (i * i | 1));
-            all.add(state = (state ^ (state * state | 5)) * 259);
+//            all.add(state = (state ^ (state * state | 5)) * 259);
+            all.add(state = -(state ^ (state * state | 5)));
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
@@ -429,8 +432,8 @@ public class TestDistribution {
                 // This (multiplier & 3) must equal 3.
                 // This includes all powers of two minus 1 that are greater than 2, and many LEA constants.
                 state ^= (state * state | j);
-                state *= 7;
-                //state = (state ^ (state * state | o5o7)) * m3;
+                state *= -1;
+                //state = (state ^ (state * state | o5o7)) * m3; // (o5o7 & 7) must equal 5 or 7, (m3 & 3) must equal 3.
                 result = state;
                 xor ^= result;
                 sum.add(result);
