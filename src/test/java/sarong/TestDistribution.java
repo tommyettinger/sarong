@@ -452,4 +452,34 @@ public class TestDistribution {
             }
         }
     }
+    @Test
+    public void test16BitMulPeriods() {
+        short result = 0, xor = 0, state = 0;
+        BigInt sum = new BigInt(0);
+        RoaringBitmap all = new RoaringBitmap();
+        for (int j = 3; j < 0x100; j += 4) {
+            sum.assign(0);
+            all.clear();
+            xor = 0;
+            state = 1;
+            for (int i = 0; i < 0x10000; i++) {
+                state *= j;
+                result = state;
+                xor ^= result;
+                sum.add(result);
+                all.add(result & 0xFFFF);
+                if (state == 1) {
+//                    if(i == 65535)
+//                    if(i > 1023)
+                    {
+                        System.out.println("Using j=" + j + " repeats after " + (i) + " iterations");
+                        System.out.println(sum + ", should be -" + (0x8000L));
+                        System.out.println(Integer.toBinaryString(xor) + " " + xor);
+                        System.out.println(all.getLongCardinality() + ", should be " + (0x10000L));
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
