@@ -126,6 +126,28 @@ public class TestDistribution {
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
+    /**
+     * Testing constant found by <a href="https://github.com/hayguen/mlpolygen">mlpolygen</a>. It works!
+     */
+    @Test
+    public void test32BitLFSR()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000, state = -1;
+        for (; i < 0; i++) {
+            all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
+            if(state == -1) break;
+        }
+        if(state != -1) {
+            for (; i >= 0; i++) {
+                all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
+                if(state == -1) break;
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
     public static void main(String[] args)
     {
         final RoaringBitmap all = new RoaringBitmap();
