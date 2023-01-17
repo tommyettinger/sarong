@@ -242,6 +242,27 @@ public class TestDistribution {
     }
 
     @Test
+    public void testTangly8Bit()
+    {
+        byte stateA = 0, stateB = 1;
+        short[] counts = new short[256];
+        for (int i = 0; i < 0x100; i++) {
+            byte s = (stateA += 0xCD);
+//            if(s == 0) stateB += 0x96;
+            s *= (stateB += 0x96);
+            s ^= (s & 255) >>> 3;
+            s *= stateB;
+            counts[(s ^ (s & 255) >>> 3) & 255]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testMWC8Bit()
     {
         short state = 1;
