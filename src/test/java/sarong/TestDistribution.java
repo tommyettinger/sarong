@@ -262,6 +262,33 @@ public class TestDistribution {
         }
     }
 
+    private int rotate8(int v, int amt) {
+        return (v << amt & 255) | ((v & 255) >>> -amt);
+    }
+    @Test
+    public void testWrangly8Bit()
+    {
+        short[] counts = new short[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int y = a, z = b;
+                z = z + (y ^ rotate8(y, 11) ^ rotate8(y, 50)) & 255;
+                y = y + (z ^ rotate8(z, 46) ^ rotate8(z, 21)) & 255;
+                z = z + (y ^ rotate8(y,  5) ^ rotate8(y, 14)) & 255;
+                y = y + (z ^ rotate8(z, 25) ^ rotate8(z, 41)) & 255;
+                z = z + (y ^ rotate8(y, 53) ^ rotate8(y,  3)) & 255;
+                y = y + (z ^ rotate8(z, 31) ^ rotate8(z, 37)) & 255;
+                counts[y ^ z]++;
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
     @Test
     public void testMWC8Bit()
     {
