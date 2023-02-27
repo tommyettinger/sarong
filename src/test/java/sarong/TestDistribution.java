@@ -289,6 +289,45 @@ public class TestDistribution {
         }
     }
     @Test
+    public void testWriggly8Bit()
+    {
+        short[] counts = new short[256];
+        int a = 1, b = 1;
+        do {
+            a = a + 157 & 255;
+            b = b + (byte)((byte)a + ((a & 255) >>> 1) >>> 31) & 255;
+            // the above line should increment b 85 out of 256 times.
+            // It's a nice branch-free way to guarantee a full period of 2 to the 16 for two 8-bit states.
+            // int sum = 0; for(int a = 0; a < 256; a++) {sum += (a + (a >>> 1) & 255) >>> 7;}
+            // // 85
+            // int sum = 0; for(int a = 0; a < 65536; a++) {sum += (a + (a >>> 1) & 65535) >>> 15;}
+            // // 21845
+            int y = a, z = b;
+            z = z + (y ^ rotate8(y, 11) ^ rotate8(y, 50)) & 255;
+            y = y + (z ^ rotate8(z, 46) ^ rotate8(z, 21)) & 255;
+            z = z + (y ^ rotate8(y, 5) ^ rotate8(y, 14)) & 255;
+            y = y + (z ^ rotate8(z, 27) ^ rotate8(z, 39)) & 255; // changed because of 8-bit stuff
+            z = z + (y ^ rotate8(y, 53) ^ rotate8(y, 3)) & 255;
+            y = y + (z ^ rotate8(z, 31) ^ rotate8(z, 37)) & 255;
+            counts[y ^ z]++;
+//            int y = a, z = b;
+//            z = z + (y ^ rotate8(y, 11) ^ rotate8(y, 50)) & 255;
+//            y = y + (z ^ rotate8(z, 46) ^ rotate8(z, 21)) & 255;
+//            z = z + (y ^ rotate8(y, 5) ^ rotate8(y, 14)) & 255;
+//            y = y + (z ^ rotate8(z, 25) ^ rotate8(z, 41)) & 255;
+//            z = z + (y ^ rotate8(y, 53) ^ rotate8(y, 3)) & 255;
+//            y = y + (z ^ rotate8(z, 31) ^ rotate8(z, 37)) & 255;
+//            counts[y ^ z]++;
+        } while (!(a == 1 && b == 1));
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testWrangly8BitSingles()
     {
         short[] counts = new short[256];
