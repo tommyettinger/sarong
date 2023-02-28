@@ -362,6 +362,38 @@ public class TestDistribution {
     }
 
     @Test
+    public void testJade8BitSingles()
+    {
+        short[] counts = new short[256];
+        short[] sums = new short[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
+//                z = z * ((y ^ 0x23) | 1) & 255;
+//                y = y * ((z ^ 0x95) | 1) & 255;
+                z = z * ((y ^ rotate8(y, 11) ^ rotate8(y, 50)) | 1) & 255;
+                y = y * ((z ^ rotate8(z, 31) ^ rotate8(z, 37)) | 1) & 255;
+                counts[y ^ y >>> 3]++;
+                sums[a] += y ^ y >>> 3;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("SUMS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testMWC8Bit()
     {
         short state = 1;
