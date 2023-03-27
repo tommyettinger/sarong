@@ -403,14 +403,15 @@ public class TestDistribution {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
 //                int q = n = n + 0x91 & 0xFF;
-                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
+                int q = n = n + ((m|0xAE-m) >>> 31) + 0x91 & 0xFF;
+//                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
 //                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
                 q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
                 r = r + (q ^ rotate8(q, 46) ^ rotate8(q, 21)) & 255;
                 q = q + (r ^ rotate8(r, 53) ^ rotate8(r,  3)) & 255;
                 r = r + (q ^ rotate8(q, 31) ^ rotate8(q, 37)) & 255;
-                counts[r ^ q]++;
-                sums[a] += r ^ q;
+                counts[r]++;
+                sums[a] += r;
             }
         }
         System.out.println("APPEARANCE COUNTS:");
