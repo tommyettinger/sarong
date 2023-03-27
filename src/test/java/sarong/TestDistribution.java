@@ -337,8 +337,8 @@ public class TestDistribution {
                 int y = a + b, z = b * 3;
                 z = z + (y ^ rotate8(y, 11) ^ rotate8(y, 50)) & 255;
                 y = y + (z ^ rotate8(z, 46) ^ rotate8(z, 21)) & 255;
-                z = z + (y ^ rotate8(y,  5) ^ rotate8(y, 14)) & 255;
-                y = y + (z ^ rotate8(z, 25) ^ rotate8(z, 41)) & 255;
+//                z = z + (y ^ rotate8(y,  3) ^ rotate8(y, 13)) & 255;
+//                y = y + (z ^ rotate8(z, 28) ^ rotate8(z, 41)) & 255;
                 z = z + (y ^ rotate8(y, 53) ^ rotate8(y,  3)) & 255;
                 y = y + (z ^ rotate8(z, 31) ^ rotate8(z, 37)) & 255;
                 counts[y ^ z]++;
@@ -375,6 +375,42 @@ public class TestDistribution {
                 y = y * ((z ^ rotate8(z, 31) ^ rotate8(z, 37)) | 1) & 255;
                 counts[y ^ y >>> 3]++;
                 sums[a] += y ^ y >>> 3;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("SUMS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testJacinth8BitOrbital()
+    {
+        short[] counts = new short[256];
+        short[] sums = new short[256];
+        int m = 0, n = 0;
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int r = m = m + 0xDB & 0xFF;
+//                int q = n = n + 0x91 & 0xFF;
+                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
+//                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
+                q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
+                r = r + (q ^ rotate8(q, 46) ^ rotate8(q, 21)) & 255;
+                q = q + (r ^ rotate8(r, 53) ^ rotate8(r,  3)) & 255;
+                r = r + (q ^ rotate8(q, 31) ^ rotate8(q, 37)) & 255;
+                counts[r ^ q]++;
+                sums[a] += r ^ q;
             }
         }
         System.out.println("APPEARANCE COUNTS:");
