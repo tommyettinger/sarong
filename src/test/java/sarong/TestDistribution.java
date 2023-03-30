@@ -403,10 +403,11 @@ public class TestDistribution {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
 //                int q = n = n + 0x91 & 0xFF;
+//                int q = n = n + ((m*0x9D&0xFF)>>>4) & 0xFF;
                 int q = n = n + ((m|0xAE-m) >>> 31) + 0x91 & 0xFF;
 //                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
 //                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
-                q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
+//                q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
                 r = r + (q ^ rotate8(q, 46) ^ rotate8(q, 21)) & 255;
                 q = q + (r ^ rotate8(r, 53) ^ rotate8(r,  3)) & 255;
                 r = r + (q ^ rotate8(q, 31) ^ rotate8(q, 37)) & 255;
@@ -425,6 +426,42 @@ public class TestDistribution {
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testJacinth16BitOrbital()
+    {
+        short[] counts = new short[65536];
+        int m = 0, n = 0;
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int r = m = m + 0xDB & 0xFF;
+//                int q = n = n + 0x91 & 0xFF;
+//                int q = n = n + ((m*0x9D&0xFF)>>>4) & 0xFF;
+                int q = n = n + 0x91 - ((m|0xAE-m) >> 31) & 0xFF;
+//                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
+//                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
+//                q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
+                r = r + (q ^ rotate8(q, 46) ^ rotate8(q, 21)) & 255;
+                q = q + (r ^ rotate8(r, 53) ^ rotate8(r,  3)) & 255;
+                r = r + (q ^ rotate8(q, 31) ^ rotate8(q, 37)) & 255;
+                int p = r << 8;
+                r = m = m + 0xDB & 0xFF;
+                q = n = n + 0x91 - ((m|0xAE-m) >> 31) & 0xFF;
+                r = r + (q ^ rotate8(q, 46) ^ rotate8(q, 21)) & 255;
+                q = q + (r ^ rotate8(r, 53) ^ rotate8(r,  3)) & 255;
+                r = r + (q ^ rotate8(q, 31) ^ rotate8(q, 37)) & 255;
+                p |= r;
+                counts[p]++;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 256; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
             }
             System.out.println();
         }
