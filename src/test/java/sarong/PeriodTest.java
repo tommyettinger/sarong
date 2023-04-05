@@ -13,6 +13,10 @@ import java.util.concurrent.TimeUnit;
  * Created by Tommy Ettinger on 9/13/2018.
  */
 public class PeriodTest {
+    private int rotate8(int v, int amt) {
+        return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
+    }
+
     @Test
     public void checkPeriod32(){
         int stateA = 1, i = 0;
@@ -318,6 +322,40 @@ public class PeriodTest {
             }
         }
         System.out.printf("Best shift was %d, best rotation was %d, with period %08X", bestShift, bestRot, best);
+    }
+
+    @Test
+    public void checkPeriod32_Frog(){
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1, worst = Long.MAX_VALUE;
+        OUTER:
+        for (int o = 0; o < 256; o++) {
+            stateA = 1 + o & 255;
+            stateB = 1;
+            stateC = 1;
+            stateD = 1;
+            long i = 0;
+            while (++i <= 0x1000000L) {
+                int z = stateC + (stateA = stateA + 0xCD & 255) & 255;
+                int w = stateD + (stateB = stateB + 0x91 & 255) & 255;
+                stateC = stateA + (w ^ rotate8(w, 3) ^ rotate8(w, 4)) & 255;
+                stateD = stateB + (z ^ rotate8(z, 2) ^ rotate8(z, 7)) & 255;
+
+                if (stateA == (1 + o & 255) && stateB == 1 && stateC == 1 && stateD == 1) {
+                    System.out.printf("With offset %d, 0x%08X\n", o, i);
+                    if (i > best) {
+                        best = i;
+                    }
+                    if (i < worst) {
+                        worst = i;
+                    }
+                    continue OUTER;
+                }
+            }
+            System.out.printf("Something is wrong with offset %d; states are %02X %02X %02X %02X\n", o, stateA, stateB, stateC, stateD);
+        }
+        System.out.printf("Best period was %08X", best);
+        System.out.printf("Worst period was %08X", worst);
     }
 
     /**

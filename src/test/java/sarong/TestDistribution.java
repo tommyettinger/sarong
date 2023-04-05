@@ -263,7 +263,7 @@ public class TestDistribution {
     }
 
     private int rotate8(int v, int amt) {
-        return (v << amt & 255) | ((v & 255) >>> -amt);
+        return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
     @Test
     public void testWrangly8Bit()
