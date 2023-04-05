@@ -467,6 +467,46 @@ public class TestDistribution {
         }
     }
 
+    /**
+     * Surprisingly, every byte appears equally often.
+     * This doesn't depend on the rotation amount for q, again surprisingly.
+     * This is only equidistributed over the full period of 2 to the 16.
+     */
+    @Test
+    public void testCitrine8BitOrbital()
+    {
+        short[] counts = new short[256];
+        short[] sums = new short[256];
+        int m = 0, n = 0;
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int r = m = m + 0xDB & 0xFF;
+                int q = n = n + ((m|0xAE-m) >>> 31) + 0x91 & 0xFF;
+                r ^= r >>> 3;
+                r = r * (q | 1) & 255;
+                r ^= r >>> 3;
+                r = r * (rotate8(q, 2) | 1) & 255;
+                r ^= r >>> 3;
+                counts[r]++;
+                sums[a] += r;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("SUMS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
     @Test
     public void testMWC8Bit()
     {
