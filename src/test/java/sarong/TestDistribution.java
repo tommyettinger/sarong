@@ -148,6 +148,70 @@ public class TestDistribution {
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
+    @Test
+    public void test32BitSplitMixFixedPoint()
+    {
+        int i = 0x80000000, state = -1;
+        for (; i < 0; i++) {
+            int y = state; // state coming into this call
+            int z = (state += 0x9E3779B9); // state changes, y is unchanged.
+            z ^= z >>> 16;
+            z *= 0x21f0aaad;
+            z ^= z >>> 15;
+            z *= 0x735a2d97;
+            z ^= z >>> 15; // z would normally be the output here
+            if(y == z) // if the incoming state is equal to the output, print the fixed point
+                System.out.printf("0x%08X, ", z);
+        }
+        for (; i >= 0; i++) {
+            int y = state;
+            int z = (state += 0x9E3779B9);
+            z ^= z >>> 16;
+            z *= 0x21f0aaad;
+            z ^= z >>> 15;
+            z *= 0x735a2d97;
+            z ^= z >>> 15;
+            if(y == z)
+                System.out.printf("0x%08X, ", z);
+        }
+    }
+
+
+    // h == state, state before: 0x61C88647, 0x51B6B222
+    // h == state, state after:  0x00000000, 0xEFEE2BDB,
+    // h == y: 0x1784893B, 0x19A8593E
+    @Test
+    public void test32BitFMixFixedPoint()
+    {
+        int i = 0x80000000, state = -1;
+        for (; i < 0; i++) {
+            int y = state;
+            int h = (state += 0x9E3779B9);
+            h ^= h >>> 16;
+            h *= 0x85ebca6b;
+            h ^= h >>> 13;
+            h *= 0xc2b2ae35;
+            h ^= h >>> 16;
+            if(h == state)
+            {
+                System.out.printf("0x%08X, ", h);
+            }
+        }
+        for (; i >= 0; i++) {
+            int y = state;
+            int h = (state += 0x9E3779B9);
+            h ^= h >>> 16;
+            h *= 0x85ebca6b;
+            h ^= h >>> 13;
+            h *= 0xc2b2ae35;
+            h ^= h >>> 16;
+            if(h == state)
+            {
+                System.out.printf("0x%08X, ", h);
+            }
+        }
+    }
+
     public static void main(String[] args)
     {
         final RoaringBitmap all = new RoaringBitmap();
