@@ -211,6 +211,24 @@ public class TestDistribution {
             }
         }
     }
+    @Test
+    public void test32BitPointHash()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000, state = -1;
+        for (; i < 0; i++) {
+            all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
+            if(state == -1) break;
+        }
+        if(state != -1) {
+            for (; i >= 0; i++) {
+                all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
+                if(state == -1) break;
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
 
     public static void main(String[] args)
     {
@@ -566,6 +584,31 @@ public class TestDistribution {
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+    @Test
+    public void testSplurge8Bit()
+    {
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                for (int c = 0; c < 0x100; c++) {
+                    for (int d = 0; d < 0x100; d++) {
+                        int x = a, y = b, z = c, w = d;
+                        y = y + (x ^ rotate8(x, 46) ^ rotate8(x, 21)) & 255;
+                        z = z + (y ^ rotate8(y,  5) ^ rotate8(y, 14)) & 255;
+                        w = w + (z ^ rotate8(z, 25) ^ rotate8(z, 44)) & 255;
+                        x = x + (w ^ rotate8(w, 53) ^ rotate8(w,  3)) & 255;
+                        counts[x]++;
+                    }
+                }
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
             }
             System.out.println();
         }
