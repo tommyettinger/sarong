@@ -682,6 +682,27 @@ public class TestDistribution {
             System.out.println();
         }
     }
+    @Test
+    public void testSparkle8Bit()
+    {
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                for (int c = 0; c < 0x100; c++) {
+                        int n = (a ^ c) * 0xF5 & 255;
+                        int o = b ^ 0x4B;
+                        int x = (o ^ rotate8(o, 2) ^ rotate8(o, 7)) + (n ^ rotate8(n, 3) ^ rotate8(n, 4)) & 255;
+                        counts[x]++;
+                }
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
 
     @Test
     public void testSparkle8BitSmall()
