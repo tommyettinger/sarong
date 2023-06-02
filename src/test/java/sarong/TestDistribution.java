@@ -684,6 +684,29 @@ public class TestDistribution {
     }
 
     @Test
+    public void testSparkle8BitSmall()
+    {
+        int[] counts = new int[256];
+        int a = 0, b = 0, c = 0;
+        for (int i = 0; i < 256; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            int n = (a ^ c) * 0xF5 & 255;
+            int o = b ^ 0x4B;
+            int x = (o ^ rotate8(o, 2) ^ rotate8(o, 7)) + (n ^ rotate8(n, 3) ^ rotate8(n, 4)) & 255;
+            counts[x]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X \n", a, b, c);
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testMWC8Bit()
     {
         short state = 1;
