@@ -748,16 +748,20 @@ public class TestDistribution {
     {
         short state = 1;
         short[] counts = new short[256];
-        for (int i = 0; i < 0x7C7F; i++) {
+        int i = 0;
+        for (; i < 0x10000; i++) {
             int s = (state = (short) (249 * (state & 0xFF) + (state >>> 8 & 0xFF))) & 0xFF;
             counts[s]++;
+            if(state == 1) break;
         }
-        for (int y = 0, i = 0; y < 16; y++) {
+        for (int y = 0, d = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
-                System.out.print(StringKit.hex(counts[i++]) + " ");
+                System.out.print(StringKit.hex(counts[d++]) + " ");
             }
             System.out.println();
         }
+        System.out.println();
+        System.out.printf("Period was %04X\n", i);
     }
 
     public static int rotl16(int n, int amount) {
@@ -824,7 +828,9 @@ public class TestDistribution {
 //                result = (short) (n ^ (n << 11 | (n & 0xFFFF) >>> 5) ^ (n << 3 | (n & 0xFFFF) >>> 13));
                 //scratcherCoord was found and apparently forgotten about, despite colliding less in tables?
                 // it is also evenly distributed when adapted for shorts.
-                result = (short)iphCoord(x, y, 123);
+//                result = (short)iphCoord(x, y, 123);
+                // this is also evenly distributed.
+                result = (short)((x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L);
                 xor ^= result;
                 sum.add(result);
                 all.add(result & 0xFFFF);
