@@ -123,7 +123,23 @@ public class TestDistribution {
             all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5));
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
-        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x1p-32 * 100.0 + "% of outputs were missing.");
+    }
+    @Test
+    public void test32BitSimpler()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        //// 2722710391/4294967296 outputs were present.
+        //// 36.606958718039095% of outputs were missing.
+        for (; i < 0; i++) {
+            all.add(hiXorLo(0x78bd642f, i ^ 0xa0b428db));
+        }
+        for (; i >= 0; i++) {
+            all.add(hiXorLo(0x78bd642f, i ^ 0xa0b428db));
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x1p-32 * 100.0 + "% of outputs were missing.");
     }
 
     /**
