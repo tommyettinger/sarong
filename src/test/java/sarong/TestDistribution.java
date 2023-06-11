@@ -664,10 +664,10 @@ public class TestDistribution {
         int[] counts = new int[256];
         int a = 0, b = 0, c = 0, d = 0;
         for (int i = 0; i < 128; i++) {
-            a = a + 0x15 & 255;
-            b = b + 0x2F & 255;
-            c = c + 0x39 & 255;
-            d = d + 0x4B & 255;
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
             int n = (a ^ c) * 0xF5 & 255;
             int o = (b ^ d) * 0xD5 & 255;
             int x = (o ^ rotate8(o, 2) ^ rotate8(o, 7)) + (n ^ rotate8(n, 3) ^ rotate8(n, 4)) & 255;
@@ -691,13 +691,18 @@ public class TestDistribution {
             counts[x]++;
         }
         System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        int zeroes = 0;
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
+                if(counts[i] == 0)
+                    zeroes++;
                 System.out.printf("%02X ", counts[i++]);
             }
             System.out.println();
         }
+        System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
     }
+
     @Test
     public void testSparkle8Bit()
     {
@@ -735,12 +740,16 @@ public class TestDistribution {
             counts[x]++;
         }
         System.out.printf("a:%02X b:%02X c:%02X \n", a, b, c);
+        int zeroes = 0;
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
+                if(counts[i] == 0)
+                    zeroes++;
                 System.out.printf("%02X ", counts[i++]);
             }
             System.out.println();
         }
+        System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
     }
 
     @Test
