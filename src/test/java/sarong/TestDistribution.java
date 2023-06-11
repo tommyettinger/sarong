@@ -629,6 +629,77 @@ public class TestDistribution {
             System.out.println();
         }
     }
+    @Test
+    public void testSporty8Bit()
+    {
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                for (int c = 0; c < 0x100; c++) {
+                    for (int d = 0; d < 0x100; d++) {
+                        int x = a;
+                        x = (x ^ x >>> 4) * (b | 1) & 255;
+                        x = (x ^ x >>> 3) * (c | 1) & 255;
+                        x = (x ^ x >>> 4) * (d | 1) & 255;
+                        counts[x ^ x >>> 3]++;
+                    }
+                }
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testSporty8BitSmall()
+    {
+        int[] counts = new int[256];
+        int a = 0, b = 0, c = 0, d = 0;
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = a;
+            x = (x ^ x >>> 4) * (b | 1) & 255;
+            x = (x ^ x >>> 3) * (c | 1) & 255;
+            x = (x ^ x >>> 4) * (d | 1) & 255;
+            counts[x ^ x >>> 3]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = a;
+            x = (x ^ x >>> 4) * (b | 1) & 255;
+            x = (x ^ x >>> 3) * (c | 1) & 255;
+            x = (x ^ x >>> 4) * (d | 1) & 255;
+            counts[x ^ x >>> 3]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
+    }
 
     /**
      * Over the full state of 2 to the 32 values, this returns each byte result equally often. This is usually not used
