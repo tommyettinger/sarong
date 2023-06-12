@@ -114,13 +114,18 @@ public class TestDistribution {
 //  const P1 = 0xe7037ed1a0b428db'u64
 //  const P5x8 = 0xeb44accab455d1e5'u64
 //  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
+        //// 2019921967/4294967296 outputs were present.
+        //// 52.97002682927996% of outputs were missing.
+
+        //// When run with P0 and P1 switched,
         //// 2011632872/4294967296 outputs were present.
         //// 53.16302236169577% of outputs were missing.
+
         for (; i < 0; i++) {
-            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5));
+            all.add(hiXorLo(hiXorLo(0x78bd642f, i ^ 0xa0b428db), 0xb455d1e5));
         }
         for (; i >= 0; i++) {
-            all.add(hiXorLo(hiXorLo(0xa0b428db, i ^ 0x78bd642f), 0xb455d1e5));
+            all.add(hiXorLo(hiXorLo(0x78bd642f, i ^ 0xa0b428db), 0xb455d1e5));
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x1p-32 * 100.0 + "% of outputs were missing.");
@@ -687,6 +692,75 @@ public class TestDistribution {
             x = (x ^ x >>> 3) * (c | 1) & 255;
             x = (x ^ x >>> 4) * (d | 1) & 255;
             counts[x ^ x >>> 3]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
+    }
+
+    @Test
+    public void testSpoon8Bit()
+    {
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                for (int c = 0; c < 0x100; c++) {
+                    for (int d = 0; d < 0x100; d++) {
+                        int x = a, y = b;
+                        x = (x ^ x >>> 3) * (c | 1) & 255;
+                        y = (y ^ y >>> 4) * (d | 1) & 255;
+                        counts[x ^ x >>> 4 ^ y ^ y >>> 3]++;
+                    }
+                }
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testSpoon8BitSmall()
+    {
+        int[] counts = new int[256];
+        int a = 0, b = 0, c = 0, d = 0;
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = a, y = b;
+            x = (x ^ x >>> 3) * (c | 1) & 255;
+            y = (y ^ y >>> 4) * (d | 1) & 255;
+            counts[x ^ x >>> 4 ^ y ^ y >>> 3]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = a, y = b;
+            x = (x ^ x >>> 3) * (c | 1) & 255;
+            y = (y ^ y >>> 4) * (d | 1) & 255;
+            counts[x ^ x >>> 4 ^ y ^ y >>> 3]++;
         }
         System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
         int zeroes = 0;
