@@ -542,9 +542,9 @@ public class TestDistribution {
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
+                int q = n = n + 0x91 - ((m|0xAE-m) >> 31) & 0xFF;
 //                int q = n = n + 0x91 & 0xFF;
 //                int q = n = n + ((m*0x9D&0xFF)>>>4) & 0xFF;
-                int q = n = n + 0x91 - ((m|0xAE-m) >> 31) & 0xFF;
 //                int q = n = n + ((m|0xAE-m) >> 31 & 0x91) & 0xFF;
 //                int y = a + b * 0x8F & 255, z = b * 0x1D & 255;
 //                q = q + (r ^ rotate8(r, 11) ^ rotate8(r, 50)) & 255;
@@ -895,6 +895,32 @@ public class TestDistribution {
             System.out.println();
         }
         System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
+    }
+
+    @Test
+    public void testSimpleTransition16Bit()
+    {
+        int[] counts = new int[65536];
+        int m = 0, n = 0;
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                m = m + (0x91 - ((n|0xAE-n) >> 31)) & 0xFF;
+                n = n + 0xDB & 0xFF;
+//                int p = m << 8;
+//                m = m + (0x91 & ((n|-n) >> 31)) & 0xFF;
+//                n = n + 0xDB & 0xFF;
+//                p |= m;
+                int p = m << 8 | n;
+                counts[p]++;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 256; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
     }
 
     @Test
