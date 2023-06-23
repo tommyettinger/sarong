@@ -897,6 +897,75 @@ public class TestDistribution {
         System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
     }
 
+    /**
+     * Produces every byte equally often when it can use all combinations of 4 bytes of state.
+     */
+    @Test
+    public void testSpritz8Bit()
+    {
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                for (int c = 0; c < 0x100; c++) {
+                    for (int d = 0; d < 0x100; d++) {
+                        int x = (a ^ rotate8(b, 2) ^ rotate8(c, 7) ^ rotate8(d, 3)) & 255;
+                        counts[x]++;
+                    }
+                }
+            }
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 32.03125% of possible outputs were not produced.
+     */
+    @Test
+    public void testSpritz8BitSmall()
+    {
+        int[] counts = new int[256];
+        int a = 0, b = 0, c = 0, d = 0;
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = (a ^ rotate8(b, 2) ^ rotate8(c, 7) ^ rotate8(d, 3)) & 255;
+            counts[x]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        for (int i = 0; i < 128; i++) {
+            a = a + 0x85 & 255;
+            b = b + 0xAF & 255;
+            c = c + 0xB9 & 255;
+            d = d + 0xEB & 255;
+            int x = (a ^ rotate8(b, 2) ^ rotate8(c, 7) ^ rotate8(d, 3)) & 255;
+            counts[x]++;
+        }
+        System.out.printf("a:%02X b:%02X c:%02X d:%02X \n", a, b, c ,d);
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                System.out.printf("%02X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
+    }
+
     @Test
     public void testSimpleTransition16Bit()
     {
