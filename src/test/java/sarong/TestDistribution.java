@@ -6,6 +6,8 @@ import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 import sarong.util.StringKit;
 
+import java.util.Arrays;
+
 /**
  * Created by Tommy Ettinger on 8/31/2018.
  */
@@ -967,6 +969,35 @@ public class TestDistribution {
     }
 
     /**
+     * On average, 40.17680287361145% of possible outputs were not produced.
+     */
+    @Test
+    public void testSpritz8BitAverage() {
+        int[] counts = new int[256];
+        long zeroes = 0;
+        for (int x = 0; x < 256; x++) {
+            for (int y = 0; y < 256; y++) {
+                for (int z = 0; z < 256; z++) {
+                    int a = x, b = y, c = z, d = 0;
+                    for (int i = 0; i < 256; i++) {
+                        a = a + 0x85 & 255;
+                        b = b + 0xAF & 255;
+                        c = c + 0xB9 & 255;
+                        d = d + 0xEB & 255;
+                        int r = (a + rotate8(b, 2) + rotate8(c, 7) + rotate8(d, 3)) & 255;
+                        counts[r]++;
+                    }
+                    for (int n = 0; n < 256; n++) {
+                        if (counts[n] == 0) zeroes++;
+                    }
+                    Arrays.fill(counts, 0);
+                }
+            }
+        }
+        System.out.println("On average, " + (zeroes * 0x1p-32 * 100.0) + "% of possible outputs were not produced.");
+    }
+
+    /**
      * Produces every byte equally often when it can use all combinations of 4 bytes of state.
      * (Spritz using XOR.)
      */
@@ -1035,6 +1066,35 @@ public class TestDistribution {
             System.out.println();
         }
         System.out.println((zeroes * 0x1p-8 * 100.0) + "% of possible outputs were not produced.");
+    }
+
+    /**
+     * On average, 35.77956780791283% of possible outputs were not produced.
+     */
+    @Test
+    public void testSpritzer8BitAverage() {
+        int[] counts = new int[256];
+        long zeroes = 0;
+        for (int x = 0; x < 256; x++) {
+            for (int y = 0; y < 256; y++) {
+                for (int z = 0; z < 256; z++) {
+                    int a = x, b = y, c = z, d = 0;
+                    for (int i = 0; i < 256; i++) {
+                        a = a + 0x85 & 255;
+                        b = b + 0xAF & 255;
+                        c = c + 0xB9 & 255;
+                        d = d + 0xEB & 255;
+                        int r = (a ^ rotate8(b, 2) ^ rotate8(c, 7) ^ rotate8(d, 3)) & 255;
+                        counts[r]++;
+                    }
+                    for (int n = 0; n < 256; n++) {
+                        if (counts[n] == 0) zeroes++;
+                    }
+                    Arrays.fill(counts, 0);
+                }
+            }
+        }
+        System.out.println("On average, " + (zeroes * 0x1p-32 * 100.0) + "% of possible outputs were not produced.");
     }
 
     @Test
