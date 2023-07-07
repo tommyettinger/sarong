@@ -1392,4 +1392,21 @@ public class TestDistribution {
             }
         }
     }
+
+    @Test
+    public void testSpeck1Round0KeySub() {
+        final RoaringBitmap all = new RoaringBitmap();
+        final int k = 0;
+        for (int b = 0; b < 256; b++) {
+            for (int c = 0; c < 256; c++) {
+                int b0 = b, b1 = c;
+                b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 0xFF;
+                b0 = ((b0 << 2 | b0 >>> 6) ^ b1) & 0xFF;
+                all.add(b1 << 8 | b0);
+            }
+        }
+        System.out.println(all.getCardinality() + "/" + 0x10000L + " outputs were present.");
+        System.out.println(100.0 - all.getCardinality() * 0x64p-16 + "% of outputs were missing.");
+
+    }
 }
