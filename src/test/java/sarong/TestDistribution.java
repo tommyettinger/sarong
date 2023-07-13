@@ -621,12 +621,13 @@ public class TestDistribution {
         int m = 0, n = 0;
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++) {
-                int r = m = m + 0xDB & 0xFF;
-                int q = n = n + Long.numberOfTrailingZeros(m) & 0xFF; // well that's... new...
-                q = ((q << 5 | q >>> 3) + r ^ 0xD7) & 0xFF;
-                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
-                counts[r]++;
-                sums[a] += r;
+                // without temporary values, this isn't even...
+                m = m + 0xDB & 0xFF;
+                n = n + Long.numberOfTrailingZeros(m) & 0xFF; // well that's... new...
+                n = ((n << 5 | n >>> 3) + m ^ 0xD7) & 0xFF;
+                m = ((m << 2 | m >>> 6) ^ n) & 0xFF;
+                counts[m]++;
+                sums[a] += m;
             }
         }
         System.out.println("APPEARANCE COUNTS:");
