@@ -622,9 +622,28 @@ public class TestDistribution {
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
-                int q = n = n + Long.numberOfTrailingZeros(m) & 0xFF; // well that's... new...
-                q = ((q << 5 | q >>> 3) + r) * 47 & 0xFF;
-                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
+                int q = n = n + (Long.numberOfTrailingZeros(m)) & 0xFF; // well that's... new...
+
+                // this is one round of the Speck cipher's inner "mix" system, with the "key" being 47.
+//                q = ((q << 5 | q >>> 3) + r ^ 47) & 0xFF;
+//                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
+                // either using 2 rounds of Speck's inner mix (here the key is 79)...
+//                q = ((q << 5 | q >>> 3) + r ^ 79) & 0xFF;
+//                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
+                // or just xorshifting by 3 is enough to adequately scramble the low-order bits.
+//                r ^= r >>> 3;
+                // with only one round, the last 3 digits of the sum of 256 items will cycle every 4096 items.
+                // this appears in the printed sum data as each row of any one column ending in the same 3 bits.
+
+                // If not using Speck, the below SplitMix-like construct may be stronger.
+//                r = (r ^ r >>> 5 ^ q) * 0x9D & 0xFF;
+//                r = (r ^ r >>> 4 ^ q) * 0xC1 & 0xFF;
+//                r ^= r >>> 3;
+
+                // xor-rotate-rotate on the sum of r and q also could work.
+                // it could need extra steps, certainly.
+                r = r + q & 0xFF;
+                r ^= rotate8(r, 5) ^ rotate8(r, 2);
                 counts[r]++;
                 sums[a] += r;
             }
