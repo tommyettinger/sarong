@@ -673,7 +673,7 @@ public class TestDistribution {
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
-                int q = n = n + (m | m >>> m) & 0xFF;
+                int q = n = n + (m | m >>> (m & 7)) & 0xFF;
                 r ^= q;
                 counts[r]++;
                 sums[a] += r;
