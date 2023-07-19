@@ -612,9 +612,8 @@ public class TestDistribution {
         }
     }
 
-
     @Test
-    public void testStrobe8BitOrbital()
+    public void testLeader8BitOrbital()
     {
         short[] counts = new short[256];
         short[] sums = new short[256];
@@ -622,7 +621,7 @@ public class TestDistribution {
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++) {
                 int r = m = m + 0xDB & 0xFF;
-                int q = n = n + (Long.numberOfTrailingZeros(m)) & 0xFF; // well that's... new...
+                int q = n = n + (Long.numberOfLeadingZeros(m)) & 0xFF; // well that's... new...
 
                 // this is one round of the Speck cipher's inner "mix" system, with the "key" being 47.
 //                q = ((q << 5 | q >>> 3) + r ^ 47) & 0xFF;
@@ -636,14 +635,46 @@ public class TestDistribution {
                 // this appears in the printed sum data as each row of any one column ending in the same 3 bits.
 
                 // If not using Speck, the below SplitMix-like construct may be stronger.
-//                r = (r ^ r >>> 5 ^ q) * 0x9D & 0xFF;
-//                r = (r ^ r >>> 4 ^ q) * 0xC1 & 0xFF;
-//                r ^= r >>> 3;
+                r = (r ^ r >>> 5 ^ rotate8(q, 3)) * 0x9D & 0xFF;
+                r = (r ^ r >>> 4 ^ rotate8(q, 5)) * 0xC3 & 0xFF;
+                r ^= r >>> 3;
 
                 // xor-rotate-rotate on the sum of r and q also could work.
                 // it could need extra steps, certainly.
-                r = r + q & 0xFF;
-                r ^= rotate8(r, 5) ^ rotate8(r, 2);
+//                r = r + q & 0xFF;
+//                r ^= rotate8(r, 5) ^ rotate8(r, 2);
+                counts[r]++;
+                sums[a] += r;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("SUMS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+
+    @Test
+    public void testBasic8BitOrbital()
+    {
+        short[] counts = new short[256];
+        short[] sums = new short[256];
+        int m = 0, n = 0;
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++) {
+                int r = m = m + 0xDB & 0xFF;
+                int q = n = n + (m | m >>> m) & 0xFF;
+                r ^= q;
                 counts[r]++;
                 sums[a] += r;
             }
