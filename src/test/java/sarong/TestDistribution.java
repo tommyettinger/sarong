@@ -367,6 +367,22 @@ public class TestDistribution {
         }
     }
 
+    @Test
+    public void testGrayLCG8Bit()
+    {
+        int stateA = 0;
+        short[] counts = new short[256];
+        for (int i = 0; i < 0x100; i++) {
+            stateA = ((stateA ^ (stateA & 255)>>>1) + 5 + 11) & 255;
+            counts[stateA]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
     private int rotate8(int v, int amt) {
         return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
