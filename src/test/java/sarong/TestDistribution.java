@@ -6,6 +6,7 @@ import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 import sarong.util.StringKit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -383,6 +384,164 @@ public class TestDistribution {
             System.out.println();
         }
     }
+    // There is not much rhyme or reason to which ones are full-period.
+/*
+gray * 1 + 153
+gray * 3 + 90
+gray * 7 + 80
+gray * 9 + 103
+gray * 13 + 111
+gray * 13 + 243
+gray * 19 + 62
+gray * 19 + 70
+gray * 19 + 234
+gray * 23 + 90
+gray * 23 + 128
+gray * 25 + 227
+gray * 27 + 84
+gray * 29 + 233
+gray * 35 + 186
+gray * 37 + 45
+gray * 37 + 161
+gray * 41 + 3
+gray * 41 + 53
+gray * 41 + 95
+gray * 41 + 219
+gray * 43 + 70
+gray * 43 + 104
+gray * 43 + 152
+gray * 43 + 164
+gray * 43 + 168
+gray * 47 + 40
+gray * 47 + 84
+gray * 47 + 128
+gray * 51 + 38
+gray * 51 + 138
+gray * 51 + 140
+gray * 51 + 152
+gray * 55 + 200
+gray * 55 + 210
+gray * 61 + 35
+gray * 61 + 83
+gray * 63 + 106
+gray * 67 + 120
+gray * 67 + 212
+gray * 69 + 19
+gray * 69 + 171
+gray * 71 + 218
+gray * 73 + 35
+gray * 75 + 4
+gray * 75 + 126
+gray * 81 + 175
+gray * 85 + 161
+gray * 85 + 169
+gray * 87 + 46
+gray * 91 + 10
+gray * 93 + 167
+gray * 101 + 125
+gray * 101 + 243
+gray * 103 + 34
+gray * 103 + 122
+gray * 107 + 216
+gray * 115 + 4
+gray * 115 + 74
+gray * 115 + 158
+gray * 115 + 168
+gray * 117 + 153
+gray * 119 + 78
+gray * 123 + 96
+gray * 125 + 143
+gray * 125 + 161
+gray * 131 + 222
+gray * 131 + 240
+gray * 133 + 31
+gray * 137 + 49
+gray * 139 + 230
+gray * 141 + 53
+gray * 141 + 123
+gray * 141 + 215
+gray * 141 + 225
+gray * 149 + 167
+gray * 153 + 5
+gray * 153 + 93
+gray * 155 + 2
+gray * 155 + 140
+gray * 163 + 216
+gray * 165 + 117
+gray * 169 + 81
+gray * 171 + 214
+gray * 171 + 222
+gray * 175 + 208
+gray * 181 + 1
+gray * 181 + 123
+gray * 183 + 92
+gray * 185 + 165
+gray * 187 + 108
+gray * 187 + 212
+gray * 189 + 7
+gray * 189 + 171
+gray * 193 + 21
+gray * 195 + 44
+gray * 195 + 92
+gray * 201 + 173
+gray * 201 + 183
+gray * 205 + 89
+gray * 205 + 231
+gray * 205 + 243
+gray * 205 + 245
+gray * 209 + 43
+gray * 209 + 87
+gray * 209 + 255
+gray * 213 + 23
+gray * 213 + 57
+gray * 213 + 215
+gray * 213 + 219
+gray * 213 + 231
+gray * 215 + 32
+gray * 215 + 74
+gray * 215 + 124
+gray * 215 + 164
+gray * 219 + 82
+gray * 219 + 222
+gray * 221 + 197
+gray * 227 + 150
+gray * 229 + 43
+gray * 231 + 156
+gray * 233 + 37
+gray * 233 + 255
+gray * 237 + 57
+gray * 237 + 65
+gray * 237 + 149
+gray * 243 + 16
+gray * 243 + 140
+gray * 247 + 24
+gray * 249 + 47
+gray * 253 + 37
+gray * 255 + 230
+ */
+    @Test
+    public void exhaustGrayLCG8Bit()
+    {
+        int stateA = 0;
+        short[] counts = new short[256];
+        ArrayList<Integer> pairs = new ArrayList<>(64);
+        for (int mul = 1; mul < 256; mul++) {
+            PER:
+            for (int add = 0; add < 256; add++) {
+                Arrays.fill(counts, (short) 0);
+                for (int i = 0; i < 0x100; i++) {
+                    stateA = ((stateA ^ (stateA & 255) >>> 1) * mul + add) & 255;
+                    if(++counts[stateA] > 1) continue PER;
+                }
+                pairs.add(mul);
+                pairs.add(add);
+            }
+        }
+        for (int i = 0, n = pairs.size() - 1; i < n; i++) {
+            System.out.println("gray * " + pairs.get(i) + " + " + pairs.get(++i));
+        }
+    }
+
     private int rotate8(int v, int amt) {
         return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
