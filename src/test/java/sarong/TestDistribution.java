@@ -1679,6 +1679,42 @@ gray * 255 + 230
 
         System.out.println(all.getCardinality() + "/" + 0x10000L + " outputs were present.");
         System.out.println(100.0 - all.getCardinality() * 0x64p-16 + "% of outputs were missing.");
-
     }
+
+    /**
+     * Produces each byte with equal frequency, 256 times each.
+     */
+    @Test
+    public void testFermatResidueLow()
+    {
+        short[] counts = new short[256];
+        for (int a = 0; a < 0x10000; a++) {
+                counts[a - (a >>> 8) & 255]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Only produces 0xFF once; all other bytes are produced 257 times each.
+     */
+    @Test
+    public void testFermatResidueHigh()
+    {
+        short[] counts = new short[256];
+        for (int a = 0; a < 0x10000; a++) {
+                counts[a - (a >>> 8) >>> 8 & 255]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
 }
