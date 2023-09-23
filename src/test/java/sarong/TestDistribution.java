@@ -1772,4 +1772,50 @@ gray * 255 + 230
         System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
     }
 
+    /**
+     * OK, this is a surprise. So XORing a counter and an LFSR gives you a period that is (counter period) times (LFSR
+     * period), which here is 256 times 255, or 0xFF00 . The strange part is that almost 1/5 possible subsequent pairs
+     * of results can't be produced by the aforementioned sequence... Even though over the full period, each individual
+     * byte result appears equally often, 255 times.
+     * <br>
+     * 18.218994140625% of pairs of possible outputs were not produced.
+     */
+    @Test
+    public void testNemesis16()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 1;
+        int x = 1;
+        for (int i = 0; i < 0xFF00; i+=2) {
+            a += (byte) 0x97;
+            b = (byte) (b << 1 ^ (b >> 31 & 0x1D));
+            smallCounts[((a ^ b) & 255)]++;
+            counts[x = (x << 8 | ((a ^ b) & 255)) & 0xFFFF]++;
+            a += (byte) 0x97;
+            b = (byte) (b << 1 ^ (b >> 31 & 0x1D));
+            smallCounts[((a ^ b) & 255)]++;
+            counts[x = (x << 8 | ((a ^ b) & 255)) & 0xFFFF]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                System.out.printf("%04X ", counts[i]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }

@@ -80,7 +80,8 @@ public class PeriodTest {
         long i = 0;
         while (++i < 0x200000000L) {
 //            if ((stateB = (short) (0x81 + ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
-            if ((stateA += ~(stateB = (short) ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
+            if ((stateA += ~(stateB = (short) ((stateB << 1) ^ (stateB >> 31 & 0x2D)))) == 1 && stateB == 1) {
+//            if ((stateA += ~(stateB = (short) ((stateB >>> 1 & 0x7FFF) ^ (-(stateB & 1) & 0xB400)))) == 1 && stateB == 1) {
                 System.out.printf("Ginger: 0x%08X\n", i);
                 break;
             }
