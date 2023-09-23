@@ -1744,5 +1744,32 @@ gray * 255 + 230
         }
         System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
     }
+    /**
+     * 60.73455810546875% of possible outputs were not produced, exactly the same as non-safe.
+     * Not a good sign for Wyrand.
+     */
+    @Test
+    public void testWyrandSafe16()
+    {
+        int[] counts = new int[65536];
+        int a = 0, b, x;
+        for (int i = 0; i < 65536; i++) {
+            a = a + 0x642F & 0xFFFF;
+            b = a ^ 0x28DB;
+            x = a * b;
+            x ^= x >>> 16 ^ a ^ b;
+            counts[x & 0xFFFF]++;
+        }
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+//                System.out.printf("%04X ", counts[i]);
+            }
+//            System.out.println();
+        }
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+    }
 
 }
