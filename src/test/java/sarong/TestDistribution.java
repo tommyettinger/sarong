@@ -799,11 +799,11 @@ gray * 255 + 230
                 int q = n = n + (Long.numberOfLeadingZeros(m)) & 0xFF; // well that's... new...
 
                 // this is one round of the Speck cipher's inner "mix" system, with the "key" being 47.
-//                q = ((q << 5 | q >>> 3) + r ^ 47) & 0xFF;
-//                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
+//                q = (rotate8(q, 5) + r ^ 47) & 0xFF;
+//                r = (rotate8(r, 2) ^ q);
                 // either using 2 rounds of Speck's inner mix (here the key is 79)...
-//                q = ((q << 5 | q >>> 3) + r ^ 79) & 0xFF;
-//                r = ((r << 2 | r >>> 6) ^ q) & 0xFF;
+//                q = (rotate8(q, 5) + r ^ 79) & 0xFF;
+//                r = (rotate8(r, 2) ^ q);
                 // or just xorshifting by 3 is enough to adequately scramble the low-order bits.
 //                r ^= r >>> 3;
                 // with only one round, the last 3 digits of the sum of 256 items will cycle every 4096 items.
@@ -1818,8 +1818,56 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * 36.46087646484375% of possible outputs were not produced.
+     */
     @Test
-    public void testOrbitty16()
+    public void testSpeckled16Pairing()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 1, q, r;
+        int x = 1;
+        for (int i = 0; i <= 0xFFFF; i++) {
+            q = a += (byte) 0x97;
+            if(a == 0) b += 0x65;
+            r = b;
+            for (int j = 0, key = 11; j < 5; key = (key ^ key >>> 1) + key + ++j) {
+                q = (byte) (rotate8(q, 5) + r ^ key);
+                r = (byte) (rotate8(r, 2) ^ q);
+            }
+
+            smallCounts[(r & 255)]++;
+            counts[x = (x << 8 | (r & 255)) & 0xFFFF]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 89.84375% of possible outputs were not produced.
+     */
+    @Test
+    public void testOrbitty16Pairing()
     {
         int[] smallCounts = new int[256];
         int[] counts = new int[65536];
@@ -1854,16 +1902,19 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * 0.0% of possible full states were not entered.
+     */
     @Test
-    public void testOrbitty16Pairing()
+    public void testOrbitty16FullState()
     {
         int[] smallCounts = new int[256];
         int[] counts = new int[65536];
         byte a = 0, b = 1;
         for (int i = 0; i <= 0xFFFF; i++) {
             a += (byte) 0x97;
-//            b += (byte)((a | 0x1A - a) >> 31 & 0x65);
-            if(a == 0) b += 0x65;
+            b += (byte)((a | 0x1A - a) >> 31 & 0x65);
+//            if(a == 0) b += 0x65;
             smallCounts[((a ^ b) & 255)]++;
             counts[(a & 255) << 8 | (b & 255)]++;
         }
@@ -1880,7 +1931,7 @@ gray * 255 + 230
                 System.out.println();
         }
         System.out.println();
-        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
         System.out.println();
         for (int y = 0, i = 0; y < 8; y++) {
             for (int z = 0; z < 32; z++, i++) {
