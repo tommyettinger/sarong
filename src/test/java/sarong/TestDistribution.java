@@ -1818,4 +1818,76 @@ gray * 255 + 230
         }
     }
 
+    @Test
+    public void testOrbitty16()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 1;
+        int x = 1;
+        for (int i = 0; i <= 0xFFFF; i++) {
+            a += (byte) 0x97;
+            if(a == 0) b += 0x65;
+            smallCounts[((a ^ b) & 255)]++;
+            counts[x = (x << 8 | ((a ^ b) & 255)) & 0xFFFF]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testOrbitty16Pairing()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 1;
+        for (int i = 0; i <= 0xFFFF; i++) {
+            a += (byte) 0x97;
+//            b += (byte)((a | 0x1A - a) >> 31 & 0x65);
+            if(a == 0) b += 0x65;
+            smallCounts[((a ^ b) & 255)]++;
+            counts[(a & 255) << 8 | (b & 255)]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }
