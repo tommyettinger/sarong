@@ -1941,4 +1941,46 @@ gray * 255 + 230
         }
     }
 
+    @Test
+    public void testFried16FullState()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 0;
+        for (int i = 0; i <= 0xFFFF; i++) {
+            a += (byte) 0x97;
+            // this will fail to enter 50% of all 2 to the 16 possible states.
+//            b += (byte)(rotate8(a+1^a, 1));
+            // this will fail to enter 0% of all 2 to the 16 possible states.
+//            b += (byte)((a | 0x1A - a) >>> 31);
+            // this will fail to enter 99.21875% of all 2 to the 16 possible states.
+//            b += (byte)(a ^ rotate8(a, 3) ^ rotate8(a, 5));
+            // this will fail to enter 99.609375% of all 2 to the 16 possible states.
+            b += 1;
+            smallCounts[((a ^ b) & 255)]++;
+            counts[(a & 255) << 8 | (b & 255)]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }
