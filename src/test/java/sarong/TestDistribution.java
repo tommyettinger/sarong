@@ -1819,26 +1819,31 @@ gray * 255 + 230
     }
 
     /**
-     * 36.46087646484375% of possible outputs were not produced.
+     * 36.30218505859375% of possible output pairs were not produced.
+     * However, every (a,b) pair is encountered once, and every (q,r) potential output state is encountered once.
      */
     @Test
-    public void testSpeckled16Pairing()
+    public void testSpangledSmall16Pairing()
     {
         int[] smallCounts = new int[256];
         int[] counts = new int[65536];
-        byte a = 0, b = 1, q, r;
+        byte a = 0, b = 1;
+        int q, r;
         int x = 1;
         for (int i = 0; i <= 0xFFFF; i++) {
-            q = a += (byte) 0x97;
-            if(a == 0) b += 0x65;
-            r = b;
-            for (int j = 0, key = 11; j < 5; key = (key ^ key >>> 1) + key + ++j) {
-                q = (byte) (rotate8(q, 5) + r ^ key);
-                r = (byte) (rotate8(r, 2) ^ q);
+            q = (a += (byte) 0x97) & 255;
+            if(a != 0) b += 0x65;
+            r = b & 255;
+//            r = (b += 0x65) & 255;
+            for (int j = 0, key = 40; j < 7; key = (key ^ key >>> 1) + key + ++j) {
+                q = (rotate8(q, 6) + r ^ key) & 255;
+                r = (rotate8(r, 3) ^ q) & 255;
             }
 
-            smallCounts[(r & 255)]++;
-            counts[x = (x << 8 | (r & 255)) & 0xFFFF]++;
+            smallCounts[(r)]++;
+            counts[x = (x << 8 | (r)) & 0xFFFF]++;
+            // every state is encountered, and that allows every q and r value to occur together once for each pair
+//            counts[(q << 8 | (r)) & 0xFFFF]++;
         }
 
         int zeroes = 0;
@@ -1853,7 +1858,7 @@ gray * 255 + 230
                 System.out.println();
         }
         System.out.println();
-        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible output pairs were not produced.");
         System.out.println();
         for (int y = 0, i = 0; y < 8; y++) {
             for (int z = 0; z < 32; z++, i++) {
