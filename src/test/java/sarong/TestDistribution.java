@@ -1836,6 +1836,7 @@ gray * 255 + 230
             r = b & 255;
 //            r = (b += 0x65) & 255;
             for (int j = 0, key = 40; j < 7; key = (key ^ key >>> 1) + key + ++j) {
+                r = (r + rotate8(q, 5)) & 255;
                 q = (rotate8(q, 6) + r ^ key) & 255;
                 r = (rotate8(r, 3) ^ q) & 255;
             }
