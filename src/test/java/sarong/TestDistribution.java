@@ -1870,6 +1870,63 @@ gray * 255 + 230
     }
 
     /**
+     * 36.75689697265625% of possible output pairs were not produced.
+     */
+    @Test
+    public void testBannerSmall16Pairing()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 1;
+        int q, r;
+        int x = 1;
+        for (int i = 0; i <= 0xFFFF; i++) {
+            q = (a += (byte) 0x9D) & 255;
+            if(a != 0) b += 0x75;
+            r = b & 255;
+//            r = (b += 0x65) & 255;
+//            for (int j = 0; j < 2; ++j) {
+//                q = (rotate8(q, 7) ^ r) & 255;
+//                r = (rotate8(r, 2) + q) & 255;
+//                q = (rotate8(q, 3) ^ r) & 255;
+//            }
+
+            r = (rotate8(r, 2) ^ q) & 255;
+            q = (rotate8(q, 7) ^ r) & 255;
+            r = (rotate8(r, 1) + q) & 255;
+            q = (rotate8(q, 3) + r) & 255;
+            r = (rotate8(r, 5) ^ q) & 255;
+
+
+            smallCounts[(r)]++;
+            counts[x = (x << 8 | (r)) & 0xFFFF]++;
+            // every state is encountered, and that allows every q and r value to occur together once for each pair
+//            counts[(q << 8 | (r)) & 0xFFFF]++;
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible output pairs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
      * 89.84375% of possible outputs were not produced.
      */
     @Test
