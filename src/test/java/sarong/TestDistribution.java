@@ -545,6 +545,11 @@ gray * 255 + 230
     private int rotate8(int v, int amt) {
         return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
+
+    private int clz8(int v) {
+        return Integer.numberOfLeadingZeros(v) - 24;
+    }
+
     @Test
     public void testWrangly8Bit()
     {
@@ -1881,7 +1886,7 @@ gray * 255 + 230
         int q, r;
         int x = 1;
         for (int i = 0; i <= 0xFFFF; i++) {
-            q = (a += (byte) 0x9D) & 255;
+            q = (a += (byte) 0x99) & 255;
             if(a != 0) b += 0x75;
             r = b & 255;
 //            r = (b += 0x65) & 255;
@@ -1891,11 +1896,20 @@ gray * 255 + 230
 //                q = (rotate8(q, 3) ^ r) & 255;
 //            }
 
-            r = (rotate8(r, 2) ^ q) & 255;
-            q = (rotate8(q, 7) ^ r) & 255;
-            r = (rotate8(r, 1) + q) & 255;
-            q = (rotate8(q, 3) + r) & 255;
-            r = (rotate8(r, 5) ^ q) & 255;
+//            r = (rotate8(r, 2) ^ q) & 255;
+//            q = (rotate8(q, 7) ^ r) & 255;
+//            r = (rotate8(r, 1) + q) & 255;
+//            q = (rotate8(q, 3) + r) & 255;
+//            r = (rotate8(r, 5) ^ q) & 255;
+
+//            q = (rotate8(r, 2) + q) & 255;
+            r = (rotate8(q, 5) ^ r) & 255;
+            q = (rotate8(r, 2) ^ q) & 255;
+            r = (rotate8(q, 5) + r) & 255;
+            q = (rotate8(r, 2) + q) & 255;
+            r = (rotate8(q, 5) ^ r) & 255;
+
+
 
 
             smallCounts[(r)]++;
@@ -2044,6 +2058,21 @@ gray * 255 + 230
             }
             System.out.println();
         }
+    }
+
+    @Test
+    public void testLilith24States() {
+        final RoaringBitmap all = new RoaringBitmap();
+        int a = 0, b = 0, c = 0;
+        for (int i = 0; i < 0x1000000; i++) {
+            a = a + 0x75 & 255;
+            b = b + clz8(a) & 255;
+            c = c + clz8(a|b) & 255;
+            all.add(a << 16 | b << 8 | c);
+        }
+
+        System.out.println(all.getCardinality() + "/" + 0x1000000L + " outputs were present.");
+        System.out.println(100.0 - all.getCardinality() * 0x64p-24 + "% of outputs were missing.");
     }
 
 }
