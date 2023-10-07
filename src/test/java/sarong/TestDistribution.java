@@ -2069,6 +2069,11 @@ gray * 255 + 230
             r = b = b + clz8(a) & 255;
             s = c = c + clz8(a|b) & 255;
 
+            r = r + (rotate8(q, 7) ^ s) & 255;
+            r = r + (rotate8(s, 3) ^ q) & 255;
+            s = s ^ (rotate8(q, 1) + r) & 255;
+            s = s ^ (rotate8(r, 5) + q) & 255;
+
             q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
             r = (rotate8(r, 3) ^ q) & 255;
 
