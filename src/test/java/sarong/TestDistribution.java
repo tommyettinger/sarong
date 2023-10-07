@@ -2063,12 +2063,19 @@ gray * 255 + 230
     @Test
     public void testLilith24States() {
         final RoaringBitmap all = new RoaringBitmap();
-        int a = 0, b = 0, c = 0;
+        int a = 0, b = 0, c = 0, q, r, s;
         for (int i = 0; i < 0x1000000; i++) {
-            a = a + 0x75 & 255;
-            b = b + clz8(a) & 255;
-            c = c + clz8(a|b) & 255;
-            all.add(a << 16 | b << 8 | c);
+            q = a = a + 0x75 & 255;
+            r = b = b + clz8(a) & 255;
+            s = c = c + clz8(a|b) & 255;
+
+            q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
+            r = (rotate8(r, 3) ^ q) & 255;
+
+            q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
+            r = (rotate8(r, 3) ^ q) & 255;
+
+            all.add(q << 16 | r << 8 | s);
         }
 
         System.out.println(all.getCardinality() + "/" + 0x1000000L + " outputs were present.");
