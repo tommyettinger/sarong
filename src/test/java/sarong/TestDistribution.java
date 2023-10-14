@@ -1837,11 +1837,17 @@ gray * 255 + 230
         int x = 1;
         for (int i = 0; i <= 0xFFFF; i++) {
             q = (a += (byte) 0x97) & 255;
-            if(a != 0) b += 0x65;
+            if(a != 0) b += (byte)0xA5;
             r = b & 255;
 //            r = (b += 0x65) & 255;
-            for (int j = 0, key = 40; j < 7; key = (key ^ key >>> 1) + key + ++j) {
-                r = (r + rotate8(q, 5)) & 255;
+
+//            for (int j = 0, key = 40; j < 7; key = (key ^ key >>> 1) + key + ++j) {
+//                r = (r + rotate8(q, 5)) & 255;
+//                q = (rotate8(q, 6) + r ^ key) & 255;
+//                r = (rotate8(r, 3) ^ q) & 255;
+//            }
+
+            for (int j = 0, key = 40; j < 9; j++, key++) {
                 q = (rotate8(q, 6) + r ^ key) & 255;
                 r = (rotate8(r, 3) ^ q) & 255;
             }
@@ -2065,20 +2071,20 @@ gray * 255 + 230
         final RoaringBitmap all = new RoaringBitmap();
         int a = 0, b = 0, c = 0, q, r, s;
         for (int i = 0; i < 0x1000000; i++) {
-            q = a = a + 0x75 & 255;
-            r = b = b + clz8(a) & 255;
-            s = c = c + clz8(a|b) & 255;
+            q = a = a * 0x1D + 0x75 & 255;
+            r = b = b * 0x35 + clz8(a) & 255;
+            s = c = c * 0xA5 + clz8(a&b) & 255;
 
-            r = r + (rotate8(q, 7) ^ s) & 255;
-            r = r + (rotate8(s, 3) ^ q) & 255;
-            s = s ^ (rotate8(q, 1) + r) & 255;
-            s = s ^ (rotate8(r, 5) + q) & 255;
+//            r = r + (rotate8(q, 7) ^ s) & 255;
+//            r = r + (rotate8(s, 3) ^ q) & 255;
+//            s = s ^ (rotate8(q, 1) + r) & 255;
+//            s = s ^ (rotate8(r, 5) + q) & 255;
 
-            q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
+            q = (rotate8(q, 6) + r ^ s) & 255;
             r = (rotate8(r, 3) ^ q) & 255;
 
-            q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
-            r = (rotate8(r, 3) ^ q) & 255;
+//            q = (rotate8(q, 6) + r ^ (s = s + 3 & 255)) & 255;
+//            r = (rotate8(r, 3) ^ q) & 255;
 
             all.add(q << 16 | r << 8 | s);
         }
