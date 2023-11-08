@@ -1,6 +1,7 @@
 package sarong;
 
 import org.huldra.math.BigInt;
+import org.junit.Assert;
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
@@ -2039,7 +2040,9 @@ gray * 255 + 230
             // this will fail to enter 99.21875% of all 2 to the 16 possible states.
 //            b += (byte)(a ^ rotate8(a, 3) ^ rotate8(a, 5));
             // this will fail to enter 99.609375% of all 2 to the 16 possible states.
-            b += 1;
+//            b += 1;
+            // this will fail to enter 0% of all 2 to the 16 possible states.
+            b += Integer.numberOfLeadingZeros(a);
             smallCounts[((a ^ b) & 255)]++;
             counts[(a & 255) << 8 | (b & 255)]++;
         }
@@ -2093,4 +2096,148 @@ gray * 255 + 230
         System.out.println(100.0 - all.getCardinality() * 0x64p-24 + "% of outputs were missing.");
     }
 
+    /**
+     * 92.87109375% of possible full states were not entered.
+     */
+    @Test
+    public void testBrycReducedCoverage()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte h1, h2;
+        for (int a = 0; a <= 0xFF; a++) {
+            for (int b = 0; b <= 0xFF; b++) {
+                h1 = (byte) a;
+                h2 = (byte) b;
+                h1 ^= (h1 ^ ((h2 & 255) >>> 3)) * 0x77 & 255;
+                h2 ^= (h2 ^ ((h1 & 255) >>> 3)) * 0xc9 & 255;
+                h1 ^= (h2 & 255) >>> 4 & 255;
+                h2 ^= (h1 & 255) >>> 4 & 255;
+
+                smallCounts[(h2 & 255)]++;
+                counts[(h1 & 255) << 8 | (h2 & 255)]++;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 0.0% of possible full states were not entered.
+     */
+    @Test
+    public void testBryc2ReducedCoverage()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte h1, h2;
+        for (int a = 0; a <= 0xFF; a++) {
+            for (int b = 0; b <= 0xFF; b++) {
+                h1 = (byte) a;
+                h2 = (byte) b;
+                h1 ^= (h2 ^ ((h2 & 255) >>> 3)) * 0x77 & 255;
+                h2 ^= (h1 ^ ((h1 & 255) >>> 3)) * 0xc9 & 255;
+                h1 ^= (h2 & 255) >>> 4 & 255;
+                h2 ^= (h1 & 255) >>> 4 & 255;
+
+                smallCounts[(h2 & 255)]++;
+                counts[(h1 & 255) << 8 | (h2 & 255)]++;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 0.0% of possible full states were not entered.
+     */
+    @Test
+    public void testBryc2ReverseReducedCoverage()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte h1, h2;
+        for (int a = 0; a <= 0xFF; a++) {
+            for (int b = 0; b <= 0xFF; b++) {
+                h1 = (byte) a;
+                h2 = (byte) b;
+
+                h1 ^= (h2 ^ ((h2 & 255) >>> 3)) * 0x77 & 255;
+                h2 ^= (h1 ^ ((h1 & 255) >>> 3)) * 0xc9 & 255;
+                h1 ^= (h2 & 255) >>> 4 & 255;
+                h2 ^= (h1 & 255) >>> 4 & 255;
+
+
+                h2 ^= (h1 & 255) >>> 4 & 255;
+                h1 ^= (h2 & 255) >>> 4 & 255;
+                h2 ^= (h1 ^ ((h1 & 255) >>> 3)) * 0xc9 & 255;
+                h1 ^= (h2 ^ ((h2 & 255) >>> 3)) * 0x77 & 255;
+
+                Assert.assertEquals("Failed with a="+a+", b="+b+", h1="+h1+", h2="+h2, a, h1&255);
+                Assert.assertEquals("Failed with a="+a+", b="+b+", h1="+h1+", h2="+h2, b, h2&255);
+
+                smallCounts[(h2 & 255)]++;
+                counts[(h1 & 255) << 8 | (h2 & 255)]++;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
 }
