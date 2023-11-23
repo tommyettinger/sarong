@@ -2240,4 +2240,59 @@ gray * 255 + 230
             System.out.println();
         }
     }
+    /**
+     * 0.0% of possible full states were not entered.
+     */
+    @Test
+    public void testAXRB()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte h1 = 0, h2 = 0;
+        int o = 0;
+        for (int a = 0; a <= 0xFF; a++) {
+            for (int b = 0; b <= 0xFF; b++) {
+                h1 += 0x75;
+                h2 += 0x9B + Integer.numberOfLeadingZeros(h1 & 255) - 24;
+//                h2 += 0x9B;
+                o = h1 ^ rotate8(h2, 3);
+
+                smallCounts[(o & 255)]++;
+                counts[(h1 & 255) << 8 | (h2 & 255)]++;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+                if(y < 32)
+                    System.out.printf("%04X ", counts[i]);
+            }
+            if(y < 32)
+                System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+
+//        zeroes = 0;
+//        for (int y = 0, i = 0; y < 8; y++) {
+//            for (int z = 0; z < 32; z++, i++) {
+//                if(smallCounts[i] == 0)
+//                    zeroes++;
+//                System.out.printf("%04X ", smallCounts[i]);
+//            }
+//            System.out.println();
+//        }
+
+    }
+
 }
