@@ -2240,25 +2240,55 @@ gray * 255 + 230
             System.out.println();
         }
     }
-    /**
-     * 0.0% of possible full states were not entered.
-     */
+
     @Test
     public void testAXRB()
     {
         int[] smallCounts = new int[256];
         int[] counts = new int[65536];
         byte h1 = 0, h2 = 0;
-        int o = 0;
+        int o = 0, pair = 0;
         for (int a = 0; a <= 0xFF; a++) {
             for (int b = 0; b <= 0xFF; b++) {
                 h1 += 0x75;
-                h2 += 0x9B + Integer.numberOfLeadingZeros(h1 & 255) - 24;
+                h2 += (0x9B - 24) + Integer.numberOfLeadingZeros(h1 & 255);
 //                h2 += 0x9B;
-                o = h1 ^ rotate8(h2, 3);
+//                if(h1 == 0) h2++;
+                //81.9976806640625% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 3);
+                //74.5819091796875% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 1);
+                //79.107666015625% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 2);
+                //81.9976806640625% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 3);
+                //75.1556396484375% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 4);
+                //77.923583984375% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 5);
+                //80.755615234375% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 6);
+                //78.509521484375% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ rotate8(h2, 7);
+
+                //45.5841064453125% of possible pairs were not produced. (CLZ)
+                o = h1 ^ h2 ^ rotate8(h2, 1) ^ rotate8(h2, 4);
+                //56.71844482421875% of possible pairs were not produced.
+//                o = h1 + (h2 ^ rotate8(h2, 1) ^ rotate8(h2, 4));
+
+                //95.5413818359375% of possible pairs were not produced. (CLZ)
+//                o = h1 + rotate8(h2, 3);
+                //76.6448974609375% of possible pairs were not produced. (CLZ)
+//                o = h1 ^ h2;
+                //96.484375% of possible pairs were not produced. (CLZ)
+//                o = h1 + h2;
+                //62.493896484375% of possible pairs were not produced. (CLZ)
+                //85.56365966796875% of possible pairs were not produced. (if)
+//                o = (rotate8(h2, 3) ^ (rotate8(h1, 6) + h2 ^ 5)) & 255;
 
                 smallCounts[(o & 255)]++;
-                counts[(h1 & 255) << 8 | (h2 & 255)]++;
+                counts[pair = (pair & 255) << 8 | (o & 255)]++;
+//                counts[(h1 & 255) << 8 | (h2 & 255)]++;
             }
         }
 
@@ -2274,7 +2304,7 @@ gray * 255 + 230
                 System.out.println();
         }
         System.out.println();
-        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible full states were not entered.");
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible pairs were not produced.");
         System.out.println();
         for (int y = 0, i = 0; y < 8; y++) {
             for (int z = 0; z < 32; z++, i++) {
