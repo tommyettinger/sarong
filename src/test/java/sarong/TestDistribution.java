@@ -2325,4 +2325,27 @@ gray * 255 + 230
 
     }
 
+
+    @Test
+    public void testTriState()
+    {
+        int[] smallCounts = new int[256];
+        byte h1 = 0, h2 = 0, h3 = 0;
+        int o = 0;
+        for (int a = 0; a <= 0xFFFFFF; a++) {
+                h1 += 0x75;
+                h2 += (0x9B - 24) ^ Integer.numberOfLeadingZeros(h1 & 255);
+                h3 += (0x71 - 24) ^ Integer.numberOfLeadingZeros(h1 & h2 & 255);
+                o = (h3 ^ h2 * h1);
+                smallCounts[(o & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%06X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }
