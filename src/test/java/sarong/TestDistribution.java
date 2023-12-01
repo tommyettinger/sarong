@@ -2333,16 +2333,50 @@ gray * 255 + 230
         byte h1 = 0, h2 = 0, h3 = 0;
         int o = 0;
         for (int a = 0; a <= 0xFFFFFF; a++) {
-                h1 += 0x75;
-                h2 += (0x9B - 24) ^ Integer.numberOfLeadingZeros(h1 & 255);
-                h3 += (0x71 - 24) ^ Integer.numberOfLeadingZeros(h1 & h2 & 255);
-                o = (h3 ^ h2 * h1);
+                byte n = h1 += 0x65;
+                n &= (h2 += (0x91 - 24) + Integer.numberOfLeadingZeros(h1 & 255));
+                h3 += (0x7C - 24) + Integer.numberOfLeadingZeros(n & 255);
+                o = (h3 ^ n);
                 smallCounts[(o & 255)]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++, i++) {
                 System.out.printf("%06X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testVarState()
+    {
+        int[] smallCounts = new int[256];
+        byte[] h = new byte[4];
+        byte n;
+        final int lim = h.length - 1;
+        for (int a = 0; a >= 0; a++) {
+            n = h[0] += 0x65;
+            byte ctr = 0x3E;
+            for (int i = 1; i < lim; i++) {
+                n &= (h[i] += ((ctr += 0x35) - 24) + Integer.numberOfLeadingZeros(n & 255));
+            }
+            n ^= h[lim] += (ctr + 0xAD - 24) + Integer.numberOfLeadingZeros(n & 255);
+            smallCounts[(n & 255)]++;
+        }
+        for (int a = 0; a >= 0; a++) {
+            n = h[0] += 0x65;
+            byte ctr = 0x3E;
+            for (int i = 1; i < lim; i++) {
+                n &= (h[i] += ((ctr += 0x35) - 24) + Integer.numberOfLeadingZeros(n & 255));
+            }
+            n ^= h[lim] += (ctr + 0xAD - 24) + Integer.numberOfLeadingZeros(n & 255);
+            smallCounts[(n & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%07X ", smallCounts[i]);
             }
             System.out.println();
         }
