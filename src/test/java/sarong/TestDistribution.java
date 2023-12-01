@@ -2351,32 +2351,31 @@ gray * 255 + 230
     @Test
     public void testVarState()
     {
-        int[] smallCounts = new int[256];
-        byte[] h = new byte[4];
+        final int VAR_LEN = 5;
+
+        long[] smallCounts = new long[256];
+        byte[] h = new byte[VAR_LEN];
         byte n;
-        final int lim = h.length - 1;
-        for (int a = 0; a >= 0; a++) {
+        final int lim = h.length - 1, pairLim = lim - 1;
+        final long iterations = 1L << (VAR_LEN << 3);
+        for (long a = 0; a < iterations; a++) {
             n = h[0] += 0x65;
-            byte ctr = 0x3E;
-            for (int i = 1; i < lim; i++) {
-                n &= (h[i] += ((ctr += 0x35) - 24) + Integer.numberOfLeadingZeros(n & 255));
+            byte ctr = 0x35;
+            int i = 1;
+            for (; i < pairLim;) {
+                n |= (h[i++] += (ctr += 0x3A) ^ Integer.numberOfLeadingZeros(n & 255) - 24);
+                n &= (h[i++] += (ctr += 0x96) ^ Integer.numberOfLeadingZeros(n & 255) - 24);
             }
-            n ^= h[lim] += (ctr + 0xAD - 24) + Integer.numberOfLeadingZeros(n & 255);
-            smallCounts[(n & 255)]++;
-        }
-        for (int a = 0; a >= 0; a++) {
-            n = h[0] += 0x65;
-            byte ctr = 0x3E;
-            for (int i = 1; i < lim; i++) {
-                n &= (h[i] += ((ctr += 0x35) - 24) + Integer.numberOfLeadingZeros(n & 255));
-            }
-            n ^= h[lim] += (ctr + 0xAD - 24) + Integer.numberOfLeadingZeros(n & 255);
+            if(i < lim)
+                n |= (h[i] += (ctr += 0x3A) ^ Integer.numberOfLeadingZeros(n & 255) - 24);
+            n ^= h[lim] += (ctr + 0xAE) ^ Integer.numberOfLeadingZeros(n & 255) - 24;
+            // at this point, a random number generator should run n through a unary hash.
             smallCounts[(n & 255)]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++, i++) {
-                System.out.printf("%07X ", smallCounts[i]);
+                System.out.printf("%09X ", smallCounts[i]);
             }
             System.out.println();
         }
