@@ -2381,6 +2381,9 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * This is full-period (2 to the 32 outputs, 32 bits of state)
+     */
     @Test
     public void testGarbanzoDistribution()
     {
@@ -2394,6 +2397,33 @@ gray * 255 + 230
             n = (byte)((y = (stateB += 0xF5 ^ Integer.numberOfLeadingZeros((x     ) & 255))) + (n ^ rotate8(n, 3) ^ rotate8(n, 6)));
             n = (byte)((z = (stateC += 0x2D ^ Integer.numberOfLeadingZeros((x &= y) & 255))) + (n ^ rotate8(n, 2) ^ rotate8(n, 1)));
             n = (byte)((w = (stateD += 0xA5 ^ Integer.numberOfLeadingZeros((x &= z) & 255))) + (n ^ rotate8(n, 5) ^ rotate8(n, 4)));
+            n = (byte)(x + (n ^ rotate8(n, 4) ^ rotate8(n, 7)));
+            smallCounts[(n & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * This is, somehow, also full-period (2 to the 32 outputs, 32 bits of state)
+     */
+    @Test
+    public void testGabberDistribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0, stateC = 0, stateD = 0;
+        final long iterations = 1L << 32;
+        for (long a = 0; a < iterations; a++) {
+            byte n, x, y, z, w;
+            n = (byte)((x = (stateA += 0xBB)));
+            n = (byte)((y = (stateB += (n ^ rotate8(n, 3) ^ rotate8(n, 6)) ^ Integer.numberOfLeadingZeros((x     ) & 255))));
+            n = (byte)((z = (stateC += (n ^ rotate8(n, 2) ^ rotate8(n, 1)) ^ Integer.numberOfLeadingZeros((x &= y) & 255))));
+            n = (byte)((w = (stateD += (n ^ rotate8(n, 5) ^ rotate8(n, 4)) ^ Integer.numberOfLeadingZeros((x &= z) & 255))));
             n = (byte)(x + (n ^ rotate8(n, 4) ^ rotate8(n, 7)));
             smallCounts[(n & 255)]++;
         }
