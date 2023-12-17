@@ -2382,7 +2382,7 @@ gray * 255 + 230
     }
 
     /**
-     * This is full-period (2 to the 32 outputs, 32 bits of state)
+     * This is full-period (2 to the 32 outputs, 32 bits of state).
      */
     @Test
     public void testGarbanzoDistribution()
@@ -2410,7 +2410,7 @@ gray * 255 + 230
     }
 
     /**
-     * This is, somehow, also full-period (2 to the 32 outputs, 32 bits of state)
+     * This is, somehow, also full-period (2 to the 32 outputs, 32 bits of state).
      */
     @Test
     public void testGabberDistribution()
@@ -2437,7 +2437,7 @@ gray * 255 + 230
     }
 
     /**
-     * This is, somehow, also full-period (2 to the 32 outputs, 32 bits of state)
+     * This is, somehow, also full-period (2 to the 32 outputs, 32 bits of state).
      */
     @Test
     public void testGoblinDistribution()
@@ -2449,10 +2449,36 @@ gray * 255 + 230
             byte x, y, z, w;
             x = (stateA += (byte)(0xBB));
             y = (stateB += (byte)(rotate8(x, 3) ^ Integer.numberOfLeadingZeros((x     ) & 255)));
-            z = (stateC += (byte)(rotate8(y, 2) ^ Integer.numberOfLeadingZeros((x &= y) & 255)));
-            w = (stateD += (byte)(rotate8(z, 5) ^ Integer.numberOfLeadingZeros((x &= z) & 255)));
-            x ^= (byte)(rotate8(w, 6));
+            z = (stateC += (byte)(rotate8(y, 3) ^ Integer.numberOfLeadingZeros((x &= y) & 255)));
+            w = (stateD += (byte)(rotate8(z, 3) ^ Integer.numberOfLeadingZeros((x &= z) & 255)));
+            x ^= (byte)(rotate8(w, 3));
             smallCounts[(x & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+    /**
+     * This is, somehow, again, also full-period (2 to the 32 outputs, 32 bits of state).
+     */
+    @Test
+    public void testBrisketDistribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0, stateC = 0, stateD = 0;
+        final long iterations = 1L << 32;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y, z, w;
+            x = (stateA += (byte)(0xDB));
+            y = (stateB += (byte)((x|1) * (Integer.numberOfLeadingZeros((x     ) & 255) + 0x33 & 255)));
+            z = (stateC += (byte)((y|1) * (Integer.numberOfLeadingZeros((x &= y) & 255) + 0x75 & 255)));
+            w = (stateD += (byte)((z|1) * (Integer.numberOfLeadingZeros((x &= z) & 255) + 0x85 & 255)));
+            w ^= (byte)(rotate8(w, 5) ^ rotate8(w, 7));
+            smallCounts[(w & 255)]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
