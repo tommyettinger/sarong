@@ -2451,8 +2451,19 @@ gray * 255 + 230
             y = (stateB += (byte)(rotate8(x, 3) ^ Integer.numberOfLeadingZeros((x     ) & 255)));
             z = (stateC += (byte)(rotate8(y, 3) ^ Integer.numberOfLeadingZeros((x &= y) & 255)));
             w = (stateD += (byte)(rotate8(z, 3) ^ Integer.numberOfLeadingZeros((x &= z) & 255)));
-            x ^= (byte)(rotate8(w, 3));
+            // equidistributed
+            x += (byte)(w ^ rotate8(w, 3) ^ rotate8(w, 7));
             smallCounts[(x & 255)]++;
+            // equidistributed
+//            x ^= (byte)(rotate8(w, 3));
+//            smallCounts[(x & 255)]++;
+            // fails entirely, not equidistributed
+//            y += x ^ rotate8(w, 3);
+//            z += w ^ rotate8(y, 3);
+            // equidistributed
+//            y += x ^ rotate8(w, 3);
+//            z += rotate8(y, 3);
+//            smallCounts[(z & 255)]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
