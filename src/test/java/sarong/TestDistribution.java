@@ -548,7 +548,7 @@ gray * 255 + 230
     }
 
     private int clz8(int v) {
-        return Integer.numberOfLeadingZeros(v) - 24;
+        return Integer.numberOfLeadingZeros(v & 255) - 24;
     }
 
     @Test
@@ -2447,17 +2447,31 @@ gray * 255 + 230
         final long iterations = 1L << 32;
         for (long a = 0; a < iterations; a++) {
             byte x, y, z, w;
-            x = (stateA += (byte)(0xBB));
-            y = (stateB += (byte)(rotate8(x, 3) ^ Integer.numberOfLeadingZeros((x     ) & 255)));
-            z = (stateC += (byte)(rotate8(y, 3) ^ Integer.numberOfLeadingZeros((x &= y) & 255)));
-            w = (stateD += (byte)(rotate8(z, 3) ^ Integer.numberOfLeadingZeros((x &= z) & 255)));
+            x = (stateA += (byte)(0xBD));
+            y = (stateB += (byte)(rotate8(x, 3) + 0x65 * clz8(x     )));
+            z = (stateC += (byte)(rotate8(y, 3) + 0x55 * clz8(x &= y)));
+            w = (stateD += (byte)(rotate8(z, 3) + 0x45 * clz8(x &= z)));
             // equidistributed
-            x += (byte)(w ^ rotate8(w, 3) ^ rotate8(w, 7));
-            smallCounts[(x & 255)]++;
+            smallCounts[(w & 255)]++;
+//            x = (stateA += (byte)(0xBD));
+//            y = (stateB += (byte)(rotate8(x, 3) * clz8(x     )));
+//            z = (stateC += (byte)(rotate8(y, 3) * clz8(x &= y)));
+//            w = (stateD += (byte)(rotate8(z, 3) * clz8(x &= z)));
+//            // NOT equidistributed, but not by much
+//            smallCounts[(x + w & 255)]++;
+//            x = (stateA += (byte)(0xBD));
+//            y = (stateB += (byte)(rotate8(x, 3) + clz8(x     )));
+//            z = (stateC += (byte)(rotate8(y, 3) + clz8(x &= y)));
+//            w = (stateD += (byte)(rotate8(z, 3) + clz8(x &= z)));
+//            // equidistributed
+//            smallCounts[(w & 255)]++;
+            // equidistributed
+//            x += (byte)(w ^ rotate8(w, 3) ^ rotate8(w, 7));
+//            smallCounts[(x & 255)]++;
             // equidistributed
 //            x ^= (byte)(rotate8(w, 3));
 //            smallCounts[(x & 255)]++;
-            // fails entirely, not equidistributed
+            // fails entirely, NOT equidistributed
 //            y += x ^ rotate8(w, 3);
 //            z += w ^ rotate8(y, 3);
             // equidistributed
