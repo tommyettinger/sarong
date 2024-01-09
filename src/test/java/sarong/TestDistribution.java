@@ -237,7 +237,7 @@ public class TestDistribution {
         }
     }
     @Test
-    public void test32BitPointHash()
+    public void test32BitRightLFSR()
     {
         final RoaringBitmap all = new RoaringBitmap();
         int i = 0x80000000, state = -1;
@@ -2547,4 +2547,34 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * With the Coord.hashCode() version as-is:
+     * 3621146300/4294967296 outputs were present.
+     * 15.688617620617151% of outputs were missing.
+     */
+    @Test
+    public void test32BitPointHash()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int state = 0;
+        for (int x = -0x8000; x < 0x8000; x++) {
+            for (int y = -0x8000; y < 0x8000; y++) {
+                // the signs for x and y; each is either -1 or 0
+                int xs = x >> 31, ys = y >> 31;
+                // makes mx equivalent to -1 ^ this.x if this.x is negative
+                int mx = x ^ xs;
+                // same for my
+                int my = y ^ ys;
+                // Cantor pairing function, and XOR with every odd-index bit of xs and every even-index bit of ys
+                // this makes negative x, negative y, positive both, and negative both all get different bits XORed or not
+                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
+                // a specific combination of XOR and two rotations that doesn't produce duplicate hashes for our target range
+                state = (my ^ (my << 16 | my >>> 16) ^ (my << 8 | my >>> 24));
+
+                all.add(state);
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
 }
