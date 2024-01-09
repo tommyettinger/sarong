@@ -2448,11 +2448,17 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y, z, w;
             x = (stateA += (byte)(0xBD));
-            y = (stateB += (byte)(rotate8(x, 3) + 0x65 * clz8(x     )));
-            z = (stateC += (byte)(rotate8(y, 3) + 0x55 * clz8(x &= y)));
-            w = (stateD += (byte)(rotate8(z, 3) + 0x45 * clz8(x &= z)));
+            y = (stateB += (byte)(x + clz8(x     )));
+            z = (stateC += (byte)(y + clz8(x &= y)));
+            w = (stateD += (byte)(z + clz8(x &= z)));
             // equidistributed
-            smallCounts[(w & 255)]++;
+            smallCounts[(x + w & 255)]++;
+//            x = (stateA += (byte)(0xBD));
+//            y = (stateB += (byte)(rotate8(x, 3) + 0x65 * clz8(x     )));
+//            z = (stateC += (byte)(rotate8(y, 3) + 0x55 * clz8(x &= y)));
+//            w = (stateD += (byte)(rotate8(z, 3) + 0x45 * clz8(x &= z)));
+//            // equidistributed
+//            smallCounts[(w & 255)]++;
 //            x = (stateA += (byte)(0xBD));
 //            y = (stateB += (byte)(rotate8(x, 3) * clz8(x     )));
 //            z = (stateC += (byte)(rotate8(y, 3) * clz8(x &= y)));
