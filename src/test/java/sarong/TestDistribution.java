@@ -2551,6 +2551,10 @@ gray * 255 + 230
      * With the Coord.hashCode() version as-is:
      * 3621146300/4294967296 outputs were present.
      * 15.688617620617151% of outputs were missing.
+     * <br>
+     * With Rosenberg-Strong instead of Cantor:
+     * 4294967296/4294967296 outputs were present.
+     * 0.0% of outputs were missing.
      */
     @Test
     public void test32BitPointHash()
@@ -2567,7 +2571,8 @@ gray * 255 + 230
                 int my = y ^ ys;
                 // Cantor pairing function, and XOR with every odd-index bit of xs and every even-index bit of ys
                 // this makes negative x, negative y, positive both, and negative both all get different bits XORed or not
-                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
+//                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
+                my = (mx >= my ? mx * (mx + 2) - my : my * my + mx) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
                 // a specific combination of XOR and two rotations that doesn't produce duplicate hashes for our target range
                 state = (my ^ (my << 16 | my >>> 16) ^ (my << 8 | my >>> 24));
 
@@ -2577,4 +2582,31 @@ gray * 255 + 230
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
+   @Test
+    public void test16BitPointHash()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int state = 0;
+        for (int x = -0x80; x < 0x80; x++) {
+            for (int y = -0x80; y < 0x80; y++) {
+                // the signs for x and y; each is either -1 or 0
+                int xs = x >> 31, ys = y >> 31;
+                // makes mx equivalent to -1 ^ this.x if this.x is negative
+                int mx = x ^ xs;
+                // same for my
+                int my = y ^ ys;
+                // Cantor pairing function, and XOR with every odd-index bit of xs and every even-index bit of ys
+                // this makes negative x, negative y, positive both, and negative both all get different bits XORed or not
+//                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
+                my = (mx >= my ? mx * (mx + 2) - my : my * my + mx) ^ (xs & 0xAAAA) ^ (ys & 0x5555);
+                // a specific combination of XOR and two rotations that doesn't produce duplicate hashes for our target range
+                state = (my ^ (my << 4 | my >>> 12) ^ (my << 8 | my >>> 8)) & 0xFFFF;
+
+                all.add(state);
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x10000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-16 + "% of outputs were missing.");
+    }
+
 }
