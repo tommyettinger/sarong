@@ -2572,9 +2572,12 @@ gray * 255 + 230
                 // Cantor pairing function, and XOR with every odd-index bit of xs and every even-index bit of ys
                 // this makes negative x, negative y, positive both, and negative both all get different bits XORed or not
 //                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
-                my = (mx >= my ? mx * (mx + 2) - my : my * my + mx) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
+//                state = ((mx >= my ? mx * (mx + 2) - my : my * my + mx) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555)) * 0x9E3779B9;
                 // a specific combination of XOR and two rotations that doesn't produce duplicate hashes for our target range
-                state = (my ^ (my << 16 | my >>> 16) ^ (my << 8 | my >>> 24));
+//                state = (my ^ (my << 16 | my >>> 16) ^ (my << 8 | my >>> 24));
+
+                final int max = Math.max(mx, my);
+                state = ((max * max + max + mx - my) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555)) * 0x9E3779B9;
 
                 all.add(state);
             }
@@ -2599,8 +2602,9 @@ gray * 255 + 230
                 // this makes negative x, negative y, positive both, and negative both all get different bits XORed or not
 //                my = my + ((mx + my) * (mx + my + 1) >>> 1) ^ (xs & 0xAAAAAAAA) ^ (ys & 0x55555555);
                 my = (mx >= my ? mx * (mx + 2) - my : my * my + mx) ^ (xs & 0xAAAA) ^ (ys & 0x5555);
+                state = my;
                 // a specific combination of XOR and two rotations that doesn't produce duplicate hashes for our target range
-                state = (my ^ (my << 4 | my >>> 12) ^ (my << 8 | my >>> 8)) & 0xFFFF;
+//                state = (my ^ (my << 4 | my >>> 12) ^ (my << 8 | my >>> 8)) & 0xFFFF;
 
                 all.add(state);
             }
