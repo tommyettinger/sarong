@@ -2613,4 +2613,36 @@ gray * 255 + 230
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-16 + "% of outputs were missing.");
     }
 
+    @Test
+    public void testBeastDistribution()
+    {
+        long[] smallCounts = new long[256];
+        byte initialA = 0, initialB = 0, initialC = 0, initialD = 0;
+        byte stateA = initialA, stateB = initialB, stateC = initialC, stateD = initialD;
+        final long iterations = 1L << 32;
+        long a = 0;
+        for (; a < iterations; a++) {
+            byte x = stateA, y = stateB, z = stateC, w = stateD;
+            stateA += (byte)0x99;
+            stateB += clz8(x);
+            stateC = (byte)(rotate8(w, 1) - x);
+            stateD = (byte)(rotate8(z, 6) ^ y);
+            if(stateA == initialA && stateB == initialB && stateC == initialC && stateD == initialD)
+                break;
+            x ^= rotate8(w, 7) + y;
+            y += rotate8(z, 4) ^ x;
+
+            smallCounts[(x - rotate8(y, 5) & 255)]++;
+        }
+        System.out.printf("Subcycle %d, %d, %d, %d has length %d, %10.8f%% of the maximum cycle.",
+                initialA, initialB, initialC, initialD, a, a * 0x64p-32);
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }
