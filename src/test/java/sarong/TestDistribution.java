@@ -2644,6 +2644,40 @@ gray * 255 + 230
             System.out.println();
         }
     }
+
+
+    @Test
+    public void testBeastStateDistribution()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        all.add(0, 1L << 32);
+        int initialState = 0;
+        while (!all.isEmpty()) {
+            int state = initialState;
+            System.out.println("Starting subcycle on " + state);
+            long a = 0;
+            byte stateA = (byte) (state >>> 24);
+            byte stateB = (byte) (state >>> 16);
+            byte stateC = (byte) (state >>>  8);
+            byte stateD = (byte) (state       );
+            for (; a < 0x100000000L; a++) {
+                byte x = stateA, y = stateB, z = stateC, w = stateD;
+                stateA += (byte) 0x99;
+                stateB += clz8(x);
+                stateC = (byte) (rotate8(w, 1) - x);
+                stateD = (byte) (rotate8(z, 6) ^ y);
+                state = (stateA << 24) | (stateB << 16 & 0xFF0000) | (stateC << 8 & 0xFF00) | (stateD & 0xFF);
+                if (state == initialState)
+                    break;
+                all.remove(state);
+            }
+            System.out.printf("Subcycle %d has length %d, %10.8f%% of the maximum cycle.\n",
+                    initialState, a, a * 0x64p-32);
+            initialState = (int)all.nextAbsentValue(initialState);
+        }
+        System.out.println();
+    }
+
     @Test
     public void testBeastFinalizerDistribution()
     {
