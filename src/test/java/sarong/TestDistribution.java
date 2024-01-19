@@ -2646,6 +2646,117 @@ gray * 255 + 230
     }
 
 
+    /**
+     * <code>
+     *                 stateA += (byte) 0x99;
+     *                 stateB += clz8(x);
+     *                 stateC = (byte) (rotate8(w, 1) - x);
+     *                 stateD = (byte) (rotate8(z, 6) ^ y);
+     * </code>
+     * <br>
+     * <pre>
+     * Subcycle 0 has length 1201602560, 27.97698975% of the maximum cycle.
+     * Subcycle 2 has length 581828608, 13.54675293% of the maximum cycle.
+     * Subcycle 6 has length 809500672, 18.84765625% of the maximum cycle.
+     * Subcycle 9 has length 455344128, 10.60180664% of the maximum cycle.
+     * Subcycle 26 has length 113836032, 2.65045166% of the maximum cycle.
+     * Subcycle 49 has length 12648448, 0.29449463% of the maximum cycle.
+     * Subcycle 75 has length 37945344, 0.88348389% of the maximum cycle.
+     * Subcycle 111 has length 25296896, 0.58898926% of the maximum cycle.
+     * Subcycle 3072 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3073 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3074 has length 60293120, 1.40380859% of the maximum cycle.
+     * Subcycle 3075 has length 60293120, 1.40380859% of the maximum cycle.
+     * Subcycle 3077 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3078 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3079 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3080 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3081 has length 23592960, 0.54931641% of the maximum cycle.
+     * Subcycle 3087 has length 23592960, 0.54931641% of the maximum cycle.
+     * Subcycle 3092 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3093 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3094 has length 23592960, 0.54931641% of the maximum cycle.
+     * Subcycle 3098 has length 23592960, 0.54931641% of the maximum cycle.
+     * Subcycle 3101 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3115 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3117 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3121 has length 2621440, 0.06103516% of the maximum cycle.
+     * Subcycle 3130 has length 23592960, 0.54931641% of the maximum cycle.
+     * Subcycle 3136 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3147 has length 7864320, 0.18310547% of the maximum cycle.
+     * Subcycle 3168 has length 20971520, 0.48828125% of the maximum cycle.
+     * Subcycle 3183 has length 2621440, 0.06103516% of the maximum cycle.
+     * Subcycle 3206 has length 2621440, 0.06103516% of the maximum cycle.
+     * Subcycle 3840 has length 49807360, 1.15966797% of the maximum cycle.
+     * Subcycle 3842 has length 12058624, 0.28076172% of the maximum cycle.
+     * Subcycle 3843 has length 12058624, 0.28076172% of the maximum cycle.
+     * Subcycle 3846 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3848 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3849 has length 4718592, 0.10986328% of the maximum cycle.
+     * Subcycle 3855 has length 4718592, 0.10986328% of the maximum cycle.
+     * Subcycle 3860 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3862 has length 4718592, 0.10986328% of the maximum cycle.
+     * Subcycle 3866 has length 4718592, 0.10986328% of the maximum cycle.
+     * Subcycle 3869 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3883 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3885 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3889 has length 524288, 0.01220703% of the maximum cycle.
+     * Subcycle 3898 has length 4718592, 0.10986328% of the maximum cycle.
+     * Subcycle 3904 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3915 has length 1572864, 0.03662109% of the maximum cycle.
+     * Subcycle 3936 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 3951 has length 524288, 0.01220703% of the maximum cycle.
+     * Subcycle 3974 has length 524288, 0.01220703% of the maximum cycle.
+     * Subcycle 5376 has length 74711040, 1.73950195% of the maximum cycle.
+     * Subcycle 5378 has length 18087936, 0.42114258% of the maximum cycle.
+     * Subcycle 5379 has length 18087936, 0.42114258% of the maximum cycle.
+     * Subcycle 5382 has length 12582912, 0.29296875% of the maximum cycle.
+     * Subcycle 5384 has length 12582912, 0.29296875% of the maximum cycle.
+     * Subcycle 5385 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5391 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5398 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5402 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5405 has length 12582912, 0.29296875% of the maximum cycle.
+     * Subcycle 5410 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5412 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5415 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5425 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 5427 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5430 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5434 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5437 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5440 has length 12582912, 0.29296875% of the maximum cycle.
+     * Subcycle 5451 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 5479 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 5480 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5487 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 5488 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5490 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5510 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 5571 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 5573 has length 786432, 0.01831055% of the maximum cycle.
+     * Subcycle 11264 has length 6225920, 0.14495850% of the maximum cycle.
+     * Subcycle 11266 has length 3014656, 0.07019043% of the maximum cycle.
+     * Subcycle 11270 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 11273 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 11290 has length 589824, 0.01373291% of the maximum cycle.
+     * Subcycle 11313 has length 65536, 0.00152588% of the maximum cycle.
+     * Subcycle 11339 has length 196608, 0.00457764% of the maximum cycle.
+     * Subcycle 11375 has length 131072, 0.00305176% of the maximum cycle.
+     * Subcycle 34304 has length 12451840, 0.28991699% of the maximum cycle.
+     * Subcycle 34306 has length 3014656, 0.07019043% of the maximum cycle.
+     * Subcycle 34307 has length 3014656, 0.07019043% of the maximum cycle.
+     * Subcycle 34310 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 34313 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 34326 has length 2359296, 0.05493164% of the maximum cycle.
+     * Subcycle 34330 has length 1179648, 0.02746582% of the maximum cycle.
+     * Subcycle 34333 has length 4194304, 0.09765625% of the maximum cycle.
+     * Subcycle 34353 has length 131072, 0.00305176% of the maximum cycle.
+     * Subcycle 34379 has length 393216, 0.00915527% of the maximum cycle.
+     * Subcycle 34415 has length 131072, 0.00305176% of the maximum cycle.
+     * Subcycle 34438 has length 131072, 0.00305176% of the maximum cycle.
+     * </pre>
+     */
     @Test
     public void testBeastStateDistribution()
     {
