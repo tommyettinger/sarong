@@ -2644,5 +2644,28 @@ gray * 255 + 230
             System.out.println();
         }
     }
+    @Test
+    public void testBeastFinalizerDistribution()
+    {
+        long[] smallCounts = new long[256];
+        for (int x = 0; x < 256; x++) {
+            for (int y = 0; y < 256; y++) {
+                for (int z = 0; z < 256; z++) {
+                    for (int w = 0; w < 256; w++) {
+                        int a = (x ^ (rotate8(w, 7) + y)) & 255;
+                        int b = (y + (rotate8(z, 4) ^ x)) & 255;
+                        smallCounts[(a - rotate8(b, 5) & 255)]++;
+                    }
+                }
+            }
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
 
 }
