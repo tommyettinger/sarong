@@ -2828,15 +2828,15 @@ gray * 255 + 230
         for (; a < iterations; a++) {
             // 1D equidistributed for 16-bit outputs.
             // 2D equidistributed for 8-bit outputs, when returning either x or y.
-            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
-            stateA += (byte)0x99;
-            stateB += clz8(n);
-            stateC += clz8(n|=y);
-            stateD += clz8(n&z);
-            x = (byte)(x ^ rotate8(y, 7) + z);
-            y = (byte)(y + rotate8(x, 4));
-            x = (byte)(x ^ rotate8(y, 7) + w);
-            y = (byte)(y + rotate8(x, 4));
+//            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+//            stateA += (byte)0x99;
+//            stateB += clz8(n);
+//            stateC += clz8(n|=y);
+//            stateD += clz8(n&z);
+//            x = (byte)(y ^ rotate8(x, 7) + z);
+//            y = (byte)(x + rotate8(y, 4));
+//            x = (byte)(y ^ rotate8(x, 7) + w);
+//            y = (byte)(x + rotate8(y, 4));
 
             // distributed quite unevenly. the total number of occurrences of any single 16-bit result is always odd...?
 //            byte x = stateA, y = stateB, z = stateC, w = stateD;
@@ -2849,10 +2849,33 @@ gray * 255 + 230
 //            z = (byte)(z ^ rotate8(w, 7) + y);
 //            w = (byte)(w + rotate8(z, 4));
 
+            // also 2D equidistributed, for z and w this time.
+//            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+//            stateA += (byte)0x99;
+//            stateB += clz8(n);
+//            stateC += clz8(n|=y);
+//            stateD += clz8(n&z);
+//            z = (byte)(z ^ rotate8(w, 7) + x);
+//            w = (byte)(w + rotate8(z, 4));
+//            z = (byte)(z ^ rotate8(w, 7) + y);
+//            w = (byte)(w + rotate8(z, 4));
+
+            // 2D equidistributed when returning 8-bit z or w.
+            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+            stateA += (byte)0x99;
+            stateB += clz8(n);
+            stateC += clz8(n|=y);
+            stateD += clz8(n&z);
+            x = (byte)(y ^ rotate8(x, 7) + w);
+            y = (byte)(x + rotate8(y, 4) ^ z);
+            z = (byte)(w ^ rotate8(z, 7) + y);
+            w = (byte)(z + rotate8(w, 4) ^ x);
+
 
 //            smallCounts[(x & 0xFF)]++;
 //            smallCounts[(y & 0xFF)]++;
-            smallCounts[(x & 0xFF) | (y << 8 & 0xFF00)]++;
+//            smallCounts[(x & 0xFF) | (y << 8 & 0xFF00)]++;
+            smallCounts[(z & 0xFF) | (w << 8 & 0xFF00)]++;
             if(stateA == initialA && stateB == initialB && stateC == initialC && stateD == initialD) {
                 System.out.println("Completed a (sub) cycle!");
                 break;
