@@ -2815,4 +2815,58 @@ gray * 255 + 230
         }
     }
 
+
+    @Test
+    public void testBoomDistribution()
+    {
+        long[] smallCounts = new long[65536];
+        byte initialA = 0, initialB = 0, initialC = 0, initialD = 0;
+        byte stateA = initialA, stateB = initialB, stateC = initialC, stateD = initialD;
+        final long iterations = (1L << 32) + 1024L;
+//        final long iterations = (1L << 16);
+        long a = 1;
+        for (; a < iterations; a++) {
+            // 1D equidistributed for 16-bit outputs.
+            // 2D equidistributed for 8-bit outputs, when returning either x or y.
+            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+            stateA += (byte)0x99;
+            stateB += clz8(n);
+            stateC += clz8(n|=y);
+            stateD += clz8(n&z);
+            x = (byte)(x ^ rotate8(y, 7) + z);
+            y = (byte)(y + rotate8(x, 4));
+            x = (byte)(x ^ rotate8(y, 7) + w);
+            y = (byte)(y + rotate8(x, 4));
+
+            // distributed quite unevenly. the total number of occurrences of any single 16-bit result is always odd...?
+//            byte x = stateA, y = stateB, z = stateC, w = stateD;
+//            stateA += (byte)0x99;
+//            stateB += clz8(x);
+//            stateC += clz8(x|=y);
+//            stateD += clz8(x&=z);
+//            z = (byte)(z ^ rotate8(w, 7) + x);
+//            w = (byte)(w + rotate8(z, 4));
+//            z = (byte)(z ^ rotate8(w, 7) + y);
+//            w = (byte)(w + rotate8(z, 4));
+
+
+//            smallCounts[(x & 0xFF)]++;
+//            smallCounts[(y & 0xFF)]++;
+            smallCounts[(x & 0xFF) | (y << 8 & 0xFF00)]++;
+            if(stateA == initialA && stateB == initialB && stateC == initialC && stateD == initialD) {
+                System.out.println("Completed a (sub) cycle!");
+                break;
+            }
+        }
+        System.out.printf("Subcycle %d, %d, %d, %d has length %d, %10.8f%% of the maximum cycle.",
+                initialA, initialB, initialC, initialD, a, a * 0x64p-32);
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
 }
