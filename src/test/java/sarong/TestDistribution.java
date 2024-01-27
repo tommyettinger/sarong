@@ -2608,6 +2608,7 @@ gray * 255 + 230
 
                 all.add(state);
             }
+
         }
         System.out.println(all.getLongCardinality() + "/" + 0x10000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-16 + "% of outputs were missing.");
@@ -2643,6 +2644,87 @@ gray * 255 + 230
             }
             System.out.println();
         }
+    }
+
+    @Test
+    public void testMattv8Distribution()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        long[] smallCounts = new long[256];
+        int stateA = 0;
+        final long iterations = 1L << 32;
+        long a = 0;
+        for (; a < iterations; a++) {
+            int t = stateA += 0x99;
+            t = (t ^ t >>> 15) * (t | 1);// XOR the current state with a right shift by 15 bits to add additional entropy
+            t ^= t + (t ^ t >>> 7) * (t | 61);// Perform an integer multiplication to add additional entropy
+            t ^= t >>> 14;// XOR the current state with a right shift by 14 bits to add additional, then bitwise AND with 0xFF to ensure an 8-bit value
+
+            smallCounts[(t & 255)]++;
+            all.add(t & 255);
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-8 + "% of outputs were missing.");
+    }
+
+    @Test
+    public void testMattv8LongestSubcycle() {
+        long a = 1;
+        int initial = 2;
+        int t = initial;
+        for (; a <= 0x100000000L; a++) {
+            t = (t ^ t >>> 15) * (t | 1);
+            t ^= t + (t ^ t >>> 7) * (t | 61);
+            if(initial == t) {
+                Assert.assertNotEquals("Failed after " + a + " iterations.", initial, t);
+            }
+        }
+        Assert.assertEquals(initial, t);
+    }
+
+    @Test
+    public void testMattv8StateDistribution()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        all.add(0, 1L << 32);
+        int initialState = 0;
+        int[] cycleCheck = new int[256];
+        int cycleIndex = 0, concern = 0;
+        long sum = 0, lastSum = -1;
+        while (!all.isEmpty()) {
+            int state = initialState;
+//            System.out.println("Starting subcycle on " + state);
+            long a = 1;
+            int t = state;
+            for (; a <= 0x100000000L; a++) {
+                t = (t ^ t >>> 15) * (t | 1);// XOR the current state with a right shift by 15 bits to add additional entropy
+                state = t ^= t + (t ^ t >>> 7) * (t | 61);// Perform an integer multiplication to add additional entropy
+                //return (t ^ t >>> 14) & 255;// XOR the current state with a right shift by 14 bits to add additional, then bitwise AND with 0xFF to ensure an 8-bit value
+                sum -= cycleCheck[cycleIndex & 255];
+                cycleCheck[cycleIndex++ & 255] = state;
+                sum += state;
+                if(a > 256 && lastSum == sum) {
+                    System.out.println("CONCERNED AT " + a);
+                    if(++concern >= 5) break;
+                }
+                all.remove(state);
+                if (state == initialState)
+                    break;
+//                if((a & 0x3FFFFF) == 0x3FFFFF)
+//                    System.out.printf("I have run for %d steps on this cycle. The state is %d.\n", a, state);
+            }
+            System.out.printf("Subcycle %d has length %d, %10.8f%% of the maximum cycle.\n",
+                    initialState, a, a * 0x64p-32);
+            initialState = (int)all.nextValue(initialState);
+        }
+        System.out.println();
     }
 
 
@@ -2861,21 +2943,41 @@ gray * 255 + 230
 //            w = (byte)(w + rotate8(z, 4));
 
             // 2D equidistributed when returning 8-bit z or w.
+//            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+//            stateA += (byte)0x99;
+//            stateB += clz8(n);
+//            stateC += clz8(n|=y);
+//            stateD += clz8(n&z);
+//            x = (byte)(y ^ rotate8(x, 7) + w);
+//            y = (byte)(x + rotate8(y, 4) ^ z);
+//            z = (byte)(w ^ rotate8(z, 7) + y);
+//            w = (byte)(z + rotate8(w, 4) ^ x);
+
+            // 2D equidistributed when returning 8-bit y or w.
+//            byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
+//            stateA += (byte)0x99;
+//            stateB += clz8(n);
+//            stateC += clz8(n|=y);
+//            stateD += clz8(n&z);
+//            y = (byte)((y ^ rotate8(x, 7) + w) + rotate8(y, 4));
+//            w = (byte)((w ^ rotate8(z, 2) + y) + rotate8(w, 5));
+
+            // 2D equidistributed when returning 8-bit y or w.
+            // This pattern passes 16GB of PractRand without anomalies,
+            // but starts to have trouble after that (using 32-bit state variables).
             byte x = stateA, y = stateB, z = stateC, w = stateD, n = x;
             stateA += (byte)0x99;
-            stateB += clz8(n);
-            stateC += clz8(n|=y);
-            stateD += clz8(n&z);
-            x = (byte)(y ^ rotate8(x, 7) + w);
-            y = (byte)(x + rotate8(y, 4) ^ z);
-            z = (byte)(w ^ rotate8(z, 7) + y);
-            w = (byte)(z + rotate8(w, 4) ^ x);
-
+            stateB += x ^ clz8(n);
+            stateC += y ^ clz8(n|=y);
+            stateD += z ^ clz8(n&z);
+            y = (byte)((y ^ rotate8(x, 7) + w) + rotate8(y, 4));
+            w = (byte)((w ^ rotate8(z, 2) + y) + rotate8(w, 5));
 
 //            smallCounts[(x & 0xFF)]++;
 //            smallCounts[(y & 0xFF)]++;
 //            smallCounts[(x & 0xFF) | (y << 8 & 0xFF00)]++;
-            smallCounts[(z & 0xFF) | (w << 8 & 0xFF00)]++;
+//            smallCounts[(z & 0xFF) | (w << 8 & 0xFF00)]++;
+            smallCounts[(y & 0xFF) | (w << 8 & 0xFF00)]++;
             if(stateA == initialA && stateB == initialB && stateC == initialC && stateD == initialD) {
                 System.out.println("Completed a (sub) cycle!");
                 break;
