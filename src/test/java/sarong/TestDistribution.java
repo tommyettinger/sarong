@@ -2677,7 +2677,7 @@ gray * 255 + 230
     @Test
     public void testMattv8LongestSubcycle() {
         long a = 1;
-        int initial = 2;
+        int initial = 166469239;
         int t = initial;
         for (; a <= 0x100000000L; a++) {
             t = (t ^ t >>> 15) * (t | 1);
@@ -2885,6 +2885,46 @@ gray * 255 + 230
                         int b = (y + (rotate8(z, 4) ^ x)) & 255;
                         smallCounts[(a - rotate8(b, 5) & 255)]++;
                     }
+                }
+            }
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testBlamFinalizerDistribution()
+    {
+        long[] smallCounts = new long[256];
+        for (int a = 0; a < 256; a++) {
+            for (int b = 0; b < 256; b++) {
+                for (int c = 0; c < 256; c++) {
+                    int x = a, y = b, z = c;
+                    // Like the Speck cipher, 2 rounds; equidistributed for x and y
+//                    x = (y ^ rotate8(x, 2) + z) & 255;
+//                    y = (x + rotate8(y, 7) ^ z) & 255;
+//                    x = (y ^ rotate8(x, 5) + z) & 255;
+//                    y = (x + rotate8(y, 3) ^ z) & 255;
+                    // appears equidistributed...
+//                    z = (z ^ (y * x | 1)) & 255;
+//                    x = (x ^ (z * y | 1)) & 255;
+//                    y = (y ^ (x * z | 1)) & 255;
+                    // also equidistributed
+                    z = (rotate8(z, 1) ^ (y * x | 1)) & 255;
+                    x = (rotate8(x, 6) ^ (z * y | 1)) & 255;
+                    y = (rotate8(y, 5) ^ (x * z | 1)) & 255;
+
+//                    int a = (x ^ (rotate8(w, 7) + y)) & 255;
+//                        int b = (y + (rotate8(z, 4) ^ x)) & 255;
+//                        smallCounts[(a - rotate8(b, 5) & 255)]++;
+//                        smallCounts[(x + y & 255)]++;
+                        smallCounts[y]++;
+//                        smallCounts[x ^ y ^ z]++;
                 }
             }
         }
