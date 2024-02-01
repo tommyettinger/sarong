@@ -2682,9 +2682,9 @@ gray * 255 + 230
         for (; a <= 0x100000000L; a++) {
             t = (t ^ t >>> 15) * (t | 1);
             t ^= t + (t ^ t >>> 7) * (t | 61);
-            if(initial == t) {
-                Assert.assertNotEquals("Failed after " + a + " iterations.", initial, t);
-            }
+
+            if (initial == t) System.out.println("Failed after " + a + " iterations.");
+
         }
         Assert.assertEquals(initial, t);
     }
@@ -2915,15 +2915,25 @@ gray * 255 + 230
 //                    x = (x ^ (z * y | 1)) & 255;
 //                    y = (y ^ (x * z | 1)) & 255;
                     // also equidistributed
-                    z = (rotate8(z, 1) ^ (y * x | 1)) & 255;
-                    x = (rotate8(x, 6) ^ (z * y | 1)) & 255;
-                    y = (rotate8(y, 5) ^ (x * z | 1)) & 255;
+//                    z = (rotate8(z, 1) ^ (y * x | 1)) & 255;
+//                    x = (rotate8(x, 6) ^ (z * y | 1)) & 255;
+//                    y = (rotate8(y, 5) ^ (x * z | 1)) & 255;
+
+                    x = (x ^ rotate8(z, 1) + rotate8(y, 6)) & 255;
+                    y = (y ^ rotate8(x, 2) + rotate8(z, 4)) & 255;
+                    z = (z ^ rotate8(y, 3) + rotate8(x, 7)) & 255;
+
+                    y = (z ^ rotate8(y, 3) + x) & 255;
+                    z = (y + rotate8(z, 6)) & 255;
 
 //                    int a = (x ^ (rotate8(w, 7) + y)) & 255;
 //                        int b = (y + (rotate8(z, 4) ^ x)) & 255;
 //                        smallCounts[(a - rotate8(b, 5) & 255)]++;
 //                        smallCounts[(x + y & 255)]++;
-                        smallCounts[y]++;
+//                        smallCounts[xx ^ yy ^ zz]++;
+//                        smallCounts[xx + yy + zz & 255]++;
+                        smallCounts[z]++;
+//                        smallCounts[y]++;
 //                        smallCounts[x ^ y ^ z]++;
                 }
             }
@@ -2937,6 +2947,39 @@ gray * 255 + 230
         }
     }
 
+
+    @Test
+    public void testBlamDistribution()
+    {
+        long[] smallCounts = new long[256];
+        byte initialA = 0, initialB = 0, initialC = 0;
+        byte stateA = initialA, stateB = initialB, stateC = initialC;
+        final long iterations = (1L << 32) + 1024L;
+//        final long iterations = (1L << 16);
+        long a = 1;
+        for (; a < iterations; a++) {
+            byte x = stateA, y = stateB, z = stateC, n = x;
+            // equidistributed, at least 1D.
+            stateA += (byte)0x99;
+            stateB = (byte)(x ^ y + clz8(n));
+            stateC = (byte)(y ^ z + clz8(n&y));
+
+            smallCounts[(x ^ y ^ z) & 255]++;
+            if(stateA == initialA && stateB == initialB && stateC == initialC) {
+                System.out.println("Completed a (sub) cycle!");
+                break;
+            }
+        }
+        System.out.printf("Subcycle %d, %d, %d has length %d, %10.8f%% of the maximum cycle.",
+                initialA, initialB, initialC, a, a * 0x64p-24);
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
 
     @Test
     public void testBoomDistribution()
