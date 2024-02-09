@@ -2923,8 +2923,8 @@ gray * 255 + 230
                     y = (y ^ rotate8(x, 2) + rotate8(z, 4)) & 255;
                     z = (z ^ rotate8(y, 3) + rotate8(x, 7)) & 255;
 
-                    y = (z ^ rotate8(y, 3) + x) & 255;
-                    z = (y + rotate8(z, 6)) & 255;
+//                    y = (z ^ rotate8(y, 3) + x) & 255;
+//                    z = (y + rotate8(z, 6)) & 255;
 
 //                    int a = (x ^ (rotate8(w, 7) + y)) & 255;
 //                        int b = (y + (rotate8(z, 4) ^ x)) & 255;
@@ -2932,7 +2932,7 @@ gray * 255 + 230
 //                        smallCounts[(x + y & 255)]++;
 //                        smallCounts[xx ^ yy ^ zz]++;
 //                        smallCounts[xx + yy + zz & 255]++;
-                        smallCounts[z]++;
+                        smallCounts[(z)&255]++;
 //                        smallCounts[y]++;
 //                        smallCounts[x ^ y ^ z]++;
                 }
@@ -2947,6 +2947,39 @@ gray * 255 + 230
         }
     }
 
+    @Test
+    public void testTriangularDistribution()
+    {
+        long[] smallCounts = new long[256];
+        for (int a = 0; a < 256; a++) {
+            int z = (((a+1>>>1) * (a | 1)) & 255);
+//            int z = (((a+1>>>1) * (a | 1) ^ 7) & 255);
+            smallCounts[(z)&255]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testTriangularPeriod()
+    {
+        short[] counts = new short[256];
+        int z = 0;
+        for (int a = 0; a < 0x100; a++) {
+            counts[z = ((z+1>>>1) * (z | 1) ^ 7) & 255]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
 
     @Test
     public void testBlamDistribution()
@@ -2960,7 +2993,7 @@ gray * 255 + 230
         for (; a < iterations; a++) {
             byte x = stateA, y = stateB, z = stateC, n = x;
             // equidistributed, at least 1D.
-            stateA += (byte)0x99;
+            stateA = (byte)(0xAE ^ x + 0x99);
             stateB = (byte)(x ^ y + clz8(n));
             stateC = (byte)(y ^ z + clz8(n&y));
 
