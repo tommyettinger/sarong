@@ -2965,19 +2965,30 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * For the modifier m, which is XORed with the nth triangular number to get the n+1-th element in the sequence, only
+     * m-values 7, 13, 114, and 120 have a full period.
+     */
     @Test
-    public void testTriangularPeriod()
-    {
+    public void testTriangularPeriod() {
         short[] counts = new short[256];
-        int z = 0;
-        for (int a = 0; a < 0x100; a++) {
-            counts[z = ((z+1>>>1) * (z | 1) ^ 7) & 255]++;
-        }
-        for (int y = 0, i = 0; y < 16; y++) {
-            for (int x = 0; x < 16; x++) {
-                System.out.print(StringKit.hex(counts[i++]) + " ");
+        for (int m = 0; m < 256; m++) {
+            Arrays.fill(counts, (short) 0);
+            int z = 0;
+            for (int a = 0; a < 0x100; a++) {
+                counts[z = ((z + 1 >>> 1) * (z | 1) ^ m) & 255]++;
             }
-            System.out.println();
+            int optimal = 0;
+            for (int y = 0, i = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    if (counts[i] == 1) optimal++;
+                    System.out.print(StringKit.hex(counts[i++]) + " ");
+                }
+                System.out.println();
+            }
+            System.out.println("For " + m + ", " + optimal + " results were output the optimal number of times.");
+            if (optimal == counts.length)
+                System.out.println("That's perfect!");
         }
     }
 
@@ -2993,7 +3004,7 @@ gray * 255 + 230
         for (; a < iterations; a++) {
             byte x = stateA, y = stateB, z = stateC, n = x;
             // equidistributed, at least 1D.
-            stateA = (byte)(0xAE ^ x + 0x99);
+            stateA = (byte)(0xC ^ x + 0x99);
             stateB = (byte)(x ^ y + clz8(n));
             stateC = (byte)(y ^ z + clz8(n&y));
 
