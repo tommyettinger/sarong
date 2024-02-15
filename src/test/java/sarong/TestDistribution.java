@@ -1606,8 +1606,8 @@ gray * 255 + 230
             for (int i = 0; i < 0x10000; i++) {
                 // This (multiplier & 3) must equal 3.
                 // This includes all powers of two minus 1 that are greater than 2, and many LEA constants.
-                state ^= (state * state | j);
-                state *= -1;
+                // Here, it is -1 .
+                state = (short) -(state ^ (state * state | j));
                 //state = (state ^ (state * state | o5o7)) * m3; // (o5o7 & 7) must equal 5 or 7, (m3 & 3) must equal 3.
                 result = state;
                 xor ^= result;
@@ -1617,7 +1617,7 @@ gray * 255 + 230
                     if(i == 65535)
 //                    if(i > 16383)
                     {
-                        System.out.println("Using j=" + j + " repeats after " + (i) + " iterations");
+                        System.out.println("Using j=" + j + " repeats after " + 65536 + " iterations");
                         System.out.println(sum + ", should be -" + (0x8000L));
                         System.out.println(Integer.toBinaryString(xor) + " " + xor);
                         System.out.println(all.getLongCardinality() + ", should be " + (0x10000L));
@@ -2989,6 +2989,38 @@ gray * 255 + 230
             System.out.println("For " + m + ", " + optimal + " results were output the optimal number of times.");
             if (optimal == counts.length)
                 System.out.println("That's perfect!");
+        }
+    }
+
+    /**
+     * With 16-bit state size, no XORed values produce an optimal period of 2 to the 16. Some get close:
+     * When m is 4131, 4697, 28070, or 28636, the period is 65532, just 4 shy of optimal.
+     */
+    @Test
+    public void testTriangular16Period() {
+        short[] counts = new short[0x10000];
+        for (int m = 0; m < 65536; m++) {
+            Arrays.fill(counts, (short) 0);
+            int z = 0;
+            for (int a = 0; a < 0x10000; a++) {
+                counts[z = ((z + 1 >>> 1) * (z | 1) ^ m) & 0xFFFF]++;
+            }
+            int optimal = 0;
+            for (int i = 0; i < 0x10000; i++) {
+                if (counts[i] == 1) optimal++;
+            }
+//            for (int y = 0, i = 0; y < 16; y++) {
+//                for (int x = 0; x < 16; x++) {
+//                    System.out.print(StringKit.hex(counts[i++]) + " ");
+//                }
+//                System.out.println();
+//            }
+//            System.out.println("For " + m + ", " + optimal + " results were output the optimal number of times.");
+            if (optimal > 64000) {
+                System.out.println("For " + m + ", " + optimal + " results were output the optimal number of times.");
+                if (optimal == counts.length)
+                    System.out.println("That's perfect!");
+            }
         }
     }
 
