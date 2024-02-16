@@ -1599,7 +1599,7 @@ gray * 255 + 230
         short result = 0, xor = 0, state = 0;
         BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
-        for (int j = 1; j < 0x10000; j += 2) { // when (j & 7) equals 5 or 7, this is full-period.
+        for (int j = 0; j < 0x10000; j++) { // when (j & 7) equals 5 or 7, this is full-period.
             sum.assign(0);
             all.clear();
             xor = state = 0;
@@ -1607,7 +1607,9 @@ gray * 255 + 230
                 // This (multiplier & 3) must equal 3.
                 // This includes all powers of two minus 1 that are greater than 2, and many LEA constants.
                 // Here, it is -1 .
-                state = (short) -(state ^ (state * state | j));
+//                state = (short) (j-(state ^ (state * state | 7))); // for any even j, this is full-period.
+                state = (short) (j-(state ^ (state * state | 5))); // for any even j, this is full-period also.
+//                state = (short) -(state ^ (state * state | j));
                 //state = (state ^ (state * state | o5o7)) * m3; // (o5o7 & 7) must equal 5 or 7, (m3 & 3) must equal 3.
                 result = state;
                 xor ^= result;
@@ -2032,7 +2034,7 @@ gray * 255 + 230
         int[] counts = new int[65536];
         byte a = 0, b = 0;
         for (int i = 0; i <= 0xFFFF; i++) {
-            a += (byte) 0x97;
+//            a += (byte) 0x97;
             // this will fail to enter 50% of all 2 to the 16 possible states.
 //            b += (byte)(rotate8(a+1^a, 1));
             // this will fail to enter 0% of all 2 to the 16 possible states.
@@ -2042,8 +2044,12 @@ gray * 255 + 230
             // this will fail to enter 99.609375% of all 2 to the 16 possible states.
 //            b += 1;
             // this will fail to enter 0% of all 2 to the 16 possible states.
-            b += Integer.numberOfLeadingZeros(a);
-            smallCounts[((a ^ b) & 255)]++;
+//            b += clz8(a);
+
+            // this will fail to enter 0% of all 2 to the 16 possible states.
+            a = (byte) (a * 0xC3 ^ 0x95);
+            b = (byte) (clz8(a) - (b ^ (b * b | 7)));
+            smallCounts[((a + rotate8(b, 2)) & 255)]++;
             counts[(a & 255) << 8 | (b & 255)]++;
         }
 
