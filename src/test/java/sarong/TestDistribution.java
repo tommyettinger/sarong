@@ -1826,6 +1826,58 @@ gray * 255 + 230
         }
     }
 
+    @Test
+    public void testNomnom16()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 0;
+        int x = 0;
+        for (int i = 1; i <= 0x10000; i++) {
+//            a = (byte)(a * 0x8D + 0x9B);
+//            a = (byte) -(a ^ (a * a | 0x5));
+//            b = (byte) (-(clz8(a) + b ^ (b * b | 0x5)));
+
+            // good option; 50.3509521484375% of possible outputs were not produced.
+//            a = (byte)(a * 0x9B ^ 0x8D);
+//            b = (byte) (clz8(a)-(b ^ (b * b | 0x5)));
+
+            // probably faster, also good option; 50.32958984375% of possible outputs were not produced.
+//            a = (byte)(a * 0x9B ^ 0x9D);
+//            b = (byte)(b * 0x8D + clz8(a));
+
+            // best so far; 50.274658203125% of possible outputs were not produced.
+            a = (byte)(a * 0x8D + 0xAB);
+            b = (byte)((b + clz8(a)) * 0x9B ^ 0x9D);
+
+            smallCounts[((rotate8(a, 2) ^ b) & 255)]++;
+            counts[x = (x << 8 | ((rotate8(a, 2) ^ b) & 255)) & 0xFFFF]++;
+            if((a|b) == 0){
+                System.out.println("Cycled at " + i);
+                break;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+//                System.out.printf("%04X ", counts[i]);
+            }
+//            System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible outputs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
     /**
      * 36.30218505859375% of possible output pairs were not produced.
      * However, every (a,b) pair is encountered once, and every (q,r) potential output state is encountered once.
@@ -2340,8 +2392,8 @@ gray * 255 + 230
         int o = 0;
         for (int a = 0; a <= 0xFFFFFF; a++) {
                 byte n = h1 += 0x65;
-                n &= (h2 += (0x91 - 24) + Integer.numberOfLeadingZeros(h1 & 255));
-                h3 += (0x7C - 24) + Integer.numberOfLeadingZeros(n & 255);
+                n &= (h2 += (0x91) + clz8(h1));
+                h3 += (0x7C) + clz8(n);
                 o = (h3 ^ n);
                 smallCounts[(o & 255)]++;
         }
