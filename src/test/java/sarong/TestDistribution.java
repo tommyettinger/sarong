@@ -1879,6 +1879,50 @@ gray * 255 + 230
     }
 
     /**
+     * 37.39471435546875% of possible pairs were not produced.
+     */
+    @Test
+    public void testSpun16()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 0;
+        int accum = 0;
+        for (int i = 1; i <= 0x10000; i++) {
+
+            byte x = a, y = b;
+            a = (byte)(x * 0x35 + 0xC3);
+            b = (byte)(y * 0xD5 + clz8(x));
+
+            smallCounts[(rotate8(x, 3) + y ^ rotate8(y, 6)) & 255]++;
+            counts[accum = (accum << 8 | ((rotate8(x, 3) + y ^ rotate8(y, 6)) & 255)) & 0xFFFF]++;
+            if((a|b) == 0){
+                System.out.println("Cycled at " + i);
+                break;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+//                System.out.printf("%04X ", counts[i]);
+            }
+//            System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible pairs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
      * 36.30218505859375% of possible output pairs were not produced.
      * However, every (a,b) pair is encountered once, and every (q,r) potential output state is encountered once.
      */
@@ -2132,9 +2176,13 @@ gray * 255 + 230
         final RoaringBitmap all = new RoaringBitmap();
         int a = 0, b = 0, c = 0, q, r, s;
         for (int i = 0; i < 0x1000000; i++) {
-            q = a = a * 0x1D + 0x75 & 255;
-            r = b = b * 0x35 + clz8(a) & 255;
-            s = c = c * 0xA5 + clz8(a&b) & 255;
+//            q = a = a * 0x1D + 0x75 & 255;
+//            r = b = b * 0x35 + clz8(a) & 255;
+//            s = c = c * 0xA5 + clz8(a&b) & 255;
+
+            q = a = (a + 0x75) & 255;
+            r = b = (a ^ b + clz8(a)) & 255;
+            s = c = (b ^ c + clz8(a & b)) & 255;
 
 //            r = r + (rotate8(q, 7) ^ s) & 255;
 //            r = r + (rotate8(s, 3) ^ q) & 255;
