@@ -1879,7 +1879,7 @@ gray * 255 + 230
     }
 
     /**
-     * 37.39471435546875% of possible pairs were not produced.
+     * 36.33575439453125% of possible pairs were not produced.
      */
     @Test
     public void testSpun16()
@@ -1893,9 +1893,64 @@ gray * 255 + 230
             byte x = a, y = b;
             a = (byte)(x * 0x35 + 0xC3);
             b = (byte)(y * 0xD5 + clz8(x));
+//            a = (byte)-(x ^ (x * x | 23));
+//            b = (byte)(y + 0xD5 + clz8(x));
 
-            smallCounts[(rotate8(x, 3) + y ^ rotate8(y, 6)) & 255]++;
-            counts[accum = (accum << 8 | ((rotate8(x, 3) + y ^ rotate8(y, 6)) & 255)) & 0xFFFF]++;
+//            smallCounts[(x+y) & 255]++;
+//            counts[accum = (accum << 8 | ((x+y) & 255)) & 0xFFFF]++;
+            smallCounts[(rotate8(x, 2) + y ^ rotate8(y, 5)) & 255]++;
+            counts[accum = (accum << 8 | ((rotate8(x, 2) + y ^ rotate8(y, 5)) & 255)) & 0xFFFF]++;
+            if((a|b) == 0){
+                System.out.println("Cycled at " + i);
+                break;
+            }
+        }
+
+        int zeroes = 0;
+        for (int y = 0, i = 0; y < 2048; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                if(counts[i] == 0)
+                    zeroes++;
+//                System.out.printf("%04X ", counts[i]);
+            }
+//            System.out.println();
+        }
+        System.out.println();
+        System.out.println((zeroes * 0x1p-16 * 100.0) + "% of possible pairs were not produced.");
+        System.out.println();
+        for (int y = 0, i = 0; y < 8; y++) {
+            for (int z = 0; z < 32; z++, i++) {
+                System.out.printf("%04X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 40.362548828125% of possible pairs were not produced.
+     * Simpler transition between states, but a Cantor pairing function for output.
+     */
+    @Test
+    public void testPoder16()
+    {
+        int[] smallCounts = new int[256];
+        int[] counts = new int[65536];
+        byte a = 0, b = 0;
+        int accum = 0;
+        for (int i = 1; i <= 0x10000; i++) {
+
+            byte x = a, y = b;
+            a = (byte)(x + 0xC5);
+            b = (byte)(y + x + clz8(x));
+            // could use this b instead; also full-period.
+//            b = (byte)(y + clz8(x));
+
+            smallCounts[(a + ((b * (b + 1) & 255) >>> 3)) & 255]++;
+            counts[accum = (accum << 8 | ((a + ((b * (b + 1) & 255) >>> 3)) & 255)) & 0xFFFF]++;
+            // also works
+//            smallCounts[(a + ((b * (b + 1) & 255) >>> 1)) & 255]++;
+//            counts[accum = (accum << 8 | ((a + ((b * (b + 1) & 255) >>> 1)) & 255)) & 0xFFFF]++;
+
             if((a|b) == 0){
                 System.out.println("Cycled at " + i);
                 break;
