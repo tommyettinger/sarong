@@ -1929,6 +1929,9 @@ gray * 255 + 230
     /**
      * 40.362548828125% of possible pairs were not produced.
      * Simpler transition between states, but a Cantor pairing function for output.
+     * OR
+     * 0.39215087890625% of possible pairs were not produced.
+     * Using a similar simple transition between states, but just summing the states for output.
      */
     @Test
     public void testPoder16()
@@ -1941,12 +1944,29 @@ gray * 255 + 230
 
             byte x = a, y = b;
             a = (byte)(x + 0xC5);
-            b = (byte)(y + x + clz8(x));
+            b = (byte)(y + (x ^ clz8(x))); // seems best
+//            b = (byte)(y + x + clz8(x));
             // could use this b instead; also full-period.
 //            b = (byte)(y + clz8(x));
 
-            smallCounts[(a + ((b * (b + 1) & 255) >>> 3)) & 255]++;
-            counts[accum = (accum << 8 | ((a + ((b * (b + 1) & 255) >>> 3)) & 255)) & 0xFFFF]++;
+            // 35.8184814453125% of possible pairs were not produced.
+//            smallCounts[(rotate8(x, 2) + y ^ rotate8(y, 5)) & 255]++;
+//            counts[accum = (accum << 8 | ((rotate8(x, 2) + y ^ rotate8(y, 5)) & 255)) & 0xFFFF]++;
+            // 8.59375% of possible pairs were not produced.
+            // with y+(x^clz), 7.03125% of possible pairs were not produced.
+//            smallCounts[(rotate8(x, 3) + y) & 255]++;
+//            counts[accum = (accum << 8 | ((rotate8(x, 3) + y) & 255)) & 0xFFFF]++;
+            // 12.07122802734375% of possible pairs were not produced.
+            // with y+(x^clz), 11.31439208984375% of possible pairs were not produced.
+//            smallCounts[(x ^ y) & 255]++;
+//            counts[accum = (accum << 8 | ((x ^ y) & 255)) & 0xFFFF]++;
+            // 3.12652587890625% of possible pairs were not produced.
+            // with y+(x^clz), 0.39215087890625% of possible pairs were not produced.
+            smallCounts[(x + y) & 255]++;
+            counts[accum = (accum << 8 | ((x + y) & 255)) & 0xFFFF]++;
+            // works
+//            smallCounts[(a + ((b * (b + 1) & 255) >>> 3)) & 255]++;
+//            counts[accum = (accum << 8 | ((a + ((b * (b + 1) & 255) >>> 3)) & 255)) & 0xFFFF]++;
             // also works
 //            smallCounts[(a + ((b * (b + 1) & 255) >>> 1)) & 255]++;
 //            counts[accum = (accum << 8 | ((a + ((b * (b + 1) & 255) >>> 1)) & 255)) & 0xFFFF]++;
