@@ -1944,24 +1944,35 @@ gray * 255 + 230
 
             byte x = a, y = b;
             a = (byte)(x + 0xC5);
-            b = (byte)(y + (x ^ clz8(x))); // seems best
+            // the next one should work well on GWT. It does a XOR last, which makes sure b is in int range.
+            b = (byte)(x ^ (y + clz8(x)));
+//            b = (byte)(y + (x ^ clz8(x))); // seems best for pairs produced
 //            b = (byte)(y + x + clz8(x));
             // could use this b instead; also full-period.
 //            b = (byte)(y + clz8(x));
 
-            // 35.8184814453125% of possible pairs were not produced.
+            // with (y+x+clz), 35.8184814453125% of possible pairs were not produced.
+            // with y+(x^clz), 35.5804443359375% of possible pairs were not produced.
+            // with x^(y+clz), 36.3739013671875% of possible pairs were not produced.
+            // with (y+clz)  , 68.06182861328125% of possible pairs were not produced.
 //            smallCounts[(rotate8(x, 2) + y ^ rotate8(y, 5)) & 255]++;
 //            counts[accum = (accum << 8 | ((rotate8(x, 2) + y ^ rotate8(y, 5)) & 255)) & 0xFFFF]++;
-            // 8.59375% of possible pairs were not produced.
+            // with (y+x+clz), 8.59375% of possible pairs were not produced.
             // with y+(x^clz), 7.03125% of possible pairs were not produced.
+            // with x^(y+clz), 31.66961669921875% of possible pairs were not produced.
+            // with (y+clz)  , 95.70159912109375% of possible pairs were not produced.
 //            smallCounts[(rotate8(x, 3) + y) & 255]++;
 //            counts[accum = (accum << 8 | ((rotate8(x, 3) + y) & 255)) & 0xFFFF]++;
-            // 12.07122802734375% of possible pairs were not produced.
+            // with (y+x+clz), 12.07122802734375% of possible pairs were not produced.
             // with y+(x^clz), 11.31439208984375% of possible pairs were not produced.
+            // with x^(y+clz), 7.57293701171875% of possible pairs were not produced.
+            // with (y+clz)  , 79.98809814453125% of possible pairs were not produced.
 //            smallCounts[(x ^ y) & 255]++;
 //            counts[accum = (accum << 8 | ((x ^ y) & 255)) & 0xFFFF]++;
-            // 3.12652587890625% of possible pairs were not produced.
+            // with (y+x+clz), 3.12652587890625% of possible pairs were not produced.
             // with y+(x^clz), 0.39215087890625% of possible pairs were not produced.
+            // with x^(y+clz), 9.62982177734375% of possible pairs were not produced.
+            // with (y+clz)  , 96.48284912109375% of possible pairs were not produced.
             smallCounts[(x + y) & 255]++;
             counts[accum = (accum << 8 | ((x + y) & 255)) & 0xFFFF]++;
             // works
