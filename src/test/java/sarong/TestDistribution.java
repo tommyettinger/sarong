@@ -1663,30 +1663,49 @@ gray * 255 + 230
     @Test
     public void testSpeck1Round0KeySub() {
         final RoaringBitmap all = new RoaringBitmap();
-        final int k = 0;
-        final short[] counts = new short[65536];
-        for (int b = 0; b < 256; b++) {
-            for (int c = 0; c < 256; c++) {
-                int b0 = b, b1 = c;
-                b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 0xFF;
-                b0 = ((b0 << 2 | b0 >>> 6) ^ b1) & 0xFF;
+        final int[] counts = new int[0x100];
+        for (int k = 0; k < 101; k++) {
+            for (int b = 0; b < 256; b++) {
+                for (int c = 0; c < 256; c++) {
+                    int b0 = b, b1 = c;
+//                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 0xFF;
+//                    b0 = ((b0 << 2 | b0 >>> 6) ^ b1) & 0xFF;
+
 //                b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k+1) & 0xFF;
 //                b0 = ((b0 << 2 | b0 >>> 6) ^ b1) & 0xFF;
-                b0 |= b1 << 8;
-                all.add(b0);
-                counts[b0]++;
+
+                    // surprisingly, both of the following are equidistributed
+//                    b0 = ( (b0 << 2 | b0 >>> 6) ^ (b1 << 5 | b1 >>> 3) + b0 ^ k + b0) & 255;
+//                    b0 = ( (b0 << 2 | b0 >>> 6) ^ (b1 << 5 | b1 >>> 3) + b0 ^ k ^ b0) & 255;
+                    // neither of the following are
+//                    b0 = ( (b0 << 2 | b0 >>> 6) ^ (b1 << 5 | b1 >>> 3) + b0 ^ k + b1) & 255;
+//                    b0 = ( (b0 << 2 | b0 >>> 6) ^ (b1 << 5 | b1 >>> 3) + b0 ^ k ^ b1) & 255;
+                    // both of the following parts are equidistributed
+//                    b0 = ((b1 << 5 | b1 >>> 3) + b0 ^ k + b0) & 255;
+//                    b0 = ((b1 << 5 | b1 >>> 3) + b0 ^ k ^ b0) & 255;
+                    // the next two lines together are equidistributed
+//                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 255;
+//                    b0 = (b0 + (b0 << 2 | b0 >>> 6) + b1) & 255;
+                    // same here, equidistributed
+                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 255;
+                    b0 = b0 + ((b0 << 2 | b0 >>> 6) ^ b1) & 255;
+
+//                    b0 |= b1 << 8;
+                    all.add(b0);
+                    counts[b0]++;
+                }
             }
         }
         System.out.println("APPEARANCE COUNTS:");
-        for (int y = 0, i = 0; y < 256; y++) {
+        for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 System.out.print(StringKit.hex(counts[i++]) + " ");
             }
             System.out.println();
         }
 
-        System.out.println(all.getCardinality() + "/" + 0x10000L + " outputs were present.");
-        System.out.println(100.0 - all.getCardinality() * 0x64p-16 + "% of outputs were missing.");
+        System.out.println(all.getCardinality() + "/" + 0x100L + " outputs were present.");
+        System.out.println(100.0 - all.getCardinality() * 0x64p-8 + "% of outputs were missing.");
     }
 
     /**
