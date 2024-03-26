@@ -1687,8 +1687,15 @@ gray * 255 + 230
 //                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 255;
 //                    b0 = (b0 + (b0 << 2 | b0 >>> 6) + b1) & 255;
                     // same here, equidistributed
-                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 255;
-                    b0 = b0 + ((b0 << 2 | b0 >>> 6) ^ b1) & 255;
+//                    b1 = ((b1 << 5 | b1 >>> 3) + b0 ^ k) & 255;
+//                    b0 = b0 + ((b0 << 2 | b0 >>> 6) ^ b1) & 255;
+
+                    // including `b0 +=` or `b0 ^=` in the first block makes this not equidistributed; otherwise it is.
+                    b1 = (rotate8(b1, 5) + b0 ^ k) & 255;
+                    b0 = (rotate8(b0, 2) ^ b1) & 255;
+                    b0 ^= rotate8(b0, 1) ^ rotate8(b0, 3);
+                    b1 = (rotate8(b1, 5) + b0 ^ k) & 255;
+                    b0 = (rotate8(b0, 2) ^ b1) & 255;
 
 //                    b0 |= b1 << 8;
                     all.add(b0);
