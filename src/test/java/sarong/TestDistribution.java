@@ -2751,10 +2751,35 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y, z, w;
             x = (stateA += (byte)(0xDB));
-            y = (stateB += (byte)((x) * (Integer.numberOfLeadingZeros((x     ) & 255) + 0x33 & 255)));
-            z = (stateC += (byte)((y) * (Integer.numberOfLeadingZeros((x &= y) & 255) + 0x75 & 255)));
-            w = (stateD += (byte)((z) * (Integer.numberOfLeadingZeros((x &= z) & 255) + 0x85 & 255)));
+            y = (stateB += (byte)((x) * (clz8(x     ) + 0x33 & 255)));
+            z = (stateC += (byte)((y) * (clz8(x &= y) + 0x75 & 255)));
+            w = (stateD += (byte)((z) * (clz8(x &= z) + 0x85 & 255)));
             smallCounts[(w & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Equidistributed and full-period.
+     */
+    @Test
+    public void testSimplishDistribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0, stateC = 0;
+        final long iterations = 1L << 24;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y, z;
+            x = (stateA = (byte)(stateA + 0xC5));
+            y = (stateB = (byte)(stateB + x + (clz8(x    ))));
+            z = (stateC = (byte)(stateC + y + (clz8(x & y))));
+            smallCounts[((rotate8(z, 2) ^ rotate8(y, 5) + z ^ x) & 255)]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
