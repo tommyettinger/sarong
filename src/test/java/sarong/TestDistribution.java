@@ -1740,8 +1740,10 @@ gray * 255 + 230
     public void testFermatResidueHigh()
     {
         short[] counts = new short[256];
+        int sum = 0;
         for (int a = 0; a < 0x10000; a++) {
                 counts[a - (a >>> 8) >>> 8 & 255]++;
+                sum += a - (a >>> 8) >>> 8 & 255;
         }
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
@@ -1749,6 +1751,7 @@ gray * 255 + 230
             }
             System.out.println();
         }
+        System.out.println("Sum of all generated values: " + sum);
     }
 
     /**
@@ -2780,6 +2783,61 @@ gray * 255 + 230
             y = (stateB = (byte)(stateB + x + (clz8(x    ))));
             z = (stateC = (byte)(stateC + y + (clz8(x & y))));
             smallCounts[((rotate8(z, 2) ^ rotate8(y, 5) + z ^ x) & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Equidistributed and full-period.
+     */
+    @Test
+    public void testSimplish16Distribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y;
+            x = (stateA = (byte)(stateA + 0xC5));
+            y = (stateB = (byte)(stateB + (clz8(x    ))));
+//            y = (stateB = (byte)(stateB + (x + 1 + rotate8(x, 1) & 255)));
+            smallCounts[((rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107) & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    public int roundFunction(int n) {
+        n ^= rotate8(n, 2) ^ rotate8(n, 6);
+        n = n + 179 & 255;
+        return n ^ rotate8(n, 3) ^ rotate8(n, 5);
+    }
+
+    @Test
+    public void testFeistel16Distribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y;
+            x = (stateA = (byte)(stateA + 0xC5));
+            y = (stateB = (byte)(stateB + (clz8(x))));
+            y = (byte) ((x) ^ roundFunction(x = y));
+            x ^= roundFunction(y);
+
+            smallCounts[x & 255]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
