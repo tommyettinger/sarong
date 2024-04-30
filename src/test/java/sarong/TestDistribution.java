@@ -2833,9 +2833,36 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y;
             x = (stateA = (byte)(stateA + 0xC5));
+//            y = (stateB = (byte)(stateB + 0xBD));
             y = (stateB = (byte)(stateB + (clz8(x))));
             y = (byte) ((x) ^ roundFunction(x = y));
             x ^= roundFunction(y);
+
+            smallCounts[x & 255]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testFeisty16Distribution()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y;
+            x = (stateA = (byte)(stateA + 0xC5));
+            y = (stateB = (byte)(stateB + (clz8(x))));
+            // the change is in the next two lines. `x = y` can be changed to `x += y` or `x ^= y` without trouble.
+            // It remains just as equidistributed.
+            y = (byte) ((x) ^ roundFunction(x += y));
+            x ^= roundFunction(x ^ y);
 
             smallCounts[x & 255]++;
         }
