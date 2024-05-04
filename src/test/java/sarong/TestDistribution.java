@@ -2857,14 +2857,20 @@ gray * 255 + 230
         final long iterations = 1L << 16;
         for (long a = 0; a < iterations; a++) {
             byte x, y;
+            // update style 1
+//            x = (stateA = (byte)(stateA + 0xC5));
+//            y = (stateB = (byte)(stateB + (clz8(x))));
+            // update style 2
             x = (stateA = (byte)(stateA + 0xC5));
-            y = (stateB = (byte)(stateB + (clz8(x))));
+            y = (byte)(x + (stateB = (byte)(stateB + (clz8(x)))));
             // the change is in the next two lines. `x = y` can be changed to `x += y` or `x ^= y` without trouble.
             // It remains just as equidistributed.
-            y = (byte) ((x) ^ roundFunction(x += y));
-            x ^= roundFunction(x ^ y);
+//            y = (byte) ((x) ^ roundFunction(x += y));
+//            x ^= roundFunction(x ^ y);
+//            smallCounts[x & 255]++;
 
-            smallCounts[x & 255]++;
+            // this one-liner mixing is equidistributed with either update style.
+            smallCounts[(y ^ roundFunction(y ^ (x ^ roundFunction(y)))) & 255]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
