@@ -2871,12 +2871,26 @@ gray * 255 + 230
 //            x = (byte)(y ^ ((x += (y ^ rotate8(y, 7) ^ rotate8(y, 6)) + 0x95) ^ rotate8(x, 3) ^ rotate8(x, 6)) + 0x95);
 
 //            y = (byte) ((x) ^ (x = (byte)((y ^ rotate8(y, 54) ^ rotate8(y, 47)) + 0xB7)));
-            x = (byte) ((y) ^ (y += (byte)((x ^ rotate8(x, 25) ^ rotate8(x, 50)) + 0x95)));
-            y = (byte) ((x) ^ (x += (byte)((y ^ rotate8(y, 54) ^ rotate8(y, 47)) + 0xA1)));
-            x ^= (x + (y ^ rotate8(y, 25) ^ rotate8(y, 50)) + 0xDB);
 
+//            x = (byte) ((y) ^ (y += (byte)((x ^ rotate8(x, 25) ^ rotate8(x, 50)) + 0x95)));
+//            y = (byte) ((x) ^ (x += (byte)((y ^ rotate8(y, 54) ^ rotate8(y, 47)) + 0xA1)));
+//            x ^= (x + (y ^ rotate8(y, 25) ^ rotate8(y, 50)) + 0xDB);
+
+            // OK, wow.
+            // This desperate attempt to get FrostyRandom to be random enough from correlated initial states
+            // actually turns out to be almost decorrelated enough to be unnoticeable (my test can't notice it,
+            // but my eyes can). It also produces each x,y state pair, after all this processing, equally often.
+            // This could return (x^y) or (x+y) without losing its 1D equidistribution. This could also be used
+            // with a smaller word size (int) to produce larger words (long) as needed, but default to smaller.
+            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))) + rotate8(x, 34));
+            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))) + rotate8(y, 17));
+            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))) + rotate8(x, 20));
+            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))) + rotate8(y, 57));
 
             smallCounts[x & 255]++;
+//            smallCounts[y & 255]++;
+//            smallCounts[(x^y) & 255]++;
+//            smallCounts[(x+y) & 255]++;
 
             // this one-liner mixing is equidistributed with either update style.
 //            smallCounts[(y ^ roundFunction(y ^ (x ^ roundFunction(y)))) & 255]++;
