@@ -2852,7 +2852,7 @@ gray * 255 + 230
     @Test
     public void testFeisty16Distribution()
     {
-        long[] smallCounts = new long[256];
+        long[] smallCounts = new long[65536];
         byte stateA = 0, stateB = 0;
         final long iterations = 1L << 16;
         for (long a = 0; a < iterations; a++) {
@@ -2882,12 +2882,25 @@ gray * 255 + 230
             // but my eyes can). It also produces each x,y state pair, after all this processing, equally often.
             // This could return (x^y) or (x+y) without losing its 1D equidistribution. This could also be used
             // with a smaller word size (int) to produce larger words (long) as needed, but default to smaller.
-            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))) + rotate8(x, 34));
-            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))) + rotate8(y, 17));
-            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))) + rotate8(x, 20));
-            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))) + rotate8(y, 57));
+//            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))) + rotate8(x, 34));
+//            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))) + rotate8(y, 17));
+//            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))) + rotate8(x, 20));
+//            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))) + rotate8(y, 57));
 
-            smallCounts[x & 255]++;
+//            y = (byte)((rotate8(y,  3) + (x = (byte)(rotate8(x, 56) + y ^ 0xBD))) ^ rotate8(x, 34));
+//            x = (byte)((rotate8(x, 53) + (y = (byte)(rotate8(y, 26) + x ^ 0xDB))) ^ rotate8(y, 17));
+//            y = (byte)((rotate8(y, 23) + (x = (byte)(rotate8(x, 46) + y ^ 0x95))) ^ rotate8(x, 20));
+//            x = (byte)((rotate8(x, 13) + (y = (byte)(rotate8(y,  6) + x ^ 0xF5))) ^ rotate8(y, 57));
+
+            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))));
+            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))));
+            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))));
+            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))));
+
+            x = (byte) rotate8(x, y);
+
+            smallCounts[(y << 8 & 0xFF00)|(x & 0xFF)]++;
+//            smallCounts[x & 255]++;
 //            smallCounts[y & 255]++;
 //            smallCounts[(x^y) & 255]++;
 //            smallCounts[(x+y) & 255]++;
