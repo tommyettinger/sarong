@@ -2858,8 +2858,8 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y;
             // update style 1
-            x = (stateA = (byte)(stateA + 0xC5));
-            y = (stateB = (byte)(stateB + (clz8(x))));
+            x = (stateA = (byte)(stateA + 0xC5 ^ 0xFA));
+            y = (stateB = (byte)(stateB + clz8(x) ^ 0xBE));
             // update style 2
 //            x = (stateA = (byte)(stateA + 0xC5));
 //            y = (byte)(x + (stateB = (byte)(stateB + (clz8(x)))));
@@ -2897,8 +2897,12 @@ gray * 255 + 230
             y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))));
             x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))));
 
-            x ^= rotate8(x, y) ^ rotate8(x, rotate8(y, 3));
-            y ^= rotate8(y, x) ^ rotate8(y, rotate8(x, 3));
+            y += rotate8(x, 6);
+            x += rotate8(y, 3);
+            y ^= rotate8(x, 5);
+            x ^= rotate8(y, 2);
+//            x ^= rotate8(x, y) ^ rotate8(x, rotate8(y, 3));
+//            y ^= rotate8(y, x) ^ rotate8(y, rotate8(x, 3));
             smallCounts[(y << 8 & 0xFF00)|(x & 0xFF)]++;
 //            smallCounts[x & 255]++;
 //            smallCounts[y & 255]++;
