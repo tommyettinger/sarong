@@ -2892,17 +2892,33 @@ gray * 255 + 230
 //            y = (byte)((rotate8(y, 23) + (x = (byte)(rotate8(x, 46) + y ^ 0x95))) ^ rotate8(x, 20));
 //            x = (byte)((rotate8(x, 13) + (y = (byte)(rotate8(y,  6) + x ^ 0xF5))) ^ rotate8(y, 57));
 
-            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))));
-            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))));
-            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))));
-            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))));
-
-            y += rotate8(x, 6);
-            x += rotate8(y, 3);
-            y ^= rotate8(x, 5);
-            x ^= rotate8(y, 2);
+//            y = (byte)((rotate8(y,  3) ^ (x = (byte)(rotate8(x, 56) + y ^ 0xBD))));
+//            x = (byte)((rotate8(x, 53) ^ (y = (byte)(rotate8(y, 26) + x ^ 0xDB))));
+//            y = (byte)((rotate8(y, 23) ^ (x = (byte)(rotate8(x, 46) + y ^ 0x95))));
+//            x = (byte)((rotate8(x, 13) ^ (y = (byte)(rotate8(y,  6) + x ^ 0xF5))));
+//
+//            y += rotate8(x, 6);
+//            x += rotate8(y, 3);
+//            y ^= rotate8(x, 5);
+//            x ^= rotate8(y, 2);
 //            x ^= rotate8(x, y) ^ rotate8(x, rotate8(y, 3));
 //            y ^= rotate8(y, x) ^ rotate8(y, rotate8(x, 3));
+
+            // not a bijection!
+//            y = (byte)(rotate8(x, 6) + rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ 0xBD)));
+//            x = (byte)(rotate8(y, 3) + rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ 0xDB)));
+//            y = (byte)(rotate8(x, 5) + rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ 0x95)));
+//            x = (byte)(rotate8(y, 2) + rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ 0xF5)));
+
+            // but rearrange it, and it's back to being bijective!
+            // this style has XOR placed strategically so that it won't lose precision on GWT.
+            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ 0xBD)) + rotate8(x, 6));
+            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ 0xDB)) + rotate8(y, 3));
+            y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ 0x95)) + rotate8(x, 5));
+            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ 0xF5)) + rotate8(y, 2));
+
+
+
             smallCounts[(y << 8 & 0xFF00)|(x & 0xFF)]++;
 //            smallCounts[x & 255]++;
 //            smallCounts[y & 255]++;
