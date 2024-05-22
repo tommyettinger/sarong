@@ -2937,6 +2937,50 @@ gray * 255 + 230
         }
     }
 
+    @Test
+    public void testFeisty24Distribution()
+    {
+        long[] smallCounts = new long[1 << 16];
+        byte stateA = 0, stateB = 0, stateC = 6;
+        final long iterations = 1L << 24;
+        for (long a = 0; a < iterations; a++) {
+            byte x, y, z;
+            x = (stateA = (byte)(stateA + 0xC5));
+            y = (stateB = (byte)(stateB + rotate8(x | -x, 1))); // this works and only uses the simplest ops!
+//            y = (stateB = (byte)(stateB + 0x91 + clz8(x)));
+//            z = (byte) (stateC ^ x ^ y);
+            z = stateC;
+//            z = (stateC = (byte)(stateC + 0xDB));
+//            z = (stateC = (byte)(stateC + 0xDB + clz8(x&y)));
+
+            // but rearrange it, and it's back to being bijective!
+            // this style has XOR placed strategically so that it won't lose precision on GWT.
+            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ z)) + rotate8(x, 6));
+            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ z)) + rotate8(y, 3));
+            y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
+            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ z)) + rotate8(y, 2));
+
+
+
+            final int index = (y << 8 & 0xFF00)|(x & 0xFF);
+            smallCounts[index]++;
+//            smallCounts[x & 255]++;
+//            smallCounts[y & 255]++;
+//            smallCounts[(x^y) & 255]++;
+//            smallCounts[(x+y) & 255]++;
+        }
+        System.out.println();
+        for (int x = 0, i = 0; x < 256; x++) {
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++, i++) {
+                    System.out.printf("%09X ", smallCounts[i]);
+                }
+                System.out.println();
+            }
+            System.out.println('\n');
+        }
+    }
+
     /**
      * With the Coord.hashCode() version as-is:
      * 3621146300/4294967296 outputs were present.
