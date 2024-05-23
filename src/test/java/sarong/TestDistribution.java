@@ -2940,29 +2940,40 @@ gray * 255 + 230
     @Test
     public void testFeisty24Distribution()
     {
-        long[] smallCounts = new long[1 << 16];
-        byte stateA = 0, stateB = 0, stateC = 6;
+//        long[] smallCounts = new long[1 << 16];
+        long[] smallCounts = new long[1 << 24];
+        byte stateA = 0, stateB = 0, stateC = 0;
         final long iterations = 1L << 24;
         for (long a = 0; a < iterations; a++) {
             byte x, y, z;
-            x = (stateA = (byte)(stateA + 0xC5));
-            y = (stateB = (byte)(stateB + rotate8(x | -x, 1))); // this works and only uses the simplest ops!
+            x = (stateA = (byte)(stateA + 0xC5 ^ 0xD6));
+            y = (stateB = (byte)(stateB + clz8(x) ^ 0x9A));
+//            int t = x & -x;
+//            y = (stateB = (byte)(stateB + rotate8(t, 1) ^ 0xBA));
+//            y = (stateB = (byte)(stateB + rotate8(x | -x, 1))); // this works and only uses the simplest ops!
 //            y = (stateB = (byte)(stateB + 0x91 + clz8(x)));
 //            z = (byte) (stateC ^ x ^ y);
-            z = stateC;
+//            z = stateC;
 //            z = (stateC = (byte)(stateC + 0xDB));
 //            z = (stateC = (byte)(stateC + 0xDB + clz8(x&y)));
+            z = (stateC = (byte)(stateC + clz8(x&y) ^ 0xBE));
+//            z = (stateC = (byte)(stateC + rotate8(t | y | -y, 1) ^ 0xAE));
+//            z = (stateC = (byte)(stateC + rotate8((x&y) | -(x&y), 1)));
 
-            // but rearrange it, and it's back to being bijective!
             // this style has XOR placed strategically so that it won't lose precision on GWT.
-            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ z)) + rotate8(x, 6));
-            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ z)) + rotate8(y, 3));
+//            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ z)) + rotate8(x, 6));
+//            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ z)) + rotate8(y, 3));
+//            y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
+//            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ z)) + rotate8(y, 2));
+
             y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
-            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ z)) + rotate8(y, 2));
+            z = (byte)(rotate8(z, 1) ^ (y = (byte)(rotate8(y, 6) + z ^ x)) + rotate8(y, 2));
+            x = (byte)(rotate8(x, 5) ^ (z = (byte)(rotate8(z, 2) + x ^ y)) + rotate8(z, 3));
 
 
 
-            final int index = (y << 8 & 0xFF00)|(x & 0xFF);
+            final int index = (z << 16 & 0xFF0000)|(y << 8 & 0xFF00)|(x & 0xFF);
+//            final int index = (y << 8 & 0xFF00)|(x & 0xFF);
             smallCounts[index]++;
 //            smallCounts[x & 255]++;
 //            smallCounts[y & 255]++;
