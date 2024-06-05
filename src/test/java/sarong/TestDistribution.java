@@ -2947,30 +2947,31 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y, z;
             x = (stateA = (byte)(stateA + 0xC5 ^ 0xD6));
-            y = (stateB = (byte)(stateB + clz8(x) ^ 0x9A));
-//            int t = x & -x;
+//            y = (stateB = (byte)(stateB + clz8(x) ^ 0x9A));
+            int t = x | 0x5D + x; // look ma, no subtraction!
 //            y = (stateB = (byte)(stateB + rotate8(t, 1) ^ 0xBA));
-//            y = (stateB = (byte)(stateB + rotate8(x | -x, 1))); // this works and only uses the simplest ops!
+//            y = (stateB = (byte)(stateB + rotate8(t, 1) ^ 0xBA)); // this works and only uses the simplest ops!
+            y = (stateB = (byte)(stateB + rotate8(t, 1) ^ 0xBA));
 //            y = (stateB = (byte)(stateB + 0x91 + clz8(x)));
 //            z = (byte) (stateC ^ x ^ y);
 //            z = stateC;
 //            z = (stateC = (byte)(stateC + 0xDB));
 //            z = (stateC = (byte)(stateC + 0xDB + clz8(x&y)));
-            z = (stateC = (byte)(stateC + clz8(x&y) ^ 0xBE));
+//            z = (stateC = (byte)(stateC + clz8(x&y) ^ 0xBE));
 //            z = (stateC = (byte)(stateC + rotate8(t | y | -y, 1) ^ 0xAE));
+            z = (stateC = (byte)(stateC + rotate8(t | y | 0x3B + y, 1) ^ 0xAE));
+//            z = (stateC = (byte)(stateC + rotate8(t | y | t - y, 1) ^ 0xAE)); // surprisingly works!
 //            z = (stateC = (byte)(stateC + rotate8((x&y) | -(x&y), 1)));
 
             // this style has XOR placed strategically so that it won't lose precision on GWT.
-//            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ z)) + rotate8(x, 6));
-//            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ z)) + rotate8(y, 3));
-//            y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
-//            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ z)) + rotate8(y, 2));
-
+            y = (byte)(rotate8(y, 3) ^ (x = (byte)(rotate8(x, 5) + y ^ z)) + rotate8(x, 6));
+            x = (byte)(rotate8(x, 5) ^ (y = (byte)(rotate8(y, 2) + x ^ z)) + rotate8(y, 3));
             y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
-            z = (byte)(rotate8(z, 1) ^ (y = (byte)(rotate8(y, 6) + z ^ x)) + rotate8(y, 2));
-            x = (byte)(rotate8(x, 5) ^ (z = (byte)(rotate8(z, 2) + x ^ y)) + rotate8(z, 3));
+            x = (byte)(rotate8(x, 1) ^ (y = (byte)(rotate8(y, 6) + x ^ z)) + rotate8(y, 2));
 
-
+//            y = (byte)(rotate8(y, 2) ^ (x = (byte)(rotate8(x, 4) + y ^ z)) + rotate8(x, 5));
+//            z = (byte)(rotate8(z, 1) ^ (y = (byte)(rotate8(y, 6) + z ^ x)) + rotate8(y, 2));
+//            x = (byte)(rotate8(x, 5) ^ (z = (byte)(rotate8(z, 2) + x ^ y)) + rotate8(z, 3));
 
             final int index = (z << 16 & 0xFF0000)|(y << 8 & 0xFF00)|(x & 0xFF);
 //            final int index = (y << 8 & 0xFF00)|(x & 0xFF);
