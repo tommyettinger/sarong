@@ -1388,6 +1388,40 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * Appearance counts are perfectly uniform.
+     */
+    @Test
+    public void testSimpleFinalize8Bit()
+    {
+        int[] counts = new int[256];
+        for (int m = 0; m < 0x100; m++) {
+            for (int n = 0; n < 0x100; n++) {
+                int x = m, y = n;
+//                q = (rotate8(q, 5) + r ^ 47) & 0xFF;
+//                r = (rotate8(r, 2) ^ q);
+//                q = (rotate8(q, 6) + r ^ 79) & 0xFF;
+//                r = (rotate8(r, 3) ^ q);
+                y = rotate8(y,  3) ^ (x = rotate8(x, 24) + y ^ 2) + rotate8(x,  7);
+                x = rotate8(x, 14) ^ (y = rotate8(y, 29) + x ^ 3) + rotate8(y, 11);
+                y = rotate8(y, 19) ^ (x = rotate8(x,  5) + y ^ 5) + rotate8(x, 29);
+                x = rotate8(x, 17) ^ (y = rotate8(y, 11) + x ^ 7) + rotate8(y, 23);
+//                b = (b <<  3 | b >>> 32 -  3) ^ (a = (a << 24 | a >>> 32 - 24) + b ^ 2) + (a <<  7 | a >>> 32 -  7);
+//                a = (a << 14 | a >>> 32 - 14) ^ (b = (b << 29 | b >>> 32 - 29) + a ^ 3) + (b << 11 | b >>> 32 - 11);
+//                b = (b << 19 | b >>> 32 - 19) ^ (a = (a <<  5 | a >>> 32 -  5) + b ^ 5) + (a << 29 | a >>> 32 - 29);
+//                a = (a << 17 | a >>> 32 - 17) ^ (b = (b << 11 | b >>> 32 - 11) + a ^ 7) + (b << 23 | b >>> 32 - 23);
+                counts[x&255]++;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
     @Test
     public void testMWC8Bit()
     {
