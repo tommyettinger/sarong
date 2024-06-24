@@ -1423,6 +1423,37 @@ gray * 255 + 230
     }
 
     @Test
+    public void testWyRand8Bit()
+    {
+        int count = 0x40;
+        int[] counts = new int[256];
+        for (int m = 0; m < count; m++) {
+            int x = m, y = x ^ 0x89;
+            x = x * y >>> 8 ^ (x * y & 255);
+            counts[x&255]++;
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        for (int m = 0x80; m < count + 0x80; m++) {
+            int x = m, y = x ^ 0x89;
+            x = x * y >>> 8 ^ (x * y & 255);
+            counts[x&255]++;
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testMWC8Bit()
     {
         short state = 1;
