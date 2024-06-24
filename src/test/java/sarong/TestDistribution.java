@@ -1425,10 +1425,10 @@ gray * 255 + 230
     @Test
     public void testWyRand8Bit()
     {
-        int count = 0x40;
+        int count = 0x80;
         int[] counts = new int[256];
         for (int m = 0; m < count; m++) {
-            int x = m, y = x ^ 0x89;
+            int x = m, y = x + 0x89 & 255;
             x = x * y >>> 8 ^ (x * y & 255);
             counts[x&255]++;
         }
@@ -1440,7 +1440,7 @@ gray * 255 + 230
             System.out.println();
         }
         for (int m = 0x80; m < count + 0x80; m++) {
-            int x = m, y = x ^ 0x89;
+            int x = m, y = x + 0x89 & 255;
             x = x * y >>> 8 ^ (x * y & 255);
             counts[x&255]++;
         }
