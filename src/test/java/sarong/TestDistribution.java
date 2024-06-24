@@ -1453,6 +1453,30 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * Not at all equidistributed. Using the high bits of a multiplication seems rather chaotic.
+     */
+    @Test
+    public void testWyIsh8Bit()
+    {
+        int[] counts = new int[256];
+        for (int m = 0; m < 0x100; m++) {
+            for (int n = 0; n < 0x100; n++) {
+                int x = m, y = n;
+                x ^= (x * y >>> 8) ^ (x * y & 255);
+                counts[x&255]++;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+
     @Test
     public void testMWC8Bit()
     {
