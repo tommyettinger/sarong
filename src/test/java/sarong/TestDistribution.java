@@ -1428,8 +1428,8 @@ gray * 255 + 230
         int count = 0x80;
         int[] counts = new int[256];
         for (int m = 0; m < count; m++) {
-            int x = m, y = x + 0x89 & 255;
-            x = x * y >>> 8 ^ (x * y & 255);
+            int x = m, y = x ^ 0x89;
+            x ^= x * y >>> 8 ^ (x * y & 255);
             counts[x&255]++;
         }
         System.out.println("APPEARANCE COUNTS:");
@@ -1440,8 +1440,8 @@ gray * 255 + 230
             System.out.println();
         }
         for (int m = 0x80; m < count + 0x80; m++) {
-            int x = m, y = x + 0x89 & 255;
-            x = x * y >>> 8 ^ (x * y & 255);
+            int x = m, y = x ^ 0x89;
+            x ^= (x * y >>> 8) ^ (x * y & 255);
             counts[x&255]++;
         }
         System.out.println("APPEARANCE COUNTS:");
