@@ -240,19 +240,60 @@ public class TestDistribution {
     public void test32BitRightLFSR()
     {
         final RoaringBitmap all = new RoaringBitmap();
-        int i = 0x80000000, state = -1;
-        for (; i < 0; i++) {
-            all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
-            if(state == -1) break;
-        }
-        if(state != -1) {
-            for (; i >= 0; i++) {
+        int ctr = 0, state = -1;
+        ALL:
+        for (int i = 0; i < 0x10000; i++) {
+            for (int j = 0; j < 0x10000; j++) {
                 all.add(state = state >>> 1 ^ (-(state & 1) & 0xA9FA3215));
-                if(state == -1) break;
+                if (state == -1) break ALL;
+                ++ctr;
             }
         }
+        System.out.println("Period: " + ctr);
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+    @Test
+    public void test32BitRightAlternateLFSR()
+    {
+        int sum = 0;
+        int state = -1;
+        long ctr = 0L;
+        final int TAPS = 0xAA335600;
+        ALL:
+        for (int i = 0; i < 0x10000; i++) {
+            for (int j = 0; j < 0x10000; j++) {
+                sum += (state = state >>> 1 ^ (-(state & 1) & TAPS));
+                ++ctr;
+                if (state == -1) {
+                    System.out.println("Successfully cycled with period: " + ctr + "; maximum is " + 0x100000000L);
+                    break ALL;
+                }
+            }
+        }
+        System.out.println("Sum: " + sum + "; should be " + 0x80000000);
+    }
+    @Test
+    public void test32BitLeftAlternateLFSR()
+    {
+        int sum = 0;
+        int state = -1;
+        long ctr = 0L;
+        final int TAPS = 0xA84C5F95;
+//        System.out.printf("0x%08X\n", Integer.reverse(0xA9FA3215));
+        ALL:
+        for (int i = 0; i < 0x10000; i++) {
+            for (int j = 0; j < 0x10000; j++) {
+                sum += (state = state << 1 ^ (state >> 31 & TAPS));
+//                sum += (state = state << 1 ^ (state >> 63 & 0xB5E1107E81BC107BL)); // 64-bit left Galois LFSR
+                ++ctr;
+                if (state == -1) {
+                    System.out.println("Successfully cycled with period: " + ctr + "; maximum is " + 0x100000000L);
+                    break ALL;
+                }
+            }
+        }
+        System.out.println("Sum: " + sum + "; should be " + 0x80000000);
     }
 
     public static void main(String[] args)
