@@ -835,6 +835,52 @@ gray * 255 + 230
     }
 
     @Test
+    public void testTwinsies()
+    {
+        short[] counts = new short[256];
+        short[] sums = new short[256];
+        int s0 = 0, s1 = 0, iteration = 0;
+        // just running once for the maximum possible period first
+        for (int b = 0; b < 0x10000; b++) {
+            int r = rotate8(s0, 5) + s1 & 255;
+            r ^= r >>> (r >>> 6) + 3 ^ r >>> 7;
+            s0 = s0 * 0x35 + r & 255;
+            s1 = s1 * 0xD5 + 0x95 & 255;
+        }
+
+        int check0 = s0, check1 = s1;
+
+        ALL:
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++, iteration++) {
+                int r = rotate8(s0, 5) + s1 & 255;
+                r ^= r >>> (r >>> 6) + 3 ^ r >>> 7;
+                s0 = s0 * 0x35 + r & 255;
+                s1 = s1 * 0xD5 + 0x95 & 255;
+                counts[r]++;
+                sums[a] += r;
+                if(s0 == check0 && s1 == check1) break ALL;
+            }
+        }
+        System.out.println("PERIOD IS " + (iteration+1));
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("PERIOD IS " + (iteration+1));
+        System.out.println("SUMS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(sums[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
     public void testLeader8BitOrbital()
     {
         short[] counts = new short[256];
