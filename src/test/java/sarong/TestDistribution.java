@@ -890,8 +890,8 @@ gray * 255 + 230
     /**
      * PERIOD IS 65536
      * 1D-equidistributed!
-     * Hex numbers starting with C and ending with 7, of the same length as a word, seem to work well.
-     * C7, CA77, CAFEFE77, 0xCAFEBABEB0BAFE77L (which is -3819410105792004489 )
+     * Hex numbers starting with 7 or lower and ending with an odd digit, of the same length as a word, work well.
+     * 0x79, 0x7979, 0x79797979, 0x7979797979797979
      */
     @Test
     public void testMonstruo()
@@ -901,10 +901,10 @@ gray * 255 + 230
         int s0 = 0, s1 = 0, iteration = 0;
         // just running once for the maximum possible period first
         for (int b = 0; b < 0x10000; b++) {
-            int r = (rotate8(s0, 5) ^ s1) & 255;
-            r ^= r >>> (r >>> 7) + 3 ^ r >>> 7;
+//            int r = (rotate8(s0, 5) ^ s1) & 255;
+//            r ^= r >>> (r >>> 7) + 3 ^ r >>> 7;
             s0 = s0 * 0x35 + 0x95 & 255;
-            s1 = s1 * 0xD5 + (s0 % 0xC7) & 255;
+            s1 = s1 * 0xD5 + ((byte)s0 % 0x79) & 255;
         }
 
         int check0 = s0, check1 = s1;
@@ -915,7 +915,8 @@ gray * 255 + 230
                 int r = (rotate8(s0, 5) ^ s1) & 255;
                 r ^= r >>> (r >>> 7) + 3 ^ r >>> 7;
                 s0 = s0 * 0x35 + 0x95 & 255;
-                s1 = s1 * 0xD5 + (s0 % 0xC7) & 255;
+                // % 0x97 is too high!
+                s1 = s1 * 0xD5 + ((byte)s0 % 0x79) & 255;
                 counts[r]++;
                 sums[a] += r;
                 if(s0 == check0 && s1 == check1) {
