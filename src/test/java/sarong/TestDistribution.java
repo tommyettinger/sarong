@@ -944,6 +944,61 @@ gray * 255 + 230
     }
 
     @Test
+    public void testPact()
+    {
+        short[] counts = new short[256];
+        int[] sums = new int[256];
+        int s0 = 0, s1 = 0, iteration = 0;
+        // just running once for the maximum possible period first
+        for (int b = 0; b < 0x10000; b++) {
+//            int r = (rotate8(s0, 5) ^ s1) & 255;
+//            r ^= r >>> (r >>> 7) + 3 ^ r >>> 7;
+            s1 = s1 + clz8(s0) & 255;
+            s0 = s0 + 0x95 & 255;
+        }
+
+        int check0 = s0, check1 = s1;
+
+        ALL:
+        for (int a = 0; a < 0x100; a++) {
+            for (int b = 0; b < 0x100; b++, iteration++) {
+                int r = s0 ^ s1;
+                r = (r ^ r >>> (r >>> 6) + 2) * 0xC5 & 0xFF;
+                r ^= r >>> 5;
+
+                s1 = s1 + clz8(s0) & 255;
+                s0 = s0 + 0x95 & 255;
+                counts[r]++;
+                sums[a] += r;
+                if(s0 == check0 && s1 == check1) {
+                    ++iteration;
+                    break ALL;
+                }
+            }
+        }
+        System.out.println("PERIOD IS " + (iteration));
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%04X ", counts[i++]);
+            }
+            System.out.println();
+        }
+        System.out.println("PERIOD IS " + (iteration));
+        System.out.println("SUMS:");
+        long total = 0L;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                total += sums[i] & 0xFFFF;
+                System.out.printf("%04X ", sums[i++]);
+            }
+            System.out.println();
+        }
+        System.out.printf("Total of all sums is %016X\n", total);
+        System.out.printf("Expected total is    %016X\n", 256 * 256 * 255 / 2);
+    }
+
+    @Test
     public void testLeader8BitOrbital()
     {
         short[] counts = new short[256];
