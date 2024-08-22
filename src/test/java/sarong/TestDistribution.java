@@ -1015,8 +1015,10 @@ gray * 255 + 230
         ALL:
         for (int a = 0; a < 0x100; a++) {
             for (int b = 0; b < 0x100; b++, iteration++) {
-                int r = ((s0 * rotate8(s1, 2) + s1) ^
-                         (s1 * rotate8(s0, 2) + s0)) & 0xFF;
+                // this is equidistributed.
+//                int r = ((rotate8(s0, 1) ^ rotate8(s1, 6) + s0)) & 0xFF;
+                // this is equidistributed.
+                int r = ((s0 ^ rotate8(s0, 5) ^ rotate8(s0, 1)) + (s1 ^ rotate8(s1, 7) ^ rotate8(s1, 3))) & 0xFF;
                 s1 = s1 + clz8(s0) & 255;
                 s0 = s0 + 0x95 & 255;
                 counts[r]++;
