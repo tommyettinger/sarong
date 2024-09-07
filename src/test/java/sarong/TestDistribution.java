@@ -1018,7 +1018,8 @@ gray * 255 + 230
                 // this is equidistributed.
 //                int r = ((rotate8(s0, 1) ^ rotate8(s1, 6) + s0)) & 0xFF;
                 // this is equidistributed.
-                int r = ((s0 ^ rotate8(s0, 5) ^ rotate8(s0, 1)) + (s1 ^ rotate8(s1, 7) ^ rotate8(s1, 3))) & 0xFF;
+//                int r = ((s0 ^ rotate8(s0, 5) ^ rotate8(s0, 1)) + (s1 ^ rotate8(s1, 7) ^ rotate8(s1, 3))) & 0xFF;
+                int r = ((rotate8(s0, 2) ^ rotate8(s1, 2) * (s0|1))) & 0xFF;
                 s1 = s1 + clz8(s0) & 255;
                 s0 = s0 + 0x95 & 255;
                 counts[r]++;
@@ -2099,6 +2100,56 @@ gray * 255 + 230
             System.out.println();
         }
         System.out.println("Sum of all generated values: " + sum);
+    }
+
+    /**
+     * Quite surprisingly, the lower 8 bits of this multiply-xor-rotate-multiply--xor-rotate-multiply thing are
+     * equidistributed. The upper 8 bits are not.
+     */
+    @Test
+    public void testXRRMulLo()
+    {
+        short[] counts = new short[256];
+        int sum = 0;
+        for (int a = 0; a < 0x10000; a++) {
+//            int n = (a * 0xACE5 ^ rotl16(a, 3) * 0xBA55 ^ rotl16(a, 12) * 0xDE4D) & 255;
+//            int n = (a * 0xDE4D ^ rotl16(a, 3) * 0xDE4D ^ rotl16(a, 12) * 0xDE4D) & 255;
+            int n = (a * 0xACE5 ^ rotl16(a, 3) * 0xBA55 ^ rotl16(a, 12) * 0xDE4D) & 255;
+//            int n = (a * 0xACE5 ^ rotl16(a, 3) ^ rotl16(a, 12)) & 255;
+            counts[n]++;
+            sum += n;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("Sum of all generated values: " + sum);
+        System.out.println("Optimal sum                : " + (255 * 65536 / 2));
+    }
+
+    @Test
+    public void testXRRMulHi()
+    {
+        short[] counts = new short[256];
+        int sum = 0;
+        for (int a = 0; a < 0x10000; a++) {
+//            int n = (a * 0xDE4D ^ rotl16(a, 3) * 0xDE4D ^ rotl16(a, 12) * 0xDE4D) >>> 8 & 255;
+//            int n = (a ^ rotl16(a * 0xBA55, 3) ^ rotl16(a * 0xDE4D, 12)) >>> 8 & 255;
+            int n = (a * 0xACE5 ^ rotl16(a, 3) * 0xBA55 ^ rotl16(a, 12) * 0xDE4D) >>> 8 & 255;
+//            int n = (a * 0xACE5 ^ rotl16(a, 3) ^ rotl16(a, 12)) >>> 8 & 255;
+            counts[n]++;
+            sum += n;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("Sum of all generated values: " + sum);
+        System.out.println("Optimal sum                : " + (255 * 65536 / 2));
     }
 
     /**
