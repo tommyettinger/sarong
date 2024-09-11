@@ -2152,6 +2152,32 @@ gray * 255 + 230
         System.out.println("Optimal sum                : " + (255 * 65536 / 2));
     }
 
+
+    @Test
+    public void testXRRMulSpin()
+    {
+        short[] counts = new short[256];
+        int sum = 0;
+        for (int a = 0; a < 0x100; a++) {
+//            int n = (a * 0xDE4D ^ rotl16(a, 3) * 0xDE4D ^ rotl16(a, 12) * 0xDE4D) >>> 8 & 255;
+//            int n = (a ^ rotl16(a * 0xBA55, 3) ^ rotl16(a * 0xDE4D, 12)) >>> 8 & 255;
+//            int b = rotate8(a, 4);
+//            int n = ((a * 41 ^ rotate8(a, 3) * 53 ^ rotate8(a, 6) * 67) ^ (b * 41 ^ rotate8(b, 3) * 53 ^ rotate8(b, 6) * 67)) & 0xFF;
+            int n = ((a ^ rotate8(a, 3) ^ rotate8(a, 6)) * 67) & 0xFF;
+//            int n = (a * 0xACE5 ^ rotl16(a, 3) ^ rotl16(a, 12)) >>> 8 & 255;
+            counts[n]++;
+            sum += n;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("Sum of all generated values: " + sum);
+        System.out.println("Optimal sum                : " + (255 * 65536 / 2));
+    }
+
     /**
      * 60.73455810546875% of possible outputs were not produced.
      * Not a good sign for Wyrand.
@@ -2870,7 +2896,7 @@ gray * 255 + 230
         for (int a = 0; a <= 0xFF; a++) {
             for (int b = 0; b <= 0xFF; b++) {
                 h1 += 0x75;
-                h2 += (0x9B - 24) + Integer.numberOfLeadingZeros(h1 & 255);
+                h2 += 0x9B + clz8(h1);
 //                h2 += 0x9B;
 //                if(h1 == 0) h2++;
                 //81.9976806640625% of possible pairs were not produced. (CLZ)
@@ -3206,6 +3232,41 @@ gray * 255 + 230
             y = (stateB = (byte)(stateB + (clz8(x    ))));
 //            y = (stateB = (byte)(stateB + (x + 1 + rotate8(x, 1) & 255)));
             smallCounts[((rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107) & 255)]++;
+        }
+        System.out.println();
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                System.out.printf("%09X ", smallCounts[i]);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testMumVariants16()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+            int x, y, result;
+            x = (stateA = (byte)(stateA + 0xC5)) & 255;
+            y = (stateB = (byte)(stateB + (clz8(x    )))) & 255;
+            // equidistributed
+//            result = (rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107) & 255;
+            // very unbalanced
+            // used in Yolk, which is what digital's Hasher class defaults to...
+//            result = (x ^ rotate8(y, 5)) * (y ^ rotate8(x, 5)) & 255;
+//            result ^= result >>> 3;
+            // kinda more unbalanced...
+//            result = (x - rotate8(y, 5)) * (y + rotate8(x, 5)) & 255;
+//            result ^= result >>> 3;
+            // equidistributed... probably not enough mixing.
+//            result = ((x ^ rotate8(x, 2) ^ rotate8(x, 6)) - (y ^ rotate8(y, 3) ^ rotate8(y, 5)));
+            // what wyhash uses; rather unbalanced...
+            result = x * y;
+            result ^= result >>> 8;
+            smallCounts[result & 255]++;
         }
         System.out.println();
         for (int y = 0, i = 0; y < 16; y++) {
