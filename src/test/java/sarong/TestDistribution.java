@@ -3242,6 +3242,40 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * This combination takes some trial and error if you adjust it, but it doesn't need clz or other "exotic" functions
+     * to work.
+     */
+    @Test
+    public void testEasierPairing16()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+            int x, y, result;
+            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
+            result = x & (0xDA - x & 255);
+            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD7)) & 255;
+
+            result = y ^ rotate8(x, 3);
+            smallCounts[result & 255]++;
+        }
+        System.out.println();
+        long minCount = Integer.MAX_VALUE, maxCount = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                long c = smallCounts[i];
+                minCount = Math.min(minCount, c);
+                maxCount = Math.max(maxCount, c);
+                System.out.printf("%09X ", c);
+            }
+            System.out.println();
+        }
+        System.out.println("Min count was " + minCount);
+        System.out.println("Max count was " + maxCount);
+    }
+
     @Test
     public void testMumVariants16()
     {
@@ -3252,29 +3286,46 @@ gray * 255 + 230
             int x, y, result;
             x = (stateA = (byte)(stateA + 0xC5)) & 255;
             y = (stateB = (byte)(stateB + (clz8(x    )))) & 255;
-            // equidistributed
-//            result = (rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107) & 255;
+            // equidistributed. 256/256
+//            result = (rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107);
             // very unbalanced
-            // used in Yolk, which is what digital's Hasher class defaults to...
+            // used in Yolk, which is what digital's Hasher class defaults to... 32/1280
 //            result = (x ^ rotate8(y, 5)) * (y ^ rotate8(x, 5)) & 255;
 //            result ^= result >>> 3;
-            // kinda more unbalanced...
+            // kinda more unbalanced... 103/1280
 //            result = (x - rotate8(y, 5)) * (y + rotate8(x, 5)) & 255;
 //            result ^= result >>> 3;
-            // equidistributed... probably not enough mixing.
+            // 117/1120
+//            result = (x - rotate8(y, 5)) * (y + rotate8(x, 3)) & 255;
+//            result ^= result >>> 4;
+            // 103/1280
+//            result = (x - rotate8(y, 5)) * (y + rotate8(x, 5)) & 255;
+//            result ^= result >>> 4;
+            // equidistributed
+            result = x - y;
+            result = (result ^ (result * result | 1)) & 255;
+            result ^= rotate8(result, 3) ^ rotate8(result, 6);
+
+            // equidistributed... probably not enough mixing. 256/256
 //            result = ((x ^ rotate8(x, 2) ^ rotate8(x, 6)) - (y ^ rotate8(y, 3) ^ rotate8(y, 5)));
-            // what wyhash uses; rather unbalanced...
-            result = x * y;
-            result ^= result >>> 8;
+            // what wyhash uses; rather unbalanced... 131/1485
+//            result = x * y;
+//            result ^= result >>> 8;
             smallCounts[result & 255]++;
         }
         System.out.println();
+        long minCount = Integer.MAX_VALUE, maxCount = -1;
         for (int y = 0, i = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++, i++) {
-                System.out.printf("%09X ", smallCounts[i]);
+                long c = smallCounts[i];
+                minCount = Math.min(minCount, c);
+                maxCount = Math.max(maxCount, c);
+                System.out.printf("%09X ", c);
             }
             System.out.println();
         }
+        System.out.println("Min count was " + minCount);
+        System.out.println("Max count was " + maxCount);
     }
 
     public int roundFunction(int n) {
