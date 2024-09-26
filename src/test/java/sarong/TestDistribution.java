@@ -3258,8 +3258,18 @@ gray * 255 + 230
             result = x & (0xDA - x & 255);
             y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD7)) & 255;
 
-            result = y ^ rotate8(x, 3);
+            y = y + rotate8(x, y) & 255;
+            y = (y ^ y >>> 6) * 0xBD & 255;
+            result = (y ^ y >>> 5 ^ y << 2) & 255; // not sure if 5 R, 2 L is a bijection...
+//            result = y ^ (y >>> (y >>> 6) + 2);
+//            result = y ^ rotate8(x, 3);
+
             smallCounts[result & 255]++;
+            if(stateA == 0 && stateB == 0) break;
+
+            if(a < 64){
+                System.out.printf("x = 0x%02X , y = 0x%02X, result = 0x%02X\n", x, y, result);
+            }
         }
         System.out.println();
         long minCount = Integer.MAX_VALUE, maxCount = -1;
