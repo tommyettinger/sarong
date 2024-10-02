@@ -3286,6 +3286,33 @@ gray * 255 + 230
         System.out.println("Max count was " + maxCount);
     }
 
+    public int taxon32(int stateA, int stateB){
+        int x = stateA + 0x9E3779BD ^ 0xD1B54A32;
+        int t = x & 0xDB4F0B96 - x;
+        int y = stateB + (t << 1 | t >>> 31) ^ 0xAF723597;
+        y += (x << y | x >>> 32 - y);
+        y = (y ^ y >>> 22 ^ y << 5) * 0xB45ED;
+        return y ^ y >>> 21;
+    }
+
+    /**
+     * Nothing I do seems to get 2 to the 32 n values to get assigned to a pair of ints somehow and get 2 to the 32
+     * distinct values returned by taxon32(). I suppose it's more random in that way, just not 2D equidistributed, which
+     * I guess I already knew.
+     */
+    @Test
+    public void testInitialSeedingTaxon32() {
+        long total = 0L;
+        for (int i = 0, n = 0x80000000; i < 0x10000; i++) {
+            for (int j = 0; j < 0x10000; j++) {
+                total += taxon32(n, ~n) & 0xFFFFFFFFL;
+                ++n;
+            }
+        }
+        System.out.printf("0x%016X should be 0x%016X\n", total, 0x80000000L);
+    }
+
+
     @Test
     public void testMumVariants16()
     {
