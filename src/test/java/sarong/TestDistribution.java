@@ -3255,12 +3255,23 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             int x, y, result;
             x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
-            result = x & (0xDA - x & 255);
-            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD7)) & 255;
+            // I was surprised to see both of the following two lines work, and are full-period!
+            y = (stateB = (byte)(stateB + clz8(x) ^ x * 0xBD)) & 255;
+//            y = (stateB = (byte)(stateB + clz8(x) ^ x)) & 255;
 
-            y = y + rotate8(x, y) & 255;
-            y = (y ^ y >>> 6) * 0xBD & 255;
-            result = (y ^ y >>> 5 ^ y << 2) & 255; // not sure if 5 R, 2 L is a bijection...
+            result = y + rotate8(x, y) & 255;
+//            result = y + rotate8(x, 7 - y) & 255;
+//            result = (result ^ result >>> 6) * 0xBD & 255;
+//            result = (result ^ rotate8(result, 5) ^ rotate8(result, 2));
+
+//            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
+//            result = x & (0xDA - x & 255);
+//            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD7)) & 255;
+//
+//            y = y + rotate8(x, y) & 255;
+//            y = (y ^ y >>> 6) * 0xBD & 255;
+//            result = (y ^ rotate8(y, 5) ^ rotate8(y, 2));
+
 //            result = y ^ (y >>> (y >>> 6) + 2);
 //            result = y ^ rotate8(x, 3);
 
