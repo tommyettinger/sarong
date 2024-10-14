@@ -3254,19 +3254,26 @@ gray * 255 + 230
         final long iterations = 1L << 16;
         for (long a = 0; a < iterations; a++) {
             int x, y, result;
-            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
+//            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
             // I was surprised to see both of the following two lines work, and are full-period!
-            y = (stateB = (byte)(stateB + clz8(x) ^ x * 0xBD)) & 255;
+//            y = (stateB = (byte)(stateB + clz8(x) ^ x * 0xBD)) & 255;
 //            y = (stateB = (byte)(stateB + clz8(x) ^ x)) & 255;
 
-            result = y + rotate8(x, y) & 255;
+//            y = (y ^ rotate8(y, 3) ^ rotate8(y, 6)) + (x ^= rotate8(x, y) ^ rotate8(x, ~y)) & 255;
+//            result = (x ^ rotate8(x, 2) ^ rotate8(x, 7)) + (y ^ rotate8(y, x) ^ rotate8(y, ~x)) & 255;
 //            result = y + rotate8(x, 7 - y) & 255;
 //            result = (result ^ result >>> 6) * 0xBD & 255;
 //            result = (result ^ rotate8(result, 5) ^ rotate8(result, 2));
 
-//            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
-//            result = x & (0xDA - x & 255);
-//            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD7)) & 255;
+            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
+            result = x & (0xDA - x & 255);
+            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD6)) & 255;
+            x = x + (y ^= rotate8(y, x) ^ rotate8(y, 7 - x)) & 255;
+            y = y + (x ^= rotate8(x, y) ^ rotate8(x, 7 - y)) & 255; // works with x ^= or just x ^
+            // both of the following work
+            result = x ^ rotate8(y, 5);
+//            result = y ^ y >>> 3;
+
 //
 //            y = y + rotate8(x, y) & 255;
 //            y = (y ^ y >>> 6) * 0xBD & 255;
