@@ -3255,9 +3255,10 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             int x, y, result;
 //            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
-            // I was surprised to see both of the following two lines work, and are full-period!
+            // I was surprised to see all the following three lines work, and are full-period!
 //            y = (stateB = (byte)(stateB + clz8(x) ^ x * 0xBD)) & 255;
 //            y = (stateB = (byte)(stateB + clz8(x) ^ x)) & 255;
+//            y = (stateB = (byte)(stateB + clz8(x) + 0xBD ^ x)) & 255;
 
 //            y = (y ^ rotate8(y, 3) ^ rotate8(y, 6)) + (x ^= rotate8(x, y) ^ rotate8(x, ~y)) & 255;
 //            result = (x ^ rotate8(x, 2) ^ rotate8(x, 7)) + (y ^ rotate8(y, x) ^ rotate8(y, ~x)) & 255;
@@ -3265,9 +3266,12 @@ gray * 255 + 230
 //            result = (result ^ result >>> 6) * 0xBD & 255;
 //            result = (result ^ rotate8(result, 5) ^ rotate8(result, 2));
 
+//            x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
+//            result = x & (0xDA - x & 255);
+//            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD6)) & 255;
             x = (stateA = (byte)(stateA + 0xC5 ^ 0x96)) & 255;
             result = x & (0xDA - x & 255);
-            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ 0xD6)) & 255;
+            y = (stateB = (byte)(stateB + rotate8(result, 1) ^ x)) & 255;
             x = x + (y ^= rotate8(y, x) ^ rotate8(y, 7 - x)) & 255;
             y = y + (x ^= rotate8(x, y) ^ rotate8(x, 7 - y)) & 255; // works with x ^= or just x ^
             // both of the following work
@@ -3287,6 +3291,52 @@ gray * 255 + 230
 
             if(a < 64){
                 System.out.printf("x = 0x%02X , y = 0x%02X, result = 0x%02X\n", x, y, result);
+            }
+        }
+        System.out.println();
+        long minCount = Integer.MAX_VALUE, maxCount = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                long c = smallCounts[i];
+                minCount = Math.min(minCount, c);
+                maxCount = Math.max(maxCount, c);
+                System.out.printf("%09X ", c);
+            }
+            System.out.println();
+        }
+        System.out.println("Min count was " + minCount);
+        System.out.println("Max count was " + maxCount);
+    }
+
+    @Test
+    public void testPartyRandom()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (long a = 0; a < iterations; a++) {
+
+
+            int result;
+
+//            stateB += 0xD3;
+//            stateA += 0x65 + clz8(stateB);
+//            int t = rotate8(stateA, 5) ^ stateB, s = rotate8(t, 6) + stateB;
+//            t = (s ^ rotate8(stateB, 3)) & 255;
+//            result = (rotate8(s, 6) + t & 255) ^ rotate8(t, 3);
+
+            int t = rotate8(stateA, 5) ^ (stateB += 0xD3), s = rotate8(t, 6) + stateB;
+            stateA = (byte)(s ^ rotate8(stateB, 3));
+            result = (rotate8(s, 6) + stateA & 255) ^ rotate8(stateA, 3);
+
+            smallCounts[result & 255]++;
+            if(stateA == 0 && stateB == 0){
+                System.out.printf("\nPeriod was cut short!\nPeriod is %d (0x%04X)\n", (a + 1), (a + 1));
+                break;
+            }
+
+            if(a < 64){
+                System.out.printf("x = 0x%02X , y = 0x%02X, result = 0x%02X\n", stateA, stateB, result);
             }
         }
         System.out.println();
