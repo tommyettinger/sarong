@@ -3354,6 +3354,48 @@ gray * 255 + 230
         System.out.println("Max count was " + maxCount);
     }
 
+    @Test
+    public void testPartyRandom2()
+    {
+        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0;
+        final long iterations = 1L << 16;
+        for (int a = 0; a < 256; a++) {
+            for (int b = 0; b < 256; b++) {
+                stateA = (byte) a;
+                stateB = (byte) b;
+
+
+
+                int result;
+
+                int t = rotate8(stateA, 5) ^ (stateB += 0xD3), s = rotate8(t, 6) + stateB;
+                stateA = (byte)(s ^ rotate8(stateB, 3));
+                result = (rotate8(s, 6) + stateA & 255) ^ rotate8(stateA, 3);
+
+                smallCounts[result & 255]++;
+
+//                if(a < 64){
+//                    System.out.printf("x = 0x%02X , y = 0x%02X, result = 0x%02X\n", stateA, stateB, result);
+//                }
+
+            }
+        }
+        System.out.println();
+        long minCount = Integer.MAX_VALUE, maxCount = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++, i++) {
+                long c = smallCounts[i];
+                minCount = Math.min(minCount, c);
+                maxCount = Math.max(maxCount, c);
+                System.out.printf("%09X ", c);
+            }
+            System.out.println();
+        }
+        System.out.println("Min count was " + minCount);
+        System.out.println("Max count was " + maxCount);
+    }
+
     public int taxon32(int stateA, int stateB){
         int x = stateA + 0x9E3779BD ^ 0xD1B54A32;
         int t = x & 0xDB4F0B96 - x;
