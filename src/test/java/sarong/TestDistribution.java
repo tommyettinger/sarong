@@ -3688,6 +3688,25 @@ gray * 255 + 230
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
+
+    @Test
+    public void test32BitMix()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+
+        for (int x = 0; x < 0x10000; x++) {
+            for (int y = 0; y < 0x10000; y++) {
+                int state = x << 16 | y;
+                state = (state ^ 0xEFAA28F1 ^ state >>> 16);
+                if(!all.checkedAdd(state)) {
+                    System.out.printf("Encountered a collision after %d/%d with state 0x%08X \n", all.getLongCardinality(), 0x100000000L, state);
+                    return;
+                }
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
    @Test
     public void test16BitPointHash()
     {
@@ -4255,5 +4274,31 @@ gray * 255 + 230
             System.out.println();
         }
     }
+
+    /**
+     * Produces every output equally often; period is 2 to the 16.
+     * The big thing here is that "a" can be randomly rotated by "b",
+     * XORed with "b", and it keeps equidistribution.
+     */
+    @Test
+    public void testOrbitPCG8Bit()
+    {
+        byte stateA = 0, stateB = 1;
+        short[] counts = new short[256];
+        for (int i = 0; i < 0x10000; i++) {
+            int a = (stateA += 0xCD) & 0xFF;
+            int b = (stateB += 0x96 + clz8(stateA)) & 0xFF;
+            int s = (b ^ rotate8(a, b & 7)) * 0x65 & 0xFF;
+//            int s = (b ^ (a >>> (b & 3))) * 0x65 & 0xFF;
+            counts[s ^ s >>> 3]++;
+        }
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
 
 }
