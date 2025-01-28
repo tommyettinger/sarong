@@ -4288,9 +4288,17 @@ gray * 255 + 230
         for (int i = 0; i < 0x10000; i++) {
             int a = (stateA += 0xCD) & 0xFF;
             int b = (stateB += 0x96 + clz8(stateA)) & 0xFF;
-            int s = (b ^ rotate8(a, b & 7)) * 0x65 & 0xFF;
+            a = (a ^ a >>> 4) * 0xF5 & 0xFF;
+            b = (b ^ b >>> 3) * 0xBD & 0xFF;
+            // not at all well-distributed!
+//            int s = (rotate8(b, a) ^ rotate8(a, b)) & 0xFF;
+            // 1D equidistributed
+            int s = (rotate8(b, 3) ^ rotate8(a, b)) & 0xFF;
+            // 1D equidistributed
+//            int s = (b ^ b >>> 5 ^ rotate8(a, b)) & 0xFF;
+            // 1D equidistributed
 //            int s = (b ^ (a >>> (b & 3))) * 0x65 & 0xFF;
-            counts[s ^ s >>> 3]++;
+            counts[s]++;
         }
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
