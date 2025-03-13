@@ -261,8 +261,12 @@ public class PeriodTest {
         System.out.printf("Worst cycle was %d with states %d %d %d %d\n", worst, wa, wb, wc, wd);
     }
 
+    /**
+     * Best right shift was 1, best left rotation was 1, with period 3FFFFF
+     */
     @Test
     public void checkPeriod24_Xoshiro4x6(){
+        long startTime = System.currentTimeMillis();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         long best = 1;
         int bestShift = 1, bestRot = 1;
@@ -270,7 +274,8 @@ public class PeriodTest {
             for (int rot = 1; rot < 6; rot++) {
                 int i = 0;
                 while (++i <= 0x1000100) {
-                    int t = stateB << shift & 63;
+//                    int t = stateB << shift & 63;
+                    int t = (stateB & 63) >>> shift;
                     stateC ^= stateA;
                     stateD ^= stateB;
                     stateB ^= stateC;
@@ -279,7 +284,7 @@ public class PeriodTest {
                     stateD = (stateD << rot | stateD >>> 6 - rot) & 63;
 
                     if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
-                        System.out.printf("shift %d, rot %d: 0x%08X\n", shift, rot, i);
+                        System.out.printf("right shift %d, rotl %d: 0x%08X\n", shift, rot, i);
                         if (i > best) {
                             best = i;
                             bestShift = shift;
@@ -290,7 +295,70 @@ public class PeriodTest {
                 }
             }
         }
-        System.out.printf("Best shift was %d, best rotation was %d, with period %06X", bestShift, bestRot, best);
+        System.out.printf("Best right shift was %d, best left rotation was %d, with period %06X\nTook %d ms.\n", bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Best right shift was 2, best left rotation was 6, with period 0xFFFFFFF
+     */
+    @Test
+    public void checkPeriod28_Xoshiro4x7(){
+        long startTime = System.currentTimeMillis();
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1;
+        int bestShift = 1, bestRot = 1;
+        for (int shift = 1; shift < 7; shift++) {
+            for (int rot = 1; rot < 7; rot++) {
+                int i = 0;
+                while (++i <= 0x10000100) {
+//                    int t = stateB << shift & 127;
+                    int t = (stateB & 127) >>> shift;
+                    stateC ^= stateA;
+                    stateD ^= stateB;
+                    stateB ^= stateC;
+                    stateA ^= stateD;
+                    stateC ^= t;
+                    stateD = (stateD << rot | stateD >>> 7 - rot) & 127;
+
+                    if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
+                        System.out.printf("right shift %d, rotl %d: 0x%08X\n", shift, rot, i);
+                        if (i > best) {
+                            best = i;
+                            bestShift = shift;
+                            bestRot = rot;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        System.out.printf("Best right shift was %d, best left rotation was %d, with period 0x%06X\nTook %d ms.\n",
+                bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x007FFFFFF80
+     */
+    @Test
+    public void checkPeriodCountingByXoshiro4x7(){
+        long startTime = System.currentTimeMillis();
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        int stateE = 1;
+                long i = 0L;
+                while (++i <= 0x1000000100L) {
+                    int t = (stateB & 127) >>> 2;
+                    stateC ^= stateA;
+                    stateD ^= stateB;
+                    stateE = stateE + ~(stateB ^= stateC) & 127;
+                    stateA ^= stateD;
+                    stateC ^= t;
+                    stateD = (stateD << 6 | stateD >>> 1) & 127;
+
+                    if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                        break;
+            }
+        }
+        System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
     }
 
     /**
