@@ -300,6 +300,7 @@ public class PeriodTest {
 
     /**
      * Best right shift was 2, best left rotation was 6, with period 0xFFFFFFF
+     * Best left  shift was 2, best left rotation was 1, with period 0xFFFFFFF
      */
     @Test
     public void checkPeriod28_Xoshiro4x7(){
@@ -311,8 +312,8 @@ public class PeriodTest {
             for (int rot = 1; rot < 7; rot++) {
                 int i = 0;
                 while (++i <= 0x10000100) {
-//                    int t = stateB << shift & 127;
-                    int t = (stateB & 127) >>> shift;
+                    int t = stateB << shift & 127;
+//                    int t = stateB >>> shift;
                     stateC ^= stateA;
                     stateD ^= stateB;
                     stateB ^= stateC;
@@ -332,7 +333,7 @@ public class PeriodTest {
                 }
             }
         }
-        System.out.printf("Best right shift was %d, best left rotation was %d, with period 0x%06X\nTook %d ms.\n",
+        System.out.printf("Best left shift was %d, best left rotation was %d, with period 0x%06X\nTook %d ms.\n",
                 bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
     }
 
@@ -346,7 +347,7 @@ public class PeriodTest {
         int stateE = 1;
                 long i = 0L;
                 while (++i <= 0x1000000100L) {
-                    int t = (stateB & 127) >>> 2;
+                    int t = stateB >>> 2;
                     stateC ^= stateA;
                     stateD ^= stateB;
                     stateE = stateE + ~(stateB ^= stateC) & 127;
@@ -355,6 +356,37 @@ public class PeriodTest {
                     stateD = (stateD << 6 | stateD >>> 1) & 127;
 
                     if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                        break;
+            }
+        }
+        System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x007FFFFFF80 when XORing stateE into stateC.
+     * Period was 0x007FFFFFF80 when XORing stateE into stateD.
+     * Period was 0x007FFFFFF80 when XORing stateE with stateC at the second point, too.
+     * Period was 0x007FFFFFF80 when XORing stateE with stateC, but using (stateE + 0x35 ^ 0x66) as the new value.
+     * (Same for (stateE + 0x35 ^ 0x60).)
+     * Period was 0x0023B8CB487 when doing {@code stateC ^= (stateE = stateE + stateA & 127);}
+     * Period was 0x002B0B6FA00 when adding stateE.
+     * When XORing stateE with stateD at the second point, something goes wrong and the generator goes into a subcycle.
+     */
+    @Test
+    public void checkPeriodCounterInXoshiro4x7(){
+        long startTime = System.currentTimeMillis();
+        int stateA = 0x67, stateB = 1, stateC = 1, stateD = 1;
+        int stateE = 1;
+                long i = 0L;
+                while (++i <= 0x1000000100L) {
+                    int t = stateB >>> 2;
+                    stateC ^= stateA ^ (stateE = stateE + 0x65 & 127);
+                    stateD ^= stateB;
+                    stateB ^= stateC;
+                    stateA ^= stateD;
+                    stateC ^= t;
+                    stateD = (stateD << 6 | stateD >>> 1) & 127;
+                    if (stateA == 0x67 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
                         break;
             }
         }

@@ -173,6 +173,28 @@ public class TestDistribution {
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
+    /**
+     * Just one less output (0) than all possible ints, which is correct for an LFSR.
+     */
+    @Test
+    public void test32BitLFSRReverse()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000, state = -1;
+        for (; i < 0; i++) {
+            all.add(state = state << 1 ^ (state >> 31 & 0xA84C5F95));
+            if(state == -1) break;
+        }
+        if(state != -1) {
+            for (; i >= 0; i++) {
+                all.add(state = state << 1 ^ (state >> 31 & 0xA84C5F95));
+                if(state == -1) break;
+            }
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
     @Test
     public void test32BitSplitMixFixedPoint()
     {
