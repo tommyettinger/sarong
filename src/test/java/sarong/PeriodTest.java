@@ -410,13 +410,18 @@ public class PeriodTest {
 //                    stateE += ~(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
 //                    stateE += ~(stateA = (short)( (stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) )); // Period was 0x0FFFF00
             // Period was 0x0FFFF00
-            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D));
-            stateE += 0x97;
+//            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D));
+//            stateE += 0x97;
 
             // Period was 0x0FFFF00
-            // This only permits increments to stateE that are exactly twice an odd number, that is, the low two bits are 0b10 .
+            // This only permits increments to stateE that are an odd number, that is, the lowest-order bit is 1 .
             // Other increments have shorter periods.
-            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) ^ (stateE += 0x7A));
+            // This uses the "reverse direction" LFSR, but it doesn't seem to matter.
+//            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) ^ (stateE += 0x7B));
+
+            // Period was 0x0FFFF00, increment to stateE must be odd.
+//            stateA = (short) ((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400) ^ ((stateE += 0x81) & 255)); // mask not necessary.
+            stateA = (short) ((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400) ^ (stateE += 0x61));
 
 //                    stateE += Integer.numberOfLeadingZeros(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
             if (stateA == 1 && stateE == 1) {
