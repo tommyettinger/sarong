@@ -219,6 +219,36 @@ public class LFSR implements StatefulRandomness, Serializable {
     }
 
     /**
+     * Gets the next number from 1 to 65535 that a different kind of LFSR would produce if its state was {@code state}.
+     * Does not allow state to be 0. If given all short values except 0 as arguments, will produce all ints 1-65535.
+     * Strongly consider using the result of this and assigning it to state if you expect to call this again, such as
+     * with {@code (state = LFSR.determineShort(state))}, which will ensure the long-term properties of an LFSR hold up
+     * (such as having a period of 65535, or the guarantee that every number from 1 to 65535, inclusive on both, will be
+     * generated once per period).
+     * @param state any short other than 0
+     * @return the next int between 1 and 65535 that a 16-bit LFSR would produce with the given state
+     */
+    public static int determineShort(final short state)
+    {
+        return (state & 0xFFFF) >>> 1 ^ (-(state & 1) & 0xB400);
+    }
+
+    /**
+     * Gets the next number from 1 to 65535 that a different kind of LFSR would produce if its state was {@code state}.
+     * Does not allow state to be 0. If given all short values except 0 as arguments, will produce all ints 1-65535.
+     * Strongly consider using the result of this and assigning it to state if you expect to call this again, such as
+     * with {@code (state = LFSR.determineShort(state))}, which will ensure the long-term properties of an LFSR hold up
+     * (such as having a period of 65535, or the guarantee that every number from 1 to 65535, inclusive on both, will be
+     * generated once per period). This effectively runs in the "reverse direction" as {@link #determineShort(short)}.
+     * @param state any short other than 0
+     * @return the next int between 1 and 65535 that a 16-bit LFSR would produce with the given state
+     */
+    public static int determineShortAlt(final short state)
+    {
+        return (state & 0x7FFF) << 1 ^ ((state >> 31) & 0x002D);
+    }
+
+    /**
      * Gets the next number that a different kind of 32-bit LFSR would produce if its state was {@code state}.
      * Does not allow state to be 0. If given all int values except 0 as arguments, will produce all ints except 0.
      * Strongly consider using the result of this and assigning it to state if you expect to call this again, such as

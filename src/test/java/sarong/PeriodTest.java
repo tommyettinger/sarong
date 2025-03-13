@@ -293,6 +293,9 @@ public class PeriodTest {
         System.out.printf("Best shift was %d, best rotation was %d, with period %06X", bestShift, bestRot, best);
     }
 
+    /**
+     * Best left shift was 3, best left rotation was 1, with period FFFFFFFF
+     */
     @Test
     public void checkPeriod32_Xoshiro4x8(){
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
@@ -311,7 +314,7 @@ public class PeriodTest {
                     stateD = (stateD << rot | stateD >>> 8 - rot) & 255;
 
                     if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
-                        System.out.printf("shift %d, rot %d: 0x%08X\n", shift, rot, i);
+                        System.out.printf("left shift %d, rotl %d: 0x%08X\n", shift, rot, i);
                         if (i > best) {
                             best = i;
                             bestShift = shift;
@@ -322,7 +325,7 @@ public class PeriodTest {
                 }
             }
         }
-        System.out.printf("Best shift was %d, best rotation was %d, with period %08X", bestShift, bestRot, best);
+        System.out.printf("Best left shift was %d, best left rotation was %d, with period %08X", bestShift, bestRot, best);
     }
 
     @Test
