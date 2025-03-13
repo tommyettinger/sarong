@@ -366,6 +366,7 @@ public class PeriodTest {
      */
     @Test
     public void checkPeriod32_Xoshiro4x8(){
+        long startTime = System.currentTimeMillis();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         long best = 1;
         int bestShift = 1, bestRot = 1;
@@ -393,7 +394,36 @@ public class PeriodTest {
                 }
             }
         }
-        System.out.printf("Best left shift was %d, best left rotation was %d, with period %08X", bestShift, bestRot, best);
+        System.out.printf("Best left shift was %d, best left rotation was %d, with period %08X\nTook %d ms.\n", bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
+    }
+    /**
+     * Period was 0x0FFFF00 for most tried, but some are much shorter.
+     */
+    @Test
+    public void checkPeriodCountingByLFSR16() {
+        long startTime = System.currentTimeMillis();
+        short stateA = 1;
+        byte stateE = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+//                    stateE += (stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x000FFFF
+//                    stateE += ~(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
+//                    stateE += ~(stateA = (short)( (stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) )); // Period was 0x0FFFF00
+            // Period was 0x0FFFF00
+            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D));
+            stateE += 0x97;
+
+            // Period was 0x0FFFF00
+            // This only permits increments to stateE that are exactly twice an odd number, that is, the low two bits are 0b10 .
+            // Other increments have shorter periods.
+            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) ^ (stateE += 0x7A));
+
+//                    stateE += Integer.numberOfLeadingZeros(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
+            if (stateA == 1 && stateE == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
     }
 
     @Test
