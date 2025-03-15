@@ -1,6 +1,7 @@
 package sarong;
 
 import org.junit.Test;
+import org.roaringbitmap.RoaringBitmap;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -327,6 +328,43 @@ public class PeriodTest {
             stateD = (stateD << 2 | stateD >>> 3) & 31;
             all.add(stateA | stateB << 5 | stateC << 10 | stateD << 15 | stateE << 20);
             if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
+        all.flip(0L, 1L << 25);
+        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii>>>5 & 31, ii>>>10 & 31, ii>>>15 & 31, ii>>>20 & 31));
+    }
+    /**
+     * Period was 0x01FFFFE0
+     * Took 2224 ms.
+     * 33554400/33554432 outputs were present.
+     * 9.5367431640625E-5% of outputs were missing.
+     * 17 2 24 29 0
+     * 29 4 23 7 1
+     * 9 23 20 16 2
+     * 21 1 19 0 3
+     * 12 16 5 1 4
+     */
+    @Test
+    public void checkPeriodCounterInXoshiro4x5(){
+        long startTime = System.currentTimeMillis();
+        final RoaringBitmap all = new RoaringBitmap();
+        int stateA = 0, stateB = 0, stateC = 0, stateD = 0;
+        int stateE = 0;
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int t = stateB >>> 1;
+            stateC ^= stateA ^ (stateE = stateE + 0x17 & 31);
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 2 | stateD >>> 3) & 31;
+            all.add(stateA | stateB << 5 | stateC << 10 | stateD << 15 | stateE << 20);
+            if (stateA == 0 && stateB == 0 && stateC == 0 && stateD == 0 && stateE == 0) {
                 break;
             }
         }
