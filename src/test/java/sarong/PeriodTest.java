@@ -262,6 +262,45 @@ public class PeriodTest {
     }
 
     /**
+     * Best right shift was 1, best left rotation was 2, with period 0x0FFFFF
+     * Best left  shift was 1, best left rotation was 3, with period 0x0FFFFF
+     */
+    @Test
+    public void checkPeriod20_Xoshiro4x5(){
+        long startTime = System.currentTimeMillis();
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        long best = 1;
+        int bestShift = 1, bestRot = 1;
+        for (int shift = 1; shift < 5; shift++) {
+            for (int rot = 1; rot < 5; rot++) {
+                int i = 0;
+                while (++i <= 0x100100) {
+                    int t = stateB << shift & 31;
+//                    int t = stateB >>> shift;
+                    stateC ^= stateA;
+                    stateD ^= stateB;
+                    stateB ^= stateC;
+                    stateA ^= stateD;
+                    stateC ^= t;
+                    stateD = (stateD << rot | stateD >>> 5 - rot) & 31;
+
+                    if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1) {
+                        System.out.printf("left shift %d, rotl %d: 0x%08X\n", shift, rot, i);
+                        if (i > best) {
+                            best = i;
+                            bestShift = shift;
+                            bestRot = rot;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        System.out.printf("Best left shift was %d, best left rotation was %d, with period 0x%06X\nTook %d ms.\n",
+                bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
      * Best right shift was 1, best left rotation was 1, with period 3FFFFF
      */
     @Test
@@ -295,7 +334,8 @@ public class PeriodTest {
                 }
             }
         }
-        System.out.printf("Best right shift was %d, best left rotation was %d, with period %06X\nTook %d ms.\n", bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
+        System.out.printf("Best right shift was %d, best left rotation was %d, with period %06X\nTook %d ms.\n",
+                bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
     }
 
     /**
@@ -375,8 +415,8 @@ public class PeriodTest {
     @Test
     public void checkPeriodCounterInXoshiro4x7(){
         long startTime = System.currentTimeMillis();
-        int stateA = 0x67, stateB = 1, stateC = 1, stateD = 1;
-        int stateE = 1;
+        int stateA = 0, stateB = 0, stateC = 0, stateD = 0;
+        int stateE = -0x65 & 127;
                 long i = 0L;
                 while (++i <= 0x1000000100L) {
                     int t = stateB >>> 2;
@@ -386,7 +426,7 @@ public class PeriodTest {
                     stateA ^= stateD;
                     stateC ^= t;
                     stateD = (stateD << 6 | stateD >>> 1) & 127;
-                    if (stateA == 0x67 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                    if (stateA == 0 && stateB == 0 && stateC == 0 && stateD == 0 && stateE == (-0x65 & 127)) {
                         break;
             }
         }
