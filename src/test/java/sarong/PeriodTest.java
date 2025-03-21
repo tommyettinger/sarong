@@ -319,13 +319,14 @@ public class PeriodTest {
         int stateE = 1;
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int t = stateB >>> 1;
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
-            stateE = stateE + ~(stateB ^= stateC) & 31;
+            stateB ^= stateC;
             stateA ^= stateD;
             stateC ^= t;
-            stateD = (stateD << 2 | stateD >>> 3) & 31;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
             all.add(stateA | stateB << 5 | stateC << 10 | stateD << 15 | stateE << 20);
             if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
                 break;
@@ -454,6 +455,7 @@ public class PeriodTest {
 
     /**
      * Period was 0x007FFFFFF80
+     * Took 38623 ms.
      */
     @Test
     public void checkPeriodCountingByXoshiro4x7(){
@@ -461,14 +463,15 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         int stateE = 1;
                 long i = 0L;
-                while (++i <= 0x1000000100L) {
-                    int t = stateB >>> 2;
+                while (++i <= 0x10000000100L) {
+                    int t = stateB << 2 & 127;
+                    stateE = stateE + (0x65 ^ stateC) & 127;
                     stateC ^= stateA;
                     stateD ^= stateB;
-                    stateE = stateE + ~(stateB ^= stateC) & 127;
+                    stateB ^= stateC;
                     stateA ^= stateD;
                     stateC ^= t;
-                    stateD = (stateD << 6 | stateD >>> 1) & 127;
+                    stateD = (stateD << 1 | stateD >>> 6) & 127;
 
                     if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
                         break;
@@ -558,9 +561,9 @@ public class PeriodTest {
         OUTER:
         for (int j = 0; j < 260; j++) {
             long inner = 0;
-            while (++i > 0 && ++inner < 0x100000000L) {
+            while (++i > 0 && ++inner <= 0x100000000L) {
                 byte t = (byte) (stateB << 3);
-                stateE += 0xC5 ^ stateC; // Period was
+                stateE += 0xC5 ^ stateC; // Period was 0x0FFFFFFFFFF !!!
                 stateC ^= stateA;
                 stateD ^= stateB;
                 stateB ^= stateC;
