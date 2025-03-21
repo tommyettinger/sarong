@@ -578,22 +578,23 @@ public class PeriodTest {
 
 
     /**
-     * Period was 0x0FFFFFFFFFF
-     * Took 2639738 ms.
-     * WAAAT!
+     * Returned to initial state after 1099511627520 steps. Theoretical maximum is 1099511627776.
+     * Period was 0x0FFFFFFFF00
+     * Took 3610564 ms.
      */
     @Test
     public void checkPeriodCountingByXoshiro4x8() {
         long startTime = System.currentTimeMillis();
-        final Roaring64Bitmap all = new Roaring64Bitmap();
+//        final Roaring64Bitmap all = new Roaring64Bitmap();
         byte stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         long i = 0;
         OUTER:
         for (int j = 1; j < 260; j++) {
             long inner = 0;
-            while (++i > 0 && ++inner <= 0x100000000L) {
+            while (++inner <= 0x100000000L) {
+                ++i;
                 byte t = (byte) (stateB << 3);
-                stateE += 0xC5 ^ stateC; // Period was 0x0FFFFFFFFFF !!!
+                stateE += 0xC7 ^ stateC; // Period was 0x0FFFFFFFFFF !!!
                 stateC ^= stateA;
                 stateD ^= stateB;
                 stateB ^= stateC;
@@ -602,7 +603,7 @@ public class PeriodTest {
                 stateC ^= t;
                 stateD = (byte) rotate8(stateD, 1);
 
-                all.add((stateA&255L)|(stateB&255L)<<8|(stateC&255L)<<16|(stateD&255L)<<24|(stateE&255L)<<32);
+//                all.add((stateA&255L)|(stateB&255L)<<8|(stateC&255L)<<16|(stateD&255L)<<24|(stateE&255L)<<32);
                 if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
                     System.out.printf("Returned to initial state after %d steps. Theoretical maximum is %d.\n", i, (1L << 40));
                     break OUTER;
@@ -611,10 +612,10 @@ public class PeriodTest {
             System.out.println("Finished " + j + " * (1L << 32) steps; taken " + (System.currentTimeMillis() - startTime) + " ms");
         }
         System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
-        System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
-        System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
-        all.flip(0L, 1L << 40);
-        all.forEach((long ii) -> System.out.printf("%d %d %d %d %d\n", ii & 255, ii >>> 8 & 255, ii >>> 16 & 255, ii >>> 24 & 255, ii >>> 32 & 255));
+//        System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
+//        System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
+//        all.flip(0L, 1L << 40);
+//        all.forEach((long ii) -> System.out.printf("%d %d %d %d %d\n", ii & 255, ii >>> 8 & 255, ii >>> 16 & 255, ii >>> 24 & 255, ii >>> 32 & 255));
     }
 
     /**
