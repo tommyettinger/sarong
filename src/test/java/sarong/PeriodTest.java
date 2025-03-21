@@ -543,6 +543,41 @@ public class PeriodTest {
         }
         System.out.printf("Best left shift was %d, best left rotation was %d, with period %08X\nTook %d ms.\n", bestShift, bestRot, best, (System.currentTimeMillis() - startTime));
     }
+
+
+    /**
+     * Period was 0x0FFFFFFFFFF
+     * Took 2639738 ms.
+     * WAAAT!
+     */
+    @Test
+    public void checkPeriodCountingByXoshiro4x8() {
+        long startTime = System.currentTimeMillis();
+        byte stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        long i = 0;
+        OUTER:
+        for (int j = 0; j < 260; j++) {
+            long inner = 0;
+            while (++i > 0 && ++inner < 0x100000000L) {
+                byte t = (byte) (stateB << 3);
+                stateE += 0xC5 ^ stateC; // Period was
+                stateC ^= stateA;
+                stateD ^= stateB;
+                stateB ^= stateC;
+//                    stateE = stateE + (stateB ^= stateC) ^ 1; // Period was 001FFFFFFFE, or twice xoshiro's period.
+                stateA ^= stateD;
+                stateC ^= t;
+                stateD = (byte) rotate8(stateD, 1);
+
+                if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                    break OUTER;
+                }
+            }
+            System.out.println("Finished " + j + " * (1L << 32) steps; taken " + (System.currentTimeMillis() - startTime) + " ms");
+        }
+        System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
     /**
      * Period was 0x0FFFF00 for most tried, but some are much shorter.
      */
