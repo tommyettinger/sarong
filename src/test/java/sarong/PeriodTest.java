@@ -2,6 +2,8 @@ package sarong;
 
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
+import org.roaringbitmap.RoaringBitmapWriter;
+import org.roaringbitmap.longlong.Roaring64Bitmap;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -312,7 +314,7 @@ public class PeriodTest {
      * 0 0 0 0 4
      */
     @Test
-    public void checkPeriodCountingByXoshiro4x5(){
+    public void checkPeriodCountingByXoshiro4x5() {
         long startTime = System.currentTimeMillis();
         final RoaringBitmap all = new RoaringBitmap();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
@@ -336,7 +338,7 @@ public class PeriodTest {
         System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
         all.flip(0L, 1L << 25);
-        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii>>>5 & 31, ii>>>10 & 31, ii>>>15 & 31, ii>>>20 & 31));
+        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii >>> 5 & 31, ii >>> 10 & 31, ii >>> 15 & 31, ii >>> 20 & 31));
     }
     /**
      * Period was 0x01FFFFE0
@@ -350,7 +352,7 @@ public class PeriodTest {
      * 12 16 5 1 4
      */
     @Test
-    public void checkPeriodCounterInXoshiro4x5(){
+    public void checkPeriodCounterInXoshiro4x5() {
         long startTime = System.currentTimeMillis();
         final RoaringBitmap all = new RoaringBitmap();
         int stateA = 0, stateB = 0, stateC = 0, stateD = 0;
@@ -373,14 +375,14 @@ public class PeriodTest {
         System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
         all.flip(0L, 1L << 25);
-        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii>>>5 & 31, ii>>>10 & 31, ii>>>15 & 31, ii>>>20 & 31));
+        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii >>> 5 & 31, ii >>> 10 & 31, ii >>> 15 & 31, ii >>> 20 & 31));
     }
 
     /**
      * Best right shift was 1, best left rotation was 1, with period 3FFFFF
      */
     @Test
-    public void checkPeriod24_Xoshiro4x6(){
+    public void checkPeriod24_Xoshiro4x6() {
         long startTime = System.currentTimeMillis();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         long best = 1;
@@ -419,7 +421,7 @@ public class PeriodTest {
      * Best left  shift was 2, best left rotation was 1, with period 0xFFFFFFF
      */
     @Test
-    public void checkPeriod28_Xoshiro4x7(){
+    public void checkPeriod28_Xoshiro4x7() {
         long startTime = System.currentTimeMillis();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         long best = 1;
@@ -458,23 +460,50 @@ public class PeriodTest {
      * Took 38623 ms.
      */
     @Test
-    public void checkPeriodCountingByXoshiro4x7(){
+    public void checkPeriodCountingByXoshiro4x7() {
         long startTime = System.currentTimeMillis();
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
         int stateE = 1;
-                long i = 0L;
-                while (++i <= 0x10000000100L) {
-                    int t = stateB << 2 & 127;
-                    stateE = stateE + (0x65 ^ stateC) & 127;
-                    stateC ^= stateA;
-                    stateD ^= stateB;
-                    stateB ^= stateC;
-                    stateA ^= stateD;
-                    stateC ^= t;
-                    stateD = (stateD << 1 | stateD >>> 6) & 127;
+        long i = 0L;
+        while (++i <= 0x10000000100L) {
+            int t = stateB << 2 & 127;
+            stateE = stateE + (0x6D ^ stateC) & 127;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 6) & 127;
 
-                    if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
-                        break;
+            if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x00FFFFFFF00
+     * Took 85532 ms.
+     */
+    @Test
+    public void checkPeriodByteCountingByXoshiro4x7() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
+        int stateE = 1;
+        long i = 0L;
+        while (++i <= 0x10000000100L) {
+            int t = stateB << 2 & 127;
+            stateE = stateE + (0xC5 ^ stateC) & 255;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 1 | stateD >>> 6) & 127;
+
+            if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                break;
             }
         }
         System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
@@ -491,21 +520,21 @@ public class PeriodTest {
      * When XORing stateE with stateD at the second point, something goes wrong and the generator goes into a subcycle.
      */
     @Test
-    public void checkPeriodCounterInXoshiro4x7(){
+    public void checkPeriodCounterInXoshiro4x7() {
         long startTime = System.currentTimeMillis();
         int stateA = 0, stateB = 0, stateC = 0, stateD = 0;
         int stateE = -0x65 & 127;
-                long i = 0L;
-                while (++i <= 0x1000000100L) {
-                    int t = stateB >>> 2;
-                    stateC ^= stateA ^ (stateE = stateE + 0x65 & 127);
-                    stateD ^= stateB;
-                    stateB ^= stateC;
-                    stateA ^= stateD;
-                    stateC ^= t;
-                    stateD = (stateD << 6 | stateD >>> 1) & 127;
-                    if (stateA == 0 && stateB == 0 && stateC == 0 && stateD == 0 && stateE == (-0x65 & 127)) {
-                        break;
+        long i = 0L;
+        while (++i <= 0x1000000100L) {
+            int t = stateB >>> 2;
+            stateC ^= stateA ^ (stateE = stateE + 0x65 & 127);
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 6 | stateD >>> 1) & 127;
+            if (stateA == 0 && stateB == 0 && stateC == 0 && stateD == 0 && stateE == (-0x65 & 127)) {
+                break;
             }
         }
         System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
@@ -556,10 +585,11 @@ public class PeriodTest {
     @Test
     public void checkPeriodCountingByXoshiro4x8() {
         long startTime = System.currentTimeMillis();
+        final Roaring64Bitmap all = new Roaring64Bitmap();
         byte stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         long i = 0;
         OUTER:
-        for (int j = 0; j < 260; j++) {
+        for (int j = 1; j < 260; j++) {
             long inner = 0;
             while (++i > 0 && ++inner <= 0x100000000L) {
                 byte t = (byte) (stateB << 3);
@@ -572,13 +602,19 @@ public class PeriodTest {
                 stateC ^= t;
                 stateD = (byte) rotate8(stateD, 1);
 
+                all.add((stateA&255L)|(stateB&255L)<<8|(stateC&255L)<<16|(stateD&255L)<<24|(stateE&255L)<<32);
                 if (stateA == 1 && stateB == 1 && stateC == 1 && stateD == 1 && stateE == 1) {
+                    System.out.printf("Returned to initial state after %d steps. Theoretical maximum is %d.\n", i, (1L << 40));
                     break OUTER;
                 }
             }
             System.out.println("Finished " + j + " * (1L << 32) steps; taken " + (System.currentTimeMillis() - startTime) + " ms");
         }
         System.out.printf("Period was 0x%011X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of outputs were missing.");
+        all.flip(0L, 1L << 40);
+        all.forEach((long ii) -> System.out.printf("%d %d %d %d %d\n", ii & 255, ii >>> 8 & 255, ii >>> 16 & 255, ii >>> 24 & 255, ii >>> 32 & 255));
     }
 
     /**
