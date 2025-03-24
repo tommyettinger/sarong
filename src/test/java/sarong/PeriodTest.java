@@ -415,7 +415,76 @@ public class PeriodTest {
         System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
         for (int j = 0; j < 32; j++) {
             System.out.printf("Frequency of %02d: %d \n", j, frequencies[j]);
-        };
+        }
+    }
+
+    /**
+     * Period was 0x01FFFFE0
+     * Took 109 ms.
+     * Frequency of 00: 32767 (#1 off)
+     * Frequency of 52: 32767 (#2 off)
+     * Frequency of 65: 32767 (#3 off)
+     * Frequency of 117: 32767 (#4 off)
+     * Frequency of 130: 32767 (#5 off)
+     * Frequency of 182: 32767 (#6 off)
+     * Frequency of 195: 32767 (#7 off)
+     * Frequency of 247: 32767 (#8 off)
+     * Frequency of 260: 32767 (#9 off)
+     * Frequency of 272: 32767 (#10 off)
+     * Frequency of 325: 32767 (#11 off)
+     * Frequency of 337: 32767 (#12 off)
+     * Frequency of 390: 32767 (#13 off)
+     * Frequency of 402: 32767 (#14 off)
+     * Frequency of 455: 32767 (#15 off)
+     * Frequency of 467: 32767 (#16 off)
+     * Frequency of 532: 32767 (#17 off)
+     * Frequency of 544: 32767 (#18 off)
+     * Frequency of 597: 32767 (#19 off)
+     * Frequency of 609: 32767 (#20 off)
+     * Frequency of 662: 32767 (#21 off)
+     * Frequency of 674: 32767 (#22 off)
+     * Frequency of 727: 32767 (#23 off)
+     * Frequency of 739: 32767 (#24 off)
+     * Frequency of 804: 32767 (#25 off)
+     * Frequency of 816: 32767 (#26 off)
+     * Frequency of 869: 32767 (#27 off)
+     * Frequency of 881: 32767 (#28 off)
+     * Frequency of 934: 32767 (#29 off)
+     * Frequency of 946: 32767 (#30 off)
+     * Frequency of 999: 32767 (#31 off)
+     * Frequency of 1011: 32767 (#32 off)
+     * All other results occurred with frequency 32768 .
+     */
+    @Test
+    public void checkFrequencyCountingByXoshiro4x5Long() {
+        long startTime = System.currentTimeMillis();
+        final int[] frequencies = new int[1024];
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateA << 2 | stateA >>> 8) + stateB + (stateC << 6 | stateC >> 4) + (stateE << 4 | stateE >> 6) + (stateE << 8 | stateE >> 2) & 1023);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            frequencies[result]++;
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        int howMany = 0;
+        for (int j = 0; j < 1024; j++) {
+            if(frequencies[j] != 32768)
+                System.out.printf("Frequency of %02d: %d (#%d off)\n", j, frequencies[j], ++howMany);
+        }
+        System.out.println("All other results occurred with frequency 32768 .");
     }
     /**
      * Period was 0x01FFFFE0
