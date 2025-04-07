@@ -343,10 +343,52 @@ public class PeriodTest {
 
     /**
      * Period was 0x01FFFFE0
-     * Took 1407 ms.
-     * 21223326/33554432 5-tuples were present.
-     * 36.7495596408844% of 5-tuples were missing.
+     * Took 841 ms.
+     * 1048576/1048576 4-tuples were present.
+     * 0.0% of 4-tuples were missing.
      */
+    @Test
+    public void check4TuplesCountingByXoshiro4x5() {
+        long startTime = System.currentTimeMillis();
+        final RoaringBitmap all = new RoaringBitmap();
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            joined = (joined << 5 & 0x00FFFE0) | result;
+        }
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            all.add(joined = (joined << 5 & 0x00FFFE0) | result);
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.getLongCardinality() + "/" + (1 << 20) + " 4-tuples were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-20 + "% of 4-tuples were missing.");
+//        all.flip(0L, 1L << 25);
+//        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii >>> 5 & 31, ii >>> 10 & 31, ii >>> 15 & 31, ii >>> 20 & 31));
+    }
     @Test
     public void check5TuplesCountingByXoshiro4x5() {
         long startTime = System.currentTimeMillis();
