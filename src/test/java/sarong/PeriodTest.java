@@ -1,5 +1,10 @@
 package sarong;
 
+import com.github.tommyettinger.digital.Base;
+import com.github.tommyettinger.ds.IntIntMap;
+import com.github.tommyettinger.ds.IntIntOrderedMap;
+import com.github.tommyettinger.ds.support.sort.IntComparator;
+import com.github.tommyettinger.ds.support.sort.IntComparators;
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.RoaringBitmapWriter;
@@ -386,8 +391,117 @@ public class PeriodTest {
         System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
         System.out.println(all.getLongCardinality() + "/" + (1 << 20) + " 4-tuples were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-20 + "% of 4-tuples were missing.");
-//        all.flip(0L, 1L << 25);
-//        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii >>> 5 & 31, ii >>> 10 & 31, ii >>> 15 & 31, ii >>> 20 & 31));
+    }
+
+    /**
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 886 ms.
+     * 1048576/1048576 4-tuples were present.
+     * 0.0% of 4-tuples were missing.
+     * Number of repetitions of a 4-tuple to the number of 4-tuples that repeated that often:
+     * 7 repetitions occurred for 2 4-tuples.
+     * 9 repetitions occurred for 2 4-tuples.
+     * 10 repetitions occurred for 8 4-tuples.
+     * 11 repetitions occurred for 16 4-tuples.
+     * 12 repetitions occurred for 24 4-tuples.
+     * 13 repetitions occurred for 74 4-tuples.
+     * 14 repetitions occurred for 164 4-tuples.
+     * 15 repetitions occurred for 316 4-tuples.
+     * 16 repetitions occurred for 730 4-tuples.
+     * 17 repetitions occurred for 1324 4-tuples.
+     * 18 repetitions occurred for 2402 4-tuples.
+     * 19 repetitions occurred for 4230 4-tuples.
+     * 20 repetitions occurred for 6806 4-tuples.
+     * 21 repetitions occurred for 10124 4-tuples.
+     * 22 repetitions occurred for 15236 4-tuples.
+     * 23 repetitions occurred for 21278 4-tuples.
+     * 24 repetitions occurred for 28108 4-tuples.
+     * 25 repetitions occurred for 35856 4-tuples.
+     * 26 repetitions occurred for 44134 4-tuples.
+     * 27 repetitions occurred for 52646 4-tuples.
+     * 28 repetitions occurred for 61342 4-tuples.
+     * 29 repetitions occurred for 67242 4-tuples.
+     * 30 repetitions occurred for 71950 4-tuples.
+     * 31 repetitions occurred for 74122 4-tuples.
+     * 32 repetitions occurred for 74294 4-tuples.
+     * 33 repetitions occurred for 72472 4-tuples.
+     * 34 repetitions occurred for 68146 4-tuples.
+     * 35 repetitions occurred for 62602 4-tuples.
+     * 36 repetitions occurred for 55266 4-tuples.
+     * 37 repetitions occurred for 47274 4-tuples.
+     * 38 repetitions occurred for 40026 4-tuples.
+     * 39 repetitions occurred for 32958 4-tuples.
+     * 40 repetitions occurred for 25734 4-tuples.
+     * 41 repetitions occurred for 20170 4-tuples.
+     * 42 repetitions occurred for 15194 4-tuples.
+     * 43 repetitions occurred for 11170 4-tuples.
+     * 44 repetitions occurred for 8160 4-tuples.
+     * 45 repetitions occurred for 5586 4-tuples.
+     * 46 repetitions occurred for 3982 4-tuples.
+     * 47 repetitions occurred for 2698 4-tuples.
+     * 48 repetitions occurred for 1756 4-tuples.
+     * 49 repetitions occurred for 1054 4-tuples.
+     * 50 repetitions occurred for 698 4-tuples.
+     * 51 repetitions occurred for 508 4-tuples.
+     * 52 repetitions occurred for 302 4-tuples.
+     * 53 repetitions occurred for 148 4-tuples.
+     * 54 repetitions occurred for 104 4-tuples.
+     * 55 repetitions occurred for 70 4-tuples.
+     * 56 repetitions occurred for 24 4-tuples.
+     * 57 repetitions occurred for 18 4-tuples.
+     * 58 repetitions occurred for 8 4-tuples.
+     * 59 repetitions occurred for 12 4-tuples.
+     * 60 repetitions occurred for 4 4-tuples.
+     * 66 repetitions occurred for 2 4-tuples.
+     * </pre>
+     */
+    @Test
+    public void check4TupleFrequencyCountingByXoshiro4x5() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 20, 0.6f);
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            joined = (joined << 5 & 0x00FFFE0) | result;
+        }
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            all.getAndIncrement((joined = (joined << 5 & 0x00FFFE0) | result), 0, 1);
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 20) + " 4-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-20 + "% of 4-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(128, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 4-tuple to the number of 4-tuples that repeated that often:");
+        System.out.println(inv.toString(" 4-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 4-tuples.");
     }
     @Test
     public void check5TuplesCountingByXoshiro4x5() {

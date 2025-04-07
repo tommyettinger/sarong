@@ -73,6 +73,13 @@
             <version>0.9.44</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.tommyettinger</groupId>
+            <artifactId>jdkgdxds</artifactId>
+            <version>1.8.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
