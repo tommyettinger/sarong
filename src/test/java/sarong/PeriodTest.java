@@ -503,6 +503,230 @@ public class PeriodTest {
         System.out.println("Number of repetitions of a 4-tuple to the number of 4-tuples that repeated that often:");
         System.out.println(inv.toString(" 4-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 4-tuples.");
     }
+    /**
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 182 ms.
+     * 32768/32768 3-tuples were present.
+     * 0.0% of 3-tuples were missing.
+     * Number of repetitions of a 3-tuple to the number of 3-tuples that repeated that often:
+     * 927 repetitions occurred for 4 3-tuples.
+     * 932 repetitions occurred for 4 3-tuples.
+     * 935 repetitions occurred for 4 3-tuples.
+     * 936 repetitions occurred for 4 3-tuples.
+     * 939 repetitions occurred for 4 3-tuples.
+     * 940 repetitions occurred for 4 3-tuples.
+     * 941 repetitions occurred for 8 3-tuples.
+     * 942 repetitions occurred for 4 3-tuples.
+     * 943 repetitions occurred for 12 3-tuples.
+     * 945 repetitions occurred for 4 3-tuples.
+     * 946 repetitions occurred for 8 3-tuples.
+     * 947 repetitions occurred for 16 3-tuples.
+     * 948 repetitions occurred for 8 3-tuples.
+     * 951 repetitions occurred for 4 3-tuples.
+     * 952 repetitions occurred for 8 3-tuples.
+     * 953 repetitions occurred for 24 3-tuples.
+     * 954 repetitions occurred for 4 3-tuples.
+     * 955 repetitions occurred for 4 3-tuples.
+     * 956 repetitions occurred for 12 3-tuples.
+     * 957 repetitions occurred for 8 3-tuples.
+     * 958 repetitions occurred for 20 3-tuples.
+     * 959 repetitions occurred for 16 3-tuples.
+     * 960 repetitions occurred for 60 3-tuples.
+     * 961 repetitions occurred for 28 3-tuples.
+     * 962 repetitions occurred for 32 3-tuples.
+     * 963 repetitions occurred for 32 3-tuples.
+     * 964 repetitions occurred for 20 3-tuples.
+     * 965 repetitions occurred for 24 3-tuples.
+     * 966 repetitions occurred for 48 3-tuples.
+     * 967 repetitions occurred for 44 3-tuples.
+     * 968 repetitions occurred for 48 3-tuples.
+     * 969 repetitions occurred for 48 3-tuples.
+     * 970 repetitions occurred for 64 3-tuples.
+     * 971 repetitions occurred for 74 3-tuples.
+     * 972 repetitions occurred for 70 3-tuples.
+     * 973 repetitions occurred for 72 3-tuples.
+     * 974 repetitions occurred for 64 3-tuples.
+     * 975 repetitions occurred for 64 3-tuples.
+     * 976 repetitions occurred for 72 3-tuples.
+     * 977 repetitions occurred for 100 3-tuples.
+     * 978 repetitions occurred for 76 3-tuples.
+     * 979 repetitions occurred for 128 3-tuples.
+     * 980 repetitions occurred for 124 3-tuples.
+     * 981 repetitions occurred for 128 3-tuples.
+     * 982 repetitions occurred for 148 3-tuples.
+     * 983 repetitions occurred for 112 3-tuples.
+     * 984 repetitions occurred for 144 3-tuples.
+     * 985 repetitions occurred for 184 3-tuples.
+     * 986 repetitions occurred for 188 3-tuples.
+     * 987 repetitions occurred for 208 3-tuples.
+     * 988 repetitions occurred for 180 3-tuples.
+     * 989 repetitions occurred for 236 3-tuples.
+     * 990 repetitions occurred for 224 3-tuples.
+     * 991 repetitions occurred for 208 3-tuples.
+     * 992 repetitions occurred for 198 3-tuples.
+     * 993 repetitions occurred for 254 3-tuples.
+     * 994 repetitions occurred for 228 3-tuples.
+     * 995 repetitions occurred for 284 3-tuples.
+     * 996 repetitions occurred for 236 3-tuples.
+     * 997 repetitions occurred for 288 3-tuples.
+     * 998 repetitions occurred for 284 3-tuples.
+     * 999 repetitions occurred for 324 3-tuples.
+     * 1000 repetitions occurred for 280 3-tuples.
+     * 1001 repetitions occurred for 356 3-tuples.
+     * 1002 repetitions occurred for 316 3-tuples.
+     * 1003 repetitions occurred for 332 3-tuples.
+     * 1004 repetitions occurred for 456 3-tuples.
+     * 1005 repetitions occurred for 328 3-tuples.
+     * 1006 repetitions occurred for 420 3-tuples.
+     * 1007 repetitions occurred for 476 3-tuples.
+     * 1008 repetitions occurred for 424 3-tuples.
+     * 1009 repetitions occurred for 424 3-tuples.
+     * 1010 repetitions occurred for 488 3-tuples.
+     * 1011 repetitions occurred for 488 3-tuples.
+     * 1012 repetitions occurred for 496 3-tuples.
+     * 1013 repetitions occurred for 404 3-tuples.
+     * 1014 repetitions occurred for 524 3-tuples.
+     * 1015 repetitions occurred for 376 3-tuples.
+     * 1016 repetitions occurred for 428 3-tuples.
+     * 1017 repetitions occurred for 454 3-tuples.
+     * 1018 repetitions occurred for 574 3-tuples.
+     * 1019 repetitions occurred for 474 3-tuples.
+     * 1020 repetitions occurred for 532 3-tuples.
+     * 1021 repetitions occurred for 510 3-tuples.
+     * 1022 repetitions occurred for 568 3-tuples.
+     * 1023 repetitions occurred for 452 3-tuples.
+     * 1024 repetitions occurred for 436 3-tuples.
+     * 1025 repetitions occurred for 552 3-tuples.
+     * 1026 repetitions occurred for 496 3-tuples.
+     * 1027 repetitions occurred for 568 3-tuples.
+     * 1028 repetitions occurred for 528 3-tuples.
+     * 1029 repetitions occurred for 498 3-tuples.
+     * 1030 repetitions occurred for 460 3-tuples.
+     * 1031 repetitions occurred for 550 3-tuples.
+     * 1032 repetitions occurred for 486 3-tuples.
+     * 1033 repetitions occurred for 478 3-tuples.
+     * 1034 repetitions occurred for 420 3-tuples.
+     * 1035 repetitions occurred for 496 3-tuples.
+     * 1036 repetitions occurred for 492 3-tuples.
+     * 1037 repetitions occurred for 418 3-tuples.
+     * 1038 repetitions occurred for 366 3-tuples.
+     * 1039 repetitions occurred for 468 3-tuples.
+     * 1040 repetitions occurred for 404 3-tuples.
+     * 1041 repetitions occurred for 428 3-tuples.
+     * 1042 repetitions occurred for 444 3-tuples.
+     * 1043 repetitions occurred for 360 3-tuples.
+     * 1044 repetitions occurred for 360 3-tuples.
+     * 1045 repetitions occurred for 320 3-tuples.
+     * 1046 repetitions occurred for 388 3-tuples.
+     * 1047 repetitions occurred for 360 3-tuples.
+     * 1048 repetitions occurred for 360 3-tuples.
+     * 1049 repetitions occurred for 344 3-tuples.
+     * 1050 repetitions occurred for 270 3-tuples.
+     * 1051 repetitions occurred for 234 3-tuples.
+     * 1052 repetitions occurred for 356 3-tuples.
+     * 1053 repetitions occurred for 246 3-tuples.
+     * 1054 repetitions occurred for 290 3-tuples.
+     * 1055 repetitions occurred for 232 3-tuples.
+     * 1056 repetitions occurred for 248 3-tuples.
+     * 1057 repetitions occurred for 232 3-tuples.
+     * 1058 repetitions occurred for 164 3-tuples.
+     * 1059 repetitions occurred for 180 3-tuples.
+     * 1060 repetitions occurred for 184 3-tuples.
+     * 1061 repetitions occurred for 164 3-tuples.
+     * 1062 repetitions occurred for 164 3-tuples.
+     * 1063 repetitions occurred for 160 3-tuples.
+     * 1064 repetitions occurred for 152 3-tuples.
+     * 1065 repetitions occurred for 136 3-tuples.
+     * 1066 repetitions occurred for 148 3-tuples.
+     * 1067 repetitions occurred for 136 3-tuples.
+     * 1068 repetitions occurred for 108 3-tuples.
+     * 1069 repetitions occurred for 132 3-tuples.
+     * 1070 repetitions occurred for 92 3-tuples.
+     * 1071 repetitions occurred for 100 3-tuples.
+     * 1072 repetitions occurred for 56 3-tuples.
+     * 1073 repetitions occurred for 56 3-tuples.
+     * 1074 repetitions occurred for 80 3-tuples.
+     * 1075 repetitions occurred for 80 3-tuples.
+     * 1076 repetitions occurred for 64 3-tuples.
+     * 1077 repetitions occurred for 70 3-tuples.
+     * 1078 repetitions occurred for 42 3-tuples.
+     * 1079 repetitions occurred for 56 3-tuples.
+     * 1080 repetitions occurred for 52 3-tuples.
+     * 1081 repetitions occurred for 24 3-tuples.
+     * 1082 repetitions occurred for 56 3-tuples.
+     * 1083 repetitions occurred for 24 3-tuples.
+     * 1084 repetitions occurred for 32 3-tuples.
+     * 1085 repetitions occurred for 36 3-tuples.
+     * 1086 repetitions occurred for 24 3-tuples.
+     * 1087 repetitions occurred for 52 3-tuples.
+     * 1088 repetitions occurred for 24 3-tuples.
+     * 1089 repetitions occurred for 20 3-tuples.
+     * 1090 repetitions occurred for 20 3-tuples.
+     * 1091 repetitions occurred for 20 3-tuples.
+     * 1092 repetitions occurred for 12 3-tuples.
+     * 1093 repetitions occurred for 8 3-tuples.
+     * 1094 repetitions occurred for 20 3-tuples.
+     * 1095 repetitions occurred for 28 3-tuples.
+     * 1096 repetitions occurred for 8 3-tuples.
+     * 1097 repetitions occurred for 28 3-tuples.
+     * 1098 repetitions occurred for 8 3-tuples.
+     * 1099 repetitions occurred for 20 3-tuples.
+     * 1100 repetitions occurred for 4 3-tuples.
+     * 1103 repetitions occurred for 4 3-tuples.
+     * 1106 repetitions occurred for 4 3-tuples.
+     * 1107 repetitions occurred for 4 3-tuples.
+     * 1111 repetitions occurred for 8 3-tuples.
+     * 1113 repetitions occurred for 4 3-tuples.
+     * </pre>
+     */
+    @Test
+    public void check3TupleFrequencyCountingByXoshiro4x5() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 15, 0.6f);
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            joined = (joined << 5 & 0x0007FE0) | result;
+        }
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            all.getAndIncrement((joined = (joined << 5 & 0x0007FE0) | result), 0, 1);
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 15) + " 3-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-15 + "% of 3-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(256, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 3-tuple to the number of 3-tuples that repeated that often:");
+        System.out.println(inv.toString(" 3-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 3-tuples.");
+    }
     @Test
     public void check5TuplesCountingByXoshiro4x5() {
         long startTime = System.currentTimeMillis();
