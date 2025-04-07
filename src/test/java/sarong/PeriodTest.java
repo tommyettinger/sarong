@@ -719,13 +719,71 @@ public class PeriodTest {
         System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
         System.out.println(all.size() + "/" + (1 << 15) + " 3-tuples were present.");
         System.out.println(100.0 - all.size() * 0x64p-15 + "% of 3-tuples were missing.");
-        IntIntOrderedMap inv = new IntIntOrderedMap(256, 0.6f);
+        IntIntOrderedMap inv = new IntIntOrderedMap(400, 0.6f);
         for(IntIntMap.Entry ent : all){
             inv.getAndIncrement(ent.value, 0, 1);
         }
         inv.sort(IntComparators.NATURAL_COMPARATOR);
         System.out.println("Number of repetitions of a 3-tuple to the number of 3-tuples that repeated that often:");
         System.out.println(inv.toString(" 3-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 3-tuples.");
+    }
+    /**
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 162 ms.
+     * 1024/1024 2-tuples were present.
+     * 0.0% of 2-tuples were missing.
+     * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
+     * 32767 repetitions occurred for 32 2-tuples.
+     * 32768 repetitions occurred for 992 2-tuples.
+     * </pre>
+     */
+    @Test
+    public void check2TupleFrequencyCountingByXoshiro4x5() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 10, 0.6f);
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            joined = (joined << 5 & 0x000003E0) | result;
+        }
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            all.getAndIncrement((joined = (joined << 5 & 0x000003E0) | result), 0, 1);
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 10) + " 2-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-10 + "% of 2-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(1000, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:");
+        System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
     }
     @Test
     public void check5TuplesCountingByXoshiro4x5() {
