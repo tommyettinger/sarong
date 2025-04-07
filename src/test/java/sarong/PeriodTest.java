@@ -396,6 +396,72 @@ public class PeriodTest {
     /**
      * <pre>
      * Period was 0x01FFFFE0
+     * Took 1296 ms.
+     * 21223326/33554432 5-tuples were present.
+     * 36.7495596408844% of 5-tuples were missing.
+     * Number of repetitions of a 5-tuple to the number of 5-tuples that repeated that often:
+     * 1 repetitions occurred for 12355478 5-tuples.
+     * 2 repetitions occurred for 6180614 5-tuples.
+     * 3 repetitions occurred for 2054982 5-tuples.
+     * 4 repetitions occurred for 511138 5-tuples.
+     * 5 repetitions occurred for 101588 5-tuples.
+     * 6 repetitions occurred for 16806 5-tuples.
+     * 7 repetitions occurred for 2386 5-tuples.
+     * 8 repetitions occurred for 292 5-tuples.
+     * 9 repetitions occurred for 38 5-tuples.
+     * 10 repetitions occurred for 4 5-tuples.
+     * </pre>
+     */
+    @Test
+    public void check5TupleFrequencyCountingByXoshiro4x5() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 25, 0.6f);
+        int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            joined = (joined << 5 & 0x1FFFFE0) | result;
+        }
+        int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = ((stateE << 4 | stateE >> 1) & 31) ^ ((stateA << 2 | stateA >>> 3) + stateB & 31);
+            int t = stateB << 1 & 31;
+            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateC ^= stateA;
+            stateD ^= stateB;
+            stateB ^= stateC;
+            stateA ^= stateD;
+            stateC ^= t;
+            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            all.getAndIncrement((joined = (joined << 5 & 0x1FFFFE0) | result), 0, 1);
+            if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 25) + " 5-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-25 + "% of 5-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(128, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 5-tuple to the number of 5-tuples that repeated that often:");
+        System.out.println(inv.toString(" 5-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 5-tuples.");
+    }
+    /**
+     * <pre>
+     * Period was 0x01FFFFE0
      * Took 886 ms.
      * 1048576/1048576 4-tuples were present.
      * 0.0% of 4-tuples were missing.
@@ -824,8 +890,6 @@ public class PeriodTest {
         System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
         System.out.println(all.getLongCardinality() + "/" + (1 << 25) + " 5-tuples were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-25 + "% of 5-tuples were missing.");
-//        all.flip(0L, 1L << 25);
-//        all.forEach((int ii) -> System.out.printf("%d %d %d %d %d\n", ii & 31, ii >>> 5 & 31, ii >>> 10 & 31, ii >>> 15 & 31, ii >>> 20 & 31));
     }
     @Test
     public void checkFrequencyCountingByXoshiro4x5() {
