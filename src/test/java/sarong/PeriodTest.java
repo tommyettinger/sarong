@@ -927,6 +927,24 @@ public class PeriodTest {
      * 1 repetitions occurred for 32 5-tuples.
      * 2 repetitions occurred for 16777184 5-tuples.
      * </pre>
+     * With rotate(stateE) + 0x19 ^ stateB:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 1471 ms.
+     * 21307846/33554432 5-tuples were present.
+     * 36.4976704120636% of 5-tuples were missing.
+     * Number of repetitions of a 5-tuple to the number of 5-tuples that repeated that often:
+     * 1 repetitions occurred for 12436215 5-tuples.
+     * 2 repetitions occurred for 6231331 5-tuples.
+     * 3 repetitions occurred for 2036408 5-tuples.
+     * 4 repetitions occurred for 493111 5-tuples.
+     * 5 repetitions occurred for 93271 5-tuples.
+     * 6 repetitions occurred for 15284 5-tuples.
+     * 7 repetitions occurred for 2032 5-tuples.
+     * 8 repetitions occurred for 176 5-tuples.
+     * 9 repetitions occurred for 16 5-tuples.
+     * 10 repetitions occurred for 2 5-tuples.
+     * </pre>
      */
     @Test
     public void check5TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -935,7 +953,7 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -950,7 +968,7 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -985,6 +1003,58 @@ public class PeriodTest {
      * 31 repetitions occurred for 32 4-tuples.
      * 32 repetitions occurred for 1048544 4-tuples.
      * </pre>
+     * With rotate(stateE) + 0x19 ^ stateB:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 874 ms.
+     * 1048576/1048576 4-tuples were present.
+     * 0.0% of 4-tuples were missing.
+     * Number of repetitions of a 4-tuple to the number of 4-tuples that repeated that often:
+     * 12 repetitions occurred for 32 4-tuples.
+     * 13 repetitions occurred for 32 4-tuples.
+     * 14 repetitions occurred for 96 4-tuples.
+     * 15 repetitions occurred for 192 4-tuples.
+     * 16 repetitions occurred for 288 4-tuples.
+     * 17 repetitions occurred for 768 4-tuples.
+     * 18 repetitions occurred for 2112 4-tuples.
+     * 19 repetitions occurred for 3072 4-tuples.
+     * 20 repetitions occurred for 4128 4-tuples.
+     * 21 repetitions occurred for 7488 4-tuples.
+     * 22 repetitions occurred for 12928 4-tuples.
+     * 23 repetitions occurred for 19840 4-tuples.
+     * 24 repetitions occurred for 27010 4-tuples.
+     * 25 repetitions occurred for 33662 4-tuples.
+     * 26 repetitions occurred for 43906 4-tuples.
+     * 27 repetitions occurred for 53182 4-tuples.
+     * 28 repetitions occurred for 61921 4-tuples.
+     * 29 repetitions occurred for 68386 4-tuples.
+     * 30 repetitions occurred for 74911 4-tuples.
+     * 31 repetitions occurred for 81376 4-tuples.
+     * 32 repetitions occurred for 81251 4-tuples.
+     * 33 repetitions occurred for 75900 4-tuples.
+     * 34 repetitions occurred for 70787 4-tuples.
+     * 35 repetitions occurred for 66590 4-tuples.
+     * 36 repetitions occurred for 56033 4-tuples.
+     * 37 repetitions occurred for 47423 4-tuples.
+     * 38 repetitions occurred for 39231 4-tuples.
+     * 39 repetitions occurred for 31359 4-tuples.
+     * 40 repetitions occurred for 23808 4-tuples.
+     * 41 repetitions occurred for 18816 4-tuples.
+     * 42 repetitions occurred for 13217 4-tuples.
+     * 43 repetitions occurred for 8895 4-tuples.
+     * 44 repetitions occurred for 6753 4-tuples.
+     * 45 repetitions occurred for 4927 4-tuples.
+     * 46 repetitions occurred for 2624 4-tuples.
+     * 47 repetitions occurred for 2240 4-tuples.
+     * 48 repetitions occurred for 1536 4-tuples.
+     * 49 repetitions occurred for 864 4-tuples.
+     * 50 repetitions occurred for 608 4-tuples.
+     * 51 repetitions occurred for 192 4-tuples.
+     * 52 repetitions occurred for 32 4-tuples.
+     * 53 repetitions occurred for 32 4-tuples.
+     * 54 repetitions occurred for 64 4-tuples.
+     * 55 repetitions occurred for 64 4-tuples.
+     * </pre>
      */
     @Test
     public void check4TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -993,7 +1063,7 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1008,7 +1078,7 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1043,6 +1113,16 @@ public class PeriodTest {
      * 1023 repetitions occurred for 32 3-tuples.
      * 1024 repetitions occurred for 32736 3-tuples.
      * </pre>
+     * With rotate(stateE) + 0x19 ^ stateB:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 189 ms.
+     * 32768/32768 3-tuples were present.
+     * 0.0% of 3-tuples were missing.
+     * Number of repetitions of a 3-tuple to the number of 3-tuples that repeated that often:
+     * 1023 repetitions occurred for 32 3-tuples.
+     * 1024 repetitions occurred for 32736 3-tuples.
+     * </pre>
      */
     @Test
     public void check3TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -1051,7 +1131,7 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1066,7 +1146,7 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1101,6 +1181,16 @@ public class PeriodTest {
      * 32767 repetitions occurred for 32 2-tuples.
      * 32768 repetitions occurred for 992 2-tuples.
      * </pre>
+     * With rotate(stateE) + 0x19 ^ stateB:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 137 ms.
+     * 1024/1024 2-tuples were present.
+     * 0.0% of 2-tuples were missing.
+     * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
+     * 32767 repetitions occurred for 32 2-tuples.
+     * 32768 repetitions occurred for 992 2-tuples.
+     * </pre>
      */
     @Test
     public void check2TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -1109,7 +1199,7 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1124,7 +1214,7 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
@@ -1186,6 +1276,43 @@ public class PeriodTest {
      * Frequency of 30: 1048575
      * Frequency of 31: 1048575
      * </pre>
+     * With rotate(stateE) + 0x19 ^ stateB:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 106 ms.
+     * Frequency of 00: 1048575
+     * Frequency of 01: 1048575
+     * Frequency of 02: 1048575
+     * Frequency of 03: 1048575
+     * Frequency of 04: 1048575
+     * Frequency of 05: 1048575
+     * Frequency of 06: 1048575
+     * Frequency of 07: 1048575
+     * Frequency of 08: 1048575
+     * Frequency of 09: 1048575
+     * Frequency of 10: 1048575
+     * Frequency of 11: 1048575
+     * Frequency of 12: 1048575
+     * Frequency of 13: 1048575
+     * Frequency of 14: 1048575
+     * Frequency of 15: 1048575
+     * Frequency of 16: 1048575
+     * Frequency of 17: 1048575
+     * Frequency of 18: 1048575
+     * Frequency of 19: 1048575
+     * Frequency of 20: 1048575
+     * Frequency of 21: 1048575
+     * Frequency of 22: 1048575
+     * Frequency of 23: 1048575
+     * Frequency of 24: 1048575
+     * Frequency of 25: 1048575
+     * Frequency of 26: 1048575
+     * Frequency of 27: 1048575
+     * Frequency of 28: 1048575
+     * Frequency of 29: 1048575
+     * Frequency of 30: 1048575
+     * Frequency of 31: 1048575
+     * </pre>
      */
     @Test
     public void checkFrequencyCountingByXoshiro4x5Simple() {
@@ -1196,7 +1323,7 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
+            int result = (((stateE << 4 | stateE >>> 1) & 31) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + (0x1D ^ stateC) & 31;
             stateC ^= stateA;
