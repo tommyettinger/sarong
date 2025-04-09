@@ -917,6 +917,24 @@ public class PeriodTest {
             System.out.printf("Frequency of %02d: %d \n", j, frequencies[j]);
         }
     }
+    /*
+    int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+    stateE = stateE + (0x1D ^ stateC) & 31;
+        3D-equidistributed
+
+    int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+    stateE = (stateE + 0x15 + stateC) & 31;
+        3D-equidistributed
+
+    int result = stateE;
+    stateE = (stateE + 0x15 + stateC) & 31;
+        4D-equidistributed
+
+    int result = stateE;
+    stateE = (stateE + ~stateA) & 31;
+        4D-equidistributed
+
+     */
     /**
      * <pre>
      * Period was 0x01FFFFE0
@@ -953,9 +971,9 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -968,9 +986,9 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1063,9 +1081,9 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1078,9 +1096,9 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1131,9 +1149,9 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1146,9 +1164,9 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1199,9 +1217,9 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1214,9 +1232,9 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
@@ -1323,9 +1341,9 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE;
             int t = stateB << 1 & 31;
-            stateE = stateE + (0x1D ^ stateC) & 31;
+            stateE = (stateE + ~stateA) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
