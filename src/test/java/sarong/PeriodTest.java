@@ -1073,6 +1073,8 @@ public class PeriodTest {
      * 54 repetitions occurred for 64 4-tuples.
      * 55 repetitions occurred for 64 4-tuples.
      * </pre>
+     * With result = rotate(stateE) ^ rotate(stateA) + stateE, and stateE += stateD + 21:
+     * (Not equidistributed, but no 4-tuples are missing. Repetitions range from 12 to 61.)
      */
     @Test
     public void check4TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -1081,30 +1083,30 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
-            int t = stateB << 1 & 31;
-            stateE = (stateE + ~stateA) & 31;
+            int result = ((stateE << 1 | stateE >>> 4) & 31) ^ (((stateA << 3 | stateA >>> 2) + stateE) & 31 );
+            int t = stateB >>> 1;
+            stateE = (stateE + stateD + 21) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
             stateA ^= stateD;
             stateC ^= t;
-            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            stateD = (stateD << 2 | stateD >>> 3) & 31;
             joined = (joined << 5 & 0x00FFFE0) | result;
         }
         int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
-            int t = stateB << 1 & 31;
-            stateE = (stateE + ~stateA) & 31;
+            int result = ((stateE << 1 | stateE >>> 4) & 31) ^ (((stateA << 3 | stateA >>> 2) + stateE) & 31 );
+            int t = stateB >>> 1;
+            stateE = (stateE + stateD + 21) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
             stateA ^= stateD;
             stateC ^= t;
-            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            stateD = (stateD << 2 | stateD >>> 3) & 31;
             all.getAndIncrement((joined = (joined << 5 & 0x00FFFE0) | result), 0, 1);
             if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
                 break;
@@ -1141,6 +1143,16 @@ public class PeriodTest {
      * 1023 repetitions occurred for 32 3-tuples.
      * 1024 repetitions occurred for 32736 3-tuples.
      * </pre>
+     * With result = rotate(stateE) ^ rotate(stateA) + stateE, and stateE += stateD + 21:
+     * <pre>
+     * Period was 0x01FFFFE0
+     * Took 178 ms.
+     * 32768/32768 3-tuples were present.
+     * 0.0% of 3-tuples were missing.
+     * Number of repetitions of a 3-tuple to the number of 3-tuples that repeated that often:
+     * 1023 repetitions occurred for 32 3-tuples.
+     * 1024 repetitions occurred for 32736 3-tuples.
+     * </pre>
      */
     @Test
     public void check3TupleFrequencyCountingByXoshiro4x5Simple() {
@@ -1149,30 +1161,30 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = stateE;
-            int t = stateB << 1 & 31;
-            stateE = (stateE + ~stateA) & 31;
+            int result = ((stateE << 1 | stateE >>> 4) & 31) ^ (((stateA << 3 | stateA >>> 2) + stateE) & 31 );
+            int t = stateB >>> 1;
+            stateE = (stateE + stateD + 21) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
             stateA ^= stateD;
             stateC ^= t;
-            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            stateD = (stateD << 2 | stateD >>> 3) & 31;
             joined = (joined << 5 & 0x0007FE0) | result;
         }
         int endA = stateA, endB = stateB, endC = stateC, endD = stateD, endE = stateE;
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = stateE;
-            int t = stateB << 1 & 31;
-            stateE = (stateE + ~stateA) & 31;
+            int result = ((stateE << 1 | stateE >>> 4) & 31) ^ (((stateA << 3 | stateA >>> 2) + stateE) & 31 );
+            int t = stateB >>> 1;
+            stateE = (stateE + stateD + 21) & 31;
             stateC ^= stateA;
             stateD ^= stateB;
             stateB ^= stateC;
             stateA ^= stateD;
             stateC ^= t;
-            stateD = (stateD << 3 | stateD >>> 2) & 31;
+            stateD = (stateD << 2 | stateD >>> 3) & 31;
             all.getAndIncrement((joined = (joined << 5 & 0x0007FE0) | result), 0, 1);
             if (stateA == endA && stateB == endB && stateC == endC && stateD == endD && stateE == endE) {
                 break;
