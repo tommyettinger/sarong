@@ -316,7 +316,9 @@ public class PeriodTest {
      * <br>
      * Adding 3 instead of 5:
      * Worst cycle was 1024 with states 0 16 213, appearing 3072 times; best cycle was 3428608
-     *
+     * <br>
+     * Adding 3 to stateB is worse!
+     * Worst cycle was 128 with states 0 5 8, appearing 512 times; best cycle was 900864
      */
     @Test
     public void checkWorstPeriod24_Solo(){
@@ -335,6 +337,7 @@ public class PeriodTest {
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 5 + rotate8(stateA, 3) & 255;
                         stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 3 + rotate8(stateA, 3) & 255;
+                        stateA = (stateB = rotate8(stateB, 6) + 3 + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
                         if (stateA == sa && stateB == sb && stateC == sc) {
                             best = Math.max(best, i);
                             if (i < worst) {
