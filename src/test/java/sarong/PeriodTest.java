@@ -305,12 +305,17 @@ public class PeriodTest {
 
 
     /**
-     * Worst cycle was 256 with states 0 62 72; best cycle was 2597888
+     * SoloRandom verbatim:
+     * Worst cycle was 256 with states 0 62 72, appearing 256 times; best cycle was 2597888
+     * <br>
+     * Without incorporating c twice:
+     * Worst cycle was 256 with states 1 233 66, appearing 256 times; best cycle was 2582784
      */
     @Test
     public void checkWorstPeriod24_Solo(){
         int stateA = 1, stateB = 1, stateC = 1, wa = 0, wb = 0, wc = 0;
         long worst = 0x1000000, best = 0;
+        int numWorst = 0;
         for (int sa = 0; sa < 256; sa++) {
             for (int sb = 0; sb < 256; sb++) {
                 for (int sc = 0; sc < 256; sc++) {
@@ -319,7 +324,8 @@ public class PeriodTest {
                     stateC = sc;
                     long i = 0;
                     while (++i <= worst) {
-                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) ^ (stateC + rotate8(stateA, 3) & 255);
+//                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) ^ (stateC + rotate8(stateA, 3) & 255);
+                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
                         if (stateA == sa && stateB == sb && stateC == sc) {
                             best = Math.max(best, i);
                             if (i < worst) {
@@ -327,7 +333,9 @@ public class PeriodTest {
                                 wa = sa;
                                 wb = sb;
                                 wc = sc;
-                            }
+                                numWorst = 1;
+                            } else if(i == worst)
+                                numWorst++;
                             break;
                         }
                     }
@@ -335,7 +343,7 @@ public class PeriodTest {
 
             }
         }
-        System.out.printf("Worst cycle was %d with states %d %d %d; best cycle was %d\n", worst, wa, wb, wc, best);
+        System.out.printf("Worst cycle was %d with states %d %d %d, appearing %d times; best cycle was %d\n", worst, wa, wb, wc, numWorst, best);
     }
 
     /**
