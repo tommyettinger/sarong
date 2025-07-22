@@ -270,12 +270,23 @@ public class PeriodTest {
     }
 
     /**
-     * Worst cycle was 256 with states 0 0 164; best cycle was 33280
+     * {@code stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xD3 & 255)) + rotate8(stateA, 3) & 255;}
+     * Worst cycle was 256 with states 0 0 164, appearing 65536 times; best cycle was 33280
+     * <br>
+     * {@code stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) & 255;}
+     * Worst cycle was 256 with states 0 0 172, appearing 62464 times; best cycle was 1024
+     * <br>
+     * {@code stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) & 255;}
+     * Worst cycle was 768 with states 0 88 59, appearing 1176 times; best cycle was 5525248
+     * <br>
+     * {@code stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) + 1 & 255;}
+     * Worst cycle was 768 with states 0 187 106, appearing 780 times; best cycle was 2444800
      */
     @Test
     public void checkWorstPeriod24_Thrash(){
         int stateA = 1, stateB = 1, stateC = 1, wa = 0, wb = 0, wc = 0;
         long worst = 0x1000000, best = 0;
+        int numWorst = 0;
         for (int sa = 0; sa < 256; sa++) {
             for (int sb = 0; sb < 256; sb++) {
                 for (int sc = 0; sc < 256; sc++) {
@@ -284,7 +295,10 @@ public class PeriodTest {
                     stateC = sc;
                     long i = 0;
                     while (++i <= worst) {
-                        stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xD3 & 255)) + rotate8(stateA, 3) & 255;
+//                        stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xD3 & 255)) + rotate8(stateA, 3) & 255;
+//                        stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) & 255;
+                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) & 255;
+//                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xB5 & 255)) + rotate8(stateA, 3) + 1 & 255;
                         if (stateA == sa && stateB == sb && stateC == sc) {
                             best = Math.max(best, i);
                             if (i < worst) {
@@ -292,7 +306,9 @@ public class PeriodTest {
                                 wa = sa;
                                 wb = sb;
                                 wc = sc;
-                            }
+                                numWorst = 1;
+                            } else if(i == worst)
+                                numWorst++;
                             break;
                         }
                     }
@@ -300,7 +316,7 @@ public class PeriodTest {
 
             }
         }
-        System.out.printf("Worst cycle was %d with states %d %d %d; best cycle was %d\n", worst, wa, wb, wc, best);
+        System.out.printf("Worst cycle was %d with states %d %d %d, appearing %d times; best cycle was %d\n", worst, wa, wb, wc, numWorst, best);
     }
 
 
@@ -343,6 +359,9 @@ public class PeriodTest {
      * <br>
      * Adding 1 to stateB:
      * Worst cycle was 256 with states 1 233 65, appearing 256 times; best cycle was 4782848
+     * <br>
+     * Without incorporating c twice, using XOR between stateB and rotated stateC, and increment 0xD5:
+     * Worst cycle was 256 with states 0 1 93, appearing 67840 times; best cycle was 36864
      */
     @Test
     public void checkWorstPeriod24_Solo(){
@@ -359,11 +378,12 @@ public class PeriodTest {
                     while (++i <= worst) {
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) ^ (stateC + rotate8(stateA, 3) & 255);
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
+                        stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xD5 & 255)) + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 5 + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 3 + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD5 & 255) & 255) + 3 + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD5 & 255) & 255) + 1 + rotate8(stateA, 3) & 255;
-                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD5 & 255) & 255) + 5 + rotate8(stateA, 3) & 255;
+//                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD5 & 255) & 255) + 5 + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD5 & 255) & 255) + rotate8(stateA, 3) & 255;
                         if (stateA == sa && stateB == sb && stateC == sc) {
                             best = Math.max(best, i);
