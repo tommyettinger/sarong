@@ -270,6 +270,40 @@ public class PeriodTest {
     }
 
     /**
+     * Worst cycle was 256 with states 0 0 164; best cycle was 33280
+     */
+    @Test
+    public void checkWorstPeriod24_Thrash(){
+        int stateA = 1, stateB = 1, stateC = 1, wa = 0, wb = 0, wc = 0;
+        long worst = 0x1000000, best = 0;
+        for (int sa = 0; sa < 256; sa++) {
+            for (int sb = 0; sb < 256; sb++) {
+                for (int sc = 0; sc < 256; sc++) {
+                    stateA = sa;
+                    stateB = sb;
+                    stateC = sc;
+                    long i = 0;
+                    while (++i <= worst) {
+                        stateA = (stateB = rotate8(stateB, 6) ^ (stateC = stateC + 0xD3 & 255)) + rotate8(stateA, 3);
+                        if (stateA == sa && stateB == sb && stateC == sc) {
+                            best = Math.max(best, i);
+                            if (i < worst) {
+                                worst = i;
+                                wa = sa;
+                                wb = sb;
+                                wc = sc;
+                            }
+                            break;
+                        }
+                    }
+                }
+
+            }
+        }
+        System.out.printf("Worst cycle was %d with states %d %d %d; best cycle was %d\n", worst, wa, wb, wc, best);
+    }
+
+    /**
      * Best right shift was 1, best left rotation was 2, with period 0x0FFFFF
      * Best left  shift was 1, best left rotation was 3, with period 0x0FFFFF
      */
