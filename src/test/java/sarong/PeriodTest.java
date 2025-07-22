@@ -317,8 +317,17 @@ public class PeriodTest {
      * Adding 3 instead of 5:
      * Worst cycle was 1024 with states 0 16 213, appearing 3072 times; best cycle was 3428608
      * <br>
-     * Adding 3 to stateB is worse!
-     * Worst cycle was 128 with states 0 5 8, appearing 512 times; best cycle was 900864
+     * Adding 3 to stateB is about the same...
+     * Worst cycle was 256 with states 1 233 63, appearing 256 times; best cycle was 2582784
+     * <br>
+     * Adding 6 to stateB:
+     * Worst cycle was 256 with states 1 233 60, appearing 256 times; best cycle was 4782848
+     * <br>
+     * Adding 2 to stateB:
+     * Worst cycle was 256 with states 1 233 64, appearing 256 times; best cycle was 117248
+     * <br>
+     * Adding 1 to stateB:
+     * Worst cycle was 256 with states 1 233 65, appearing 256 times; best cycle was 4782848
      */
     @Test
     public void checkWorstPeriod24_Solo(){
@@ -336,8 +345,8 @@ public class PeriodTest {
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) ^ (stateC + rotate8(stateA, 3) & 255);
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
 //                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 5 + rotate8(stateA, 3) & 255;
-                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 3 + rotate8(stateA, 3) & 255;
-                        stateA = (stateB = rotate8(stateB, 6) + 3 + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
+//                        stateA = (stateB = rotate8(stateB, 6) + (stateC = stateC + 0xD3 & 255) & 255) + 3 + rotate8(stateA, 3) & 255;
+                        stateA = (stateB = rotate8(stateB, 6) + 1 + (stateC = stateC + 0xD3 & 255) & 255) + rotate8(stateA, 3) & 255;
                         if (stateA == sa && stateB == sb && stateC == sc) {
                             best = Math.max(best, i);
                             if (i < worst) {
