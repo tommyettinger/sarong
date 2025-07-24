@@ -2288,11 +2288,11 @@ public class PeriodTest {
             // This only permits increments to stateE that are an odd number, that is, the lowest-order bit is 1 .
             // Other increments have shorter periods.
             // This uses the "reverse direction" LFSR, but it doesn't seem to matter.
-//            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) ^ (stateE += 0x7B));
-
+            stateA = (short) ((stateA & 0x7FFF) << 1 ^ ((stateA >> 31) & 0x002D) ^ (stateE += 0x7B));
+//            (stateA = (stateA << 1) ^ (stateA >> 63 & 0xfeedbabedeadbeefL));
             // Period was 0x0FFFF00, increment to stateE must be odd.
 //            stateA = (short) ((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400) ^ ((stateE += 0x81) & 255)); // mask not necessary.
-            stateA = (short) ((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400) ^ (stateE += 0x61));
+//            stateA = (short) ((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400) ^ (stateE += 0x61));
 
 //                    stateE += Integer.numberOfLeadingZeros(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
             if (stateA == 1 && stateE == 1) {
@@ -2650,6 +2650,66 @@ public class PeriodTest {
 //        System.out.printf("(state = 0xC6BC279692B5CC83L - (state << 39 | state >>> 25)): 0x%08X\n", i);
         System.out.printf("(state += state >>> 48; state += state << 16): 0x%08X\n", i);
     }
+
+    /**
+     * {@code int result = (stateA ^ stateB) & 255;}
+     * <br>
+     * Period was 0x0000FF00
+     * Took 14 ms.
+     * 43436/65536 2-tuples were present.
+     * 33.721923828125% of 2-tuples were missing.
+     * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
+     * 1 repetitions occurred for 21592 2-tuples.
+     * 2 repetitions occurred for 21844 2-tuples.
+     * <br>
+     * {@code int result = (stateA + stateB) & 255;}
+     * <br>
+     * Period was 0x0000FF00
+     * Took 9 ms.
+     * 41472/65536 2-tuples were present.
+     * 36.71875% of 2-tuples were missing.
+     * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
+     * 1 repetitions occurred for 17664 2-tuples.
+     * 2 repetitions occurred for 23808 2-tuples.
+     */
+    @Test
+    public void check2TupleFrequencyCounterWithL8X8() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 16, 0.6f);
+        byte stateA = 1, stateB = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = (stateA + stateB) & 255;
+            stateA = (byte) (stateA << 1 ^ (stateA >> 31 & 0xE7));
+            stateB++;
+            joined = (joined << 8 & 0x0000FF00) | result;
+        }
+        int endA = stateA, endB = stateB;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = (stateA + stateB) & 255;
+            stateA = (byte) (stateA << 1 ^ (stateA >> 31 & 0xE7));
+            stateB++;
+            all.getAndIncrement((joined = (joined << 8 & 0x0000FF00) | result), 0, 1);
+            if (stateA == endA && stateB == endB) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 16) + " 2-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-16 + "% of 2-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(1000, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:");
+        System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
+    }
+
+
+
     ///////// BEGIN subcycle finder code and period evaluator
     public static void subcycleFinder(String[] args)
 //    @Test
