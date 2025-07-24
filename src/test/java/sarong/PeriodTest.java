@@ -2707,6 +2707,38 @@ public class PeriodTest {
         System.out.println("Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:");
         System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
     }
+    @Test
+    public void checkSingleFrequencyCounterWithL8X8() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 16, 0.6f);
+        byte stateA = 1, stateB = 1;
+        for (int g = 0; g < 20; g++) {
+            stateA = (byte) (stateA << 1 ^ (stateA >> 31 & 0xE7));
+            stateB++;
+        }
+        int endA = stateA, endB = stateB;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = (stateA + stateB) & 255;
+            stateA = (byte) (stateA << 1 ^ (stateA >> 31 & 0xE7));
+            stateB++;
+            all.getAndIncrement(result, 0, 1);
+            if (stateA == endA && stateB == endB) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 8) + " results were present.");
+        System.out.println(100.0 - all.size() * 0x64p-8 + "% of results were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(1000, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a result to the number of results that repeated that often:");
+        System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
+    }
 
 
 
