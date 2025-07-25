@@ -17,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static sarong.TestDistribution.clz8;
+
 /**
  * Created by Tommy Ettinger on 9/13/2018.
  */
@@ -1578,6 +1580,7 @@ public class PeriodTest {
      * 31 repetitions occurred for 32 4-tuples.
      * 32 repetitions occurred for 1048544 4-tuples.
      * </pre>
+     * Combining stateB and stateE using XOR or addition (masked) both produce identical results to above.
      */
     @Test
     public void check4TupleFrequencyCounterWithXoshiro4x5() {
@@ -1586,7 +1589,8 @@ public class PeriodTest {
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1, stateE = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE + stateB & 31;
+//            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + 0x1D & 31;
             stateC ^= stateA;
@@ -1601,7 +1605,8 @@ public class PeriodTest {
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
+            int result = stateE + stateB & 31;
+//            int result = ((stateE << 4 | stateE >>> 1) + 0x19 & 31) ^ stateB;
             int t = stateB << 1 & 31;
             stateE = stateE + 0x1D & 31;
             stateC ^= stateA;
@@ -2296,6 +2301,25 @@ public class PeriodTest {
 
 //                    stateE += Integer.numberOfLeadingZeros(stateA = (short)((stateA & 0xFFFF) >>> 1 ^ (-(stateA & 1) & 0xB400))); // Period was 0x0FFFF00
             if (stateA == 1 && stateE == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x0010000
+     */
+    @Test
+    public void checkPeriodLCG8CLZ8() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            if (stateA == 1 && stateB == 1) {
                 break;
             }
         }

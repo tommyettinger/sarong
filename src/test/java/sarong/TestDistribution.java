@@ -606,11 +606,11 @@ gray * 255 + 230
         }
     }
 
-    private int rotate8(int v, int amt) {
+    public static int rotate8(int v, int amt) {
         return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
 
-    private int clz8(int v) {
+    public static int clz8(int v) {
         return Integer.numberOfLeadingZeros(v & 255) - 24;
     }
 
