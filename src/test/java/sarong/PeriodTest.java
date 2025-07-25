@@ -2764,6 +2764,95 @@ public class PeriodTest {
         System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
     }
 
+    /**
+     * Period was 0x00010000
+     * Took 11 ms.
+     * 42284/65536 2-tuples were present.
+     * 35.479736328125% of 2-tuples were missing.
+     * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
+     * 1 repetitions occurred for 24906 2-tuples.
+     * 2 repetitions occurred for 12508 2-tuples.
+     * 3 repetitions occurred for 3992 2-tuples.
+     * 4 repetitions occurred for 760 2-tuples.
+     * 5 repetitions occurred for 110 2-tuples.
+     * 6 repetitions occurred for 8 2-tuples.
+     */
+    @Test
+    public void check2TupleFrequencyCounterWithLCG8CLZ8() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 16, 0.6f);
+        int stateA = 1, stateB = 1;
+        int joined = 0;
+        for (int g = 0; g < 20; g++) {
+            int result = (rotate8(stateA, 5) ^ stateB);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            joined = (joined << 8 & 0x0000FF00) | result;
+        }
+        int endA = stateA, endB = stateB;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = (rotate8(stateA, 5) ^ stateB);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            all.getAndIncrement((joined = (joined << 8 & 0x0000FF00) | result), 0, 1);
+            if (stateA == endA && stateB == endB) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 16) + " 2-tuples were present.");
+        System.out.println(100.0 - all.size() * 0x64p-16 + "% of 2-tuples were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(1000, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:");
+        System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
+    }
+
+    /**
+     * Period was 0x00010000
+     * Took 11 ms.
+     * 256/256 results were present.
+     * 0.0% of results were missing.
+     * Number of repetitions of a result to the number of results that repeated that often:
+     * 256 repetitions occurred for 256 2-tuples.
+     */
+    @Test
+    public void checkSingleFrequencyCounterWithLCG8CLZ8() {
+        long startTime = System.currentTimeMillis();
+        final IntIntMap all = new IntIntMap(1 << 16, 0.6f);
+        int stateA = 1, stateB = 1;
+        for (int g = 0; g < 20; g++) {
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+        }
+        int endA = stateA, endB = stateB;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = (rotate8(stateA, 5) ^ stateB);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            all.getAndIncrement(result, 0, 1);
+            if (stateA == endA && stateB == endB) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        System.out.println(all.size() + "/" + (1 << 8) + " results were present.");
+        System.out.println(100.0 - all.size() * 0x64p-8 + "% of results were missing.");
+        IntIntOrderedMap inv = new IntIntOrderedMap(1000, 0.6f);
+        for(IntIntMap.Entry ent : all){
+            inv.getAndIncrement(ent.value, 0, 1);
+        }
+        inv.sort(IntComparators.NATURAL_COMPARATOR);
+        System.out.println("Number of repetitions of a result to the number of results that repeated that often:");
+        System.out.println(inv.toString(" 2-tuples.\n", " repetitions occurred for ", false, Base::appendReadable, Base::appendReadable) + " 2-tuples.");
+    }
 
 
     ///////// BEGIN subcycle finder code and period evaluator
