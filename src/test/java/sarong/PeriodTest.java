@@ -2766,16 +2766,13 @@ public class PeriodTest {
 
     /**
      * Period was 0x00010000
-     * Took 11 ms.
-     * 42284/65536 2-tuples were present.
-     * 35.479736328125% of 2-tuples were missing.
+     * Took 12 ms.
+     * 47616/65536 2-tuples were present.
+     * 27.34375% of 2-tuples were missing.
      * Number of repetitions of a 2-tuple to the number of 2-tuples that repeated that often:
-     * 1 repetitions occurred for 24906 2-tuples.
-     * 2 repetitions occurred for 12508 2-tuples.
-     * 3 repetitions occurred for 3992 2-tuples.
-     * 4 repetitions occurred for 760 2-tuples.
-     * 5 repetitions occurred for 110 2-tuples.
-     * 6 repetitions occurred for 8 2-tuples.
+     * 1 repetitions occurred for 31232 2-tuples.
+     * 2 repetitions occurred for 14848 2-tuples.
+     * 3 repetitions occurred for 1536 2-tuples.
      */
     @Test
     public void check2TupleFrequencyCounterWithLCG8CLZ8() {
@@ -2784,18 +2781,19 @@ public class PeriodTest {
         int stateA = 1, stateB = 1;
         int joined = 0;
         for (int g = 0; g < 20; g++) {
-            int result = (rotate8(stateA, 5) ^ stateB);
-            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            int result = (rotate8(stateA, 5) + stateB) & 0xFF;
             stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
             joined = (joined << 8 & 0x0000FF00) | result;
         }
         int endA = stateA, endB = stateB;
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = (rotate8(stateA, 5) ^ stateB);
-            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            int result = (rotate8(stateA, 5) + stateB) & 0xFF;
             stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+
             all.getAndIncrement((joined = (joined << 8 & 0x0000FF00) | result), 0, 1);
             if (stateA == endA && stateB == endB) {
                 break;
@@ -2827,16 +2825,16 @@ public class PeriodTest {
         final IntIntMap all = new IntIntMap(1 << 16, 0.6f);
         int stateA = 1, stateB = 1;
         for (int g = 0; g < 20; g++) {
-            stateA = (stateA * 0x65 + 0x01 & 0xFF);
             stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
         }
         int endA = stateA, endB = stateB;
 
         long i = 0L;
         while (++i <= 0x10000100L) {
-            int result = (rotate8(stateA, 5) ^ stateB);
-            stateA = (stateA * 0x65 + 0x01 & 0xFF);
+            int result = (rotate8(stateA, 5) + stateB) & 0xFF;
             stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            stateA = (stateA * 0x65 + 0x01 & 0xFF);
             all.getAndIncrement(result, 0, 1);
             if (stateA == endA && stateB == endB) {
                 break;
