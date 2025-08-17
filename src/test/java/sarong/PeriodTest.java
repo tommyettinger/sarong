@@ -2326,6 +2326,25 @@ public class PeriodTest {
         System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
     }
 
+    /**
+     * Period was 0x0007F00
+     * (As expected! Good!)
+     */
+    @Test
+    public void checkPeriodLCG8LFSR7() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 2;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            stateA = (stateA * 0x65 + 0x01 ^ (stateB = ((stateB << 1 & 0xFE) ^ (-(stateB >>> 7) & 0xEE)) & 0xFE)) & 0xFF;
+            if (stateA == 1 && stateB == 2) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
     @Test
     public void checkPeriod32_Frog(){
         int stateA = 1, stateB = 1, stateC = 1, stateD = 1;
