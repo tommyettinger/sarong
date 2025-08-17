@@ -1512,6 +1512,32 @@ public class PeriodTest {
     }
 
     /**
+     * 1D equidistributed!
+     * <br>
+     * Each byte result occurs 32385 times over the period of 0x007E8100.
+     */
+    @Test
+    public void checkFrequencyWackyWumpus() {
+        long startTime = System.currentTimeMillis();
+        final int[] frequencies = new int[256];
+        int stateA = 1, stateB = 2, stateC = 1;
+        int endA = stateA, endB = stateB, endC = stateC;
+
+        long i = 0L;
+        while (++i <= 0x10000100L) {
+            int result = (stateA = (stateA * 0x65 + 0x01 ^ (stateC = (stateC << 1 & 0xFF) ^ (-(stateC >>> 7) & 0xA9))) & 0xFF) * ((stateB = ((stateB << 1 & 0xFE) ^ (-(stateB >>> 7) & 0xEE)) & 0xFE) ^ 0xAB) & 0xFF;
+            frequencies[result]++;
+            if (stateA == endA && stateB == endB && stateC == endC) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%08X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+        for (int j = 0; j < 256; j++) {
+            System.out.printf("Frequency of %03d: %d \n", j, frequencies[j]);
+        }
+    }
+
+    /**
      * <pre>
      * Period was 0x01FFFFE0
      * Took 1202 ms.
@@ -2359,6 +2385,27 @@ public class PeriodTest {
         while (++i <= 0x1000100L) {
             stateA = (stateA * 0x65 + 0x01 ^ (stateB = ((stateB << 1 & 0xFE) ^ (-(stateB >>> 7) & 0xEE)) & 0xFE)) & 0xFF;
             stateC = (stateC << 1 & 0xFF) ^ (-(stateC >>> 7) & 0xA9);
+            if (stateA == 1 && stateB == 2 && stateC == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x07E8100
+     * (As expected! Full! Good!)
+     */
+    @Test
+    public void checkPeriodWackyWumpus() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 2;
+        int stateC = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            stateA = (stateA * 0x65 + 0x01 ^ (stateC = (stateC << 1 & 0xFF) ^ (-(stateC >>> 7) & 0xA9))) & 0xFF;
+            stateB = ((stateB << 1 & 0xFE) ^ (-(stateB >>> 7) & 0xEE)) & 0xFE;
             if (stateA == 1 && stateB == 2 && stateC == 1) {
                 break;
             }
