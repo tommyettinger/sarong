@@ -644,7 +644,7 @@ gray * 255 + 230
         int a = 1, b = 1;
         do {
             a = a + 157 & 255;
-            b = b + (byte)((byte)a + ((a & 255) >>> 1) >>> 31) & 255;
+            b = b + (a + (a >>> 1) >>> 7 & 1) & 255;
             // the above line should increment b 85 out of 256 times.
             // It's a nice branch-free way to guarantee a full period of 2 to the 16 for two 8-bit states.
             // int sum = 0; for(int a = 0; a < 256; a++) {sum += (a + (a >>> 1) & 255) >>> 7;}
@@ -668,6 +668,33 @@ gray * 255 + 230
 //            y = y + (z ^ rotate8(z, 31) ^ rotate8(z, 37)) & 255;
 //            counts[y ^ z]++;
         } while (!(a == 1 && b == 1));
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Tests XEX on Mormur-style changes, adding one constant (b) that is XORed in with the state before and after
+     * Moremur is run on the changing state.
+     */
+    @Test
+    public void testXmurx8Bit()
+    {
+        short[] counts = new short[256];
+        int a = 1, b = 16;
+        do {
+            int y = a ^ b;
+            a = a + 151 & 255;
+
+//            y = (y ^ y >>> 4) * 0xB3 & 255;
+            y = (y ^ y >>> 3) * 0x75 & 255;
+            y = (y ^ y >>> 4) * 0xB3 & 255;
+            y = (y ^ y >>> 3);
+            counts[y ^ b]++;
+        } while (a != 1);
         for (int y = 0, i = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 System.out.print(StringKit.hex(counts[i++]) + " ");
