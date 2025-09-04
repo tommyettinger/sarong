@@ -703,6 +703,39 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * Both Xor-Encrypt-Xor (XEX) and Add-Encrypt-Add work here with a changing "orbit" state.
+     */
+    @Test
+    public void testXmorbx8Bit()
+    {
+        short[] counts = new short[256];
+        int a = 1, b = 1;
+        do {
+            int x = a;
+            int y = b;
+//            int y = a + x & 255;
+            a = x + 151 & 255;
+//            b = b + clz8(a) & 255;
+            b = y + (x + (x >>> 1) >>> 7 & 1) & 255;
+            // b += x + (x >>> 1) >>> 63; // use this in 64-bit generators
+
+//            y = x ^ y;
+//            y = (y ^ y >>> 4) * 0xB3 & 255;
+            y = (y ^ y >>> 3 ^ x) * 0x75 & 255;
+            y = (y ^ y >>> 4) * 0xB3 & 255;
+            y = (y ^ y >>> 3 ^ x);
+            counts[y]++;
+//            counts[y + x & 255]++;
+        } while (a != 1 || b != 1);
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
+
     @Test
     public void testWrangly8BitSingles()
     {
