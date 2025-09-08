@@ -1,4 +1,28 @@
+# Semi-Archived
+
+Sarong is no longer under active development as a library for end-users. It never had any projects depend on it, to my
+knowledge, and certainly didn't have many generators with adequate quality for serious usage. It is still updated in its
+non-user-facing tests, because I have a lot of tests here already and I don't want to move them. You should strongly
+consider using a newer, better library for random numbers, such as [juniper](https://github.com/tommyettinger/juniper).
+
+Juniper generally considers generators to be high-quality if they pass 64TB of
+[PractRand](https://pracrand.sourceforge.net) testing with few or no anomalies and no failures. In contrast, sarong
+dates back to a time when the only tests I could run required writing a large file of random `long`s to disk and sending
+it to PractRand, which sharply limited the amount of data I could test on and made generators appear better than they
+actually were. Some may have been tested with DieHard, which is unusually easy to pass tests on because it only tests
+31 bits and has a bias towards testing the high bits, or
+[DieHarder](https://webhome.phy.duke.edu/~rgb/General/dieharder.php), which is a joke as far as a test suite for PRNGs
+because it isn't even deterministic itself (no DieHarder test passes or failures are replicable).
+
+Juniper also provides various statistical distributions, mostly where the algorithms could be ported from the .NET
+library[Troschuetz.Random](https://gitlab.com/pomma89/troschuetz-random), which sarong does not.  Juniper depends on
+[digital](https://github.com/tommyettinger/digital), which provides two fairly-high-quality non-cryptographic hashing
+algorithms, both of which should be comparable to or better than the algorithms in `CrossHash` here.
+
+So, yeah, use juniper and don't look back!
+
 # sarong
+
 Sarong provides Stand-Alone RandOm Number Generators, essentially pulled directly from the author's
 work in [SquidLib](https://github.com/SquidPony/SquidLib), but with scope reduced to just random
 number generators and hashing functions for arrays and text (useful for String seeds for RNGs).
