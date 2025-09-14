@@ -876,6 +876,45 @@ gray * 255 + 230
         }
     }
 
+
+    /**
+     * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
+     * Total number of missing results: 24080/65536
+     */
+    @Test
+    public void testSquares16Bit()
+    {
+        short[] counts = new short[65536];
+        short key = 0x3695;
+        for (int a = 0; a < 0x10000; a++) {
+            int t, x, y, z;
+            y = x = a * key & 0xFFFF; z = y + key & 0xFFFF;
+            x = x*x + y & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            x = x*x + z & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            x = x*x + y & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            t = x = x*x + z & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            t ^= ((x*x + y & 0xFF00) >>> 8);
+            counts[t]++;
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        int missing = 0;
+        for (int y = 0, i = 0; y < 4096; y++) {
+            for (int x = 0; x < 16; x++) {
+                if(y < 128)
+                    System.out.print(StringKit.hex(counts[i]) + " ");
+                if(counts[i] == 0) missing++;
+                i++;
+            }
+            if(y < 128)
+                System.out.println();
+        }
+        System.out.println("Total number of missing results: " + missing + "/65536");
+    }
+
     /**
      * Surprisingly, every byte appears equally often.
      * This doesn't depend on the rotation amount for q, again surprisingly.
