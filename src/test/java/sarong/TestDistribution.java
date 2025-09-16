@@ -904,15 +904,76 @@ gray * 255 + 230
         int missing = 0;
         for (int y = 0, i = 0; y < 4096; y++) {
             for (int x = 0; x < 16; x++) {
+                // remove both "if(y < 128)" conditions if you want to spam your terminal with all output
                 if(y < 128)
-                    System.out.print(StringKit.hex(counts[i]) + " ");
+                    System.out.printf("%04X ", counts[i]);
                 if(counts[i] == 0) missing++;
                 i++;
             }
+            // this one too
             if(y < 128)
                 System.out.println();
         }
-        System.out.println("Total number of missing results: " + missing + "/65536");
+        System.out.printf("Total number of missing results: %d/65536\n", missing);
+    }
+
+    /**
+     * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 32-bit output Squares RNG</a> to 8-bit output
+     * with a 16-bit state.
+     * <br>
+     * APPEARANCE COUNTS (decimal):
+     *  250  265  251  224  269  244  265  263  279  279  289  238  267  266  272  240
+     *  237  244  273  266  248  248  242  257  275  242  241  250  274  257  245  242
+     *  275  245  253  283  256  240  236  274  257  279  212  247  267  235  232  250
+     *  272  244  242  258  248  232  249  270  234  242  276  256  281  245  270  266
+     *  287  233  252  231  238  280  245  235  270  256  252  244  257  265  270  239
+     *  260  277  255  296  264  248  255  262  236  246  267  255  267  266  261  234
+     *  230  234  233  275  257  250  259  271  282  265  264  254  284  282  225  272
+     *  243  273  279  249  265  234  239  252  254  273  270  269  265  270  239  244
+     *  273  283  257  261  250  269  261  277  269  286  273  226  244  269  267  281
+     *  267  282  246  284  256  254  256  262  242  271  245  245  243  234  259  261
+     *  254  231  281  273  265  301  252  231  223  249  260  247  245  227  233  257
+     *  252  272  253  250  267  267  267  247  267  236  247  259  236  232  230  260
+     *  273  273  271  241  248  249  237  235  245  279  243  249  242  261  280  237
+     *  249  255  240  237  242  246  278  259  256  257  271  235  266  261  270  258
+     *  278  279  250  260  278  225  242  279  239  251  249  267  277  257  252  246
+     *  254  232  249  253  270  251  260  241  271  261  255  253  265  250  252  237
+     * Total number of missing results: 0/256
+     * Lowest appearance count : 212
+     * Highest appearance count: 301
+     */
+    @Test
+    public void testSquaresTruncated16Bit()
+    {
+        short[] counts = new short[256];
+        short key = 0x3695;
+        for (int a = 0; a < 0x10000; a++) {
+            int t, x, y, z;
+            y = x = a * key & 0xFFFF; z = y + key & 0xFFFF;
+            x = x*x + y & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            x = x*x + z & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            x = x*x + y & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            t = ((x*x + y & 0xFF00) >>> 8);
+            counts[t]++;
+        }
+        System.out.println("APPEARANCE COUNTS (decimal):");
+        int missing = 0, lowest = 65536, highest = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%4d ", counts[i]);
+                if(counts[i] == 0) missing++;
+                lowest = Math.min(lowest, counts[i]);
+                highest = Math.max(highest, counts[i]);
+                i++;
+            }
+            System.out.println();
+        }
+        System.out.printf("Total number of missing results: %d/256\n", missing);
+        System.out.printf("Lowest appearance count : %d\n", lowest);
+        System.out.printf("Highest appearance count: %d\n", highest);
     }
 
     /**
