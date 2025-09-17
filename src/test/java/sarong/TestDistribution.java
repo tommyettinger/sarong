@@ -1065,6 +1065,85 @@ gray * 255 + 230
     }
 
     /**
+     * Testing all 17472 keys with an odd last hex digit and 4 distinct hex digits, not permitting 0... These are the
+     * same rules Squares uses for its keys, more or less, except that it has an extra restriction that prevents the
+     * first and last 8 hex digits of a 64-bit key from being the same. We effectively do this anyway because we only
+     * have four digits, and they are all unique.
+     * <pre>
+     * APPEARANCE COUNTS (hex):
+     * 459150 43f6b9 4448c1 440005 4471e3 43fe60 443cd7 43eedb 44c6bd 440816 4445d2 440020 449c61 43e1d9 44330e 4402f1
+     * 45132e 43fde4 444e12 43ff1c 447765 440132 4436c8 43ef24 44bff8 440c48 444072 43f476 447d5a 43f8f2 444a23 43f805
+     * 4549ef 43f82e 443a67 4403fd 44899a 4409db 444547 4401b0 44bea7 43f29c 44451b 43fb99 447fc3 43ed07 4447da 440527
+     * 44fa33 43fe68 4455d1 43f6b1 449146 43ed7d 443a41 440099 44c1c4 440c0f 444726 43fd11 447de2 43f12a 4430a7 43fc65
+     * 45e356 43f50d 444388 43ffcc 4490f2 43f723 4440e1 440702 44d640 43f627 444298 44067f 44768f 43fd3c 4440a5 43fe32
+     * 4511e6 43f220 4441c4 440a13 448129 43fdde 443f93 43fa08 44cbd6 43f0b4 4445a5 43f9e7 4483d0 4408b5 443fad 440116
+     * 4556f6 43ff81 44311f 43e9cc 449166 43e550 444c52 43f6af 44ccfe 440661 444176 4403d3 44803a 44036b 444ee1 4401f2
+     * 452d00 43fc46 44413e 43fd4d 449243 43f505 443b0c 43fb16 44be54 440067 4437ba 441f55 448042 43ecf4 442686 43f5c8
+     * 45895a 440371 443d70 43f96c 448aa9 43e9e3 44481f 43fcd8 44ca70 4406db 444695 43faf5 4479b9 43ff74 444002 43f58d
+     * 44ef9c 43f834 4442b3 43f1d7 4486e9 43f19f 4434d7 43fe8e 44bd43 43fec7 443340 440f37 448abb 43f283 4438fd 43f2b4
+     * 455d12 43f3db 444e07 440b6e 447a38 43f885 442f37 44108a 44dd9f 43f244 443db9 43fcac 4488c7 4407fb 4437fc 440a0d
+     * 4511ea 43e9ac 444261 43eb7b 447a04 4402e9 443dab 44010d 44c1ce 4403fa 443f1e 440796 448412 43f5cf 44401f 44065e
+     * 463b6b 43f092 4438d7 43f743 447d44 4401b5 444aa4 43ebe2 44c612 43ecf2 444045 440ae3 448280 43f2c7 44434c 44003f
+     * 44fbc5 43fb8b 4437ed 44006a 448a30 43fac7 445a5f 4402a7 44d484 43ef80 44500c 43e813 447f67 4408e6 44416f 43fb0e
+     * 455b51 43fc5b 442dca 43fb04 448055 43fe25 4447bc 43eb8d 44bf97 440a27 4449e4 4407ea 449297 4401e3 443efd 4403e2
+     * 450e6d 43e0ee 444152 4405c3 448fbe 43f2e9 4443e9 43fa48 44ca42 43fb01 444d9f 43f017 446b99 43fb82 4445fc 43fbf1
+     * Total number of missing results: 0/256
+     * Total number of distinct keys tried: 17472
+     * Lowest appearance count : 4448494 (in hex, 0x0043e0ee)
+     * Highest appearance count: 4602731 (in hex, 0x00463b6b)
+     * </pre>
+     * Guessing 0xC0, or 192, is still an unusually good guess!
+     */
+    @Test
+    public void testSquaresTruncated16BitGreatestSum()
+    {
+        int[] counts = new int[256];
+        int totalKeys = 0;
+        for (int d0 = 1; d0 < 16; d0+=2) {
+            for (int d1 = 1; d1 < 16; d1++) {
+                if (d1 == d0) continue;
+                for (int d2 = 1; d2 < 16; d2++) {
+                    if (d2 == d0 || d2 == d1) continue;
+                    for (int d3 = 1; d3 < 16; d3++) {
+                        if (d3 == d0 || d3 == d1 || d3 == d2) continue;
+                        totalKeys++;
+                        int key = d0 | d1 << 4 | d2 << 8 | d3 << 12;
+                        for (int a = 0; a < 0x10000; a++) {
+                            int t, x, y, z;
+                            y = x = a * key & 0xFFFF;
+                            z = y + key & 0xFFFF;
+                            x = x * x + y & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            x = x * x + z & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            x = x * x + y & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            t = ((x * x + y & 0xFF00) >>> 8);
+                            counts[t]++;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("APPEARANCE COUNTS (hex):");
+        int missing = 0, lowest = Integer.MAX_VALUE, highest = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%6x ", counts[i]);
+                if(counts[i] == 0) missing++;
+                lowest = Math.min(lowest, counts[i]);
+                highest = Math.max(highest, counts[i]);
+                i++;
+            }
+            System.out.println();
+        }
+        System.out.printf("Total number of missing results: %d/256\n", missing);
+        System.out.printf("Total number of distinct keys tried: %d\n", totalKeys);
+        System.out.printf("Lowest appearance count : %d (in hex, 0x%08x)\n", lowest, lowest);
+        System.out.printf("Highest appearance count: %d (in hex, 0x%08x)\n", highest, highest);
+    }
+
+    /**
      * Surprisingly, every byte appears equally often.
      * This doesn't depend on the rotation amount for q, again surprisingly.
      * This is only equidistributed over the full period of 2 to the 16.
