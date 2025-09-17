@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
+import sarong.util.CrossHash;
 import sarong.util.StringKit;
 
 import java.util.ArrayList;
@@ -941,12 +942,15 @@ gray * 255 + 230
      * Total number of missing results: 0/256
      * Lowest appearance count : 212
      * Highest appearance count: 301
+     * -------------------------------------------------------------------------------
+     * Verification code for key 0x3695: 0xE66CB543CDCE41C7L
+     * Verification code for key 0x6AC5: 0xF8788B90C756073BL
      */
     @Test
     public void testSquaresTruncated16Bit()
     {
         short[] counts = new short[256];
-        short key = 0x3695;
+        short key = 0x6AC5;
         for (int a = 0; a < 0x10000; a++) {
             int t, x, y, z;
             y = x = a * key & 0xFFFF; z = y + key & 0xFFFF;
@@ -974,6 +978,90 @@ gray * 255 + 230
         System.out.printf("Total number of missing results: %d/256\n", missing);
         System.out.printf("Lowest appearance count : %d\n", lowest);
         System.out.printf("Highest appearance count: %d\n", highest);
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.printf("Verification code for key 0x%04X: 0x%016XL\n", key, CrossHash.Water.hash64(counts));
+    }
+
+    /**
+     * Creates 1680 different keys from unique, distinct combinations of odd hex digits, and uses all of them as keys
+     * for the 16-bit state, 8-bit output shrunk-down version of Squares. The text here is the number of times each
+     * 8-bit output occurred over the full periods for each key.
+     * <br>
+     * <pre>
+     * APPEARANCE COUNTS (hex):
+     *  6b739  68b75  68f02  68af8  693b8  69035  6927b  68817  6998e  6886a  691f4  688a7  69485  68722  68e2a  68f04
+     *  6a321  68842  68baf  68917  696e8  68b1c  690b1  680a0  69595  69060  68feb  689d8  6932f  687b1  695ef  68438
+     *  6a6db  68951  6911e  685e9  69f9b  68a0f  68e48  68852  69a66  68605  69360  68810  699d4  687fd  694ad  693ad
+     *  6a055  685d1  68f30  6887c  69e13  68816  68fb2  686b9  69a36  687b0  68f2a  68c8a  69315  68b16  68f88  6885d
+     *  6b689  68ba6  68e9d  6856e  69a4c  68d59  6898e  691dc  69b40  68a59  68f23  68b2f  69236  686db  69330  68b3c
+     *  6a31a  68782  69187  68ed5  69ab9  6882e  68909  68860  6a09a  68f77  693e1  686f6  696ab  6826c  696f5  68b8f
+     *  6a799  68ce1  690ac  68a10  695d6  67f1e  68e50  68d6b  69b4c  68b95  69112  68918  6976b  68a7f  68db9  68681
+     *  6a507  68b22  68fe6  68980  69bd4  68a20  69055  68248  69beb  687f1  69381  68cc8  696f0  68431  68d46  68790
+     *  6b439  68a1f  68ba2  68462  69762  68b56  69124  6898b  695fe  685a6  69325  686e2  69b35  6882d  68f67  68ba5
+     *  6a282  68e0e  68d9b  68b89  6a172  68631  689fa  68e03  69c8d  686b0  6926c  68cae  696b6  69029  692ed  686ab
+     *  6a8d5  68647  69319  68723  6958a  68e72  68ceb  68893  69ee7  6860e  692e9  6832c  697d1  68c24  69255  688cb
+     *  6a320  68792  690db  6861b  69a06  68542  68f6e  68737  69dac  687f4  68f3f  688f9  69603  685b6  69330  68706
+     *  6bf56  68e90  68dbd  68cb9  697e7  6869e  6960f  68b89  69bb3  687cb  690c1  68bbf  694e6  687b9  69169  6866e
+     *  6a62e  68471  69092  6885f  69bbf  68b9b  692e7  68c54  69c0a  68ce2  68c6f  6820a  69724  68b64  69555  68872
+     *  6a958  689d4  6887d  68ade  6980f  68a66  68b18  6899d  69879  68ee5  6958f  688b6  6972a  69031  692d3  68b53
+     *  69f4d  688d1  68b54  68667  69484  68747  688ae  6880f  69c91  68db3  691bb  68c91  69732  68c39  6948f  6850a
+     * Total number of missing results: 0/256
+     * Lowest appearance count : 425758 (in hex, 0x00067f1e)
+     * Highest appearance count: 442198 (in hex, 0x0006bf56)
+     * </pre>
+     * There's some fairly clear column biases here, where some columns (each of which corresponds to a different last
+     * hex digit) reliably occur more (or less) frequently than others. The first column, where the last hex digit is 0,
+     * never has an entry occur less often than 0x69f4d times, and at most occurs 0x6bf56 times. The second column,
+     * where the last hex digit is 1, has an entry occur 0x68471 times and at most occurs 0x68e90 times. That's a
+     * difference of over 2.55, averaged over all keys, between the least frequent 0 digit and the most frequent 1
+     * digit, which is almost exactly 1% of the expected total for an equidistributed generator. If this was a roulette
+     * wheel roll simulator, choosing 0xC0 (192 in decimal) would be an unusually good guess, and choosing 0x65 (101 in
+     * decimal) would be an unusually poor one.
+     */
+    @Test
+    public void testSquaresTruncated16BitGreatSum()
+    {
+        int[] counts = new int[256];
+        for (int d0 = 1; d0 < 16; d0+=2) {
+            for (int d1 = 1; d1 < 16; d1 += 2) {
+                if (d1 == d0) continue;
+                for (int d2 = 1; d2 < 16; d2 += 2) {
+                    if (d2 == d0 || d2 == d1) continue;
+                    for (int d3 = 1; d3 < 16; d3 += 2) {
+                        if (d3 == d0 || d3 == d1 || d3 == d2) continue;
+                        int key = d0 | d1 << 4 | d2 << 8 | d3 << 12;
+                        for (int a = 0; a < 0x10000; a++) {
+                            int t, x, y, z;
+                            y = x = a * key & 0xFFFF;
+                            z = y + key & 0xFFFF;
+                            x = x * x + y & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            x = x * x + z & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            x = x * x + y & 0xFFFF;
+                            x = (x >>> 8 | x << 8) & 0xFFFF;
+                            t = ((x * x + y & 0xFF00) >>> 8);
+                            counts[t]++;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("APPEARANCE COUNTS (hex):");
+        int missing = 0, lowest = Integer.MAX_VALUE, highest = -1;
+        for (int y = 0, i = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%6x ", counts[i]);
+                if(counts[i] == 0) missing++;
+                lowest = Math.min(lowest, counts[i]);
+                highest = Math.max(highest, counts[i]);
+                i++;
+            }
+            System.out.println();
+        }
+        System.out.printf("Total number of missing results: %d/256\n", missing);
+        System.out.printf("Lowest appearance count : %d (in hex, 0x%08x)\n", lowest, lowest);
+        System.out.printf("Highest appearance count: %d (in hex, 0x%08x)\n", highest, highest);
     }
 
     /**
