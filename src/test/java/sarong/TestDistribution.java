@@ -2216,7 +2216,7 @@ gray * 255 + 230
 
     /**
      * Testing <a href="https://github.com/skeeto/hash-prospector/issues/23">the xorsquare function</a>, or at least
-     * a previously-unproven variant on it.
+     * a previously-unproven variant on it. Add-Square-Or also works!
      */
     @Test
     public void test16BitXorSquareOr()
@@ -2226,15 +2226,25 @@ gray * 255 + 230
         RoaringBitmap all = new RoaringBitmap();
         for (int i = 0; i < 0x10000; i++) {
 //            result = (short) (i ^ (i * i | 1)); // works, no fixed-points
-            state ^= (state * state | 1);
-            result = ++state; //Repeats after 16384 iterations
-            if(state == 0) {
-                System.out.println("Repeats after " + (i+1) + " iterations");
-                break;
-            }
+//            state ^= (state * state | 1);
+//            result = ++state; //Repeats after 16384 iterations
+//            result = (short) (i ^ rotl16(i, 3) ^ rotl16(i, 7) ^ (i * i | 7)); // low cardinality, 28376/65536
+//            result = (short) (i ^ rotl16(i, 3) ^ (i * i | 7)); // 29608/65536
+//            result = (short) (i ^ i >>> 1 ^ (i * i | 7)); // 32768/65536
+//            result = (short) (i + (i * i | 1)); // 65536/65536
+//            result = (short) (i + (i * i | 2)); // 32768/65536
+//            result = (short) (i + (i * i | 3)); // 65536/65536
+//            result = (short) (i + (i * i | 4)); // 32768/65536
+//            result = (short) (i + (i * i | 5)); // 65536/65536
+            result = (short) (i + (i * i | 25)); // 65536/65536
+//            result = (short) (i + rotl16(i, 3) ^ (i * i | 7)); // 29502/65536
+//            if(state == 0) {
+//                System.out.println("Repeats after " + (i+1) + " iterations");
+//                break;
+//            }
             xor ^= result;
             sum.add(result);
-            all.flip(result & 0xFFFF);
+            all.add(result & 0xFFFF);
         }
         System.out.println(sum.toBinaryString() + ", should be -" + Long.toBinaryString(0x8000L));
         System.out.println(sum.toString() + ", should be -" + (0x8000L));
@@ -2259,13 +2269,14 @@ gray * 255 + 230
 //            result = (short) (i ^ (i * i * i * i | 1)); // using the 4th power instead of the 2nd still works (generates all results)
 //            result = (short) (i ^ (i * i | 3)); // not just 1 works for the OR operand!
 //            result = (short) (i ^ (i * i | 5)); // any odd number appears to work
-//            result = (short) (i ^ (i * i | 7)); // it isn't clear yet how much improvement could be expected by non-1 operands...
+            result = (short) (i ^ (i * i | 7)); // it isn't clear yet how much improvement could be expected by non-1 operands...
 //            result = (short) (i ^ (i * i | 9)); // but that this does work is surprising and interesting.
 //            result = (short) (i ^ (i * i | 2)); // however, even operands don't work.
 //            result = (state ^= (state * state | ((m += 0x666))));
 //            state ^= (state * state | 1);
-            result += state ^= (state * state | 1); //Repeats after 131072 iterations
+//            result += state ^= (state * state | 1); //Repeats after 131072 iterations
 //            result = ++state; //Repeats after 16384 iterations
+
             if(state == 0 && result == 0) {
                 System.out.println("Repeats after " + (i+0x80000001L) + " iterations");
                 break;
