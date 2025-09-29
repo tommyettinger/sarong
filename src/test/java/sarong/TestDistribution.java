@@ -2236,8 +2236,17 @@ gray * 255 + 230
 //            result = (short) (i + (i * i | 3)); // 65536/65536
 //            result = (short) (i + (i * i | 4)); // 32768/65536
 //            result = (short) (i + (i * i | 5)); // 65536/65536
-            result = (short) (i + (i * i | 25)); // 65536/65536
+//            result = (short) (i + (i * i | 25)); // 65536/65536
 //            result = (short) (i + rotl16(i, 3) ^ (i * i | 7)); // 29502/65536
+//            result = (short) (i * i + i ^ i); // 6978/65536
+//            result = (short) ((i | 1) * ((i + 1 & 0xFFFF) >>> 1 & 0xFFFF)); // 65535/65536
+//            result = (short) ((i | 1) * (i >> 1) + (i|1)); // 32768/65536
+//            result = (short) (i * i + i >>> 1); // 65536/65536, does math in a larger modular field
+//            result = (short) ((short)(i * i + i) >>> 1); // 32768/65536
+//            result = (short) ((i * i + i & 0xFFFF) >>> 1); // 32768/65536
+//            result = (short) ((short)(i * i + i) >> 1); // 32768/65536
+//            result = (short) (rotl16(i * i + i & 0xFFFF, 1)); // 32768/65536
+            result = (short) (((i * i + i & 0xFFFF) >>> 1) ^ (i&0x0100) << 7); // 65536/65536
 //            if(state == 0) {
 //                System.out.println("Repeats after " + (i+1) + " iterations");
 //                break;
