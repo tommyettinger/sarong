@@ -2221,13 +2221,13 @@ gray * 255 + 230
     @Test
     public void test16BitXorSquareOr()
     {
-        short result, xor = 0, state = 0;
+        short result, xor = 0, s = 0;
         BigInt sum = new BigInt(0);
         RoaringBitmap all = new RoaringBitmap();
         for (int i = 0; i < 0x10000; i++) {
 //            result = (short) (i ^ (i * i | 1)); // works, no fixed-points
-//            state ^= (state * state | 1);
-//            result = ++state; //Repeats after 16384 iterations
+//            s ^= (s * s | 1);
+//            result = ++s; //Repeats after 16384 iterations
 //            result = (short) (i ^ rotl16(i, 3) ^ rotl16(i, 7) ^ (i * i | 7)); // low cardinality, 28376/65536
 //            result = (short) (i ^ rotl16(i, 3) ^ (i * i | 7)); // 29608/65536
 //            result = (short) (i ^ i >>> 1 ^ (i * i | 7)); // 32768/65536
@@ -2246,8 +2246,27 @@ gray * 255 + 230
 //            result = (short) ((i * i + i & 0xFFFF) >>> 1); // 32768/65536
 //            result = (short) ((short)(i * i + i) >> 1); // 32768/65536
 //            result = (short) (rotl16(i * i + i & 0xFFFF, 1)); // 32768/65536
-            result = (short) (((i * i + i & 0xFFFF) >>> 1) ^ (i&0x0100) << 7); // 65536/65536
-//            if(state == 0) {
+//            result = (short) (((i * i + i & 0xFFFF) >>> 1) ^ (i&0x0100) << 7); // 65536/65536
+//            result = (short) (((i * i + i & 0xFFFF) >>> 1) ^ (i << 7 & 0x8000)); // 65536/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + (i >>> 8 & 1)); // 65536/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + 1 + (i >>> 8 & 1)); // 65536/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + 0xDEAD + (i >>> 8 & 1)); // 65536/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ (i >>> 8)); // 41168/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + ((short)i >> 8)); // 41344/65536
+//            result = (short) (((i * i & 0xFFFF)) + ((short)i >> 8)); // 42007/65536
+//            result = (short) (((i * i & 0xFFFF)) + (i >>> 8)); // 42007/65536
+//            result = (short) (((i * i & 0xFFFF)) + (i >>> 8 & 1)); // 21164/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ ((short)i >> 8)); // 41748/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ rotl16(i, 15)); // 49084/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ rotl16(i, 1)); // 49724/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ rotl16(i, 8)); // 42424/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + rotl16(i, 8)); // 41919/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + i); // 10924/65536
+            result = (short) (((i * i + i & 0xFFFF)) + (i & 1)); // 65536/65536, NOTHING DOWNWARD!
+//            result = (short) (((i * i + i & 0xFFFF)) + 5 + (i & 1)); // 65536/65536
+
+//            s ^= (short) (((s * s + s & 0xFFFF)) + 1 + (s >>> 8 & 1));
+//            if(s == 0) {
 //                System.out.println("Repeats after " + (i+1) + " iterations");
 //                break;
 //            }
