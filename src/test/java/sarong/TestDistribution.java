@@ -1181,6 +1181,68 @@ gray * 255 + 230
     }
 
     /**
+     * Total number of missing results: 0/256
+     * Total number of distinct keys tried: 17472
+     * Lowest appearance count : 17472 (in hex, 0x00004440)
+     * Highest appearance count: 17472 (in hex, 0x00004440)
+     * <br>
+     * Very similar to a stripped-down Squares, but importantly this is equidistributed and needs fewer "rounds" to
+     * produce adequate randomness. It XORs the input by 55 before multiplying it by the key, which helps resist the
+     * issue where the input could be incremented by the modular multiplicative inverse of the key. 55 isn't a valid
+     * constant for an XLCG, so it seems less likely that a XOR by 55 could be encountered accidentally. This does not
+     * make the mistake Squares makes that breaks its equidistribution; Squares reuses "x" (the input times the key)
+     * as "y", and as "z" with the full key added again. The y and z aren't ever updated in later rounds, which turns
+     * out to break the chance of reaching equidistribution. Here, we only have y, and it is just {@code x | 1}, which
+     * is recalculated before it is used in the squaring-based operation. This closes with a xor-shift right to mix the
+     * low bits a little better; multiplications earlier likely didn't improve any low bits very much.
+     */
+    @Test
+    public void testEnclave16BitGreatestSum()
+    {
+        int[] counts = new int[65536];
+        int totalKeys = 0;
+        for (int d0 = 1; d0 < 16; d0+=2) {
+            for (int d1 = 1; d1 < 16; d1++) {
+                if (d1 == d0) continue;
+                for (int d2 = 1; d2 < 16; d2++) {
+                    if (d2 == d0 || d2 == d1) continue;
+                    for (int d3 = 1; d3 < 16; d3++) {
+                        if (d3 == d0 || d3 == d1 || d3 == d2) continue;
+                        totalKeys++;
+                        int key = d0 | d1 << 4 | d2 << 8 | d3 << 12;
+                        for (int a = 0; a < 0x10000; a++) {
+                            int x, y;
+                            x = (a ^ 55) * key & 0xFFFF; y = x | 1;
+                            x = x * x + y & 0xFFFF;
+                            x = (x>>>8 | x<<8) & 0xFFFF;
+                            y = x | 1;
+                            x = x * x + y & 0xFFFF;
+                            x ^= x >>> 7;
+                            counts[x]++;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("APPEARANCE COUNTS (hex):");
+        int missing = 0, lowest = Integer.MAX_VALUE, highest = -1;
+        for (int y = 0, i = 0; y < 4096; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%6x ", counts[i]);
+                if(counts[i] == 0) missing++;
+                lowest = Math.min(lowest, counts[i]);
+                highest = Math.max(highest, counts[i]);
+                i++;
+            }
+            System.out.println();
+        }
+        System.out.printf("Total number of missing results: %d/256\n", missing);
+        System.out.printf("Total number of distinct keys tried: %d\n", totalKeys);
+        System.out.printf("Lowest appearance count : %d (in hex, 0x%08x)\n", lowest, lowest);
+        System.out.printf("Highest appearance count: %d (in hex, 0x%08x)\n", highest, highest);
+    }
+
+    /**
      * Surprisingly, every byte appears equally often.
      * This doesn't depend on the rotation amount for q, again surprisingly.
      * This is only equidistributed over the full period of 2 to the 16.
