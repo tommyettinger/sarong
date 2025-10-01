@@ -2262,9 +2262,11 @@ gray * 255 + 230
 //            result = (short) (((i * i + i & 0xFFFF)) ^ rotl16(i, 8)); // 42424/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + rotl16(i, 8)); // 41919/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + i); // 10924/65536
-            result = (short) (((i * i + i & 0xFFFF)) + (i & 1)); // 65536/65536, NOTHING DOWNWARD!
+//            result = (short) (((i * i + i & 0xFFFF)) + (i & 1)); // 65536/65536, NOTHING DOWNWARD!
+//            result = (short) (((i * i + i & 0xFFFF)) + 1 - (i & 1)); // 65536/65536, NOTHING DOWNWARD!
+            result = (short) (((i * i + (i|1) & 0xFFFF))); // 65536/65536, XQO is related to AMP!
 //            result = (short) (((i * i + i & 0xFFFF)) + 5 + (i & 1)); // 65536/65536
-
+//
 //            s ^= (short) (((s * s + s & 0xFFFF)) + 1 + (s >>> 8 & 1));
 //            if(s == 0) {
 //                System.out.println("Repeats after " + (i+1) + " iterations");
