@@ -1144,6 +1144,43 @@ gray * 255 + 230
     }
 
     /**
+     * Total number of missing results: 0/65536
+     * <br>
+     * "Sin clave" means "without key" in Spanish.
+     */
+    @Test
+    public void testSinclave16Bit()
+    {
+        short[] counts = new short[65536];
+        short key = 5555;
+        for (int a = 0; a < 0x10000; a++) {
+            int x, y;
+            x = (a ^ 55) * key & 0xFFFF; y = x | 1;
+            x = x*x + y & 0xFFFF;
+            x = (x>>>8 | x<<8) & 0xFFFF;
+            y = x | 1; // without this line: Total number of missing results: 25920/65536
+            x = x*x + y & 0xFFFF;
+            x ^= x >>> 7;
+            counts[x]++;
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        int missing = 0;
+        for (int y = 0, i = 0; y < 4096; y++) {
+            for (int x = 0; x < 16; x++) {
+                // remove both "if(y < 128)" conditions if you want to spam your terminal with all output
+                if(y < 128)
+                    System.out.printf("%04X ", counts[i]);
+                if(counts[i] == 0) missing++;
+                i++;
+            }
+            // this one too
+            if(y < 128)
+                System.out.println();
+        }
+        System.out.printf("Total number of missing results: %d/65536\n", missing);
+    }
+
+    /**
      * Surprisingly, every byte appears equally often.
      * This doesn't depend on the rotation amount for q, again surprisingly.
      * This is only equidistributed over the full period of 2 to the 16.
