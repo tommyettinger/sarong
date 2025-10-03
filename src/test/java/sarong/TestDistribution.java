@@ -1236,7 +1236,7 @@ gray * 255 + 230
             }
             System.out.println();
         }
-        System.out.printf("Total number of missing results: %d/256\n", missing);
+        System.out.printf("Total number of missing results: %d/65536\n", missing);
         System.out.printf("Total number of distinct keys tried: %d\n", totalKeys);
         System.out.printf("Lowest appearance count : %d (in hex, 0x%08x)\n", lowest, lowest);
         System.out.printf("Highest appearance count: %d (in hex, 0x%08x)\n", highest, highest);
@@ -2336,6 +2336,14 @@ gray * 255 + 230
 //            result = (short) (i + (i * i | 4)); // 32768/65536
 //            result = (short) (i + (i * i | 5)); // 65536/65536
 //            result = (short) (i + (i * i | 25)); // 65536/65536
+//            result = (short) (i + (i * i + 1 | 1)); // 65536/65536
+//            result = (short) (i + (i * i + 2 | 1)); // 65536/65536 // adding an even "key" is the same as one odd key
+//            result = (short) (i + (i * i + 3 | 7)); // 65536/65536
+//            result = (short) (i + (i * i + 25 | 7)); // 65536/65536
+//            result = (short) (i + (i * i + 0xDE4D | 7)); // 65536/65536
+            result = (short) (i + (i * i + 0xDE4D | 25)); // 65536/65536
+//            result = (short) (i + (i * i + i | 1)); // 10924/65536
+//            result = (short) (i + (i * i + i | 7)); // 21164/65536
 //            result = (short) (i + rotl16(i, 3) ^ (i * i | 7)); // 29502/65536
 //            result = (short) (i * i + i ^ i); // 6978/65536
 //            result = (short) ((i | 1) * ((i + 1 & 0xFFFF) >>> 1 & 0xFFFF)); // 65535/65536
@@ -2363,7 +2371,15 @@ gray * 255 + 230
 //            result = (short) (((i * i + i & 0xFFFF)) + i); // 10924/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + (i & 1)); // 65536/65536, NOTHING DOWNWARD!
 //            result = (short) (((i * i + i & 0xFFFF)) + 1 - (i & 1)); // 65536/65536, NOTHING DOWNWARD!
-            result = (short) (((i * i + (i|1) & 0xFFFF))); // 65536/65536, XQO is related to AMP!
+//            result = (short) (((i * i + (i|1) & 0xFFFF))); // 65536/65536, XQO is related to AMP!
+//            result = (short) (((i * i + (i|2) & 0xFFFF))); // 32768/65536 :(
+//            result = (short) (((i * i + (i|3) & 0xFFFF))); // 32768/65536 :(
+//            result = (short) (((i * i + (i|5) & 0xFFFF))); // 32768/65536 :(
+//            result = (short) (((i * i + (i|7) & 0xFFFF))); // 24576/65536 :(
+//            result = (short) (((i * i + (i^7) & 0xFFFF))); // 32768/65536 :(
+//            result = (short) (((i * i + i & 0xFFFF)) + (i & 3)); // 32768/65536
+//            result = (short) (((i * i + i & 0xFFFF)) ^ (i & 5)); // 32768/65536
+//            result = (short) (((i * i + i & 0xFFFF)) + (i & 5)); // 32768/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + 5 + (i & 1)); // 65536/65536
 //
 //            s ^= (short) (((s * s + s & 0xFFFF)) + 1 + (s >>> 8 & 1));
