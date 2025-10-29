@@ -3734,7 +3734,7 @@ gray * 255 + 230
         for (long a = 0; a < iterations; a++) {
             byte x, y;
             x = (stateA = (byte)(stateA + 0xC5));
-            y = (stateB = (byte)(stateB + (clz8(x    ))));
+            y = (stateB = (byte)(stateB + (clz8(x))));
 //            y = (stateB = (byte)(stateB + (x + 1 + rotate8(x, 1) & 255)));
             smallCounts[((rotate8(x, 2) ^ rotate8(y, 5) + x ^ 107) & 255)]++;
         }
@@ -4813,5 +4813,58 @@ gray * 255 + 230
         }
     }
 
+
+    @Test
+    public void testRotationAddVariants()
+    {
+        int[] counts = new int[65536];
+        int m = 0, n = 0;
+        for (int a = 1; a <= 65536; a++) {
+//          Completed 63232 iterations before repeating
+//            m = m + 7 & 0xFF;
+//            n = (m + rotate8(n, 1)) & 0xFF;
+//          Completed 8192 iterations before repeating
+//            m = m + 1 & 0xFF;
+//            n = (m + rotate8(n, 1)) & 0xFF;
+//          Completed 512 iterations before repeating
+//            m = m + 1 & 0xFF;
+//            n = (n + rotate8(m, 1)) & 0xFF;
+//          Completed 256 iterations before repeating
+//            m = m + 1 & 0xFF;
+//            n = (clz8(n) + rotate8(m, 1)) & 0xFF;
+//          Completed 65536 iterations before repeating
+//            m = m + 1 & 0xFF;
+//            n = (n + clz8(m)) & 0xFF;
+//          Completed 65536 iterations before repeating, equidistributed
+            m = m + 1 & 0xFF;
+            n = (rotate8(n, 1) + clz8(m)) & 0xFF;
+//          Completed 8192 iterations before repeating
+//            m = m + 1 & 0xFF;
+//            n = (rotate8(n, 4) + clz8(m)) & 0xFF;
+//          Completed 65536 iterations before repeating, equidistributed
+//            m = m + 1 & 0xFF;
+//            n = (rotate8(n, 7) + clz8(m)) & 0xFF;
+//          Completed 32768 iterations before repeating, not even close to equidistributed
+//            m = m + 1 & 0xFF;
+//            n = (rotate8(n, 2) + clz8(m)) & 0xFF;
+//          Completed 45568 iterations before repeating, not even close to equidistributed
+//            m = m + 1 & 0xFF;
+//            n = (rotate8(n, 6) + clz8(m)) & 0xFF;
+
+//            int p = m << 8 | n;
+            counts[n]++;
+            if (m == 0 && n == 0) {
+                System.out.println("Completed " + a + " iterations before repeating");
+                break;
+            }
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, i = 0; y < 256 && i < 256; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(counts[i++]) + " ");
+            }
+            System.out.println();
+        }
+    }
 
 }
