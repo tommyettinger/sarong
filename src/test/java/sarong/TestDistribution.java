@@ -4837,11 +4837,17 @@ gray * 255 + 230
 //          If you reduce the tested duration to half (32768 iterations), low results are drastically less common.
 //            m = m + 1 & 0xFF;
 //            n = (n + clz8(m)) & 0xFF;
+//          Completed 65536 iterations before repeating
+//          Each state occurs exactly once.
+//          If you reduce the tested duration to half (32768 iterations), the first quarter of results are always
+//          more common than what should be the average... None are "bad bets."
+            m = m + 0x95 & 0xFF;
+            n = (n + clz8(m)) & 0xFF;
 //          Completed 65536 iterations before repeating, equidistributed
 //          Each state occurs exactly once.
 //          If you reduce the tested duration to half (32768 iterations), frequent and infrequent results are mixed.
-            m = m + 1 & 0xFF;
-            n = (rotate8(n, 1) + clz8(m)) & 0xFF;
+//            m = m + 1 & 0xFF;
+//            n = (rotate8(n, 1) + clz8(m)) & 0xFF;
 //          Completed 8192 iterations before repeating
 //            m = m + 1 & 0xFF;
 //            n = (rotate8(n, 4) + clz8(m)) & 0xFF;
