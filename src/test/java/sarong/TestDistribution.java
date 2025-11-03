@@ -4819,7 +4819,7 @@ gray * 255 + 230
     {
         int[] counts = new int[65536];
         int m = 0, n = 0;
-        for (int a = 1; a <= 32768; a++) {
+        for (int a = 1; a <= 65536; a++) {
 //          Completed 63232 iterations before repeating
 //            m = m + 7 & 0xFF;
 //            n = (m + rotate8(n, 1)) & 0xFF;
@@ -4841,8 +4841,8 @@ gray * 255 + 230
 //          Each state occurs exactly once.
 //          If you reduce the tested duration to half (32768 iterations), the first quarter of results are always
 //          more common than what should be the average... None are "bad bets."
-            m = m + 0x95 & 0xFF;
-            n = (n + clz8(m)) & 0xFF;
+//            m = m + 0x95 & 0xFF;
+//            n = (n + clz8(m)) & 0xFF;
 //          Completed 65536 iterations before repeating, equidistributed
 //          Each state occurs exactly once.
 //          If you reduce the tested duration to half (32768 iterations), frequent and infrequent results are mixed.
@@ -4862,6 +4862,31 @@ gray * 255 + 230
 //          Completed 45568 iterations before repeating, not even close to equidistributed
 //            m = m + 1 & 0xFF;
 //            n = (rotate8(n, 6) + clz8(m)) & 0xFF;
+//          Not a bijection, and wildly varies between not producing some numbers and producing others a lot
+//            m = m + 1 & 0xFF;
+//            n = n + (rotate8(n, 1) | m) & 0xFF;
+//          Completed 1024 iterations before repeating
+//          Actually can be inverted, but not full-period; seems equidistributed though.
+//            m = m + 5 & 0xFF;
+//            n = n + (rotate8(m, 7) | m) & 0xFF;
+//          Completed 1024 iterations before repeating
+//          Actually can be inverted, but not full-period; seems equidistributed though.
+//            m = m + 5 & 0xFF;
+//            n = n + (rotate8(m, 7) & m) & 0xFF;
+//          Completed 512 iterations before repeating
+//          Actually can be inverted, but not full-period; NOT equidistributed.
+//            m = m + 5 & 0xFF;
+//            n = n + (rotate8(m, 7) ^ m) & 0xFF;
+//          Completed 512 iterations before repeating
+//          Actually can be inverted, but not full-period; NOT equidistributed.
+//            m = m + 5 & 0xFF;
+//            n = n + (rotate8(m, 1) ^ m) & 0xFF;
+//          Completed 1024 iterations before repeating
+//          Actually can be inverted, but not full-period; seems equidistributed though.
+//          Yes, that's mixing two state changes to n, one equidistributed and one not.
+            m = m + 5 & 0xFF;
+            n = n + (rotate8(m, 7) & m) & 0xFF;
+            n = n + (rotate8(m, 7) ^ m) & 0xFF;
 
 //            int p = m << 8 | n;
 //            counts[p]++;
