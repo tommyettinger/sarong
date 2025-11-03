@@ -2461,8 +2461,12 @@ gray * 255 + 230
                 // This includes all powers of two minus 1 that are greater than 2, and many LEA constants.
                 // Here, it is -1 .
 //                state = (short) (j-(state ^ (state * state | 7))); // for any even j, this is full-period.
-                state = (short) (j-(state ^ (state * state | 5))); // for any even j, this is full-period also.
-//                state = (short) -(state ^ (state * state | j));
+//                state = (short) (j-(state ^ (state * state | 5))); // for any even j, this is full-period also.
+//                state = (short) -(state ^ (state * state | j)); // if (j & 7) is 5 or 7, this is full-period.
+//                state = (short) -(state + (state * state | j)); // nothing full-period
+                state = (short) (state - (state * state | j)); // if (j & 7) is 5 or 7, this is full-period.
+//                state = (short) ((state * state + (state|j))); // nothing full-period
+//                state = (short) -((state * state + (state|j))); // nothing full-period
                 //state = (state ^ (state * state | o5o7)) * m3; // (o5o7 & 7) must equal 5 or 7, (m3 & 3) must equal 3.
                 result = state;
                 xor ^= result;
@@ -4884,9 +4888,13 @@ gray * 255 + 230
 //          Completed 1024 iterations before repeating
 //          Actually can be inverted, but not full-period; seems equidistributed though.
 //          Yes, that's mixing two state changes to n, one equidistributed and one not.
+//            m = m + 5 & 0xFF;
+//            n = n + (rotate8(m, 7) & m) & 0xFF;
+//            n = n + (rotate8(m, 7) ^ m) & 0xFF;
+//          Completed 256 iterations before repeating
+//          Not at all equidistributed.
             m = m + 5 & 0xFF;
-            n = n + (rotate8(m, 7) & m) & 0xFF;
-            n = n + (rotate8(m, 7) ^ m) & 0xFF;
+            n = n + (rotate8(m, 7) + m) & 0xFF;
 
 //            int p = m << 8 | n;
 //            counts[p]++;
