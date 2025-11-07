@@ -1,5 +1,9 @@
 package sarong;
 
+import com.github.tommyettinger.digital.Base;
+import com.github.tommyettinger.ds.IntIntMap;
+import com.github.tommyettinger.ds.IntList;
+import com.github.tommyettinger.ds.support.util.IntAppender;
 import org.huldra.math.BigInt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -2486,6 +2490,73 @@ gray * 255 + 230
             }
         }
     }
+
+    /**
+     * Surprisingly, this shrunk-down RomuTrio has more than one "disaster" subcycle -- 0,0,0 was known already and can
+     * be manually dealt with, but if there is any additional extremely-short subcycle in the full RomuTrio, that would
+     * be a problem... Especially if only bad actors know which states have exploitably short periods.
+     * <br>
+     * Subcycle #0 has length: 1
+     * SHORT CYCLE: 00000000
+     * Subcycle #1 has length: 12222165
+     * Subcycle #2 has length: 3021848
+     * Subcycle #3 has length: 147066
+     * Subcycle #4 has length: 673492
+     * Subcycle #5 has length: 403883
+     * Subcycle #6 has length: 31266
+     * Subcycle #7 has length: 34567
+     * Subcycle #8 has length: 138786
+     * Subcycle #9 has length: 88438
+     * Subcycle #10 has length: 15336
+     * Subcycle #11 has length: 293
+     * Subcycle #12 has length: 45
+     * SHORT CYCLE: 0000201C, 001C1000, 008140F4, 0028315B, 00FE5B38, 00748C4A, 001D093C, 008237CF, 0069A136, 0019ADD3, 008D6B63, 0044209F, 0084062C, 00CF6BEC, 008CFD15, 00F1A3C4, 00C97F2B, 004951F3, 001F7973, 00D41885, 00974E5C, 0029CB2D, 00CB7A13, 002A9DA9, 00B1D3EE, 00DB976B, 0088B059, 001B5D58, 00D71419, 0078EFED, 003108A8, 002581EB, 00945AA7, 0047CE9C, 002FC8BD, 00EC2C35, 0018DFE4, 0027EF88, 00079D5D, 004D01FD, 008910DF, 002FC433, 006D4635, 00E4443F, 0014140C
+     * Subcycle #13 has length: 25
+     * SHORT CYCLE: 0001D628, 0065BADB, 00757F67, 00DE6017, 00CF25EA, 0055EC15, 002D5FB7, 00D9A27F, 00E68CA3, 004BA7C2, 00949729, 00BFB99C, 00C07465, 00893C40, 00A9F333, 00D60393, 007AC112, 0037BE5E, 002F810D, 00D5D135, 00807237, 00C1EC80, 00BAB11B, 00215A1E, 00F8F03B
+     * Subcycle #14 has length: 4
+     * SHORT CYCLE: 00407CDF, 009876C0, 0044DA08, 004D4B2C
+     * Subcycle #15 has length: 1
+     * SHORT CYCLE: 00EE779A
+     * Longest cycle has length: 12222165
+     */
+    @Test
+    public void testRomuTrioBytes() {
+        final int bytes3 = 1 << 24;
+        IntIntMap periods = new IntIntMap(bytes3);
+        IntList seq = new IntList(bytes3), distinctCycles = new IntList(256);
+        int subcycles = 0, longestCycle = -1;
+        for (int i = 0; i < bytes3; i++) {
+            if(periods.containsKey(i)) continue;
+            seq.clear();
+            int period = 0, state = i;
+            do {
+                seq.add(state);
+                int stateA = state & 255;
+                int fa = stateA;
+                int stateB = state >>> 8 & 255;
+                int stateC = state >>> 16 & 255;
+                stateA = 0xDB * stateC & 255;
+                stateC = stateC - stateB & 255;
+                stateB = stateB - fa & 255;
+                stateB = rotate8(stateB, 2);
+                stateC = rotate8(stateC, 5);
+                state = stateA | stateB << 8 | stateC << 16;
+                period++;
+            } while (state != i);
+            for (int j = 0, n = seq.size(); j < n; j++) {
+                periods.put(seq.get(j), period);
+            }
+            distinctCycles.add(period);
+            longestCycle = Math.max(longestCycle, period);
+            System.out.println("Subcycle #" + (subcycles++) + " has length: " + period);
+            if(period < 50){
+                System.out.println("SHORT CYCLE: " + seq.toString(", ", false, Base.BASE16::appendUnsigned));
+            }
+        }
+        System.out.println("Longest cycle has length: " + longestCycle);
+
+    }
+
     @Test
     public void test16BitMulPeriods() {
         short result = 0, xor = 0, state = 0;
