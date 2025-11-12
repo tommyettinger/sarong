@@ -41,16 +41,106 @@ public class PeriodTest {
         }
     }
 
+    /**
+     * ~Integer.rotateLeft(stateA, 1): 0x00000020
+     * ~Integer.rotateLeft(stateA, 2): 0x0000002F
+     * ~Integer.rotateLeft(stateA, 3): 0x0000004E
+     * ~Integer.rotateLeft(stateA, 4): 0x00000055
+     * ~Integer.rotateLeft(stateA, 5): 0x00000074
+     * ~Integer.rotateLeft(stateA, 6): 0x00000083
+     * ~Integer.rotateLeft(stateA, 7): 0x000000A2
+     * ~Integer.rotateLeft(stateA, 8): 0x000000A5
+     * ~Integer.rotateLeft(stateA, 9): 0x000000C4
+     * ~Integer.rotateLeft(stateA, 10): 0x000000D3
+     * ~Integer.rotateLeft(stateA, 11): 0x000000F2
+     * ~Integer.rotateLeft(stateA, 12): 0x000000F9
+     * ~Integer.rotateLeft(stateA, 13): 0x00000118
+     * ~Integer.rotateLeft(stateA, 14): 0x00000127
+     * ~Integer.rotateLeft(stateA, 15): 0x00000146
+     * ~Integer.rotateLeft(stateA, 16): 0x00000147
+     * ~Integer.rotateLeft(stateA, 17): 0x00000166
+     * ~Integer.rotateLeft(stateA, 18): 0x00000175
+     * ~Integer.rotateLeft(stateA, 19): 0x00000194
+     * ~Integer.rotateLeft(stateA, 20): 0x0000019B
+     * ~Integer.rotateLeft(stateA, 21): 0x000001BA
+     * ~Integer.rotateLeft(stateA, 22): 0x000001C9
+     * ~Integer.rotateLeft(stateA, 23): 0x000001E8
+     * ~Integer.rotateLeft(stateA, 24): 0x000001EB
+     * ~Integer.rotateLeft(stateA, 25): 0x0000020A
+     * ~Integer.rotateLeft(stateA, 26): 0x00000219
+     * ~Integer.rotateLeft(stateA, 27): 0x00000238
+     * ~Integer.rotateLeft(stateA, 28): 0x0000023F
+     * ~Integer.rotateLeft(stateA, 29): 0x0000025E
+     * ~Integer.rotateLeft(stateA, 30): 0x0000026D
+     * ~Integer.rotateLeft(stateA, 31): 0x0000028C
+     */
     @Test
     public void checkPeriod32_Weird(){
         int stateA = 1;
-        long i = 0;
-        final int a = 3;
-        for (; i != -1; i++) {
-            if ((stateA = Integer.rotateLeft(~stateA, 1)) == 1) {
-                System.out.printf("(~(state + 0x%08X): 0x%08X\n", a, i);
-                break;
+        int i = 1;
+        EACH_A:
+        for (int a = 1; a < 32; a++) {
+            for (; i != 0; i++) {
+                if ((stateA = ~Integer.rotateLeft(stateA, a)) == 1) {
+                    System.out.printf("~Integer.rotateLeft(stateA, %d): 0x%08X\n", a, i);
+                    continue EACH_A;
+                }
             }
+            System.out.printf("~Integer.rotateLeft(stateA, %d): FULL PERIOD\n", a);
+        }
+    }
+
+    /**
+     * I have no idea what exactly is happening here...
+     * <br>
+     * stateA + 1 ^ 1: 0x80000000
+     * stateA + 1 ^ 2: BAD SUBCYCLE... Ended on 0x80000000
+     * stateA + 1 ^ 3: BAD SUBCYCLE... Ended on 0x80000002
+     * stateA + 1 ^ 4: BAD SUBCYCLE... Ended on 0x80000007
+     * stateA + 1 ^ 5: BAD SUBCYCLE... Ended on 0x8000000D
+     * stateA + 1 ^ 6: BAD SUBCYCLE... Ended on 0x80000008
+     * stateA + 1 ^ 7: BAD SUBCYCLE... Ended on 0x8000000E
+     * stateA + 1 ^ 8: BAD SUBCYCLE... Ended on 0x80000007
+     * stateA + 1 ^ 9: BAD SUBCYCLE... Ended on 0x80000001
+     * stateA + 1 ^ 10: BAD SUBCYCLE... Ended on 0x80000008
+     * stateA + 1 ^ 11: BAD SUBCYCLE... Ended on 0x80000002
+     * stateA + 1 ^ 12: BAD SUBCYCLE... Ended on 0x8000000F
+     * stateA + 1 ^ 13: BAD SUBCYCLE... Ended on 0x8000001D
+     * stateA + 1 ^ 14: BAD SUBCYCLE... Ended on 0x80000010
+     * stateA + 1 ^ 15: BAD SUBCYCLE... Ended on 0x8000001E
+     * stateA + 1 ^ 16: BAD SUBCYCLE... Ended on 0x8000000F
+     * stateA + 1 ^ 17: BAD SUBCYCLE... Ended on 0x80000001
+     * stateA + 1 ^ 18: BAD SUBCYCLE... Ended on 0x80000010
+     * stateA + 1 ^ 19: BAD SUBCYCLE... Ended on 0x80000002
+     * stateA + 1 ^ 20: BAD SUBCYCLE... Ended on 0x80000017
+     * stateA + 1 ^ 21: BAD SUBCYCLE... Ended on 0x8000000D
+     * stateA + 1 ^ 22: BAD SUBCYCLE... Ended on 0x80000018
+     * stateA + 1 ^ 23: BAD SUBCYCLE... Ended on 0x8000000E
+     * stateA + 1 ^ 24: BAD SUBCYCLE... Ended on 0x80000017
+     * stateA + 1 ^ 25: BAD SUBCYCLE... Ended on 0x80000001
+     * stateA + 1 ^ 26: BAD SUBCYCLE... Ended on 0x80000018
+     * stateA + 1 ^ 27: BAD SUBCYCLE... Ended on 0x80000002
+     * stateA + 1 ^ 28: BAD SUBCYCLE... Ended on 0x8000001F
+     * stateA + 1 ^ 29: BAD SUBCYCLE... Ended on 0x8000003D
+     * stateA + 1 ^ 30: BAD SUBCYCLE... Ended on 0x80000020
+     * stateA + 1 ^ 31: BAD SUBCYCLE... Ended on 0x8000003E
+     */
+    @Test
+    public void checkPeriod32_AddXor(){
+        int stateA = 1;
+        long i = 1;
+        EACH_A:
+        for (int a = 1; a < 32; a++) {
+            for (; i != 0x100000000L; i++) {
+                if ((stateA = stateA + 1 ^ a) == 1) {
+                    System.out.printf("stateA + 1 ^ %d: 0x%08X\n", a, i);
+                    continue EACH_A;
+                }
+            }
+            if ((stateA = stateA + 1 ^ a) == 1)
+                System.out.printf("stateA + 1 ^ %d: FULL PERIOD! WOOHOO!!!!!!!\n", a);
+            else
+                System.out.printf("stateA + 1 ^ %d: BAD SUBCYCLE... Ended on 0x%08X\n", a, stateA);
         }
     }
 
