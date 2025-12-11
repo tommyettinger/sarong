@@ -2433,8 +2433,25 @@ public class PeriodTest {
         int stateB = 1;
         long i = 0;
         while (++i <= 0x1000100L) {
-            stateA = (stateA * 0x65 + 0x01 & 0xFF);
-            stateB = (stateB * 0x35 + clz8(stateA) & 0xFF);
+            // Period is 0x10000, full-period.
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + 0x35 + clz8(stateA)) & 0xFF);
+
+            // With `stateB + odd ^ clz8(stateA)`, this has half the period.
+            // Period is 0x08000 . Half of states aren't reached.
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + 0x35 ^ clz8(stateA)) & 0xFF);
+
+            // full-period, should work with imul on JS.
+            // What's more, any odd multiplier seems to work.
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + clz8(stateA) * 0x37) & 0xFF);
+            // full period!
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = (~(stateB + clz8(stateA)) & 0xFF);
+            // full period! Any XOR constant seems to work.
+            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+            stateB = (0x80 ^ stateB + clz8(stateA) & 0xFF);
             if (stateA == 1 && stateB == 1) {
                 break;
             }
