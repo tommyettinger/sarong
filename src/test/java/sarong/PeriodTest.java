@@ -2480,9 +2480,19 @@ public class PeriodTest {
 
             // full-period, should work with imul on JS.
             // What's more, any odd multiplier seems to work.
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + clz8(stateA)) * 0x31) & 0xFF;
+//            stateC = ((stateC + clz8(stateA & stateB)) * 0x4F) & 0xFF;
+
+            // full period!
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ~(stateB + clz8(stateA)) & 0xFF;
+//            stateC = ~(stateC + clz8(stateA & stateB)) & 0xFF;
+
+            // full period! Any XOR constants seem to work. They can be the same, as above.
             stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
-            stateB = ((stateB + clz8(stateA)) * 0x31) & 0xFF;
-            stateC = ((stateC + clz8(stateA & stateB)) * 0x4F) & 0xFF;
+            stateB = (clz8(stateA) + stateB ^ 0x11) & 0xFF;
+            stateC = (clz8(stateA & stateB) + stateC ^ 0x48) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) {
                 break;
