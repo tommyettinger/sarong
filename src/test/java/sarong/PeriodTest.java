@@ -2463,6 +2463,35 @@ public class PeriodTest {
     }
 
     /**
+     * Period was 0x0010000
+     */
+    @Test
+    public void checkPeriodLCG8CLZ8CLZ8() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 1;
+        int stateC = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            // period is only the same as two states (stateC is wasted).
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + clz8(stateA)) * 0x31) & 0xFF;
+//            stateC = ((stateC + clz8(stateB)) * 0x4F) & 0xFF;
+
+            // full-period, should work with imul on JS.
+            // What's more, any odd multiplier seems to work.
+            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+            stateB = ((stateB + clz8(stateA)) * 0x31) & 0xFF;
+            stateC = ((stateC + clz8(stateA & stateB)) * 0x4F) & 0xFF;
+
+            if (stateA == 1 && stateB == 1 && stateC == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
      * Period was 0x0007F00
      * (As expected! Good!)
      */
