@@ -2447,11 +2447,14 @@ public class PeriodTest {
 //            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
 //            stateB = ((stateB + clz8(stateA) * 0x37) & 0xFF);
             // full period!
+            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+            stateB = ((stateB + clz8(stateA)) * 0x37) & 0xFF;
+            // full period!
 //            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
 //            stateB = (~(stateB + clz8(stateA)) & 0xFF);
             // full period! Any XOR constant seems to work.
-            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
-            stateB = (0x80 ^ stateB + clz8(stateA) & 0xFF);
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = (0x80 ^ stateB + clz8(stateA) & 0xFF);
             if (stateA == 1 && stateB == 1) {
                 break;
             }
