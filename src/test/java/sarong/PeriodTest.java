@@ -2490,9 +2490,14 @@ public class PeriodTest {
 //            stateC = ~(stateC + clz8(stateA & stateB)) & 0xFF;
 
             // full period! Any XOR constants seem to work. They can be the same, as above.
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = (clz8(stateA) + stateB ^ 0x11) & 0xFF;
+//            stateC = (clz8(stateA & stateB) + stateC ^ 0x48) & 0xFF;
+
+            // Has only a quarter of the expected period.
             stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
-            stateB = (clz8(stateA) + stateB ^ 0x11) & 0xFF;
-            stateC = (clz8(stateA & stateB) + stateC ^ 0x48) & 0xFF;
+            stateB = (clz8(stateA) ^ stateB) * 0x13 & 0xFF;
+            stateC = (clz8(stateA & stateB) ^ stateC) * 0x43 & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) {
                 break;
