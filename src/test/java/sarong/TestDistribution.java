@@ -2367,7 +2367,16 @@ gray * 255 + 230
 //            result = (short) (((i * i + i & 0xFFFF)) + 1 + (i >>> 8 & 1)); // 65536/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + 0xDEAD + (i >>> 8 & 1)); // 65536/65536
 //            result = (short) (((i * i + i & 0xFFFF)) ^ (i >>> 8)); // 41168/65536
-            result = (short) (i * i + i + (i >>> 15)); // 65536/65536, bijective but may be hard to invert
+//            result = (short) (i * i + i + (i >>> 15)); // 65536/65536, bijective but may be hard to invert
+//            result = (short) (i * i * i + i + (i >>> 15)); // 36864/65536
+//            result = (short) (i * i + (i >>> 15)); // 21164/65536
+//            result = (short) (i * i); // 10924/65536
+//            result = (short) (i * i + rotl16(i, 8)); // 41295/65536
+//            result = (short) (i * i + rotl16(i, 15)); // 49083/65536
+//            result = (short) (i * i + i + rotl16(i, 15)); // 49198/65536
+//            result = (short) (i * i + i + rotl16(i, 1)); // 65534/65536
+            result = (short) (i * i - i + rotl16(i, 1)); // 65536/65536
+//            result = (short) (i * i - i + rotl16(i, 2)); // 49013/65536
 //            result = (short) (((i * i + i & 0xFFFF)) + ((short)i >> 8)); // 41344/65536
 //            result = (short) (((i * i & 0xFFFF)) + ((short)i >> 8)); // 42007/65536
 //            result = (short) (((i * i & 0xFFFF)) + (i >>> 8)); // 42007/65536
