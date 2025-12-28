@@ -2495,9 +2495,21 @@ public class PeriodTest {
 //            stateC = (clz8(stateA & stateB) + stateC ^ 0x48) & 0xFF;
 
             // Has only a quarter of the expected period.
-            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
-            stateB = (clz8(stateA) ^ stateB) * 0x13 & 0xFF;
-            stateC = (clz8(stateA & stateB) ^ stateC) * 0x43 & 0xFF;
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = (clz8(stateA) ^ stateB) * 0x13 & 0xFF;
+//            stateC = (clz8(stateA & stateB) ^ stateC) * 0x43 & 0xFF;
+
+            // full period.
+            // should be GWT-friendly.
+//            stateA = ((stateA + 0xAF ^ 0xCE) & 0xFF);
+//            stateB = ((stateB + clz8(stateA)) * 0x31) & 0xFF;
+//            stateC = ((stateC + clz8(stateA & stateB)) * 0x4F) & 0xFF;
+
+            // full period.
+            // GWT-friendly.
+            stateA = ((stateA + 0xAF ^ 0x52) & 0xFF);
+            stateB = ((stateB + clz8(stateA)) ^ 0xFA) & 0xFF;
+            stateC = ((stateC + clz8(stateA & stateB)) ^ 0x66) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) {
                 break;
