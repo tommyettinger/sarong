@@ -2275,7 +2275,16 @@ gray * 255 + 230
                 // it is also evenly distributed when adapted for shorts.
 //                result = (short)iphCoord(x, y, 123);
                 // this is also evenly distributed.
-                result = (short)((x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L);
+//                result = (short)((x ^ x >>> 8) * 0xC13FA9A9L + (y ^ y >>> 8) * 0x91E10DA5L);
+
+                int a = x, b = y;
+                // this speck-cipher-based one is actually fine, and is evenly distributed.
+                b=rotl16(b, 1)^(a=rotl16(a, 12)+b^0x95)+rotl16(a, 3);
+                a=rotl16(a, 7)^(b=rotl16(b, 14)+a^0xA3)+rotl16(b, 5);
+//                result = (short) a;
+                // the XOR of a and b is also evenly distributed.
+                result = (short) (a ^ b);
+
                 xor ^= result;
                 sum.add(result);
                 all.add(result & 0xFFFF);
