@@ -2600,11 +2600,11 @@ gray * 255 + 230
     @Test
     public void testRomuTrioBytes() {
         final int bytes3 = 1 << 24;
-        IntIntMap periods = new IntIntMap(bytes3);
+        int[] periods = new int[bytes3];
         IntList seq = new IntList(bytes3), distinctCycles = new IntList(256);
         int longestCycle = -1;
         for (int i = 0; i < bytes3; i++) {
-            if(periods.containsKey(i)) continue;
+            if(periods[i] != 0) continue;
             seq.clear();
             int period = 0, state = i;
             do {
@@ -2622,7 +2622,7 @@ gray * 255 + 230
                 period++;
             } while (state != i);
             for (int j = 0, n = seq.size(); j < n; j++) {
-                periods.put(seq.get(j), period);
+                periods[seq.get(j)] = period;
             }
             distinctCycles.add(period);
             longestCycle = Math.max(longestCycle, period);
@@ -3422,16 +3422,18 @@ gray * 255 + 230
     @Test
     public void testRomuTrioBytesAllMultipliers() {
         final int bytes3 = 1 << 24;
-        IntIntMap periods = new IntIntMap(bytes3);
+        int[] periods = new int[bytes3];
         IntList seq = new IntList(bytes3), distinctCycles = new IntList(256);
         for (int mul = 3; mul < 256; mul += 2) {
-            periods.clear();
+            Arrays.fill(periods, 0);
             seq.clear();
             distinctCycles.clear();
             int longestCycle = -1;
             // omits the all 0 state, which we already know has period 1, and already forbid
-            for (int i = 1; i < bytes3; i++) {
-                if (periods.containsKey(i)) continue;
+//            for (int i = 1; i < bytes3; i++) {
+            // doesn't omit the all 0 state
+            for (int i = 0; i < bytes3; i++) {
+                if (periods[i] != 0) continue;
                 seq.clear();
                 int period = 0, state = i;
                 do {
@@ -3441,12 +3443,12 @@ gray * 255 + 230
                     int stateC = state >>> 16 & 255;
 
                     // RomuTrio, shrunk down to 8-bit words
-//                    int fa = stateA;
-//                    stateA = mul * stateC  & 255;
-//                    stateC = stateC - stateB & 255;
-//                    stateB = stateB - fa & 255;
-//                    stateB = rotate8(stateB, 2);
-//                    stateC = rotate8(stateC, 5);
+                    int fa = stateA;
+                    stateA = mul * stateC  & 255;
+                    stateC = stateC - stateB & 255;
+                    stateB = stateB - fa & 255;
+                    stateB = rotate8(stateB, 2);
+                    stateC = rotate8(stateC, 5);
 
                     // TECHNIQUE 1
 //                    int fa = stateA;
@@ -3465,18 +3467,18 @@ gray * 255 + 230
 //                    stateB = rotate8(fa, 2) + fc & 255;
 
                     // TECHNIQUE 3
-                    int fa = stateA;
-                    int fb = stateB;
-                    int fc = stateC;
-                    stateA = fa + mul & 255;
-                    stateC = (rotate8(fc, 5) ^ fb) & 255;
-                    stateB = (rotate8(fb, 2) + fa) & 255;
+//                    int fa = stateA;
+//                    int fb = stateB;
+//                    int fc = stateC;
+//                    stateA = fa + mul & 255;
+//                    stateC = (rotate8(fc, 5) ^ fb) & 255;
+//                    stateB = (rotate8(fb, 2) + fa) & 255;
 
                     state = stateA | stateB << 8 | stateC << 16;
                     period++;
                 } while (state != i);
                 for (int j = 0, n = seq.size(); j < n; j++) {
-                    periods.put(seq.get(j), period);
+                    periods[seq.get(j)] = period;
                 }
                 distinctCycles.add(period);
                 longestCycle = Math.max(longestCycle, period);
