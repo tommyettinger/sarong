@@ -611,6 +611,9 @@ gray * 255 + 230
         }
     }
 
+    public static int rotate6(int v, int amt) {
+        return (v << (amt) & 63) | ((v & 63) >>> (6 - amt));
+    }
     public static int rotate8(int v, int amt) {
         return (v << (amt & 7) & 255) | ((v & 255) >>> (8 - amt & 7));
     }
@@ -3622,6 +3625,90 @@ gray * 255 + 230
 //                if (period == 1)
 //                    System.out.println(mul + " HAS SINGULAR CYCLE: " + seq.toString(", ", false, Base.BASE16::appendUnsigned));
 //                else if(period < 50)
+//                    System.out.println(mul + " HAS SHORT CYCLE: " + seq.toString(", ", false, Base.BASE16::appendUnsigned));
+            }
+            distinctCycles.sort();
+            System.out.println(mul + " has cycles by length: " + distinctCycles);
+//            System.out.println();
+        }
+    }
+
+    /**
+     * Testing on four 6-bit states, with one an additive counter:
+     * <br>
+     * 3 has cycles by length: [64, 128, 128, 256, 832, 1216, 1664, 3584, 13248, 72064, 210048, 299328, 3447616, 12727040]
+     * 5 has cycles by length: [64, 128, 192, 9344, 335104, 580416, 7078272, 8773696]
+     * 7 has cycles by length: [64, 192, 512, 1472, 1536, 13376, 15104, 21696, 118208, 294272, 334080, 2975232, 6370752, 6630720]
+     * 9 has cycles by length: [64, 64, 192, 256, 1024, 1408, 1536, 717120, 1036480, 15019072]
+     * 11 has cycles by length: [64, 128, 448, 704, 896, 2368, 10752, 45952, 206208, 392128, 2763328, 13354240]
+     * 13 has cycles by length: [64, 1344, 2240, 4800, 10560, 15168, 36544, 2371264, 3131328, 11203904]
+     * 15 has cycles by length: [64, 64, 64, 128, 640, 768, 1344, 1856, 8768, 16192, 18752, 22272, 28224, 100992, 121920, 339328, 818880, 1045440, 1215296, 1672000, 3798272, 7565952]
+     * 17 has cycles by length: [960, 1536, 2944, 42432, 45056, 122304, 234816, 363712, 394432, 810688, 993408, 13764928]
+     * 19 has cycles by length: [64, 384, 512, 640, 768, 1792, 4608, 5248, 12032, 22272, 276032, 353280, 723456, 1224576, 4254912, 9896640]
+     * 21 has cycles by length: [128, 128, 256, 768, 832, 2688, 3456, 22848, 54336, 71680, 92032, 1298624, 1891392, 13338048]
+     * 23 has cycles by length: [704, 1024, 3072, 7872, 25152, 34304, 49600, 85760, 123008, 490752, 599744, 1294144, 6245120, 7816960]
+     * 25 has cycles by length: [64, 64, 64, 576, 576, 704, 1216, 24384, 46848, 652864, 728832, 15321024]
+     * 27 has cycles by length: [192, 256, 448, 640, 3456, 32384, 36480, 247424, 665344, 856320, 2871424, 12062848]
+     * 29 has cycles by length: [192, 832, 1280, 709632, 2109632, 13955648]
+     * 31 has cycles by length: [64, 64, 64, 128, 123008, 1189440, 1249216, 1676928, 5746560, 6791744]
+     * 33 has cycles by length: [64, 1024, 1728, 3840, 15872, 52800, 178880, 739392, 3580800, 12202816]
+     * 35 has cycles by length: [256, 384, 512, 768, 1792, 21120, 89280, 1592704, 6964352, 8106048]
+     * 37 has cycles by length: [64, 512, 512, 512, 576, 4544, 5056, 18368, 27264, 107008, 574144, 1308864, 3287424, 11442368]
+     * 39 has cycles by length: [64, 192, 1408, 9536, 43200, 190208, 288832, 1043200, 3205824, 11994752]
+     * 41 has cycles by length: [64, 320, 320, 2880, 3456, 10368, 11776, 41984, 54976, 90304, 1254080, 1661376, 1714880, 11930432]
+     * 43 has cycles by length: [128, 192, 512, 576, 640, 704, 2496, 71936, 89728, 133952, 386944, 3342208, 5367040, 7380160]
+     * 45 has cycles by length: [64, 64, 704, 1024, 1600, 1920, 4160, 8256, 9088, 62784, 100352, 124032, 182976, 315136, 423744, 640640, 2273536, 12627136]
+     * 47 has cycles by length: [64, 128, 128, 256, 256, 512, 576, 1856, 3392, 3392, 4352, 4992, 7232, 9024, 10496, 135936, 1799424, 2163136, 3192704, 9439360]
+     * 49 has cycles by length: [64, 192, 512, 704, 768, 62528, 148288, 152000, 177408, 215424, 397760, 1640000, 5247936, 8733632]
+     * 51 has cycles by length: [64, 64, 192, 384, 576, 960, 4480, 32064, 62784, 98304, 108800, 736192, 2873600, 3700480, 4250880, 4907392]
+     * 53 has cycles by length: [64, 320, 2112, 18368, 18944, 160896, 541760, 614272, 915200, 972096, 1043328, 1812352, 2128448, 8549056]
+     * 55 has cycles by length: [64, 64, 128, 384, 384, 448, 1408, 2752, 3328, 3648, 71552, 118208, 132992, 169728, 260928, 425600, 897280, 1342848, 4385920, 8959552]
+     * 57 has cycles by length: [64, 128, 128, 512, 1024, 1600, 1792, 4256896, 4370432, 8144640]
+     * 59 has cycles by length: [64, 64, 576, 13056, 19456, 23936, 87296, 145472, 151552, 467008, 832576, 15036160]
+     * 61 has cycles by length: [64, 128, 192, 192, 1536, 3072, 6592, 32064, 33024, 85632, 168064, 250560, 337600, 752640, 4683520, 10422336]
+     * 63 has cycles by length: [64, 64, 64, 768, 1536, 1792, 10944, 14528, 14528, 35968, 40640, 295040, 7821056, 8540224]
+     */
+    @Test
+    public void testRomuCounterHexesAllMultipliers() {
+        final int hexes4 = 1 << 24;
+        int[] periods = new int[hexes4];
+        IntList seq = new IntList(hexes4), distinctCycles = new IntList(256);
+        for (int mul = 3; mul < 64; mul += 2) {
+            Arrays.fill(periods, 0);
+            seq.clear();
+            distinctCycles.clear();
+            int longestCycle = -1;
+            // doesn't omit the all 0 state
+            for (int i = 0; i < hexes4; i++) {
+                if (periods[i] != 0) continue;
+                seq.clear();
+                int period = 0, state = i;
+                do {
+                    seq.add(state);
+                    int stateA = state & 63;
+                    int stateB = state >>> 6 & 63;
+                    int stateC = state >>> 12 & 63;
+                    int stateD = state >>> 18 & 63;
+
+                    int fa = stateA;
+                    stateA = mul * stateC + stateD & 63;
+                    stateC = stateC - stateB & 63;
+                    stateB = stateB - fa & 63;
+                    stateB = rotate6(stateB, 1);
+                    stateC = rotate6(stateC, 4);
+                    stateD = stateD + 1 & 63;
+
+                    state = stateA | stateB << 6 | stateC << 12 | stateD << 18;
+                    period++;
+                } while (state != i);
+                for (int j = 0, n = seq.size(); j < n; j++) {
+                    periods[seq.get(j)] = period;
+                }
+                distinctCycles.add(period);
+                longestCycle = Math.max(longestCycle, period);
+//                if (period == 1)
+//                    System.out.println(mul + " HAS SINGULAR CYCLE: " + seq.toString(", ", false, Base.BASE16::appendUnsigned));
+//                else if(period < 64)
 //                    System.out.println(mul + " HAS SHORT CYCLE: " + seq.toString(", ", false, Base.BASE16::appendUnsigned));
             }
             distinctCycles.sort();
