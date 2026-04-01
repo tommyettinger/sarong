@@ -924,9 +924,24 @@ gray * 255 + 230
      * Modified Squares RNG using the bijective operation {@code (x * x) + x + (x & 1)} instead of what it normally
      * uses, which is not a bijection. The key is hardcoded to {@code 0x23456789} here.
      * @param x the input 32-bit int; ctr in the original
-     * @return an output 32-bit int; the low 16 bits can be used instead of all bits
+     * @return an output 16-bit int
      */
     public static int squares16Experimental(int x) {
+        x *= 0x23456789;
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 1 */
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 2 */
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 3 */
+        x = x*x + x + (x & 1); x ^= x >>> 16;          /* round 4 */
+        return x & 0xFFFF;
+    }
+
+    /**
+     * Modified Squares RNG using the bijective operation {@code (x * x) + x + (x & 1)} instead of what it normally
+     * uses, which is not a bijection. The key is hardcoded to {@code 0x23456789} here.
+     * @param x the input 32-bit int; ctr in the original
+     * @return an output 32-bit int
+     */
+    public static int squares32Experimental(int x) {
         x *= 0x23456789;
         x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 1 */
         x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 2 */
@@ -946,8 +961,8 @@ gray * 255 + 230
         for (int a = 0, i = 0; a < 0x10000; a++) {
             for (int b = 0; b < 0x10000; b++) {
                 int result = squares16Experimental(i);
-                greatSum += (result & 0xFFFFL);
-                greatXor ^= result & 0xFFFF;
+                greatSum += result;
+                greatXor ^= result;
                 intendedGreatSum += (i & 0xFFFFL);
                 intendedGreatXor ^= i & 0xFFFF;
                 i++;
@@ -955,6 +970,28 @@ gray * 255 + 230
         }
         System.out.printf("Sum of all squares16Experimental() calls: 0x%08X (%d), should be:  0x%08X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
         System.out.printf("XOR of all squares16Experimental() calls: 0x%04X, should be: 0x%04X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+    }
+
+    /**
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     */
+    @Test
+    public void testSquares32Experimental(){
+        long greatSum = 0, intendedGreatSum = 0;
+        int greatXor = 0, intendedGreatXor = 0;
+        for (int a = 0, i = 0; a < 0x10000; a++) {
+            for (int b = 0; b < 0x10000; b++) {
+                int result = squares32Experimental(i);
+                greatSum += (result & 0xFFFFFFFFL);
+                greatXor ^= result;
+                intendedGreatSum += (i & 0xFFFFFFFFL);
+                intendedGreatXor ^= i;
+                i++;
+            }
+        }
+        System.out.printf("Sum of all squares32Experimental() calls: 0x%016X (%d), should be:  0x%016X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+        System.out.printf("XOR of all squares32Experimental() calls: 0x%08X, should be: 0x%08X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
     }
 
     /**
