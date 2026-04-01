@@ -921,6 +921,43 @@ gray * 255 + 230
     }
 
     /**
+     * Modified Squares RNG using the bijective operation {@code (x * x) + x + (x & 1)} instead of what it normally
+     * uses, which is not a bijection. The key is hardcoded to {@code 0x23456789} here.
+     * @param x the input 32-bit int; ctr in the original
+     * @return an output 32-bit int; the low 16 bits can be used instead of all bits
+     */
+    public static int squares16Experimental(int x) {
+        x *= 0x23456789;
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 1 */
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 2 */
+        x = x*x + x + (x & 1); x = (x>>>16) | (x<<16); /* round 3 */
+        x = x*x + x + (x & 1); x ^= x >>> 16;          /* round 4 */
+        return x;
+    }
+
+    /**
+     * Sum of all squares16Experimental() calls: 0x7FFF80000000 (140735340871680), should be:  0x7FFF80000000 (140735340871680)
+     * XOR of all squares16Experimental() calls: 0x0000, should be: 0x0000
+     */
+    @Test
+    public void testSquares16Experimental(){
+        long greatSum = 0, intendedGreatSum = 0;
+        int greatXor = 0, intendedGreatXor = 0;
+        for (int a = 0, i = 0; a < 0x10000; a++) {
+            for (int b = 0; b < 0x10000; b++) {
+                int result = squares16Experimental(i);
+                greatSum += (result & 0xFFFFL);
+                greatXor ^= result & 0xFFFF;
+                intendedGreatSum += (i & 0xFFFFL);
+                intendedGreatXor ^= i & 0xFFFF;
+                i++;
+            }
+        }
+        System.out.printf("Sum of all squares16Experimental() calls: 0x%08X (%d), should be:  0x%08X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+        System.out.printf("XOR of all squares16Experimental() calls: 0x%04X, should be: 0x%04X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+    }
+
+    /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
      * Total number of missing results: 24080/65536
      */
