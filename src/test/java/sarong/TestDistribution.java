@@ -884,6 +884,41 @@ gray * 255 + 230
         }
     }
 
+    /**
+     * The 32-bit Squares RNG shrunk down to use a 32-bit state and produce a 16-bit output.
+     * The key is hardcoded to {@code 0x23456789} here.
+     * @param x the input 32-bit int; ctr in the original
+     * @return an output 16-bit int
+     */
+    public static int squares16(int x) {
+        int y = (x *= 0x23456789), z = y + 0x23456789;
+        x = x*x + y; x = (x>>>16) | (x<<16); /* round 1 */
+        x = x*x + z; x = (x>>>16) | (x<<16); /* round 2 */
+        x = x*x + y; x = (x>>>16) | (x<<16); /* round 3 */
+        return (x*x + z) >>> 16; /* round 4 */
+    }
+
+    /**
+     * Sum of all squares16() calls: 0x7FFFEFC16779 (140737215817593), should be:  0x7FFF80000000 (140735340871680)
+     * XOR of all squares16() calls: 0xE1C1, should be: 0x0000
+     */
+    @Test
+    public void testSquares16of32(){
+        long greatSum = 0, intendedGreatSum = 0;
+        int greatXor = 0, intendedGreatXor = 0;
+        for (int a = 0, i = 0; a < 0x10000; a++) {
+            for (int b = 0; b < 0x10000; b++) {
+                int result = squares16(i);
+                greatSum += (result & 0xFFFFL);
+                greatXor ^= result & 0xFFFF;
+                intendedGreatSum += (i & 0xFFFFL);
+                intendedGreatXor ^= i & 0xFFFF;
+                i++;
+            }
+        }
+        System.out.printf("Sum of all squares16() calls: 0x%08X (%d), should be:  0x%08X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+        System.out.printf("XOR of all squares16() calls: 0x%04X, should be: 0x%04X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+    }
 
     /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
