@@ -1184,6 +1184,78 @@ gray * 255 + 230
     }
 
     /**
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | o)} instead of what it normally
+     * uses, which is not a bijection. Here, {@code o} is an odd number that differs between rounds.
+     * Any int can be used as a key, not just an odd one.
+     *
+     * @param x the input 32-bit int; ctr in the original
+     * @param key any int; determines the stream
+     * @return an output 32-bit int
+     */
+    public static int squares32Experimental5(int x, final int key) {
+        x += x*x+key|1;  x = (x>>>16) | (x<<16); /* round 1 */
+        x += x*x+key|5;  x = (x>>>16) | (x<<16); /* round 2 */
+        x += x*x+key|17; x = (x>>>16) | (x<<16); /* round 3 */
+        x += x*x+key|65; x ^= x>>>16;            /* round 4 */
+        return x;
+    }
+
+    /**
+     * With key: 0xB13EDD41
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x8F211136
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x1874C4EC
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xE9ED78FF
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x42A7D117
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x992568FD
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x763F59D4
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x1A29DB97
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xB2A36713
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x70B1147A
+     * Sum of all squares32Experimental5() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental5() calls: 0x00000000, should be: 0x00000000
+     */
+    @Test
+    public void testSquares32Experimental5() {
+        for (int iter = 0; iter < 10; iter++) {
+            final int key = (int) (DiverRNG.determine(System.nanoTime()));
+            long greatSum = 0, intendedGreatSum = 0;
+            int greatXor = 0, intendedGreatXor = 0;
+            for (int a = 0, i = 0; a < 0x10000; a++) {
+                for (int b = 0; b < 0x10000; b++) {
+                    int result = squares32Experimental5(i, key);
+                    greatSum += (result & 0xFFFFFFFFL);
+                    greatXor ^= result;
+                    intendedGreatSum += (i & 0xFFFFFFFFL);
+                    intendedGreatXor ^= i;
+                    i++;
+                }
+            }
+            System.out.printf("With key: 0x%08X\n", key);
+            System.out.printf("Sum of all squares32Experimental5() calls: 0x%016X (%d), should be:  0x%016X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+            System.out.printf("XOR of all squares32Experimental5() calls: 0x%08X, should be: 0x%08X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+        }
+    }
+
+
+    /**
      * For several tested pairs different by 4, all results were identical.
      * <br>
      * With keys: 0x00000000 and 0x00000004, all results were identical.
