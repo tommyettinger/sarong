@@ -1184,6 +1184,33 @@ gray * 255 + 230
     }
 
     /**
+     * For several tested pairs different by 4, all results were identical.
+     * <br>
+     * With keys: 0x00000000 and 0x00000004, all results were identical.
+     * With keys: 0x00000001 and 0x00000005, all results were identical.
+     * With keys: 0x00000002 and 0x00000006, all results were identical.
+     * With keys: 0x00000007 and 0x0000000B, all results were identical.
+     * With keys: 0x00000008 and 0x0000000C, all results were identical.
+     * With keys: 0x00000009 and 0x0000000D, all results were identical.
+     */
+    @Test
+    public void testSquares32Experimental2Different(){
+        ITER:
+        for (int iter = 0; iter < 10; iter++) {
+            int keyA = iter, keyB = iter + 4;
+            for (int a = 0, i = 0; a < 0x10000; a++) {
+                for (int b = 0; b < 0x10000; b++) {
+                    int resultA = squares32Experimental2(i, keyA);
+                    int resultB = squares32Experimental2(i, keyB);
+                    if(resultA != resultB) continue ITER;
+                    i++;
+                }
+            }
+            System.out.printf("With keys: 0x%08X and 0x%08X, all results were identical.\n", keyA, keyB);
+        }
+    }
+
+    /**
      * For all tested key pairs where the pairs were different by 1, the results were different.
      * But, for the pair of 6 and 10, all results were identical.
      * <br>
