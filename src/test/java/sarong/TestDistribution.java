@@ -997,7 +997,9 @@ gray * 255 + 230
     /**
      * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 29)} instead of what it normally
      * uses, which is not a bijection. Any int can be used as a key, not just an odd one.
+     *
      * @param x the input 32-bit int; ctr in the original
+     * @param key any int; determines the stream
      * @return an output 32-bit int
      */
     public static int squares32Experimental2(int x, final int key) {
@@ -1042,7 +1044,9 @@ gray * 255 + 230
      * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 29)} instead of what it normally
      * uses, which is not a bijection. However, because this modifies the key by a variable amount, it is not bijective
      * as a whole. FAILURE.
+     *
      * @param x the input 32-bit int; ctr in the original
+     * @param key any int; determines the stream
      * @return an output 32-bit int
      */
     public static int squares32Experimental3(int x, int key) {
@@ -1094,6 +1098,78 @@ gray * 255 + 230
             for (int a = 0, i = 0; a < 0x10000; a++) {
                 for (int b = 0; b < 0x10000; b++) {
                     int result = squares32Experimental3(i, key);
+                    greatSum += (result & 0xFFFFFFFFL);
+                    greatXor ^= result;
+                    intendedGreatSum += (i & 0xFFFFFFFFL);
+                    intendedGreatXor ^= i;
+                    i++;
+                }
+            }
+            System.out.printf("With key: 0x%08X\n", key);
+            System.out.printf("Sum of all squares32Experimental() calls: 0x%016X (%d), should be:  0x%016X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+            System.out.printf("XOR of all squares32Experimental() calls: 0x%08X, should be: 0x%08X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+        }
+    }
+
+    /**
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + (++key)) | 29)} instead of what it
+     * normally uses, which is not a bijection. Any int can be used as a key, not just an odd one. This shows that as
+     * long as the same 4 keys are used, a stream is 1D-equidistributed. All four keys do not need to be identical.
+     * SUCCESS.
+     *
+     * @param x the input 32-bit int; ctr in the original
+     * @param key any int; determines the stream
+     * @return an output 32-bit int
+     */
+    public static int squares32Experimental4(int x, int key) {
+        x += x*x+(++key)|29; x = (x>>>16) | (x<<16); /* round 1 */
+        x += x*x+(++key)|29; x = (x>>>16) | (x<<16); /* round 2 */
+        x += x*x+(++key)|29; x = (x>>>16) | (x<<16); /* round 3 */
+        x += x*x+(++key)|29; x ^= x>>>16;            /* round 4 */
+        return x;
+    }
+
+    /**
+     * With key: 0x4D633CF5
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xA8A164CA
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x4F797E4A
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x1BCC120D
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x31FC28CF
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xDB2BF434
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0x25592F72
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xA34ADCE0
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xB9DF7596
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     * With key: 0xD70E3790
+     * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
+     */
+    @Test
+    public void testSquares32Experimental4(){
+        for (int iter = 0; iter < 10; iter++) {
+            final int key = (int) (DiverRNG.determine(System.nanoTime()));
+            long greatSum = 0, intendedGreatSum = 0;
+            int greatXor = 0, intendedGreatXor = 0;
+            for (int a = 0, i = 0; a < 0x10000; a++) {
+                for (int b = 0; b < 0x10000; b++) {
+                    int result = squares32Experimental4(i, key);
                     greatSum += (result & 0xFFFFFFFFL);
                     greatXor ^= result;
                     intendedGreatSum += (i & 0xFFFFFFFFL);
