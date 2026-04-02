@@ -2463,8 +2463,10 @@ gray * 255 + 230
 //            result = (short) (i + (i * i | 4)); // 32768/65536
 //            result = (short) (i + (i * i | 5)); // 65536/65536
 //            result = (short) (i + (i * i | 25)); // 65536/65536
-//            result = (short) (i + (i * i + 1 | 1)); // 65536/65536
+//            result = (short) (i + (i * i + 1 | 1)); // 65536/65536 // MAOA pattern, Multiply Add Or Add
 //            result = (short) (i + (i * i + 2 | 1)); // 65536/65536 // adding an even "key" is the same as one odd key
+//            result = (short) (i + (i * i + 2 | 7)); // 65536/65536 // adding an even "key" is the same as one odd key, even with other OR values
+            result = (short) (i + (i * i + 222 | 7)); // 65536/65536 // adding an even "key" is the same as one odd key, even with other OR values
 //            result = (short) (i + (i * i + 3 | 7)); // 65536/65536
 //            result = (short) (i + (i * i + 25 | 7)); // 65536/65536
 //            result = (short) (i + (i * i + 0xDE4D | 7)); // 65536/65536
@@ -2483,7 +2485,11 @@ gray * 255 + 230
 //            result = (short) (i * (i+1>>>1) + (i+1 >>> 1)); // 35499/65536
 //            result = (short) (i * (i+1>>>1) + (i >>> 1)); // 35500/65536
 //            result = (short) (i * i + (i & 0x8000)); // 10926/65536
-            result = (short) (i * i + (i|1)); // 65536/65536
+//            result = (short) (i * i + (i|1)); // 65536/65536
+//            result = (short) (i * i + i + 1); // 32768/65536
+//            result = (short) (i * i + 1); // 10924/65536
+//            result = (short) (i * i + i + i); // 10924/65536
+//            result = (short) (i * i + (i & 1)); // 10924/65536
 //            result = (short) (i * ((short)i>>1) + (i >>> 1)); // 40960/65536
 //            result = (short) ((i & 0xFFFE) * (i|1)); // 32768/65536
 //            result = (short) ((i|1) * (i|1)); // 8192/65536
