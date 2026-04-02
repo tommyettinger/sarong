@@ -1254,7 +1254,6 @@ gray * 255 + 230
         }
     }
 
-
     /**
      * For several tested pairs different by 4, all results were identical.
      * <br>
@@ -1302,6 +1301,28 @@ gray * 255 + 230
                 }
             }
             System.out.printf("With keys: 0x%08X and 0x%08X, all results were identical.\n", keyA, keyB);
+        }
+    }
+
+    /**
+     * For all tested key pairs where the pairs were different by 1 through 65, the results were different.
+     */
+    @Test
+    public void testSquares32Experimental5Different(){
+        for (int diff = 1; diff < 66; diff++) {
+            ITER:
+            for (int iter = 0; iter < 10; iter++) {
+                int keyA = iter, keyB = iter + diff;
+                for (int a = 0, i = 0; a < 0x10000; a++) {
+                    for (int b = 0; b < 0x10000; b++) {
+                        int resultA = squares32Experimental5(i, keyA);
+                        int resultB = squares32Experimental5(i, keyB);
+                        if (resultA != resultB) continue ITER;
+                        i++;
+                    }
+                }
+                System.out.printf("With keys: 0x%08X and 0x%08X, all results were identical.\n", keyA, keyB);
+            }
         }
     }
 
