@@ -951,20 +951,6 @@ gray * 255 + 230
     }
 
     /**
-     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 29)} instead of what it normally
-     * uses, which is not a bijection. Any int can be used as a key, not just an odd one.
-     * @param x the input 32-bit int; ctr in the original
-     * @return an output 32-bit int
-     */
-    public static int squares32Experimental2(int x, final int key) {
-        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 1 */
-        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 2 */
-        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 3 */
-        x += x*x+key|29; x ^= x>>>16;            /* round 4 */
-        return x;
-    }
-
-    /**
      * Sum of all squares16Experimental() calls: 0x7FFF80000000 (140735340871680), should be:  0x7FFF80000000 (140735340871680)
      * XOR of all squares16Experimental() calls: 0x0000, should be: 0x0000
      */
@@ -1009,6 +995,20 @@ gray * 255 + 230
     }
 
     /**
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 29)} instead of what it normally
+     * uses, which is not a bijection. Any int can be used as a key, not just an odd one.
+     * @param x the input 32-bit int; ctr in the original
+     * @return an output 32-bit int
+     */
+    public static int squares32Experimental2(int x, final int key) {
+        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 1 */
+        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 2 */
+        x += x*x+key|29; x = (x>>>16) | (x<<16); /* round 3 */
+        x += x*x+key|29; x ^= x>>>16;            /* round 4 */
+        return x;
+    }
+
+    /**
      * With key: 0x685BB381
      * Sum of all squares32Experimental() calls: 0x7FFFFFFF80000000 (9223372034707292160), should be:  0x7FFFFFFF80000000 (9223372034707292160)
      * XOR of all squares32Experimental() calls: 0x00000000, should be: 0x00000000
@@ -1035,6 +1035,76 @@ gray * 255 + 230
         System.out.printf("With key: 0x%08X\n", key);
         System.out.printf("Sum of all squares32Experimental() calls: 0x%016X (%d), should be:  0x%016X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
         System.out.printf("XOR of all squares32Experimental() calls: 0x%08X, should be: 0x%08X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+    }
+
+
+    /**
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 29)} instead of what it normally
+     * uses, which is not a bijection. However, because this modifies the key by a variable amount, it is not bijective
+     * as a whole. FAILURE.
+     * @param x the input 32-bit int; ctr in the original
+     * @return an output 32-bit int
+     */
+    public static int squares32Experimental3(int x, int key) {
+        key ^= (x += x*x+key|29); x = (x>>>16) | (x<<16); /* round 1 */
+        key ^= (x += x*x+key|29); x = (x>>>16) | (x<<16); /* round 2 */
+        key ^= (x += x*x+key|29); x = (x>>>16) | (x<<16); /* round 3 */
+        x += x*x+key|29; x ^= x>>>16;            /* round 4 */
+        return x;
+    }
+
+    /**
+     * With key: 0x6F3C39CF
+     * Sum of all squares32Experimental() calls: 0x80002B8656371EAF (-9223324180882710865), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00003BE9, should be: 0x00000000
+     * With key: 0xA87F646B
+     * Sum of all squares32Experimental() calls: 0x7FFFE7E7B5E92BCE (9223345544253483982), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x0000A566, should be: 0x00000000
+     * With key: 0xE5015B82
+     * Sum of all squares32Experimental() calls: 0x8000213A32218BC4 (-9223335503021896764), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x0000BBAE, should be: 0x00000000
+     * With key: 0x2051B4CF
+     * Sum of all squares32Experimental() calls: 0x800047BDEE84610A (-9223293155778731766), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00009E90, should be: 0x00000000
+     * With key: 0x898A9E50
+     * Sum of all squares32Experimental() calls: 0x7FFFB760EAA33C97 (9223292188759374999), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x0000ED4F, should be: 0x00000000
+     * With key: 0xD5F7DFDE
+     * Sum of all squares32Experimental() calls: 0x80002C7FA37959DC (-9223323110139668004), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x000043F2, should be: 0x00000000
+     * With key: 0x5292C32D
+     * Sum of all squares32Experimental() calls: 0x7FFFD4EB088793E5 (9223324667803571173), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x0000C2B5, should be: 0x00000000
+     * With key: 0x52321F43
+     * Sum of all squares32Experimental() calls: 0x7FFFF96E1F0F1147 (9223364813240865095), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x0000F23D, should be: 0x00000000
+     * With key: 0xE1725860
+     * Sum of all squares32Experimental() calls: 0x7FFF8C8D06A922F9 (9223245099208090361), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00002D43, should be: 0x00000000
+     * With key: 0xF35510AB
+     * Sum of all squares32Experimental() calls: 0x80000CE3063DAC31 (-9223357867652961231), should be:  0x7FFFFFFF80000000 (9223372034707292160)
+     * XOR of all squares32Experimental() calls: 0x00001E79, should be: 0x00000000
+     */
+    @Test
+    public void testSquares32Experimental3(){
+        for (int iter = 0; iter < 10; iter++) {
+            final int key = (int) (DiverRNG.determine(System.nanoTime()));
+            long greatSum = 0, intendedGreatSum = 0;
+            int greatXor = 0, intendedGreatXor = 0;
+            for (int a = 0, i = 0; a < 0x10000; a++) {
+                for (int b = 0; b < 0x10000; b++) {
+                    int result = squares32Experimental3(i, key);
+                    greatSum += (result & 0xFFFFFFFFL);
+                    greatXor ^= result;
+                    intendedGreatSum += (i & 0xFFFFFFFFL);
+                    intendedGreatXor ^= i;
+                    i++;
+                }
+            }
+            System.out.printf("With key: 0x%08X\n", key);
+            System.out.printf("Sum of all squares32Experimental() calls: 0x%016X (%d), should be:  0x%016X (%d)\n", greatSum, greatSum, intendedGreatSum, intendedGreatSum);
+            System.out.printf("XOR of all squares32Experimental() calls: 0x%08X, should be: 0x%08X\n", greatXor & 0xFFFF, intendedGreatXor & 0xFFFF);
+        }
     }
 
     /**
