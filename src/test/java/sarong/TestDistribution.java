@@ -1184,6 +1184,29 @@ gray * 255 + 230
     }
 
     /**
+     * For all tested key pairs where the pairs were different by 1, the results were different.
+     * But, for the pair of 6 and 10, all results were identical.
+     * <br>
+     * With keys: 0x00000006 and 0x0000000A, all results were identical.
+     */
+    @Test
+    public void testSquares32Experimental4Different(){
+        ITER:
+        for (int iter = 0; iter < 10; iter++) {
+            int keyA = iter, keyB = iter + 4;
+            for (int a = 0, i = 0; a < 0x10000; a++) {
+                for (int b = 0; b < 0x10000; b++) {
+                    int resultA = squares32Experimental4(i, keyA);
+                    int resultB = squares32Experimental4(i, keyB);
+                    if(resultA != resultB) continue ITER;
+                    i++;
+                }
+            }
+            System.out.printf("With keys: 0x%08X and 0x%08X, all results were identical.\n", keyA, keyB);
+        }
+    }
+
+    /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
      * Total number of missing results: 24080/65536
      */
