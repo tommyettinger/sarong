@@ -1395,8 +1395,9 @@ gray * 255 + 230
 
 
     /**
-     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 1)} instead of what it normally
-     * uses, which is not a bijection.
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 5)} instead of what it normally
+     * uses, which is not a bijection. The OR value is sensitive to change; 1 and 5 work, but 7 sometimes produces the
+     * same sequence for different keys.
      * Any int can be used as a key, not just an odd one.
      *
      * @param x the input 32-bit int; ctr in the original
@@ -1404,7 +1405,7 @@ gray * 255 + 230
      * @return an output 32-bit int
      */
     public static int squares32ExperimentalRounds1(int x, final int key) {
-        x += x*x+key|1; x ^= x>>>16;            /* round 1 */
+        x += x*x+key|5; x ^= x>>>16;            /* round 1 */
         return x;
     }
 
@@ -1580,6 +1581,25 @@ gray * 255 + 230
 
     /**
      * For all tested key pairs where the pairs were different by 1 through 65, the results were different.
+     * This works when the function ORs with 1.
+     * When changed so the function ORs with 5 instead of 1, it still works.
+     * When changed so the function ORs with 7 instead of 1, it fails:
+     * <pre>
+     * With keys: 0x00000000 and 0x00000001, all results were identical.
+     * With keys: 0x00000001 and 0x00000002, all results were identical.
+     * With keys: 0x00000002 and 0x00000003, all results were identical.
+     * With keys: 0x00000004 and 0x00000005, all results were identical.
+     * With keys: 0x00000005 and 0x00000006, all results were identical.
+     * With keys: 0x00000008 and 0x00000009, all results were identical.
+     * With keys: 0x00000009 and 0x0000000A, all results were identical.
+     * With keys: 0x00000000 and 0x00000002, all results were identical.
+     * With keys: 0x00000001 and 0x00000003, all results were identical.
+     * With keys: 0x00000004 and 0x00000006, all results were identical.
+     * With keys: 0x00000008 and 0x0000000A, all results were identical.
+     * With keys: 0x00000009 and 0x0000000B, all results were identical.
+     * With keys: 0x00000000 and 0x00000003, all results were identical.
+     * With keys: 0x00000008 and 0x0000000B, all results were identical.
+     * </pre>
      */
     @Test
     public void testSquares32ExperimentalRounds1Different(){
