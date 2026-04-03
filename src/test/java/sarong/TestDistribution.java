@@ -1488,6 +1488,28 @@ gray * 255 + 230
     }
 
     /**
+     * For all tested key pairs where the pairs were different by 1 through 65, the results were different.
+     */
+    @Test
+    public void testSquares32ExperimentalRounds2Different(){
+        for (int diff = 1; diff < 66; diff++) {
+            ITER:
+            for (int iter = 0; iter < 10; iter++) {
+                int keyA = iter, keyB = iter + diff;
+                for (int a = 0, i = 0; a < 0x10000; a++) {
+                    for (int b = 0; b < 0x10000; b++) {
+                        int resultA = squares32ExperimentalRounds2(i, keyA);
+                        int resultB = squares32ExperimentalRounds2(i, keyB);
+                        if (resultA != resultB) continue ITER;
+                        i++;
+                    }
+                }
+                System.out.printf("With keys: 0x%08X and 0x%08X, all results were identical.\n", keyA, keyB);
+            }
+        }
+    }
+
+    /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
      * Total number of missing results: 24080/65536
      */
