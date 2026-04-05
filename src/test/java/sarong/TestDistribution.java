@@ -1621,6 +1621,40 @@ gray * 255 + 230
     }
 
     /**
+     * Modified Squares RNG using the bijective operation {@code x + (((x * x) + key) | 5)} instead of what it normally
+     * uses, which is not a bijection. The OR value is sensitive to change; 1 and 5 work for any keys, but 7 sometimes
+     * produces the same sequence for different keys.
+     * Any int can be used as a key, not just an odd one.
+     *
+     * @param x the input 32-bit int; ctr in the original
+     * @param key any int; determines the stream
+     * @return an output 32-bit int
+     */
+    public static int squares16ExperimentalRounds1(int x, final int key) {
+        x += x*x+key|5; x &= 0xFFFF; x ^= x>>>8;
+        return x;
+    }
+
+    /**
+     * All different pairs of 16-bit keys produce different sequences.
+     */
+    @Test
+    public void testSquares16ExperimentalRounds1AllDifferent() {
+        for (int a = 0; a < 0x10000; a++) {
+            ITER:
+            for (int b = 0; b < 0x10000; b++) {
+                if(a == b) continue;
+                for (int i = 0; i < 0x10000; i++) {
+                    int resultA = squares16ExperimentalRounds1(i, a);
+                    int resultB = squares16ExperimentalRounds1(i, b);
+                    if (resultA != resultB) continue ITER;
+                }
+                System.out.printf("With different keys: 0x%08X and 0x%08X, all results were identical.\n", a, b);
+            }
+        }
+    }
+
+    /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
      * Total number of missing results: 24080/65536
      */
