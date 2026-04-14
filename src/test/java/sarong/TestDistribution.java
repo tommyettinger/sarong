@@ -1655,6 +1655,29 @@ gray * 255 + 230
     }
 
     /**
+     * Perfectly 1D-equidistributed.
+     */
+    @Test
+    public void testQuiz8() {
+        int stateA = 1, stateB = 1;
+        int[] counts = new int[256];
+        for (int a = 0; a < 0x10000; a++) {
+            int result = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+            result = result + (result * result + stateB | 33) & 255;
+            result ^= rotate8(result, 2) ^ rotate8(result, 5);
+            counts[result]++;
+            stateA = stateA + 0xDB & 255;
+            stateB = stateB + clz8(stateA) & 255;
+        }
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.printf("%03X ", counts[x | y << 4]);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
      * Adapts <a href="https://arxiv.org/abs/2004.06278">this paper's 64-bit Squares RNG</a> to 16-bit.
      * Total number of missing results: 24080/65536
      */
