@@ -2809,6 +2809,27 @@ public class PeriodTest {
     }
 
 
+    /**
+     * AQO: 0x100000000
+     */
+    @Test
+    public void checkPeriod32_AQO(){
+        final int initial = 1;
+        int state = initial;
+        long i = 0;
+        while (++i < 0x100000001L) {
+            // all are full-period one-liners.
+//            state += state * state | 123456789;
+//            state += state * state | 5;
+            state += state * state | 7;
+            if (state == initial) {
+                System.out.printf("AQO: 0x%08X\n", i);
+                break;
+            }
+        }
+    }
+
+
     @Test
     public void checkPeriod32_MWC(){
         final int initial = 1;
