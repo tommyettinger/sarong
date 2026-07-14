@@ -323,6 +323,31 @@ public class TestDistribution {
         System.out.println("Sum: " + sum + "; should be " + 0x80000000);
     }
 
+    /**
+     * Godot-friendly!
+     * 4294967296/4294967296 outputs were present.
+     * 0.0% of outputs were missing.
+     */
+    @Test
+    public void test32BitQOAXSR()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        for (int it = 0; it < 16; it++) {
+            for (int n = 0; n < 0x10000000; n++, i++) {
+                int x = (i ^ 7) * 555555555;
+                x += x * x | 6789;
+                x ^= x >> 14 ^ x >> 31;
+                x += x * x | 6789;
+                x ^= x >> 13 ^ x >> 31;
+                all.add(x);
+            }
+            System.out.println("Completed iteration " + it + " of 16");
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
     public static void main(String[] args)
     {
         final RoaringBitmap all = new RoaringBitmap();
