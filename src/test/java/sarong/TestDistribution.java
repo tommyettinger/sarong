@@ -348,6 +348,35 @@ public class TestDistribution {
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
     }
 
+    /**
+     * Testing to make sure XOR with the same constant before and after a bijection is still 1D-equidistributed.
+     * <br>
+     * 4294967296/4294967296 outputs were present.
+     * 0.0% of outputs were missing.
+     */
+    @Test
+    public void test32BitXEX()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        int XEX = 7;
+        for (int it = 0; it < 16; it++) {
+            for (int n = 0; n < 0x10000000; n++, i++) {
+                int x = (i ^ XEX) * 777777777;
+                x ^= x >> 15 & (-1 >>> 15);
+                x *= 555555555;
+                x ^= x >> 14 & (-1 >>> 14);
+                x *= 333333333;
+                x ^= x >> 13 & (-1 >>> 13);
+                x ^= XEX;
+                all.add(x);
+            }
+            System.out.println("Completed iteration " + it + " of 16");
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
     public static void main(String[] args)
     {
         final RoaringBitmap all = new RoaringBitmap();
