@@ -1,9 +1,7 @@
 package sarong;
 
 import com.github.tommyettinger.digital.Base;
-import com.github.tommyettinger.ds.IntIntMap;
 import com.github.tommyettinger.ds.IntList;
-import com.github.tommyettinger.ds.support.util.IntAppender;
 import org.huldra.math.BigInt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -375,6 +373,44 @@ public class TestDistribution {
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
+    /**
+     * Testing to make sure XOR with the different values before and after a bijection is still 1D-equidistributed.
+     * Compatible with GDScript (no unsigned shifts).
+     * <br>
+     * APPEARANCE COUNTS:
+     * 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff
+     * 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff 0000ffff
+     * ...
+     * All 4096 results are 0000ffff .
+     */
+    @Test
+    public void tes16BitXEXMurmurLFSR()
+    {
+        final int[] all = new int[65536];
+        int n = 0x80000000;
+        short i = -0x8000;
+        short state = -0x8000;
+        for (; n < 0x7FFF0000; i++, n++) {
+            state = (short) ((state & 0x7FFF) << 1 ^ ((state >> 31) & 0x002D));
+            short x = (short) ((i ^ state) * 7777);
+            x ^= x >> 7 & (0xFFFF >>> 7);
+            x *= 5555;
+            x ^= x >> 6 & (0xFFFF >>> 6);
+            x *= 3333;
+            x ^= x >> 5 & (0xFFFF >>> 5);
+            x ^= state;
+            all[x & 0xFFFF]++;
+        }
+        System.out.println("APPEARANCE COUNTS:");
+        for (int y = 0, idx = 0; y < 256; y++) {
+            for (int x = 0; x < 16; x++) {
+                System.out.print(StringKit.hex(all[idx++]) + " ");
+            }
+            System.out.println();
+        }
+
     }
 
     public static void main(String[] args)
