@@ -5943,6 +5943,77 @@ gray * 255 + 230
     }
 
     /**
+     * Just h doesn't repeat or even come close to repeating after what I would expect would be its cycle (256).
+     * <br>
+     * Here are the first 512 values for h:
+     * <pre>
+     * BD B2 8A D4 11 29 94 1B E2 0A 25 56 9B 9D 6F 67
+     * 47 86 37 C0 75 F3 49 F4 8F 07 DF 57 C7 71 9F AD
+     * 48 49 9A 06 4A 3C 2D 90 A3 E4 21 99 74 7D CE ED
+     * 84 9B FC 20 DA 86 68 99 91 10 0F FB 4B 38 0F 69
+     * 39 5C 64 97 19 19 2B 32 A1 CB 94 98 C3 C5 CF A8
+     * EC E7 76 E9 9B C2 CF 19 0B 81 30 E6 C5 B6 82 BB
+     * 3D 57 DC D9 A4 84 FC 7E F0 BA B6 1A DC DF 40 57
+     * 3C 33 DC CB D4 6E BE 04 B7 7B 9A BF 12 CE 20 B5
+     * 43 10 00 0A BA 18 76 96 4C 78 E6 B2 28 BD 13 25
+     * BF FA 56 94 AA 14 69 36 26 0F 9A 53 4D EC 44 26
+     * AE 00 6F 6B A1 25 D4 03 42 B2 2F 37 6F 03 75 50
+     * CD B2 8B 3B 61 15 0F 01 D8 1E 98 F1 F2 8C C8 3D
+     * D4 B9 BD A1 ED 56 D4 CA 0D 78 38 5E F7 EA 4F E1
+     * C1 BC C2 1F AD E1 D6 27 75 16 08 1A E2 28 79 4A
+     * BE FF A6 8D 2E 51 7F D0 CB 2F 34 7C 97 21 6C 5E
+     * 1E 9A C5 37 C8 D2 7E 31 E4 FF 11 71 8C 64 90 C0
+     * 6F 72 45 5F 19 A0 19 D2 39 2A 1A CC 6C 1F 54 49
+     * E1 B7 78 4C 3E 01 21 37 B1 51 4A DC 84 34 41 EE
+     * 83 75 36 71 E8 0C 15 1E 79 C2 6C 65 78 31 7E FB
+     * B9 95 8A F6 10 72 46 88 47 1C B1 71 E2 A0 81 12
+     * 6C 26 E4 AC EF F0 00 A8 C1 08 7D E1 F9 4C 9C 3D
+     * 05 67 10 04 08 A7 4E 58 A6 83 B0 BC 2C DD 0E 76
+     * 64 0E 48 80 66 B8 36 5E E7 A7 28 0E DB 3B 28 EC
+     * 29 9E AD 24 20 70 41 8D EF 88 2C 10 74 42 74 B0
+     * 48 F8 5F 71 9E B3 29 58 9C 3A 00 7F 66 9C B6 28
+     * 32 60 1F A1 2A 7E D4 C5 CE 69 04 42 FD F8 C7 BE
+     * 02 2B F3 E7 03 C9 14 B7 AD 5E 1E 36 A9 A2 B0 62
+     * 65 50 4F 97 48 16 DE EF AE E7 D6 A8 1B 68 A2 32
+     * EB F4 89 36 FA B2 7C D8 EA 04 49 04 50 95 5D 9A
+     * D0 31 65 9A 0F 11 28 FC 25 BC 85 06 B2 2E 2F 6A
+     * AE 09 6C 6C EB 8A 8E 63 D0 99 0A C0 83 F1 C2 46
+     * 77 22 98 07 3A D3 BD 61 3A 90 6C 03 51 66 AA 27
+     * </pre>
+     */
+    @Test
+    public void testHobgoblinEarlyDistribution()
+    {
+//        long[] smallCounts = new long[256];
+        byte stateA = 0, stateB = 0, stateC = 0, stateD = 0, stateE = 0, stateF = 0, stateG = 0, stateH = 0;
+        final long iterations = 1L << 9;
+        for (long i = 0; i < iterations; i++) {
+            byte a, b, c, d, e, f, g, h;
+            a = (stateA += (byte)(0xBD));
+            b = (stateB += (byte)(a + clz8(a     )));
+            c = (stateC += (byte)(b + clz8(a &= b)));
+            d = (stateD += (byte)(c + clz8(a &= c)));
+            e = (stateE += (byte)(d + clz8(a &= d)));
+            f = (stateF += (byte)(e + clz8(a &= e)));
+            g = (stateG += (byte)(f + clz8(a &= f)));
+            h = (stateH += (byte)(g + clz8(a &= g)));
+            // equidistributed
+//            smallCounts[(a + h & 255)]++;
+//            // equidistributed
+            System.out.printf("%02X ", (h & 255));
+            if((i & 15) == 15) System.out.println();
+//            smallCounts[(h & 255)]++;
+        }
+//        System.out.println();
+//        for (int y = 0, i = 0; y < 16; y++) {
+//            for (int z = 0; z < 16; z++, i++) {
+//                System.out.printf("%09X ", smallCounts[i]);
+//            }
+//            System.out.println();
+//        }
+    }
+
+    /**
      * This is, somehow, again, also full-period (2 to the 32 outputs, 32 bits of state).
      */
     @Test
