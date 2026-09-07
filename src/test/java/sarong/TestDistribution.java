@@ -5893,14 +5893,31 @@ gray * 255 + 230
         long[] smallCounts = new long[256];
         byte stateA = 0, stateB = 0, stateC = 0, stateD = 0;
         final long iterations = 1L << 32;
-        for (long a = 0; a < iterations; a++) {
-            byte x, y, z, w;
-            x = (stateA += (byte)(0xBD));
-            y = (stateB += (byte)(x + clz8(x     )));
-            z = (stateC += (byte)(y + clz8(x &= y)));
-            w = (stateD += (byte)(z + clz8(x &= z)));
+        for (long i = 0; i < iterations; i++) {
+            byte x, y, z, w, m;
+//            m = x = (stateA += (byte)(0xBD));
+//            y = (stateB += (byte)(x + clz8(m     )));
+//            z = (stateC += (byte)(y + clz8(m &= y)));
+//            w = (stateD += (byte)(z + clz8(m &= z)));
             // equidistributed
-            smallCounts[(x + w & 255)]++;
+//            smallCounts[(x + w) & 255]++;
+            // equidistributed
+//            smallCounts[(x ^ y ^ z ^ w) & 255]++;
+            // equidistributed
+//            smallCounts[(m ^ y ^ z ^ w) & 255]++;
+
+            m = x = (stateA += (byte)(0xBD));
+            y = (stateB += (byte)(x ^ clz8(m     )));
+            z = (stateC += (byte)(y ^ clz8(m &= y)));
+            w = (stateD += (byte)(z ^ clz8(m &= z)));
+            // equidistributed
+//            smallCounts[(x ^ y ^ z ^ w) & 255]++;
+            // equidistributed
+            smallCounts[(x + y + z + w) & 255]++;
+            // equidistributed
+//            smallCounts[(m ^ y ^ z ^ w) & 255]++;
+
+
 //            x = (stateA += (byte)(0xBD));
 //            y = (stateB += (byte)(rotate8(x, 3) + 0x65 * clz8(x     )));
 //            z = (stateC += (byte)(rotate8(y, 3) + 0x55 * clz8(x &= y)));
