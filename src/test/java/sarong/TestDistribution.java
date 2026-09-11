@@ -5906,14 +5906,21 @@ gray * 255 + 230
             // equidistributed
 //            smallCounts[(m ^ y ^ z ^ w) & 255]++;
 
-            m = x = (stateA += (byte)(0xBD));
-            y = (stateB += (byte)(x ^ clz8(m     )));
-            z = (stateC += (byte)(y ^ clz8(m &= y)));
-            w = (stateD += (byte)(z ^ clz8(m &= z)));
+            x = (stateA += (byte)(0xBD));
+            y = (stateB += (byte)(x ^ clz8(x     )));
+            z = (stateC += (byte)(y ^ clz8(x &= y)));
+            w = (stateD += (byte)(z ^ clz8(x &= z)));
             // equidistributed
 //            smallCounts[(x ^ y ^ z ^ w) & 255]++;
             // equidistributed
-            smallCounts[(x + y + z + w) & 255]++;
+            w ^= (w & 255) >>> 3 ^ x;
+            w *= 111;
+            w ^= (w & 255) >>> 4 ^ y ^ z;
+            w *= 123;
+            w ^= (w & 255) >>> 3;
+            smallCounts[w & 255]++;
+            // equidistributed
+//            smallCounts[(x + y + z + w) & 255]++;
             // equidistributed
 //            smallCounts[(m ^ y ^ z ^ w) & 255]++;
 
