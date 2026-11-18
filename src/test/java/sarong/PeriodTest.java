@@ -2534,11 +2534,18 @@ public class PeriodTest {
         int stateC = 1;
         long i = 0;
         while (++i <= 0x1000100L) {
+            //Period was 0x1000000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + clz8(a))) & 0xFF;
+//            stateC = ((stateC + clz8(a & b))) & 0xFF;
+            //Period was 0x1000000
             int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
             int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
             stateA = ((stateA + 0xAF) & 0xFF);
-            stateB = ((stateB + clz8(a))) & 0xFF;
-            stateC = ((stateC + clz8(a & b))) & 0xFF;
+            stateB = ((stateB + a + clz8(a))) & 0xFF;
+            stateC = ((stateC + b + clz8(a & b))) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) {
                 break;
