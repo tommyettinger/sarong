@@ -2559,15 +2559,37 @@ public class PeriodTest {
         long i = 0;
         while (++i <= 0x1000100L) {
             //Doesn't cycle correctly, right now.
-            int a = stateA ^ rotate8(stateB, 3) ^ rotate8(stateC, 6);
-            int b = stateB ^ rotate8(stateC, 2) ^ rotate8(stateA, 5);
-            stateA = ((stateA + 0xAF) & 0xFF);
-            stateB = ((stateB + clz8(a))) & 0xFF;
-            stateC = ((stateC + clz8(a & b))) & 0xFF;
+//            int a = stateA ^ rotate8(stateB, 3) ^ rotate8(stateC, 6);
+//            int b = stateB ^ rotate8(stateC, 2) ^ rotate8(stateA, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + clz8(a))) & 0xFF;
+//            stateC = ((stateC + clz8(a & b))) & 0xFF;
 
-            if (stateA == 1 && stateB == 1 && stateC == 1) {
-                break;
-            }
+            //Doesn't cycle correctly, right now.
+//            int a = stateA ^ rotate8(stateB, 3) ^ rotate8(stateC, 6);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + clz8(a))) & 0xFF;
+//            stateC = ((stateC + 0xB5)) & 0xFF;
+
+//            if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
+            //Period was 0x0010000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+////            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + ((a|6-a)>>>31))) & 0xFF;
+////            stateC = ((stateC + 0xB5)) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1) break;
+
+            //Period was 0x1000000
+            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+            stateA = ((stateA + 0xAF) & 0xFF);
+            stateB = ((stateB + ((a|6-a)>>>31))) & 0xFF;
+            stateC = ((stateC + ((4-b|2-a)>>>31))) & 0xFF;
+
+            if (stateA == 1 && stateB == 1 && stateC == 1) break;
         }
         System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
     }
