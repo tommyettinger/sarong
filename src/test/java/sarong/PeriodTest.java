@@ -2583,11 +2583,34 @@ public class PeriodTest {
 //            if (stateA == 1 && stateB == 1) break;
 
             //Period was 0x1000000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + ((a|6-a)>>>31))) & 0xFF;
+//            stateC = ((stateC + ((4-b|2-a)>>>31))) & 0xFF;
+
+            // Avoid using odd numbers as subtrahends; each one halves the period:
+
+            //Period was 0x0800000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + ((a|1-a)>>>31))) & 0xFF;
+//            stateC = ((stateC + ((6-b|2-a)>>>31))) & 0xFF;
+
+            //Period was 0x0400000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + ((a|1-a)>>>31))) & 0xFF;
+//            stateC = ((stateC + ((6-b|3-a)>>>31))) & 0xFF;
+
+            //Period was 0x0200000
             int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
             int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
             stateA = ((stateA + 0xAF) & 0xFF);
-            stateB = ((stateB + ((a|6-a)>>>31))) & 0xFF;
-            stateC = ((stateC + ((4-b|2-a)>>>31))) & 0xFF;
+            stateB = ((stateB + ((a|1-a)>>>31))) & 0xFF;
+            stateC = ((stateC + ((5-b|3-a)>>>31))) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) break;
         }
