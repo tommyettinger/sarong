@@ -2548,6 +2548,31 @@ public class PeriodTest {
     }
 
     /**
+     * Doesn't cycle correctly, right now.
+     */
+    @Test
+    public void checkPeriodMystery24() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 1;
+        int stateC = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            //Doesn't cycle correctly, right now.
+            int a = stateA ^ rotate8(stateB, 3) ^ rotate8(stateC, 6);
+            int b = stateB ^ rotate8(stateC, 2) ^ rotate8(stateA, 5);
+            stateA = ((stateA + 0xAF) & 0xFF);
+            stateB = ((stateB + clz8(a))) & 0xFF;
+            stateC = ((stateC + clz8(a & b))) & 0xFF;
+
+            if (stateA == 1 && stateB == 1 && stateC == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
      * Period was 0x0007F00
      * (As expected! Good!)
      */
