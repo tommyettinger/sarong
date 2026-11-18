@@ -2447,8 +2447,11 @@ public class PeriodTest {
 //            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
 //            stateB = ((stateB + clz8(stateA) * 0x37) & 0xFF);
             // full period!
+//            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
+//            stateB = ((stateB + clz8(stateA)) * 0x37) & 0xFF;
+            // full period!
             stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
-            stateB = ((stateB + clz8(stateA)) * 0x37) & 0xFF;
+            stateB = ((stateB + clz8(stateA)) ^ (777777 & 255)) & 0xFF;
             // full period!
 //            stateA = ((stateA * 0xAB ^ 0xCD) & 0xFF);
 //            stateB = (~(stateB + clz8(stateA)) & 0xFF);
@@ -2463,7 +2466,7 @@ public class PeriodTest {
     }
 
     /**
-     * Period was 0x0010000
+     * Period was 0x1000000
      */
     @Test
     public void checkPeriodLCG8CLZ8CLZ8() {
@@ -2510,6 +2513,32 @@ public class PeriodTest {
             stateA = ((stateA + 0xAF ^ 0x52) & 0xFF);
             stateB = ((stateB + clz8(stateA)) ^ 0xFA) & 0xFF;
             stateC = ((stateC + clz8(stateA & stateB)) ^ 0x66) & 0xFF;
+
+            if (stateA == 1 && stateB == 1 && stateC == 1) {
+                break;
+            }
+        }
+        System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
+    }
+
+    /**
+     * Period was 0x1000000
+     * <br>
+     * a and b can be modified with at least some bijective functions; they don't need to be stateA or stateB verbatim.
+     */
+    @Test
+    public void checkPeriodCTR8_XRXR_CLZ8CLZ8() {
+        long startTime = System.currentTimeMillis();
+        int stateA = 1;
+        int stateB = 1;
+        int stateC = 1;
+        long i = 0;
+        while (++i <= 0x1000100L) {
+            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+            stateA = ((stateA + 0xAF) & 0xFF);
+            stateB = ((stateB + clz8(a))) & 0xFF;
+            stateC = ((stateC + clz8(a & b))) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) {
                 break;
