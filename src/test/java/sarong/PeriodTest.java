@@ -2613,13 +2613,83 @@ public class PeriodTest {
 //            stateC = ((stateC + ((6-b|3-a)>>>31))) & 0xFF;
 
             //Period was 0x0200000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + ((a|1-a)>>>31))) & 0xFF;
+//            stateC = ((stateC + ((5-b|3-a)>>>31))) & 0xFF;
+
+            //Period was 0x0008000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + b)) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
+            //Period was 0x0000200
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1) break;
+
+            //Period was 0x0002000
+//            int a = stateA ^ (stateA >>> 3);
+//            int b = stateB ^ (stateB >>> 2);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+
+            //Period was 0x0000200
+//            int a = stateA ^ (stateA >>> 3);
+//            int b = stateB ^ (stateB >>> 1);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+
+            //Period was 0x0010000
+//            int a = stateA ^ (stateA >>> 7);
+//            int b = stateB ^ (stateB >>> 2);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+
+            //Period was 0x0000800
+//            int a = stateA ^ (stateA >>> 2);
+//            int b = stateB ^ (stateB >>> 7);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+
+            //Period was 0x0004000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 7);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + b)) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
+            //Period was 0x0010000
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
+            //Period was 0x0010000
             int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
-            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 5);
+            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 7);
             stateA = ((stateA + 0xAF) & 0xFF);
-            stateB = ((stateB + ((a|1-a)>>>31))) & 0xFF;
-            stateC = ((stateC + ((5-b|3-a)>>>31))) & 0xFF;
+            stateB = ((stateB + a)) & 0xFF;
+            stateC = ((stateC + (a|b))) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
         }
         System.out.printf("Period was 0x%07X\nTook %d ms.\n", i, (System.currentTimeMillis() - startTime));
     }
