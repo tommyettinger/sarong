@@ -326,6 +326,9 @@ public class TestDistribution {
      * Godot-friendly!
      * 4294967296/4294967296 outputs were present.
      * 0.0% of outputs were missing.
+     * Using two shifts that were between the other and 31:
+     * 4294967296/4294967296 outputs were present.
+     * 0.0% of outputs were missing.
      */
     @Test
     public void test32BitQOAXSR()
@@ -334,11 +337,17 @@ public class TestDistribution {
         int i = 0x80000000;
         for (int it = 0; it < 16; it++) {
             for (int n = 0; n < 0x10000000; n++, i++) {
-                int x = (i ^ 7) * 555555555;
+//                int x = (i ^ 7) * 555555555;
+//                x += x * x | 6789;
+//                x ^= x >> 14 ^ x >> 31;
+//                x += x * x | 6789;
+//                x ^= x >> 13 ^ x >> 31;
+//                all.add(x);
+                int x = i;
                 x += x * x | 6789;
-                x ^= x >> 14 ^ x >> 31;
+                x ^= x >> 14 ^ x >> 30;
                 x += x * x | 6789;
-                x ^= x >> 13 ^ x >> 31;
+                x ^= x >> 13 ^ x >> 29;
                 all.add(x);
             }
             System.out.println("Completed iteration " + it + " of 16");
