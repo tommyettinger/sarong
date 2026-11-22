@@ -12,6 +12,7 @@ import sarong.util.StringKit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 
 /**
  * Created by Tommy Ettinger on 8/31/2018.
@@ -344,6 +345,63 @@ public class TestDistribution {
         }
         System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
         System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
+    @Test
+    public void test32BitQOA()
+    {
+        final RoaringBitmap all = new RoaringBitmap();
+        int i = 0x80000000;
+        for (int it = 0; it < 16; it++) {
+            for (int n = 0; n < 0x10000000; n++, i++) {
+                int x = i;
+                x += x * x | 1;
+                all.add(x);
+            }
+            System.out.println("Completed iteration " + it + " of 16");
+        }
+        System.out.println(all.getLongCardinality() + "/" + 0x100000000L + " outputs were present.");
+        System.out.println(100.0 - all.getLongCardinality() * 0x64p-32 + "% of outputs were missing.");
+    }
+
+    /**
+     * While QOA with an odd constant is a bijection, it isn't a full-period state transition unless its last three
+     * bits are 0b101 or 0b111 .
+     */
+    @Test
+    public void test16BitQOA()
+    {
+        final BitSet all = new BitSet(65536);
+        int i = 0x8000;
+        int x = 0;
+        for (int it = 0; it < 16; it++) {
+            for (int n = 0; n < 0x1000; n++, i++) {
+                //1/65536 outputs were present.
+//                x = x + (x * x) & 0xFFFF;
+                //32768/65536 outputs were present.
+//                x = x + (x * x | 1) & 0xFFFF;
+                //16384/65536 outputs were present.
+//                x = x + (x * x | 2) & 0xFFFF;
+                //16384/65536 outputs were present.
+//                x = x + (x * x | 3) & 0xFFFF;
+                //16384/65536 outputs were present.
+//                x = x + (x * x | 4) & 0xFFFF;
+                //65536/65536 outputs were present.
+//                x = x + (x * x | 5) & 0xFFFF;
+                //32768/65536 outputs were present.
+//                x = x + (x * x | 6) & 0xFFFF;
+                //65536/65536 outputs were present.
+//                x = x + (x * x | 7) & 0xFFFF;
+                //8192/65536 outputs were present.
+//                x = x + (x * x | 8) & 0xFFFF;
+                //32768/65536 outputs were present.
+                x = x + (x * x | 9) & 0xFFFF;
+                all.set(x & 0xFFFF);
+            }
+            System.out.println("Completed iteration " + it + " of 16");
+        }
+        System.out.println(all.cardinality() + "/" + 0x10000L + " outputs were present.");
+        System.out.println(100.0 - all.cardinality() * 0x64p-16 + "% of outputs were missing.");
     }
 
     /**
