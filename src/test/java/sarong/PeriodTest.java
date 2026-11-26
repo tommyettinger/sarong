@@ -2681,11 +2681,23 @@ public class PeriodTest {
 //            if (stateA == 1 && stateB == 1 && stateC == 1) break;
 
             //Period was 0x0010000
-            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
-            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 7);
+//            int a = stateA ^ rotate8(stateA, 3) ^ rotate8(stateA, 6);
+//            int b = stateB ^ rotate8(stateB, 2) ^ rotate8(stateB, 7);
+//            stateA = ((stateA + 0xAF) & 0xFF);
+//            stateB = ((stateB + a)) & 0xFF;
+//            stateC = ((stateC + (a|b))) & 0xFF;
+//
+//            if (stateA == 1 && stateB == 1 && stateC == 1) break;
+
+
+            //Period was 0x1000000
+            // a is just a mix of stateA, and b of stateB.
+            // We don't need to add a constant to stateB or stateC, just a or b and the clz.
+            int a = (stateA ^ (stateA & 0xFF) >>> 3) * 0x3B & 0xFF;
+            int b = (stateB ^ (stateB & 0xFF) >>> 2) * 0x75 & 0xFF;
             stateA = ((stateA + 0xAF) & 0xFF);
-            stateB = ((stateB + a)) & 0xFF;
-            stateC = ((stateC + (a|b))) & 0xFF;
+            stateB = ((stateB + a + clz8(a))) & 0xFF;
+            stateC = ((stateC + b + clz8(a|b))) & 0xFF;
 
             if (stateA == 1 && stateB == 1 && stateC == 1) break;
 
@@ -3602,7 +3614,6 @@ public class PeriodTest {
                             stateC = ((stateC + b)) & 0xFF;
 
                             if (stateA == 1 && stateB == 1 && stateC == 1) break;
-
                         }
                         System.out.printf("%d,%d,%d,%d: Period was 0x%07X.\n", r0, r1, r2, r3, i);
 
